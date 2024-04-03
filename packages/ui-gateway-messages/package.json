@@ -1,0 +1,12 @@
+{
+  "name": "ui-gateway-messages",
+  "version": "1.0.0",
+  "main": "./dist/index",
+  "types": "./dist/index",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
