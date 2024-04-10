@@ -1,5 +1,5 @@
 {
-  "--ck-font-family": "Inter",
+  "--ck-font-family": "var(--font-plus-jakarta-sans)",
   "--ck-font-weight": "400",
   "--ck-border-radius": "20px",
   "--ck-border-color": "#2DCC9C",

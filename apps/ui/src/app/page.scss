@@ -1,0 +1,15 @@
+.main-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 1rem;
+
+  .stream-placeholder {
+    width: 100%;
+  }
+
+  .match-betting-panel {
+    background: rgba(255, 255, 255, 0.1);
+    flex-grow: 1;
+  }
+}

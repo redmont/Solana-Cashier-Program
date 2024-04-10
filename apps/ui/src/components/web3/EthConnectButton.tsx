@@ -19,8 +19,6 @@ export const EthConnectButton: FC<EthConnectButtonProps> = ({ ...props }) => (
           size={props.size}
           type="button"
           label={isConnected ? truncatedAddress : 'Connect Wallet'}
-          icon="pi pi-wallet"
-          rounded
           className={classNames(props.className, 'font-normal', {
             'px-4 py-3': props.size === 'large',
             'px-4 py-2': !props.size,

@@ -4,6 +4,7 @@ $primaryDarkColor: scale-color($primaryColor, $lightness: -10%) !default;
 $primaryDarkerColor: scale-color($primaryColor, $lightness: -20%) !default;
 $primaryTextColor: #000;
 $primary500: #0bd18a !default;
+$scale: 16px !default;
 
 $highlightBg: rgba(110, 231, 183, 0.16) !default;
 $highlightTextColor: rgba(255, 255, 255, 0.87) !default;
@@ -50,7 +51,7 @@ $fontFamily:
   'Apple Color Emoji',
   'Segoe UI Emoji',
   'Segoe UI Symbol' !default;
-$fontSize: 1rem !default;
+$fontSize: 0.875rem !default;
 $fontWeight: normal !default;
 $textColor: $shade000 !default;
 $textSecondaryColor: $shade100 !default;
