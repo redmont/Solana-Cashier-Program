@@ -22,7 +22,7 @@ export class EventStoreService {
     });
 
     const eventStorageAdapter = new DynamoDBSingleTableEventStorageAdapter({
-      tableName: () => "cashier-events",
+      tableName: () => configService.get<string>("EVENTS_TABLE_NAME"),
       dynamoDBClient,
     });
 

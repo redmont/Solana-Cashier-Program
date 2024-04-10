@@ -2,6 +2,52 @@ resource "aws_ecr_repository" "cashier_cr" {
   name = "${var.prefix}-cashier-cr-${var.environment}"
 }
 
+data "aws_iam_policy_document" "cashier_task_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "cashier_task_role" {
+  name               = "${var.prefix}-cashier-task-role-${var.environment}"
+  assume_role_policy = data.aws_iam_policy_document.cashier_task_role.json
+}
+
+# Allow DynamoDB access
+resource "aws_iam_policy" "cashier_policy" {
+  name = "${var.prefix}-cashier-policy-${var.environment}"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "dynamodb:DescribeTable",
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:UpdateItem"
+        ],
+        Resource = [var.cashier_events_table_arn, var.cashier_read_model_table_arn]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "cashier_policy" {
+  role       = aws_iam_role.cashier_task_role.name
+  policy_arn = aws_iam_policy.cashier_policy.arn
+}
+
 locals {
   cashier_container_definition = {
     name   = "cashier"
@@ -28,6 +74,12 @@ locals {
       },
       {
         name = "REDIS_PORT", value = var.redis_port
+      },
+      {
+        name = "EVENTS_TABLE_NAME", value = var.cashier_events_table_name
+      },
+      {
+        name = "READ_MODEL_TABLE_NAME", value = var.cashier_read_model_table_name
       }
     ]
   }
@@ -59,6 +111,7 @@ resource "aws_ecs_task_definition" "cashier_task_definition" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
+  task_role_arn            = aws_iam_role.cashier_task_role.arn
   execution_role_arn       = aws_iam_role.ecs_tasks_execution_role.arn
 
   container_definitions = jsonencode([

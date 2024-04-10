@@ -1,14 +1,14 @@
 import { Inject, Injectable, OnModuleInit } from "@nestjs/common";
 import { DateTime } from "luxon";
 import { ClientProxy } from "@nestjs/microservices";
-import { Match } from "./interfaces/match.interface.js";
+import { Match } from "../interfaces/match.interface";
 
 @Injectable()
 export class MatchService implements OnModuleInit {
   public currentMatch?: Match;
   private readonly matches: Match[] = [];
 
-  constructor(@Inject("UI_CLIENTS_REDIS") private redisClient: ClientProxy) {}
+  constructor(@Inject("BROKER_REDIS") private redisClient: ClientProxy) {}
 
   create(match: Match) {
     this.matches.push(match);
@@ -44,7 +44,11 @@ export class MatchService implements OnModuleInit {
           outcome = "Technical Draw";
         }
 
-        const totalBets = match.bets.reduce((acc, bet) => acc + bet.amount, 0);
+        const winPool = match.bets
+          .filter((x) =>
+            fighter1Wins ? x.fighter === "Pepe" : x.fighter === "Doge"
+          )
+          .reduce((acc, bet) => acc + bet.amount, 0);
 
         match.bets.forEach((bet) => {
           let winAmount = 0;
@@ -53,9 +57,9 @@ export class MatchService implements OnModuleInit {
             winAmount = bet.amount * 0.95;
           } else if (bet.fighter === "Doge" && fighter1Wins) {
             // Win amount will be the share of the total bets, proportional to the amount bet, plus the original bet
-            winAmount = (bet.amount / totalBets) * totalBets + bet.amount;
+            winAmount = (bet.amount / winPool) * winPool + bet.amount;
           } else if (bet.fighter === "Pepe" && fighter2Wins) {
-            winAmount = (bet.amount / totalBets) * totalBets + bet.amount;
+            winAmount = (bet.amount / winPool) * winPool + bet.amount;
             return;
           }
 

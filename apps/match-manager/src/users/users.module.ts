@@ -1,10 +1,9 @@
 import { Module } from "@nestjs/common";
 import { UsersService } from "./users.service";
-import { ConfigService } from "@nestjs/config";
+import { GlobalClientsModule } from "src/global-clients-module";
 import { DynamooseModule } from "nestjs-dynamoose";
+import { ConfigService } from "@nestjs/config";
 import { UserSchema, UserWalletSchema } from "./users.schema";
-import { ClientsModule, Transport } from "@nestjs/microservices";
-import { config } from "src/config";
 
 @Module({
   imports: [
@@ -16,6 +15,7 @@ import { config } from "src/config";
             schema: UserSchema,
             options: {
               tableName: configService.get<string>("TABLE_NAME"),
+              create: configService.get<boolean>("IS_DDB_LOCAL"),
             },
           };
         },
@@ -30,22 +30,14 @@ import { config } from "src/config";
             schema: UserWalletSchema,
             options: {
               tableName: configService.get<string>("TABLE_NAME"),
+              create: configService.get<boolean>("IS_DDB_LOCAL"),
             },
           };
         },
         inject: [ConfigService],
       },
     ]),
-    ClientsModule.register([
-      {
-        name: "BROKER_REDIS",
-        transport: Transport.REDIS,
-        options: {
-          host: config.redisHost,
-          port: parseInt(config.redisPort),
-        },
-      },
-    ]),
+    GlobalClientsModule,
   ],
   providers: [UsersService],
   exports: [UsersService],

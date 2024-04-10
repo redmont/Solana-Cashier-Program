@@ -1,7 +1,8 @@
 import { Controller, Inject } from "@nestjs/common";
 import { ClientProxy, MessagePattern, Payload } from "@nestjs/microservices";
-import { MatchService } from "./match.service.js";
+import { MatchService } from "./match.service";
 import { catchError, firstValueFrom, map, throwError, timeout } from "rxjs";
+import { UsersService } from "../users/users.service";
 
 interface PlaceBetPayload {
   userId: string;
@@ -10,14 +11,33 @@ interface PlaceBetPayload {
   fighter: string;
 }
 
+interface EnsureUserIdPayload {
+  walletAddress: string;
+}
+
 @Controller()
 export class MatchController {
   bets = [];
 
   constructor(
-    @Inject("UI_CLIENTS_REDIS") private redisClient: ClientProxy,
-    private service: MatchService
+    @Inject("BROKER_REDIS") private redisClient: ClientProxy,
+    private service: MatchService,
+    private usersService: UsersService
   ) {}
+
+  @MessagePattern("matchManager.ensureUserId")
+  async handleEnsureUserId(@Payload() data: EnsureUserIdPayload) {
+    const { walletAddress } = data;
+
+    let userId =
+      await this.usersService.getUserIdByWalletAddress(walletAddress);
+    if (!userId) {
+      const user = await this.usersService.createUser(walletAddress);
+      userId = user.userId;
+    }
+
+    return { userId };
+  }
 
   @MessagePattern("matchManager.placeBet")
   async handleBetPlaced(@Payload() data: PlaceBetPayload) {

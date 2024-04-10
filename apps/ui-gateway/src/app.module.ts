@@ -9,6 +9,7 @@ import { config } from "./config";
 import { AuthModule } from "./auth/auth.module";
 import { JwtAuthGuard } from "./jwt-auth.guard";
 import { JwtAuthModule } from "./jwt-auth/jwt-auth.module";
+import { GlobalClientsModule } from "./global-clients-module";
 
 @Module({
   imports: [
@@ -23,16 +24,7 @@ import { JwtAuthModule } from "./jwt-auth/jwt-auth.module";
       },
       inject: [ConfigService],
     }),
-    ClientsModule.register([
-      {
-        name: "BROKER_REDIS",
-        transport: Transport.REDIS,
-        options: {
-          host: config.redisHost,
-          port: parseInt(config.redisPort),
-        },
-      },
-    ]),
+    GlobalClientsModule,
     AuthModule,
     JwtAuthModule,
   ],

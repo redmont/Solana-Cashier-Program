@@ -2,6 +2,52 @@ resource "aws_ecr_repository" "match_manager_cr" {
   name = "${var.prefix}-match-manager-cr-${var.environment}"
 }
 
+data "aws_iam_policy_document" "match_manager_task_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "match_manager_task_role" {
+  name               = "${var.prefix}-match-manager-task-role-${var.environment}"
+  assume_role_policy = data.aws_iam_policy_document.match_manager_task_role.json
+}
+
+# Allow DynamoDB access
+resource "aws_iam_policy" "match_manager_policy" {
+  name = "${var.prefix}-match-manager-policy-${var.environment}"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "dynamodb:DescribeTable",
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:UpdateItem"
+        ],
+        Resource = [var.match_manager_table_arn]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "match_manager_policy" {
+  role       = aws_iam_role.match_manager_task_role.name
+  policy_arn = aws_iam_policy.match_manager_policy.arn
+}
+
 locals {
   match_manager_container_definition = {
     name   = "match-manager"
@@ -28,6 +74,9 @@ locals {
       },
       {
         name = "REDIS_PORT", value = var.redis_port
+      },
+      {
+        name = "TABLE_NAME", value = var.match_manager_table_name
       }
     ]
   }
@@ -59,6 +108,7 @@ resource "aws_ecs_task_definition" "match_manager_task_definition" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
+  task_role_arn            = aws_iam_role.match_manager_task_role.arn
   execution_role_arn       = aws_iam_role.ecs_tasks_execution_role.arn
 
   container_definitions = jsonencode([

@@ -425,7 +425,6 @@ export default function Page(): JSX.Element {
                 {!isAuthenticated && (
                   <Button onClick={authenticate}>Log in to place a bet</Button>
                 )}
-                <Button onClick={getBalance}>Get balance</Button>
               </Stack>
             </SimpleGrid>
           </GridItem>
