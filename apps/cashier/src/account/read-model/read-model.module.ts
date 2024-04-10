@@ -13,7 +13,7 @@ import { AccountSchema } from "./account.schema";
           return {
             schema: AccountSchema,
             options: {
-              tableName: configService.get<string>("TABLE_NAME"),
+              tableName: configService.get<string>("READ_MODEL_TABLE_NAME"),
             },
           };
         },

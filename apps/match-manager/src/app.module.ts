@@ -1,7 +1,8 @@
-import { Module } from "@nestjs/common";
+import { Module, OnModuleInit } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { DynamooseModule } from "nestjs-dynamoose";
-import { AccountModule } from "./account/account.module";
+import { MatchModule } from "./match/match.module";
+import { GlobalClientsModule } from "./global-clients-module";
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { AccountModule } from "./account/account.module";
       },
       inject: [ConfigService],
     }),
-    AccountModule,
+    GlobalClientsModule,
+    MatchModule,
   ],
 })
 export class AppModule {}

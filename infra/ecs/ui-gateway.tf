@@ -2,6 +2,52 @@ resource "aws_ecr_repository" "ui_gateway_cr" {
   name = "${var.prefix}-ui-gateway-cr-${var.environment}"
 }
 
+data "aws_iam_policy_document" "ui_gateway_task_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "ui_gateway_task_role" {
+  name               = "${var.prefix}-ui-gateway-task-role-${var.environment}"
+  assume_role_policy = data.aws_iam_policy_document.ui_gateway_task_role.json
+}
+
+# Allow DynamoDB access
+resource "aws_iam_policy" "ui_gateway_policy" {
+  name = "${var.prefix}-ui-gateway-policy-${var.environment}"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "dynamodb:DescribeTable",
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:UpdateItem"
+        ],
+        Resource = [var.ui_gateway_table_arn]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ui_gateway_policy" {
+  role       = aws_iam_role.ui_gateway_task_role.name
+  policy_arn = aws_iam_policy.ui_gateway_policy.arn
+}
+
 locals {
   ui_gateway_container_definition = {
     name   = "ui-gateway"
@@ -28,6 +74,12 @@ locals {
       },
       {
         name = "REDIS_PORT", value = var.redis_port
+      },
+      {
+        name = "TABLE_NAME", value = var.ui_gateway_table_name
+      },
+      {
+        name = "USE_TEST_AUTH_SERVICE", value = "true"
       }
     ]
   }
@@ -59,6 +111,7 @@ resource "aws_ecs_task_definition" "ui_gateway_task_definition" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
+  task_role_arn            = aws_iam_role.ui_gateway_task_role.arn
   execution_role_arn       = aws_iam_role.ecs_tasks_execution_role.arn
 
   container_definitions = jsonencode([

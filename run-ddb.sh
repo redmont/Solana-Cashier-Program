@@ -12,7 +12,7 @@ trap cleanup INT
 sleep 5
 
 aws dynamodb create-table \
-   --table-name cashier-events \
+   --table-name cashier-events-local \
    --attribute-definitions AttributeName=aggregateId,AttributeType=S AttributeName=version,AttributeType=N AttributeName=eventStoreId,AttributeType=S AttributeName=timestamp,AttributeType=S \
    --key-schema AttributeName=aggregateId,KeyType=HASH AttributeName=version,KeyType=RANGE \
    --provisioned-throughput ReadCapacityUnits=10,WriteCapacityUnits=5 \

@@ -7,8 +7,9 @@ RUN npm i -g @nestjs/cli
 FROM base AS build
 COPY . /usr/src/app
 WORKDIR /usr/src/app
+RUN find . -name '.env*' -exec rm -f {} \;
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN pnpm build
+RUN pnpm build --filter=!web --filter=!docs
 RUN pnpm deploy --filter=ui-gateway --prod /prod/ui-gateway
 RUN cp -r apps/ui-gateway/dist/ /prod/ui-gateway/
 RUN pnpm deploy --filter=match-manager --prod /prod/match-manager

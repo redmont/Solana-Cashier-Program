@@ -8,7 +8,8 @@ import { Key } from "src/interfaces/key";
 import { JWT_AUTH_SERVICE } from "src/jwt-auth/jwt-auth.constants";
 import { IJwtAuthService } from "src/jwt-auth/jwt-auth.interface";
 import { Nonce } from "./nonce.interface";
-import { UsersService } from "src/users/users.service";
+import { ClientProxy } from "@nestjs/microservices";
+import { catchError, firstValueFrom, map, throwError, timeout } from "rxjs";
 
 const welcomeMessage = `Welcome to Brawlers!\nSign this message to continue.\n\n`;
 
@@ -18,7 +19,7 @@ export class AuthService {
     @InjectModel("nonce")
     private readonly nonceModel: Model<Nonce, Key>,
     @Inject(JWT_AUTH_SERVICE) private readonly jwtAuthService: IJwtAuthService,
-    private readonly usersService: UsersService
+    @Inject("BROKER_REDIS") private redisClient: ClientProxy
   ) {}
 
   async getNonceMessage(walletAddress: string) {
@@ -70,12 +71,27 @@ export class AuthService {
       return new Error("Invalid nonce");
     }
 
-    let userId =
-      await this.usersService.getUserIdByWalletAddress(walletAddress);
-    if (!userId) {
-      const user = await this.usersService.createUser(walletAddress);
-      userId = user.userId;
-    }
+    const result = await firstValueFrom(
+      this.redisClient
+        .send("matchManager.ensureUserId", {
+          walletAddress: walletAddress,
+        })
+        .pipe(
+          timeout(30000),
+          map((response: any) => {
+            console.log("UI gateway - ensureUserId success!", response);
+            // Success...
+            return response;
+          }),
+          catchError((error) => {
+            // Error...
+
+            return throwError(() => new Error(error));
+          })
+        )
+    );
+
+    const { userId } = result;
 
     const payload = {
       sub: userId,

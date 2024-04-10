@@ -42,3 +42,43 @@ variable "lb_arn" {
   description = "Load balancer ARN"
   type        = string
 }
+
+variable "ui_gateway_table_name" {
+  description = "UI Gateway table name"
+  type        = string
+}
+
+variable "ui_gateway_table_arn" {
+  description = "UI Gateway table ARN"
+  type        = string
+}
+
+variable "match_manager_table_name" {
+  description = "Match Manager table name"
+  type        = string
+}
+
+variable "match_manager_table_arn" {
+  description = "Match Manager table ARN"
+  type        = string
+}
+
+variable "cashier_read_model_table_name" {
+  description = "Cashier read model table name"
+  type        = string
+}
+
+variable "cashier_read_model_table_arn" {
+  description = "Cashier read model table ARN"
+  type        = string
+}
+
+variable "cashier_events_table_name" {
+  description = "Cashier events table name"
+  type        = string
+}
+
+variable "cashier_events_table_arn" {
+  description = "Cashier events table ARN"
+  type        = string
+}
