@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useContext } from 'react';
-import { classNames } from 'primereact/utils';
+import React from 'react';
 import { EthWalletProvider } from '../web3';
 import { AuthProvider } from '../AuthProvider';
-import { useAccount } from 'wagmi';
 
 import { EthConnectButton, EthMobileConnectButton } from '@/components/web3';
 import { ChildContainerProps } from '@/types';
+import { twitchChannel } from '@/config';
 import { BetsPanel } from '@/components/betsPanel';
 import { StreamChat } from '@/components/streamChat';
 import { ActivityStream } from '@/components/activityStream';
@@ -57,7 +56,11 @@ export const Layout = (props: ChildContainerProps) => {
               </div>
 
               <div className="stream-chat-container">
-                <TwitchChat channel="moonstar_x" width="100%" height="100%" />
+                <TwitchChat
+                  channel={twitchChannel}
+                  width="100%"
+                  height="100%"
+                />
               </div>
             </div>
           </main>

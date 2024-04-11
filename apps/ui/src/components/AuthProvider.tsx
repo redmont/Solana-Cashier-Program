@@ -40,7 +40,7 @@ interface GetNonceResponse {
 }
 
 interface GetTokenResponse {
-  token: string;
+  access_token: string;
   error: {
     message: string;
   };
@@ -74,11 +74,13 @@ export const AuthProvider: FC<PropsWithChildren> = (props) => {
   }, []);
 
   const getToken = useCallback(
-    async (address: string, type: 'ethereum') => {
+    async (address: string) => {
       const nonceResp = await fetch(`${serverUrl}/auth/get-nonce`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          type,
           walletAddress: address,
         }),
       });
@@ -100,22 +102,24 @@ export const AuthProvider: FC<PropsWithChildren> = (props) => {
 
       const tokenResp = await fetch(`${serverUrl}/auth/get-token`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           walletAddress: address,
           message,
           signedMessage,
-          type,
         }),
       });
 
-      const { token, error: tokenError }: GetTokenResponse =
+      const { access_token, error: tokenError }: GetTokenResponse =
         await tokenResp.json();
 
       if (nonceResp.status > 200) {
         throw new Error(tokenError.message);
       }
 
-      return token;
+      return access_token;
     },
     [signMessageAsync],
   );
@@ -132,7 +136,7 @@ export const AuthProvider: FC<PropsWithChildren> = (props) => {
 
       try {
         if (ethAddress) {
-          token = await getToken(ethAddress, 'ethereum');
+          token = await getToken(ethAddress);
         } else return null;
 
         if (token === null) {
