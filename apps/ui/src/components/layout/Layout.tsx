@@ -11,6 +11,7 @@ import { ChildContainerProps } from '@/types';
 import { BetsPanel } from '@/components/betsPanel';
 import { StreamChat } from '@/components/streamChat';
 import { ActivityStream } from '@/components/activityStream';
+import { TwitchChat } from 'react-twitch-embed';
 
 export const Layout = (props: ChildContainerProps) => {
   return (
@@ -56,7 +57,7 @@ export const Layout = (props: ChildContainerProps) => {
               </div>
 
               <div className="stream-chat-container">
-                <StreamChat />
+                <TwitchChat channel="moonstar_x" width="100%" height="100%" />
               </div>
             </div>
           </main>

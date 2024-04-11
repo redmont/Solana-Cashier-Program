@@ -78,3 +78,7 @@ $topbar-height: 5rem;
   padding-right: 1rem;
   padding-bottom: 1rem;
 }
+
+button[data-a-target='chat-send-button'] {
+  background-color: $primaryColor;
+}
