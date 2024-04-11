@@ -8,6 +8,8 @@ import { useAccount } from 'wagmi';
 
 import { EthConnectButton, EthMobileConnectButton } from '@/components/web3';
 import { ChildContainerProps } from '@/types';
+import { BetsPanel } from '@/components/betsPanel';
+import { StreamChat } from '@/components/streamChat';
 
 export const Layout = (props: ChildContainerProps) => {
   return (
@@ -41,11 +43,15 @@ export const Layout = (props: ChildContainerProps) => {
           </div>
 
           <div className="flex flex-grow-1">
-            <div className="layout-left-sidebar"></div>
+            <div className="layout-left-sidebar">
+              <BetsPanel />
+            </div>
 
             <div className="layout-content">{props.children}</div>
 
-            <div className="layout-right-sidebar"></div>
+            <div className="layout-right-sidebar">
+              <StreamChat />
+            </div>
           </div>
         </div>
       </AuthProvider>

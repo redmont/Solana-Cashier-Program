@@ -1,0 +1,50 @@
+.bets-panel {
+  background: rgba(255, 255, 255, 0.1);
+  height: 100%;
+}
+
+.bets-panel-header {
+  .bet-column {
+    display: inline-block;
+    width: 50%;
+    padding: 1rem 2rem;
+
+    & + .bet-column {
+      text-align: right;
+    }
+  }
+
+  .bet-fighter {
+    font-weight: bold;
+    font-size: 1.25rem;
+  }
+
+  .bet-points-total {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+.bets-panel-list {
+  margin-top: 1rem;
+
+  .bet-row {
+    display: flex;
+    padding: 0.5rem 2rem;
+    font-size: 0.875rem;
+  }
+
+  .bet-placer {
+    flex-grow: 1;
+    text-align: center;
+
+    & + .bet-value {
+      text-align: right;
+    }
+  }
+
+  .bet-value {
+    width: 4rem;
+    flex-shrink: 0;
+  }
+}

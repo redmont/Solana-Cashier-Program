@@ -1,4 +1,4 @@
-$sidebar-width: 20rem;
+$sidebar-width: 24rem;
 
 .layout {
   min-height: 100vh;
@@ -52,7 +52,7 @@ $sidebar-width: 20rem;
 .layout-right-sidebar {
   min-width: $sidebar-width;
   align-items: stretch;
-  background: rgba(255, 255, 255, 0.1);
+  padding-bottom: 1rem;
 }
 
 .layout-content {
@@ -60,4 +60,5 @@ $sidebar-width: 20rem;
   width: 100%;
   padding-left: 1rem;
   padding-right: 1rem;
+  padding-bottom: 1rem;
 }
