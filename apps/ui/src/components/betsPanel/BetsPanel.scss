@@ -1,9 +1,12 @@
 .bets-panel {
-  background: rgba(255, 255, 255, 0.1);
   height: 100%;
+  border: 1px solid var(--surface-100);
+  border-radius: $borderRadius;
 }
 
 .bets-panel-header {
+  border-bottom: 1px solid var(--surface-100);
+
   .bet-column {
     display: inline-block;
     width: 50%;

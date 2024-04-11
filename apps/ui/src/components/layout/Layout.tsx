@@ -42,7 +42,7 @@ export const Layout = (props: ChildContainerProps) => {
             </div>
           </div>
 
-          <div className="flex flex-grow-1">
+          <main className="flex flex-grow-1">
             <div className="layout-left-sidebar">
               <BetsPanel />
             </div>
@@ -52,7 +52,7 @@ export const Layout = (props: ChildContainerProps) => {
             <div className="layout-right-sidebar">
               <StreamChat />
             </div>
-          </div>
+          </main>
         </div>
       </AuthProvider>
     </EthWalletProvider>
