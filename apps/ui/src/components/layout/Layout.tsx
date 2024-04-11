@@ -10,6 +10,7 @@ import { EthConnectButton, EthMobileConnectButton } from '@/components/web3';
 import { ChildContainerProps } from '@/types';
 import { BetsPanel } from '@/components/betsPanel';
 import { StreamChat } from '@/components/streamChat';
+import { ActivityStream } from '@/components/activityStream';
 
 export const Layout = (props: ChildContainerProps) => {
   return (
@@ -50,7 +51,13 @@ export const Layout = (props: ChildContainerProps) => {
             <div className="layout-content">{props.children}</div>
 
             <div className="layout-right-sidebar">
-              <StreamChat />
+              <div className="activity-stream-container">
+                <ActivityStream />
+              </div>
+
+              <div className="stream-chat-container">
+                <StreamChat />
+              </div>
             </div>
           </main>
         </div>

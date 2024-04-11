@@ -62,6 +62,15 @@ $topbar-height: 5rem;
   height: 100%;
 }
 
+.activity-stream-container {
+  height: 30%;
+  padding-bottom: 1rem;
+}
+
+.stream-chat-container {
+  height: 70%;
+}
+
 .layout-content {
   flex-grow: 1;
   width: 100%;
