@@ -8,7 +8,11 @@
     width: 100%;
   }
 
-  .match-betting-panel {
+  .match-bet-container {
+    flex-grow: 1;
+  }
+
+  .connect-wallet-panel {
     border: 1px solid var(--surface-100);
     border-radius: $borderRadius;
     flex-grow: 1;
