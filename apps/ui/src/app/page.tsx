@@ -2,6 +2,7 @@
 
 import { EthConnectButton, useEthWallet } from '@/components/web3';
 import { BetInputPanel } from '@/components/betPlacementPanel';
+import { MyBetPanel } from '@/components/myBetPanel/MyBetPanel';
 
 export default function Home() {
   const { isReady, isConnected } = useEthWallet();
@@ -18,7 +19,8 @@ export default function Home() {
           </div>
         )}
 
-        {isReady && isConnected && <BetInputPanel />}
+        {/* {isReady && isConnected && <BetInputPanel />} */}
+        {isReady && isConnected && <MyBetPanel />}
       </div>
     </div>
   );
