@@ -1,12 +1,15 @@
 'use client';
 
+import { useAppState } from '@/components/AppStateProvider';
 import { EthConnectButton, useEthWallet } from '@/components/web3';
-import { BetInputPanel } from '@/components/betPlacementPanel';
+import { BetPlacementWidget } from '@/components/betPlacementWidget';
 import { MyBetPanel } from '@/components/myBetPanel/MyBetPanel';
 import { HistoricalBetPanel } from '@/components/historicalBetPanel';
 
 export default function Home() {
   const { isReady, isConnected } = useEthWallet();
+
+  const {} = useAppState();
 
   return (
     <div className="main-page">
@@ -20,9 +23,9 @@ export default function Home() {
           </div>
         )}
 
-        {/* {isReady && isConnected && <BetInputPanel />} */}
+        {isReady && isConnected && <BetPlacementWidget />}
         {/* {isReady && isConnected && <MyBetPanel />} */}
-        {isReady && isConnected && <HistoricalBetPanel />}
+        {/* {isReady && isConnected && <HistoricalBetPanel />} */}
       </div>
     </div>
   );

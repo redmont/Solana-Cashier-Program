@@ -1,10 +1,11 @@
 @import 'components/ordinalsmodal';
 @import 'components/button';
+@import 'components/widget';
 
 @import '@/components/layout/Layout.scss';
 @import '@/components/betsPanel/BetsPanel.scss';
 @import '@/components/streamChat/StreamChat.scss';
 @import '@/components/activityStream/ActivityStream.scss';
-@import '@/components/betPlacementPanel/BetPlacementPanel.scss';
+@import '@/components/betPlacementWidget/BetPlacementWidget.scss';
 @import '@/components/myBetPanel/MyBetPanel.scss';
 @import '@/components/historicalBetPanel/HistoricalBetPanel.scss';

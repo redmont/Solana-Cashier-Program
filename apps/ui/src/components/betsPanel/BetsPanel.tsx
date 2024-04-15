@@ -1,17 +1,20 @@
 import { FC } from 'react';
+import { useAppState } from '../AppStateProvider';
 
 export const BetsPanel: FC = () => {
+  const { totalBets } = useAppState();
+
   return (
     <div className="bets-panel">
       <div className="bets-panel-header">
         <div className="bet-column">
           <div className="bet-fighter">Doge</div>
-          <div className="bet-points-total">34000 Points</div>
+          <div className="bet-points-total">{totalBets['doge']} Points</div>
         </div>
 
         <div className="bet-column">
           <div className="bet-fighter">Pepe</div>
-          <div className="bet-points-total">34000 Points</div>
+          <div className="bet-points-total">{totalBets['pepe']} Points</div>
         </div>
       </div>
 
