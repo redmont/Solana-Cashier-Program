@@ -8,17 +8,25 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { useEthWallet } from './web3';
+
+export interface Bet {
+  placer: string;
+  amount: number;
+}
 
 export interface AppStateContextValue {
   ownedPoints: number;
-  currentBet: Partial<Record<Fighter, number>> | null;
+  bets: Record<Fighter, Bet[]>;
+  currentBets: Partial<Record<Fighter, number>> | null;
   totalBets: Record<Fighter, number>;
   placeBet: (fighter: Fighter, bet: number) => void;
 }
 
 const AppStateContext = createContext<AppStateContextValue>({
+  bets: { doge: [], pepe: [] },
   ownedPoints: 0,
-  currentBet: {},
+  currentBets: {},
   totalBets: { doge: 0, pepe: 0 },
   placeBet: () => {},
 });
@@ -26,22 +34,30 @@ const AppStateContext = createContext<AppStateContextValue>({
 export const AppStateProvider: FC<PropsWithChildren> = ({ children }) => {
   const [ownedPoints, setOwnedPoints] = useState(1000);
 
-  const [bets, setBets] = useState<Record<Fighter, number[]>>({
+  const { address } = useEthWallet();
+
+  const [bets, setBets] = useState<Record<Fighter, Bet[]>>({
     doge: [],
     pepe: [],
   });
 
-  const [currentBet, setCurrentBet] = useState<Partial<
+  const [currentBets, setCurrentBets] = useState<Partial<
     Record<Fighter, number>
   > | null>(null);
 
   const placeBet = (fighter: Fighter, bet: number) => {
-    setCurrentBet({
-      ...(currentBet ?? {}),
-      [fighter]: bet,
+    setCurrentBets({
+      ...(currentBets ?? {}),
+      [fighter]: (currentBets?.[fighter] ?? 0) + bet,
     });
 
-    const fighterBets = [...bets[fighter], bet];
+    const fighterBets = [
+      ...bets[fighter],
+      {
+        placer: address,
+        amount: bet,
+      },
+    ];
 
     setBets({
       ...bets,
@@ -53,7 +69,10 @@ export const AppStateProvider: FC<PropsWithChildren> = ({ children }) => {
     const result: Record<Fighter, number> = { doge: 0, pepe: 0 };
 
     Object.entries(bets).forEach(([fighter, betPoints]) => {
-      result[fighter as Fighter] = betPoints.reduce((sum, p) => sum + p, 0);
+      result[fighter as Fighter] = betPoints.reduce(
+        (sum, b) => sum + b.amount,
+        0,
+      );
     });
 
     return result;
@@ -61,7 +80,7 @@ export const AppStateProvider: FC<PropsWithChildren> = ({ children }) => {
 
   return (
     <AppStateContext.Provider
-      value={{ ownedPoints, totalBets, currentBet, placeBet }}
+      value={{ bets, ownedPoints, totalBets, currentBets, placeBet }}
     >
       {children}
     </AppStateContext.Provider>

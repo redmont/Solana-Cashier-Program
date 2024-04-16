@@ -1,8 +1,10 @@
 import { FC } from 'react';
 import { useAppState } from '../AppStateProvider';
+import { useRewardRates } from '@/hooks/useRewardRates';
 
 export const CurrentBetWidget: FC = () => {
-  const { currentBet, totalBets } = useAppState();
+  const { currentBets } = useAppState();
+  const { doge: dogeReward, pepe: pepeReward } = useRewardRates();
 
   return (
     <div className="widget current-bet-widget">
@@ -18,16 +20,12 @@ export const CurrentBetWidget: FC = () => {
 
         <div className="bet-purchase-price mt-3 flex justify-content-between text-white">
           <span>Purchased Price:</span>
-          <span>{currentBet?.doge ?? 0} points</span>
+          <span>{currentBets?.doge ?? 0} points</span>
         </div>
 
         <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
           <span>Win Rewards:</span>
-          <span>{totalBets.doge} points</span>
-        </div>
-
-        <div className="bet-win-rewards-comment text-white">
-          (pro-rate share of opponent pool)
+          <span>{dogeReward}x</span>
         </div>
       </div>
 
@@ -43,16 +41,12 @@ export const CurrentBetWidget: FC = () => {
 
         <div className="bet-purchase-price mt-3 flex justify-content-between text-white">
           <span>Purchased Price:</span>
-          <span>{currentBet?.pepe ?? 0} points</span>
+          <span>{currentBets?.pepe ?? 0} points</span>
         </div>
 
         <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
           <span>Win Rewards:</span>
-          <span>{totalBets.pepe} points</span>
-        </div>
-
-        <div className="bet-win-rewards-comment text-white">
-          (pro-rate share of opponent pool)
+          <span>{pepeReward}x</span>
         </div>
       </div>
     </div>

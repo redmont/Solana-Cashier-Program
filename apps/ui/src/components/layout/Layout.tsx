@@ -8,16 +8,16 @@ import { AppStateProvider } from '../AppStateProvider';
 import { EthConnectButton, EthMobileConnectButton } from '@/components/web3';
 import { ChildContainerProps } from '@/types';
 import { twitchChannel } from '@/config';
-import { BetsPanel } from '@/components/betsPanel';
+import { BetListWidget } from '@/components/betListWidget';
 import { StreamChat } from '@/components/streamChat';
 import { ActivityStream } from '@/components/activityStream';
 import { TwitchChat } from 'react-twitch-embed';
 
 export const Layout = (props: ChildContainerProps) => {
   return (
-    <AppStateProvider>
-      <EthWalletProvider>
-        <AuthProvider>
+    <EthWalletProvider>
+      <AuthProvider>
+        <AppStateProvider>
           <div className="layout">
             <div className="layout-topbar">
               <div className="topbar-start">
@@ -47,7 +47,7 @@ export const Layout = (props: ChildContainerProps) => {
 
             <main className="flex flex-grow-1">
               <div className="layout-left-sidebar">
-                <BetsPanel />
+                <BetListWidget />
               </div>
 
               <div className="layout-content">{props.children}</div>
@@ -67,8 +67,8 @@ export const Layout = (props: ChildContainerProps) => {
               </div>
             </main>
           </div>
-        </AuthProvider>
-      </EthWalletProvider>
-    </AppStateProvider>
+        </AppStateProvider>
+      </AuthProvider>
+    </EthWalletProvider>
   );
 };

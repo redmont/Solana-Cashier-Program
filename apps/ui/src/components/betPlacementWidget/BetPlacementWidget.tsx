@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 
 import { Fighter } from '@/types';
 import { useAppState } from '../AppStateProvider';
+import { useRewardRates } from '@/hooks/useRewardRates';
 
 export interface BetPlacementWidgetProps {
   compact?: boolean;
@@ -19,6 +20,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
   const [fighter, setFighter] = useState<Fighter>('doge');
   const [timeLeft, setTimeLeft] = useState('00 : 00');
   const countdown = useRef<NodeJS.Timeout>();
+  const rewardRates = useRewardRates();
 
   useEffect(() => {
     countdown.current = setInterval(() => {
@@ -133,11 +135,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
 
           <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
             <span>Win Rewards:</span>
-            <span>{winRewards} points</span>
-          </div>
-
-          <div className="bet-win-rewards-comment text-white">
-            (pro-rate share of opponent pool)
+            <span>{rewardRates[fighter]}x</span>
           </div>
 
           <div className="spacer"></div>

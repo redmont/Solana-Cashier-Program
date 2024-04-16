@@ -9,7 +9,7 @@ import { HistoricalBetPanel } from '@/components/historicalBetPanel';
 export default function Home() {
   const { isReady, isConnected } = useEthWallet();
 
-  const { currentBet } = useAppState();
+  const { currentBets } = useAppState();
 
   return (
     <div className="main-page">
@@ -24,10 +24,10 @@ export default function Home() {
           </div>
         )}
 
-        {isReady && isConnected && currentBet && <CurrentBetWidget />}
+        {isReady && isConnected && currentBets && <CurrentBetWidget />}
 
         {isReady && isConnected && (
-          <BetPlacementWidget compact={!!currentBet} />
+          <BetPlacementWidget compact={!!currentBets} />
         )}
         {/* {isReady && isConnected && <HistoricalBetPanel />} */}
       </div>

@@ -1,0 +1,50 @@
+.bet-list-widget {
+  height: 100%;
+  border: 1px solid var(--surface-100);
+  border-radius: $borderRadius;
+  display: flex;
+  flex-direction: column;
+
+  .header {
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+
+    .column {
+      text-align: center;
+      background: $shade500;
+      padding: 1rem 2rem;
+    }
+
+    .fighter-name {
+      font-weight: bold;
+      font-size: 1.25rem;
+    }
+
+    .bet-total {
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+  }
+
+  .column {
+    flex: 1 0 50%;
+  }
+
+  .viewport {
+    overflow: auto;
+    flex-grow: 1;
+  }
+
+  .bet-list {
+    display: flex;
+    padding: 0.25rem 0;
+  }
+
+  .row {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+  }
+}
