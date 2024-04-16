@@ -1,12 +1,5 @@
-.my-bet-panel {
-  display: flex;
+.current-bet-widget {
   flex-direction: column;
-  font-size: 0.875rem;
-  align-items: stretch;
-  height: 100%;
-  padding: 2rem;
-  border: 2px solid rgba(11, 209, 138, 0.2);
-  border-radius: $borderRadius;
 
   .spacer {
     flex-grow: 1;

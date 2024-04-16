@@ -276,6 +276,9 @@ importers:
       connectkit:
         specifier: ^1.7.2
         version: 1.7.3(@babel/core@7.23.3)(@tanstack/react-query@5.28.14)(react-dom@18.2.0)(react-is@18.2.0)(react@18.2.0)(viem@2.9.9)(wagmi@2.5.18)
+      dayjs:
+        specifier: ^1.11.10
+        version: 1.11.10
       jwt-decode:
         specifier: ^4.0.0
         version: 4.0.0

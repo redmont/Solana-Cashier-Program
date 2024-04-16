@@ -11,12 +11,14 @@ import {
 
 export interface AppStateContextValue {
   ownedPoints: number;
+  currentBet: Partial<Record<Fighter, number>> | null;
   totalBets: Record<Fighter, number>;
   placeBet: (fighter: Fighter, bet: number) => void;
 }
 
 const AppStateContext = createContext<AppStateContextValue>({
   ownedPoints: 0,
+  currentBet: {},
   totalBets: { doge: 0, pepe: 0 },
   placeBet: () => {},
 });
@@ -58,7 +60,9 @@ export const AppStateProvider: FC<PropsWithChildren> = ({ children }) => {
   }, [bets]);
 
   return (
-    <AppStateContext.Provider value={{ ownedPoints, totalBets, placeBet }}>
+    <AppStateContext.Provider
+      value={{ ownedPoints, totalBets, currentBet, placeBet }}
+    >
       {children}
     </AppStateContext.Provider>
   );

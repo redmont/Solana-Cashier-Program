@@ -1,11 +1,10 @@
 .bet-placement-widget {
-  // display: flex;
-  // font-size: 0.875rem;
-  // align-items: stretch;
-  // height: 100%;
-  // padding: 2rem;
-  // border: 2px solid rgba(11, 209, 138, 0.2);
-  // border-radius: $borderRadius;
+  &.compact {
+    .input-section {
+      width: 100%;
+      padding: 0;
+    }
+  }
 
   .spacer {
     flex-grow: 1;
