@@ -61,13 +61,13 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
       })}
     >
       <div className="widget-header">
-        <div className="widget-label">Coming Up Next</div>
+        <div className="widget-label">Pool Open</div>
         <div className="widget-label">{timeLeft}</div>
       </div>
 
       <div className="input-section">
         <div className="fighter-selection">
-          <div className="selection-title">Choose a fighter</div>
+          <div className="selection-title">Back your fighter</div>
           <div className="fighter-switch">
             <div
               className={classNames('fighter-tile', {
@@ -96,8 +96,6 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
         <div className="spacer"></div>
 
         <div className="points-selection">
-          <div className="selection-title">Buy shares in fight pool</div>
-
           <div className="points-slider-box">
             <div className="points-slider-labels">
               <span>0%</span>
@@ -108,14 +106,18 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
           </div>
 
           <div className="points-input-group p-inputgroup">
-            <InputNumber value={betPoints} onChange={handlePointsChange} />
+            <InputNumber
+              className="points-input"
+              value={betPoints}
+              onChange={handlePointsChange}
+            />
 
-            <span className="p-inputgroup-addon">Points</span>
+            <span className="p-inputgroup-addon points-label">Points</span>
           </div>
 
           {props.compact && (
             <Button
-              label="Place a Bet"
+              label="Confirm"
               size="large"
               className="w-full mt-3"
               disabled={betPoints === 0}
@@ -127,29 +129,27 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
 
       {!props.compact && (
         <div className="confirmation-section">
-          <div className="bet-preview-title">Bet preview</div>
+          <div className="bet-preview-title">Preview</div>
           <div className="bet-purchase-price flex justify-content-between  text-white">
-            <span>Purchased Price:</span>
+            <span>Stake amount:</span>
             <span>{betPoints} points</span>
           </div>
 
           <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
-            <span>Win Rewards:</span>
+            <span>Current win rate:</span>
             <span>{rewardRates[fighter]}x</span>
           </div>
 
           <div className="spacer"></div>
 
-          <div className="mb-3 text-white">
-            Bets cannot be deleted or edited.
-            <br />
-            You will place a bet without any further confirmations.
+          <div className="mb-3 text-xs text-600">
+            Stakes are locked until the end of the fight.
           </div>
 
           <Button
-            label="Place a Bet"
+            label="Confirm"
             size="large"
-            className="w-full"
+            className="w-full text-base text-200"
             disabled={betPoints === 0}
             onClick={() => placeBet(fighter, betPoints)}
           />

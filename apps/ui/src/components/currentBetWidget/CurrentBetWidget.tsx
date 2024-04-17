@@ -9,7 +9,7 @@ export const CurrentBetWidget: FC = () => {
   return (
     <div className="widget current-bet-widget">
       <div className="widget-header">
-        <div className="widget-label">My Bet</div>
+        <div className="widget-label">My Stake</div>
       </div>
 
       <div className="fighter-bet">
@@ -19,12 +19,12 @@ export const CurrentBetWidget: FC = () => {
         </div>
 
         <div className="bet-purchase-price mt-3 flex justify-content-between text-white">
-          <span>Purchased Price:</span>
+          <span>Total staked:</span>
           <span>{currentBets?.doge ?? 0} points</span>
         </div>
 
         <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
-          <span>Win Rewards:</span>
+          <span>Current win rate:</span>
           <span>{dogeReward}x</span>
         </div>
       </div>
@@ -40,12 +40,12 @@ export const CurrentBetWidget: FC = () => {
         </div>
 
         <div className="bet-purchase-price mt-3 flex justify-content-between text-white">
-          <span>Purchased Price:</span>
+          <span>Total staked:</span>
           <span>{currentBets?.pepe ?? 0} points</span>
         </div>
 
         <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
-          <span>Win Rewards:</span>
+          <span>Current win rate:</span>
           <span>{pepeReward}x</span>
         </div>
       </div>
