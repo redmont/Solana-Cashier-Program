@@ -3,11 +3,12 @@
   font-size: 0.875rem;
   align-items: stretch;
   height: 100%;
-  padding: 2rem;
+  padding: 2rem 1rem 1rem 1rem;
   border: 2px solid rgba(11, 209, 138, 0.2);
   border-radius: $borderRadius;
   background: #0e0e10;
   position: relative;
+  margin-top: 1rem;
 }
 
 .widget-header {

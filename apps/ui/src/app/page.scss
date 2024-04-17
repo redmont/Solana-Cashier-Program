@@ -1,14 +1,40 @@
-.main-page {
+.left-sidebar,
+.right-sidebar {
+  display: none;
+}
+
+.stream-container {
+  width: 100%;
+}
+
+.stream-placeholder {
+  width: 100%;
+}
+
+.widgets-container {
+  padding: 0.5rem;
   display: flex;
   flex-direction: column;
-  height: 100%;
   gap: 1rem;
+}
 
-  .stream-placeholder {
-    width: 100%;
+.current-bet-widget {
+  order: 1;
+}
+
+.stream-chat-container {
+  height: 20rem;
+  order: 2;
+}
+
+@media screen and (min-width: 1440px) {
+  main {
+    height: calc(100vh - $topbar-height);
+    display: flex;
+    flex-direction: row;
   }
 
-  .match-bet-container {
+  .controls-container {
     flex-grow: 1;
     display: flex;
     gap: 1rem;
@@ -19,12 +45,35 @@
     }
   }
 
-  .connect-wallet-panel {
-    border: 1px solid var(--surface-100);
-    border-radius: $borderRadius;
+  .left-sidebar,
+  .right-sidebar {
+    min-width: $sidebar-width;
+    align-items: stretch;
+    padding-bottom: 1rem;
+    height: 100%;
+  }
+
+  .trunk {
     flex-grow: 1;
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .trunk-body {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    height: 100%;
+    gap: 1rem;
+  }
+
+  .activity-stream-container {
+    height: 30%;
+    padding-bottom: 1rem;
+  }
+
+  .stream-chat-container {
+    height: 70%;
   }
 }

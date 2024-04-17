@@ -17,35 +17,44 @@ export default function Home() {
   const { currentBets } = useAppState();
 
   return (
-    <main className="flex flex-grow-1">
-      <div className="layout-left-sidebar">
+    <main>
+      <div className="left-sidebar">
         <BetListWidget />
       </div>
 
-      <div className="layout-content">
-        <div className="main-page">
-          <div className="match-stream-container">
+      <div className="trunk">
+        <div className="trunk-body">
+          <div className="stream-container">
             <img className="stream-placeholder" src="/match.png" />
           </div>
 
-          <div className="match-bet-container">
-            {isReady && !isConnected && (
+          <div className="widgets-container">
+            <BetListWidget compact />
+
+            <ActivityStream />
+
+            {/* {isReady && !isConnected && (
               <div className="connect-wallet-panel">
                 <EthConnectButton size="large" />
               </div>
-            )}
+            )}*/}
 
             {isReady && isConnected && currentBets && <CurrentBetWidget />}
 
             {isReady && isConnected && (
               <BetPlacementWidget compact={!!currentBets} />
             )}
+
             {/* {isReady && isConnected && <HistoricalBetPanel />} */}
+
+            <div className="stream-chat-container">
+              <TwitchChat channel={twitchChannel} width="100%" height="100%" />
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="layout-right-sidebar">
+      <div className="right-sidebar">
         <div className="activity-stream-container">
           <ActivityStream />
         </div>

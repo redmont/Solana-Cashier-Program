@@ -1,84 +1,53 @@
 $sidebar-width: 24rem;
 $topbar-height: 5rem;
 
-.layout {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-
-  main {
-    height: calc(100vh - $topbar-height);
-  }
-}
-
-.layout-topbar {
+.topbar {
   display: flex;
   width: 100%;
   align-items: center;
   height: $topbar-height;
-
-  .topbar-start,
-  .topbar-end {
-    width: $sidebar-width;
-  }
-
-  .topbar-start {
-    text-align: center;
-  }
-
-  .topbar-middle {
-    flex-grow: 1;
-    text-align: center;
-  }
-
-  .topbar-end {
-    display: flex;
-    justify-content: flex-end;
-    padding-right: 1.5rem;
-  }
-
-  .topbar-menu {
-    list-style: none;
-    padding: 0;
-    display: inline-flex;
-    flex-direction: row;
-    gap: 1rem;
-  }
-
-  .topbar-menu-link {
-    color: $textColor;
-
-    &.active {
-      color: $primaryColor;
-    }
-  }
 }
 
-.layout-left-sidebar,
-.layout-right-sidebar {
-  min-width: $sidebar-width;
-  align-items: stretch;
-  padding-bottom: 1rem;
-  height: 100%;
+.topbar-start,
+.topbar-end {
+  width: $sidebar-width;
 }
 
-.activity-stream-container {
-  height: 30%;
-  padding-bottom: 1rem;
+.topbar-start {
+  text-align: center;
 }
 
-.stream-chat-container {
-  height: 70%;
-}
-
-.layout-content {
+.topbar-middle {
   flex-grow: 1;
-  width: 100%;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-bottom: 1rem;
+  text-align: center;
 }
 
-button[data-a-target='chat-send-button'] {
-  background-color: $primaryColor;
+.topbar-end {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 1.5rem;
+}
+
+.topbar-menu {
+  list-style: none;
+  padding: 0;
+  display: inline-flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.topbar-menu-link {
+  color: $textColor;
+
+  &.active {
+    color: $primaryColor;
+  }
+}
+
+@media screen and (min-width: 1440px) {
+  // .layout {
+  //   min-height: 100vh;
+  //   display: flex;
+  //   flex-direction: column;
+  // }
 }

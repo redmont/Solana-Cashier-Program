@@ -14,13 +14,13 @@ export const Layout = (props: ChildContainerProps) => {
       <AuthProvider>
         <AppStateProvider>
           <div className="layout">
-            <div className="layout-topbar">
+            <div className="topbar">
               <div className="topbar-start">
                 <img src="/logo.svg" alt="Logo" />
               </div>
 
               <div className="topbar-middle">
-                <ul className="topbar-menu">
+                {/* <ul className="topbar-menu">
                   <li className="topbar-menu-item">
                     <a className="topbar-menu-link active" href="#">
                       Gameplay
@@ -31,7 +31,7 @@ export const Layout = (props: ChildContainerProps) => {
                       Dashboard
                     </a>
                   </li>
-                </ul>
+                </ul> */}
               </div>
 
               <div className="topbar-end">
@@ -39,6 +39,8 @@ export const Layout = (props: ChildContainerProps) => {
                 <EthMobileConnectButton className="md:hidden" />
               </div>
             </div>
+
+            {props.children}
           </div>
         </AppStateProvider>
       </AuthProvider>
