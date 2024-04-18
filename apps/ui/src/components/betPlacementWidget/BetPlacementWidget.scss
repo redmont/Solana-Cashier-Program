@@ -1,31 +1,24 @@
 .bet-placement-widget {
-  .input-section {
-    width: 100%;
-    padding: 0;
-  }
-
-  .confirmation-section {
-    display: none;
-  }
-
-  .confirm-button-compact {
-    display: block;
+  &.compact {
+    .input-section {
+      width: 100%;
+      padding: 0;
+    }
   }
 
   .spacer {
     flex-grow: 1;
   }
 
-  // .input-section,
-  // .confirmation-section {
-  //   width: 50%;
-  //   flex-direction: column;
-  // }
-
-  .input-section {
-    // padding-right: 1rem;
+  .input-section,
+  .confirmation-section {
+    width: 50%;
     display: flex;
     flex-direction: column;
+  }
+
+  .input-section {
+    padding-right: 1rem;
   }
 
   .selection-title,
@@ -84,95 +77,5 @@
   .confirmation-section {
     padding-left: 1rem;
     height: 100%;
-  }
-
-  @media screen and (min-width: 1440px) {
-    &.compact {
-      .input-section {
-        width: 100%;
-        padding: 0;
-      }
-
-      .confirm-button-compact {
-        display: block;
-      }
-    }
-
-    .confirm-button-compact {
-      display: none;
-    }
-
-    .spacer {
-      flex-grow: 1;
-    }
-
-    .input-section,
-    .confirmation-section {
-      width: 50%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .input-section {
-      padding-right: 1rem;
-    }
-
-    .selection-title,
-    .bet-preview-title {
-      margin-bottom: 1rem;
-    }
-
-    .fighter-switch {
-      display: flex;
-      flex-direction: row;
-      gap: 1rem;
-      align-items: center;
-      color: $shade000;
-    }
-
-    .fighter-tile {
-      border: 2px solid var(--surface-100);
-      border-radius: $borderRadius;
-      padding: 0.25rem;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      gap: 1rem;
-      width: 8rem;
-      cursor: pointer;
-
-      &:last-child {
-        justify-content: flex-end;
-      }
-
-      &.selected {
-        border-color: $primary500;
-        background-color: rgba(11, 209, 138, 0.1);
-      }
-    }
-
-    .points-slider-labels {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.5rem;
-    }
-
-    .points-selection {
-      margin-top: 2rem;
-    }
-
-    .points-input-group {
-      margin-top: 1rem;
-      height: 2.5rem;
-    }
-
-    .points-label {
-      padding: 0 0.75rem;
-    }
-
-    .confirmation-section {
-      padding-left: 1rem;
-      height: 100%;
-    }
   }
 }

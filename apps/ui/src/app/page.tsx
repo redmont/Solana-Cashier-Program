@@ -18,50 +18,20 @@ export default function Home() {
 
   return (
     <main>
-      <div className="left-sidebar">
-        <BetListWidget />
+      <BetListWidget />
+
+      <ActivityStream />
+
+      <div className="stream-container">
+        <img className="stream-placeholder" src="/match.png" />
       </div>
 
-      <div className="trunk">
-        <div className="trunk-body">
-          <div className="stream-container">
-            <img className="stream-placeholder" src="/match.png" />
-          </div>
+      {isReady && isConnected && currentBets && <CurrentBetWidget />}
 
-          <div className="widgets-container">
-            <BetListWidget compact />
+      {isReady && isConnected && <BetPlacementWidget compact={!!currentBets} />}
 
-            <ActivityStream />
-
-            {/* {isReady && !isConnected && (
-              <div className="connect-wallet-panel">
-                <EthConnectButton size="large" />
-              </div>
-            )}*/}
-
-            {isReady && isConnected && currentBets && <CurrentBetWidget />}
-
-            {isReady && isConnected && (
-              <BetPlacementWidget compact={!!currentBets} />
-            )}
-
-            {/* {isReady && isConnected && <HistoricalBetPanel />} */}
-
-            <div className="stream-chat-container">
-              <TwitchChat channel={twitchChannel} width="100%" height="100%" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="right-sidebar">
-        <div className="activity-stream-container">
-          <ActivityStream />
-        </div>
-
-        <div className="stream-chat-container">
-          <TwitchChat channel={twitchChannel} width="100%" height="100%" />
-        </div>
+      <div className="stream-chat-container">
+        <TwitchChat channel={twitchChannel} width="100%" height="100%" />
       </div>
     </main>
   );

@@ -115,42 +115,46 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
             <span className="p-inputgroup-addon points-label">Points</span>
           </div>
 
+          {props.compact && (
+            <Button
+              label="Confirm"
+              size="large"
+              className="w-full mt-3 confirm-button-compact"
+              disabled={betPoints === 0}
+              onClick={() => placeBet(fighter, betPoints)}
+            />
+          )}
+        </div>
+      </div>
+
+      {!props.compact && (
+        <div className="confirmation-section">
+          <div className="bet-preview-title">Preview</div>
+          <div className="bet-purchase-price flex justify-content-between  text-white">
+            <span>Stake amount:</span>
+            <span>{betPoints} points</span>
+          </div>
+
+          <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
+            <span>Current win rate:</span>
+            <span>{rewardRates[fighter]}x</span>
+          </div>
+
+          <div className="spacer"></div>
+
+          <div className="mb-3 text-xs text-600">
+            Stakes are locked until the end of the fight.
+          </div>
+
           <Button
             label="Confirm"
             size="large"
-            className="w-full mt-3 confirm-button-compact"
+            className="w-full text-base text-200"
             disabled={betPoints === 0}
             onClick={() => placeBet(fighter, betPoints)}
           />
         </div>
-      </div>
-
-      <div className="confirmation-section">
-        <div className="bet-preview-title">Preview</div>
-        <div className="bet-purchase-price flex justify-content-between  text-white">
-          <span>Stake amount:</span>
-          <span>{betPoints} points</span>
-        </div>
-
-        <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
-          <span>Current win rate:</span>
-          <span>{rewardRates[fighter]}x</span>
-        </div>
-
-        <div className="spacer"></div>
-
-        <div className="mb-3 text-xs text-600">
-          Stakes are locked until the end of the fight.
-        </div>
-
-        <Button
-          label="Confirm"
-          size="large"
-          className="w-full text-base text-200"
-          disabled={betPoints === 0}
-          onClick={() => placeBet(fighter, betPoints)}
-        />
-      </div>
+      )}
     </div>
   );
 };

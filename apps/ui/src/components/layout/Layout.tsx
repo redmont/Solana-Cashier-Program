@@ -14,30 +14,13 @@ export const Layout = (props: ChildContainerProps) => {
       <AuthProvider>
         <AppStateProvider>
           <div className="layout">
-            <div className="topbar">
-              <div className="topbar-start">
-                <img src="/logo.svg" alt="Logo" />
-              </div>
+            <div className="logo-container">
+              <img src="/logo.svg" alt="Logo" />
+            </div>
 
-              <div className="topbar-middle">
-                {/* <ul className="topbar-menu">
-                  <li className="topbar-menu-item">
-                    <a className="topbar-menu-link active" href="#">
-                      Gameplay
-                    </a>
-                  </li>
-                  <li className="topbar-menu-item">
-                    <a className="topbar-menu-link" href="#">
-                      Dashboard
-                    </a>
-                  </li>
-                </ul> */}
-              </div>
-
-              <div className="topbar-end">
-                <EthConnectButton className="p-button-secondary p-button-outlined hidden md:block" />
-                <EthMobileConnectButton className="md:hidden" />
-              </div>
+            <div className="topbar-tools">
+              <EthConnectButton className="p-button-secondary p-button-outlined hidden md:block" />
+              <EthMobileConnectButton className="md:hidden" />
             </div>
 
             {props.children}
