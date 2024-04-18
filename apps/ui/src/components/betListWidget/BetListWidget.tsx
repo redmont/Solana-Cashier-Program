@@ -2,11 +2,7 @@ import { FC } from 'react';
 import { useAppState } from '../AppStateProvider';
 import { truncateEthAddress } from '../../utils';
 
-interface BetListWidgetProps {
-  compact?: boolean;
-}
-
-export const BetListWidget: FC<BetListWidgetProps> = ({ compact }) => {
+export const BetListWidget: FC = () => {
   const { bets, totalBets } = useAppState();
 
   return (
@@ -23,29 +19,27 @@ export const BetListWidget: FC<BetListWidgetProps> = ({ compact }) => {
         </div>
       </div>
 
-      {!compact && (
-        <div className="viewport">
-          <div className="bet-list">
-            <div className="column">
-              {bets.doge.map(({ amount, placer }) => (
-                <div className="row">
-                  <span>{truncateEthAddress(placer)}</span>
-                  <span>{amount.toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
+      <div className="viewport">
+        <div className="bet-list">
+          <div className="column">
+            {bets.doge.map(({ amount, placer }) => (
+              <div className="row">
+                <span>{truncateEthAddress(placer)}</span>
+                <span>{amount.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
 
-            <div className="column">
-              {bets.pepe.map(({ amount, placer }) => (
-                <div className="row">
-                  <span>{truncateEthAddress(placer)}</span>
-                  <span>{amount.toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
+          <div className="column">
+            {bets.pepe.map(({ amount, placer }) => (
+              <div className="row">
+                <span>{truncateEthAddress(placer)}</span>
+                <span>{amount.toLocaleString()}</span>
+              </div>
+            ))}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

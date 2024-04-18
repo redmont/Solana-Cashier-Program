@@ -29,7 +29,7 @@ export default function Home() {
           </div>
 
           <div className="widgets-container">
-            <BetListWidget compact />
+            <BetListWidget />
 
             <ActivityStream />
 
