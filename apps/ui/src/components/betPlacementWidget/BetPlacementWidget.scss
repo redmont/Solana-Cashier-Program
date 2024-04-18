@@ -1,6 +1,8 @@
 .bet-placement-widget {
-  flex-direction: column;
-  gap: 2rem;
+  .widget-body {
+    flex-direction: column;
+    gap: 2rem;
+  }
 
   &.compact {
     .input-section {

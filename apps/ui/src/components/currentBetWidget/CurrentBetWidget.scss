@@ -1,5 +1,7 @@
 .current-bet-widget {
-  flex-direction: column;
+  .widget-body {
+    flex-direction: column;
+  }
 
   .spacer {
     flex-grow: 1;

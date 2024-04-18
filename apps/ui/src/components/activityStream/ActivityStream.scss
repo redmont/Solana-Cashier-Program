@@ -1,9 +1,11 @@
 $activity-stream-header-height: 3rem;
 
-.activity-stream {
-  height: 100%;
-  border: 1px solid var(--surface-50);
-  border-radius: $borderRadius;
+.activity-stream-widget {
+  .widget-body {
+    height: 100%;
+    border: 1px solid var(--surface-50);
+    border-radius: $borderRadius;
+  }
 
   .header {
     font-size: 0.875rem;

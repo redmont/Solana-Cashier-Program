@@ -22,27 +22,15 @@ export default function Home() {
         <img className="stream-placeholder" src="/match.png" />
       </div>
 
-      <div className="widget-container bet-list-container">
-        <BetListWidget />
-      </div>
+      <BetListWidget />
 
-      {isReady && isConnected && (
-        <div className="widget-container bet-placement-container">
-          <BetPlacementWidget compact={!!currentBets} />
-        </div>
-      )}
+      {isReady && isConnected && <BetPlacementWidget compact={!!currentBets} />}
 
-      {isReady && isConnected && currentBets && (
-        <div className="widget-container current-bet-container">
-          <CurrentBetWidget />
-        </div>
-      )}
+      {isReady && isConnected && currentBets && <CurrentBetWidget />}
 
-      <div className="widget-container activity-stream-container">
-        <ActivityStream />
-      </div>
+      <ActivityStream />
 
-      <div className="widget-container stream-chat-container">
+      <div className="widget stream-chat-widget">
         <TwitchChat channel={twitchChannel} width="100%" height="100%" />
       </div>
     </main>
