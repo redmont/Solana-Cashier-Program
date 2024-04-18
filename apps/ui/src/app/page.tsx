@@ -22,21 +22,23 @@ export default function Home() {
         <img className="stream-placeholder" src="/match.png" />
       </div>
 
-      {/* {isReady && isConnected && <BetPlacementWidget compact={!!currentBets} />} */}
+      <div className="widget-container bet-list-container">
+        <BetListWidget />
+      </div>
 
       {isReady && isConnected && (
-        <div className="widget-container">
-          <BetPlacementWidget compact />
+        <div className="widget-container bet-placement-container">
+          <BetPlacementWidget compact={!!currentBets} />
         </div>
       )}
 
       {isReady && isConnected && currentBets && (
-        <div className="widget-container">
+        <div className="widget-container current-bet-container">
           <CurrentBetWidget />
         </div>
       )}
 
-      <div className="widget-container">
+      <div className="widget-container activity-stream-container">
         <ActivityStream />
       </div>
 

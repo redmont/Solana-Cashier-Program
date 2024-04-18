@@ -25,10 +25,16 @@ main {
   grid-column: 1 / 3;
 }
 
+@media screen and (min-width: 48rem) {
+  .layout {
+    max-width: 48rem;
+    padding: 0 1rem;
+  }
+}
+
 @media screen and (min-width: 100rem) {
   .layout {
     max-width: 100rem;
-    padding: 0 1rem;
   }
 
   .logo-container {
@@ -47,10 +53,5 @@ main {
     grid-column: 2;
     align-self: center;
     justify-self: right;
-  }
-
-  main {
-    grid-row: 2;
-    grid-column: 1 /3;
   }
 }
