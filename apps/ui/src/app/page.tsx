@@ -5,6 +5,11 @@ import { EthConnectButton, useEthWallet } from '@/components/web3';
 import { BetPlacementWidget } from '@/components/betPlacementWidget';
 import { CurrentBetWidget } from '@/components/currentBetWidget';
 import { HistoricalBetPanel } from '@/components/historicalBetPanel';
+import { twitchChannel } from '@/config';
+import { BetListWidget } from '@/components/betListWidget';
+import { StreamChat } from '@/components/streamChat';
+import { ActivityStream } from '@/components/activityStream';
+import { TwitchChat } from 'react-twitch-embed';
 
 export default function Home() {
   const { isReady, isConnected } = useEthWallet();
@@ -12,25 +17,22 @@ export default function Home() {
   const { currentBets } = useAppState();
 
   return (
-    <div className="main-page">
-      <div className="match-stream-container">
+    <main>
+      <div className="stream-container">
         <img className="stream-placeholder" src="/match.png" />
       </div>
 
-      <div className="match-bet-container">
-        {isReady && !isConnected && (
-          <div className="connect-wallet-panel">
-            <EthConnectButton size="large" />
-          </div>
-        )}
+      <BetListWidget />
 
-        {isReady && isConnected && currentBets && <CurrentBetWidget />}
+      {isReady && isConnected && <BetPlacementWidget compact={!!currentBets} />}
 
-        {isReady && isConnected && (
-          <BetPlacementWidget compact={!!currentBets} />
-        )}
-        {/* {isReady && isConnected && <HistoricalBetPanel />} */}
+      {isReady && isConnected && currentBets && <CurrentBetWidget />}
+
+      <ActivityStream />
+
+      <div className="widget stream-chat-widget">
+        <TwitchChat channel={twitchChannel} width="100%" height="100%" />
       </div>
-    </div>
+    </main>
   );
 }

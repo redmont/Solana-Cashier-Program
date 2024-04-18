@@ -1,9 +1,10 @@
 .bet-list-widget {
-  height: 100%;
-  border: 1px solid var(--surface-100);
-  border-radius: $borderRadius;
-  display: flex;
-  flex-direction: column;
+  .widget-body {
+    border: 1px solid var(--surface-50);
+    border-radius: $borderRadius;
+    display: flex;
+    flex-direction: column;
+  }
 
   .header {
     display: flex;

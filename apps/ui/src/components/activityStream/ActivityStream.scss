@@ -1,9 +1,11 @@
 $activity-stream-header-height: 3rem;
 
-.activity-stream {
-  height: 100%;
-  border: 1px solid var(--surface-100);
-  border-radius: $borderRadius;
+.activity-stream-widget {
+  .widget-body {
+    height: 100%;
+    border: 1px solid var(--surface-50);
+    border-radius: $borderRadius;
+  }
 
   .header {
     font-size: 0.875rem;
@@ -12,7 +14,7 @@ $activity-stream-header-height: 3rem;
     height: $activity-stream-header-height;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid var(--surface-100);
+    border-bottom: 1px solid var(--surface-50);
   }
 
   .chat-viewport {
