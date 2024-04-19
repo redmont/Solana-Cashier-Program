@@ -32,7 +32,14 @@ main {
   }
 }
 
-@media screen and (min-width: 100rem) {
+@media screen and (min-width: 75rem) {
+  .layout {
+    max-width: 75rem;
+    padding: 0 1rem;
+  }
+}
+
+@media screen and (min-width: 92rem) {
   .layout {
     max-width: 100rem;
   }
