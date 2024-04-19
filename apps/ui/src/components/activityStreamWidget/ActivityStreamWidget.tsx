@@ -1,6 +1,6 @@
 import { FC } from 'react';
 
-export const ActivityStream: FC = () => {
+export const ActivityStreamWidget: FC = () => {
   return (
     <div className="widget activity-stream-widget">
       <div className="widget-body">

@@ -7,8 +7,7 @@ import { CurrentBetWidget } from '@/components/currentBetWidget';
 import { HistoricalBetPanel } from '@/components/historicalBetPanel';
 import { twitchChannel } from '@/config';
 import { BetListWidget } from '@/components/betListWidget';
-import { StreamChat } from '@/components/streamChat';
-import { ActivityStream } from '@/components/activityStream';
+import { ActivityStreamWidget } from '@/components/activityStreamWidget';
 import { TwitchChat } from 'react-twitch-embed';
 
 export default function Home() {
@@ -19,7 +18,12 @@ export default function Home() {
   return (
     <main>
       <div className="stream-container">
-        <img className="stream-placeholder" src="/match.png" />
+        <iframe
+          src="https://viewer.millicast.com?streamId=WBYdQB/brawlers-dev-1&controls=false&showLabels=false"
+          allowFullScreen
+          width="100%"
+          height="100%"
+        ></iframe>
       </div>
 
       <BetListWidget />
@@ -28,7 +32,7 @@ export default function Home() {
 
       {isReady && isConnected && currentBets && <CurrentBetWidget />}
 
-      <ActivityStream />
+      <ActivityStreamWidget />
 
       <div className="widget stream-chat-widget">
         <TwitchChat channel={twitchChannel} width="100%" height="100%" />
