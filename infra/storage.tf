@@ -49,8 +49,25 @@ resource "aws_dynamodb_table" "cashier_read_model_table" {
   }
 }
 
-resource "aws_dynamodb_table" "match_manager_table" {
-  name         = "${local.prefix}-match-manager-${var.environment}"
+resource "aws_dynamodb_table" "core_table" {
+  name         = "${local.prefix}-core-${var.environment}"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "pk"
+  range_key    = "sk"
+
+  attribute {
+    name = "pk"
+    type = "S"
+  }
+
+  attribute {
+    name = "sk"
+    type = "S"
+  }
+}
+
+resource "aws_dynamodb_table" "query_store_table" {
+  name         = "${local.prefix}-query-store-${var.environment}"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "pk"
   range_key    = "sk"

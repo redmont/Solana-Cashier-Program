@@ -37,7 +37,7 @@ resource "aws_iam_policy" "ui_gateway_policy" {
           "dynamodb:Scan",
           "dynamodb:UpdateItem"
         ],
-        Resource = [var.ui_gateway_table_arn]
+        Resource = [var.ui_gateway_table_arn, var.query_store_table_arn]
       }
     ]
   })
@@ -70,6 +70,9 @@ locals {
     },
     environment = [
       {
+        name = "NATS_URI", value = "nats://nats.${var.prefix}.${var.environment}.local:4222"
+      },
+      {
         name = "REDIS_HOST", value = var.redis_host
       },
       {
@@ -77,6 +80,9 @@ locals {
       },
       {
         name = "TABLE_NAME", value = var.ui_gateway_table_name
+      },
+      {
+        name = "QUERY_STORE_TABLE_NAME", value = var.query_store_table_name
       },
       {
         name = "USE_TEST_AUTH_SERVICE", value = "true"
@@ -121,7 +127,7 @@ resource "aws_ecs_task_definition" "ui_gateway_task_definition" {
         image       = var.environment == "local" ? local.ui_gateway_local_container_overrides.image : local.ui_gateway_ecr_image,
         command     = var.environment == "local" ? local.ui_gateway_local_container_overrides.command : null,
         mountPoints = var.environment == "local" ? local.ui_gateway_local_container_overrides.mountPoints : null,
-        volumes     = var.environment == "local" ? local.ui_gateway_local_container_overrides.volumes : null
+        volumes     = var.environment == "local" ? local.ui_gateway_local_container_overrides.volumes : null,
       }
     )
   ])
@@ -142,7 +148,9 @@ resource "aws_lb_target_group" "lb_tg" {
   target_type = "ip"
   vpc_id      = var.vpc_id
   health_check {
-    protocol = "TCP"
+    protocol          = "TCP"
+    interval          = 10
+    healthy_threshold = 2
   }
 }
 
@@ -185,4 +193,41 @@ resource "aws_ecs_service" "ui_gateway_service" {
     capacity_provider = "FARGATE"
     weight            = 1
   }
+
+  service_connect_configuration {
+    enabled   = true
+    namespace = var.service_discovery_namespace_arn
+    service {
+      discovery_name = "ui-gateway"
+      port_name      = "websocket"
+      client_alias {
+        port = 3333
+      }
+    }
+    log_configuration {
+      log_driver = "awslogs"
+      options = {
+        "awslogs-group"         = aws_cloudwatch_log_group.log_group.name
+        "awslogs-region"        = "ap-southeast-1"
+        "awslogs-stream-prefix" = "ui-gateway-serviceconnect"
+      }
+    }
+  }
+
+  # service_registries {
+  #   registry_arn = aws_service_discovery_service.ui_gateway_service.arn
+  # }
+
+
 }
+
+# resource "aws_service_discovery_service" "ui_gateway_service" {
+#   name = "ui-gateway"
+#   dns_config {
+#     namespace_id = var.service_discovery_namespace_id
+#     dns_records {
+#       ttl  = 10
+#       type = "A"
+#     }
+#   }
+# }

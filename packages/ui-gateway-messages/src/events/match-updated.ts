@@ -1,0 +1,15 @@
+import { GatewayEvent } from './gateway-event';
+
+export class MatchUpdatedEvent extends GatewayEvent {
+  static messageType = 'event.matchUpdated';
+
+  constructor(
+    public readonly timestamp: string,
+    public readonly series: string,
+    public readonly state: string,
+    public readonly startTime: string,
+    public readonly winner: string,
+  ) {
+    super();
+  }
+}

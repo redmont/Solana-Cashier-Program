@@ -1,125 +1,143 @@
-import { Inject, UseGuards } from "@nestjs/common";
-import { ClientProxy } from "@nestjs/microservices";
+import { Inject, UseGuards } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  WsResponse,
-} from "@nestjs/websockets";
-import { firstValueFrom, from, Observable, throwError } from "rxjs";
-import { catchError, map, timeout } from "rxjs/operators";
-import { Server, Socket } from "socket.io";
-import { AppService } from "./app.service";
-import { JwtAuthGuard } from "./jwt-auth.guard";
+  WsException,
+} from '@nestjs/websockets';
+import { ClientProxy } from '@nestjs/microservices';
+import { Server } from 'socket.io';
+import { sendBrokerMessage } from 'broker-comms';
 import {
+  PlaceBetMessage as PlaceBetUiGatewayMessage,
+  GetBalanceMessage as GetBalanceUiGatewayMessage,
+  GetStatusMessage as GetStatusUiGatewayMessage,
+  GetMatchStatusMessage,
+  GatewayEvent,
+} from 'ui-gateway-messages';
+import {
+  GetSeriesMessage,
   PlaceBetMessage,
   GetBalanceMessage,
-  GetStatusMessage,
-} from "ui-gateway-messages";
+  GetBalanceMessageResponse,
+  PlaceBetMessageResponse,
+  GetSeriesMessageResponse,
+  SubscribeToSeriesMessage,
+  SubscribeToSeriesResponse,
+} from 'core-messages';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { Socket } from './websocket/socket';
+import { QueryStoreService } from 'query-store';
+import { IJwtAuthService } from './jwt-auth/jwt-auth.interface';
 
 @WebSocketGateway({
   cors: {
-    origin: "*",
+    origin: '*',
   },
 })
-export class AppGateway {
+export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
   constructor(
-    @Inject("BROKER_REDIS") private redisClient: ClientProxy,
-    private service: AppService
+    @Inject('BROKER') private readonly broker: ClientProxy,
+    private readonly query: QueryStoreService,
+    @Inject('JWT_AUTH_SERVICE')
+    private readonly jwtAuthService: IJwtAuthService,
+  ) {}
+
+  @UseGuards(JwtAuthGuard)
+  handleConnection(client: Socket, ...args: any[]) {
+    const token = client.handshake.auth?.token;
+    if (token) {
+      const tokenValid = this.jwtAuthService
+        .verify(token)
+        .then((decodedToken) => {
+          client.data.authorizedUser = decodedToken;
+          return true;
+        })
+        .catch((error) => {
+          throw new WsException(error.message);
+        });
+
+      if (tokenValid) {
+        const decodedToken = this.jwtAuthService.decode(token);
+      }
+    }
+  }
+
+  handleDisconnect(client: Socket) {}
+
+  @SubscribeMessage(GetMatchStatusMessage.messageType)
+  public async status(
+    @MessageBody() data: GetMatchStatusMessage,
+    @ConnectedSocket() client: Socket,
   ) {
-    // this.matchesService.onBroadcast.subscribe((event: string, message: any) => {
-    //   this.server.emit(event, message);
-    // });
-  }
+    console.log("got 'get match status' msg");
+    const { series } = data;
+    //const x = await this.queryService.getMatchStatus();
 
-  @SubscribeMessage("matches")
-  findAll(@MessageBody() data: any): Observable<WsResponse<number>> {
-    return from([1, 2, 3]).pipe(
-      map((item) => ({ event: "matches", data: item }))
-    );
-  }
+    //console.log('Cache response', x);
 
-  @SubscribeMessage("identity")
-  async identity(@MessageBody() data: number): Promise<number> {
-    return data;
-  }
+    await sendBrokerMessage<
+      SubscribeToSeriesMessage,
+      SubscribeToSeriesResponse
+    >(this.broker, new SubscribeToSeriesMessage(series, client.id));
 
-  @SubscribeMessage(GetStatusMessage.messageType)
-  public async status() {
-    return {
-      bets: this.service.bets,
-      startTime: this.service.startTime,
-      state: this.service.state,
-      success: true,
-    };
+    const { state, bets } = await this.query.getSeries(series);
+
+    return { state, bets, success: true };
   }
 
   @UseGuards(JwtAuthGuard)
-  @SubscribeMessage(PlaceBetMessage.messageType)
+  @SubscribeMessage(PlaceBetUiGatewayMessage.messageType)
   public async placeBet(
-    @MessageBody() data: { amount: number; fighter: string },
-    @ConnectedSocket() client: Socket
+    @MessageBody() data: { series: string; amount: number; fighter: string },
+    @ConnectedSocket()
+    client: Socket,
   ) {
-    console.log("Got placeBet, sending to Redis...", client.data);
+    const { series, amount, fighter } = data;
 
-    const result = await firstValueFrom(
-      this.redisClient
-        .send("matchManager.placeBet", {
-          userId: client.data.authorizedUser.sub,
-          walletAddress: client.data.authorizedUser.claims.walletAddress,
-          amount: data.amount,
-          fighter: data.fighter,
-        })
-        .pipe(
-          timeout(30000),
-          map((response: any) => {
-            console.log("UI gateway - place bet success!", response);
-            // Success...
-            return response;
-          }),
-          catchError((error) => {
-            // Error...
+    const userId = client.data.authorizedUser.sub;
+    const walletAddress = client.data.authorizedUser.claims.walletAddress;
 
-            return throwError(() => new Error(error));
-          })
-        )
-    );
+    try {
+      const result = await sendBrokerMessage<
+        PlaceBetMessage,
+        PlaceBetMessageResponse
+      >(
+        this.broker,
+        new PlaceBetMessage(series, userId, walletAddress, amount, fighter),
+      );
 
-    return { ...result, success: true };
+      return { ...result, success: true };
+    } catch (e) {
+      console.log('Place bet error', JSON.stringify(e));
+      return { success: false, error: { message: e.message } };
+    }
   }
 
   @UseGuards(JwtAuthGuard)
-  @SubscribeMessage(GetBalanceMessage.messageType)
+  @SubscribeMessage(GetBalanceUiGatewayMessage.messageType)
   public async getBalance(@ConnectedSocket() client: Socket) {
-    const result = await firstValueFrom(
-      this.redisClient
-        .send("cashier.getBalance", {
-          accountId: client.data.authorizedUser.sub,
-        })
-        .pipe(
-          timeout(30000),
-          map((response: any) => {
-            console.log("Success!", response);
-            // Success...
-            return response;
-          }),
-          catchError((error) => {
-            // Error...
-
-            return throwError(() => new Error(error));
-          })
-        )
-    );
+    const accountId = client.data.authorizedUser.sub;
+    const result = await sendBrokerMessage<
+      GetBalanceMessage,
+      GetBalanceMessageResponse
+    >(this.broker, new GetBalanceMessage(accountId));
 
     return { ...result, success: true };
   }
 
-  public publish(event, data) {
-    this.server.emit(event, data);
+  public publish<T extends GatewayEvent>(data: T) {
+    const messageType = (data.constructor as any).messageType;
+
+    console.log('Emitting message of type', messageType);
+
+    this.server.emit(messageType, data);
   }
 }

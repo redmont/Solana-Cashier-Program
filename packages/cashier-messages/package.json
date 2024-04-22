@@ -1,0 +1,15 @@
+{
+  "name": "cashier-messages",
+  "version": "1.0.0",
+  "main": "./dist/index",
+  "types": "./dist/index",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "broker-comms": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

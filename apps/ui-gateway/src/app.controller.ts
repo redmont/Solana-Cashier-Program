@@ -1,27 +1,57 @@
-import { EventPattern, Payload } from "@nestjs/microservices";
-
-import { Controller } from "@nestjs/common";
-import { AppService } from "./app.service";
-import { AppGateway } from "./app.gateway";
+import { Controller } from '@nestjs/common';
+import { EventPattern, Payload } from '@nestjs/microservices';
+import { BetPlacedEvent, MatchUpdatedEvent } from 'core-messages';
+import {
+  BetPlacedEvent as BetPlacedUiGatewayEvent,
+  MatchUpdatedEvent as MatchUpdatedUiGatewayEvent,
+} from 'ui-gateway-messages';
+import { AppGateway } from './app.gateway';
+import { DateTime } from 'luxon';
 
 @Controller()
 export class AppController {
-  constructor(
-    private readonly appService: AppService,
-    private readonly appGateway: AppGateway
-  ) {}
+  private lastEventTimestamp: DateTime;
 
-  @EventPattern("bets")
-  bets(@Payload() data: any) {
-    console.log("Got bets update");
-    this.appService.setBets(data);
-    this.appGateway.publish("bets", data);
+  constructor(private readonly gateway: AppGateway) {}
+
+  @EventPattern(BetPlacedEvent.messageType)
+  onBetPlaced(@Payload() data: BetPlacedEvent) {
+    const { ts, seriesCodeName, walletAddress, amount, fighter } = data;
+
+    this.gateway.publish(
+      new BetPlacedUiGatewayEvent(
+        ts,
+        seriesCodeName,
+        walletAddress,
+        amount,
+        fighter,
+      ),
+    );
   }
 
-  @EventPattern("matchStatus")
-  matchStarted(@Payload() data: any) {
-    console.log("Got matchStatus update", data);
-    this.appService.setMatchStatus(data);
-    this.appGateway.publish("matchStatus", data);
+  @EventPattern(MatchUpdatedEvent.messageType)
+  onMatchUpdated(@Payload() data: MatchUpdatedEvent) {
+    const { timestamp, seriesCodeName, state, startTime, winner } = data;
+
+    const ts = DateTime.fromISO(timestamp);
+
+    if (ts < this.lastEventTimestamp) {
+      console.log('Discarding late event');
+      return;
+    }
+
+    this.lastEventTimestamp = ts;
+
+    console.log("Got 'match updated' event");
+
+    this.gateway.publish(
+      new MatchUpdatedUiGatewayEvent(
+        timestamp,
+        seriesCodeName,
+        state,
+        startTime,
+        winner,
+      ),
+    );
   }
 }

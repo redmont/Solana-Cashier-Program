@@ -1,22 +1,23 @@
-import { NestFactory } from "@nestjs/core";
-import { MicroserviceOptions, Transport } from "@nestjs/microservices";
-import { AppModule } from "./app.module";
-import { config } from "./config";
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { AppModule } from './app.module';
+import configuration from './configuration';
 
 async function bootstrap() {
+  const config = configuration();
+
   const app = await NestFactory.create(AppModule);
 
-  // Redis microservice
-  const microserviceRedis = app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.REDIS,
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.NATS,
     options: {
-      host: config.redisHost,
-      port: parseInt(config.redisPort),
+      servers: [config.natsUri],
+      waitOnFirstConnect: true,
     },
   });
 
   await app.startAllMicroservices();
-  await app.listen(9999);
+  await app.init();
 }
 
 bootstrap();

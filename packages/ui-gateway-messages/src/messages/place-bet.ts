@@ -1,10 +1,11 @@
-import { Message } from "./message";
+import { Message } from './message';
 
 export class PlaceBetMessage extends Message<{ success: boolean }> {
-  static messageType = "placeBet";
+  static messageType = 'placeBet';
   constructor(
+    public readonly series: string,
     public readonly amount: number,
-    public readonly fighter: string
+    public readonly fighter: string,
   ) {
     super();
   }

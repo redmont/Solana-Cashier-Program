@@ -1,36 +1,66 @@
-import { Inject, Injectable, OnModuleInit } from "@nestjs/common";
+import {
+  Inject,
+  Injectable,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { ClientProxy } from '@nestjs/microservices';
+import { sendBrokerMessage } from 'broker-comms';
+import { RegisterGatewayInstanceMessage } from 'core-messages';
 
 @Injectable()
-export class AppService {
-  private _bets: any[] = [];
-  private _startTime: string = "";
-  private _state: string = "";
+export class AppService implements OnModuleInit, OnModuleDestroy {
+  private instanceId: string;
+  private timer: NodeJS.Timeout;
 
-  public get bets() {
-    return this._bets;
+  constructor(
+    private readonly configService: ConfigService,
+    @Inject('BROKER') private readonly broker: ClientProxy,
+  ) {}
+
+  onModuleInit() {
+    this.instanceId = this.configService.get<string>('instanceId');
+
+    this.startDiscovery();
   }
 
-  public get startTime() {
-    return this._startTime;
+  onModuleDestroy() {
+    clearInterval(this.timer);
   }
 
-  public get state() {
-    return this._state;
-  }
+  private startDiscovery() {
+    this.timer = setInterval(() => {
+      // Call sendBrokerMessage until a successful response is received
+      let success = false;
+      let attempts = 0;
+      const maxAttempts = 5;
+      const delay = 5000;
+      const send = async () => {
+        if (success) {
+          return;
+        }
+        if (attempts >= maxAttempts) {
+          throw new Error(
+            `Failed to register instance in ${maxAttempts} attempts`,
+          );
+        }
+        attempts++;
+        try {
+          await sendBrokerMessage(
+            this.broker,
+            new RegisterGatewayInstanceMessage(this.instanceId),
+          );
+          success = true;
+        } catch (error) {
+          console.error(`Failed to send message: ${error.message}`);
+          setTimeout(send, delay);
+        }
+      };
 
-  constructor() {}
+      send();
 
-  public setBets(bets: any[]) {
-    this._bets = bets;
-  }
-
-  public setMatchStatus(data: any) {
-    console.log("Match status update", data);
-    if (data.startTime) {
-      this._startTime = data.startTime;
-    }
-    if (data.state) {
-      this._state = data.state;
-    }
+      console.log('Successfully registered instance');
+    }, 1000 * 10);
   }
 }
