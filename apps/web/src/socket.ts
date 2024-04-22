@@ -9,6 +9,13 @@ export const socket: Socket = io(URL!, {
   transports: ['websocket'],
 });
 
+export class WebSocketError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'WebSocketError';
+  }
+}
+
 export function sendMessage<T extends Message, TReturnType>(
   socket: Socket,
   message: T,
@@ -26,7 +33,9 @@ export function sendMessage<T extends Message, TReturnType>(
         resolve(response);
       } else {
         reject(
-          new Error('Failed to send message or negative response received'),
+          new WebSocketError(
+            (response as any).error?.message || 'Unknown error',
+          ),
         );
       }
     });

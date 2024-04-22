@@ -4,6 +4,7 @@ import {
   BalanceUpdatedEvent,
   BetPlacedEvent,
   MatchUpdatedEvent,
+  ActivityStreamEvent,
 } from 'core-messages';
 import { DateTime } from 'luxon';
 import { ClientDiscovery } from './client-discovery';
@@ -11,6 +12,9 @@ import { ClientDiscovery } from './client-discovery';
 @Injectable()
 export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
   private clientDiscovery: ClientDiscovery;
+  private readonly userIdInstances: {
+    [userId: string]: string[];
+  } = {};
 
   constructor(private readonly config: ConfigService) {}
 
@@ -30,7 +34,13 @@ export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
     this.clientDiscovery.emitToAll(event, data);
   }
 
-  emitToClient(userId: string, data: any) {}
+  emitToClient(userId: string, event: string, data: any) {
+    if (this.userIdInstances[userId]) {
+      this.userIdInstances[userId].forEach((instanceId) => {
+        this.clientDiscovery.emitToClient(instanceId, event, data);
+      });
+    }
+  }
 
   handleMatchUpdated(
     seriesCodeName: string,
@@ -54,13 +64,15 @@ export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
   }
 
   handleBetPlaced(
+    userId: string,
     timestamp: string,
     seriesCodeName: string,
     walletAddress: string,
     amount: string,
     fighter: string,
   ) {
-    this.emitToAll(
+    this.emitToClient(
+      userId,
       BetPlacedEvent.messageType,
       new BetPlacedEvent(
         timestamp,
@@ -75,7 +87,34 @@ export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
   handleBalanceUpdated(userId: string, balance: string) {
     this.emitToClient(
       userId,
+      BalanceUpdatedEvent.messageType,
       new BalanceUpdatedEvent(DateTime.utc().toISO(), userId, balance),
+    );
+  }
+
+  handleUserConnected(userId: string, instanceId: string) {
+    if (!this.userIdInstances[userId]) {
+      this.userIdInstances[userId] = [];
+    }
+
+    if (!this.userIdInstances[userId].includes(instanceId)) {
+      this.userIdInstances[userId].push(instanceId);
+    }
+  }
+
+  handleUserDisconnected(userId: string, instanceId: string) {
+    if (this.userIdInstances[userId]) {
+      this.userIdInstances[userId] = this.userIdInstances[userId].filter(
+        (id) => id !== instanceId,
+      );
+    }
+  }
+
+  handleActivityStreamItem(userId: string, timestamp: string, message: string) {
+    this.emitToClient(
+      userId,
+      ActivityStreamEvent.messageType,
+      new ActivityStreamEvent(timestamp, userId, message),
     );
   }
 }

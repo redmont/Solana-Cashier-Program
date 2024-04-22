@@ -11,6 +11,7 @@ import { GameServerModule } from './game-server/game-server.module';
 import { UsersModule } from './users/users.module';
 import { GatewayManagerModule } from './gateway-manager/gateway-manager.module';
 import { AdminModule } from './admin/admin.module';
+import { ActivityStreamModule } from './activity-stream/activity-stream.module';
 
 @Module({
   imports: [
@@ -55,6 +56,10 @@ import { AdminModule } from './admin/admin.module';
     {
       global: true,
       module: QueryStoreModule,
+    },
+    {
+      global: true,
+      module: ActivityStreamModule,
     },
     UsersModule,
     AdminModule,

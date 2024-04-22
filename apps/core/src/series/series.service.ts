@@ -13,6 +13,7 @@ import { MatchBettingService } from '../match/match-betting.service';
 import { GatewayManagerService } from '../gateway-manager/gateway-manager.service';
 import { PromiseQueue } from '../promise-queue';
 import { DateTime } from 'luxon';
+import { ActivityStreamService } from 'src/activity-stream/activity-stream.service';
 
 @Injectable()
 export class SeriesService implements OnModuleInit {
@@ -30,8 +31,9 @@ export class SeriesService implements OnModuleInit {
     private readonly matchPersistenceService: MatchPersistenceService,
     private readonly matchBettingService: MatchBettingService,
     private readonly queryStore: QueryStoreService,
-    private matchManagementService: MatchManagementService,
-    private gatewayManagerService: GatewayManagerService,
+    private readonly activityStreamService: ActivityStreamService,
+    private readonly matchManagementService: MatchManagementService,
+    private readonly gatewayManagerService: GatewayManagerService,
     @Inject('BROKER') private readonly broker: ClientProxy,
   ) {}
 
@@ -104,8 +106,12 @@ export class SeriesService implements OnModuleInit {
             config,
           );
         },
-        distributeWinnings: async (matchId, fighter) => {
-          await this.matchBettingService.distributeWinnings(matchId, fighter);
+        distributeWinnings: async (codeName, matchId, fighter) => {
+          await this.matchBettingService.distributeWinnings(
+            codeName,
+            matchId,
+            fighter,
+          );
         },
         resetBets: async (codeName) => {
           await this.queryStore.setBets(codeName, []);
@@ -121,7 +127,7 @@ export class SeriesService implements OnModuleInit {
             codeName,
             state,
             context.startTime,
-            context.winningFighter,
+            context.winningFighter?.codeName,
           );
         },
       }),
@@ -239,11 +245,24 @@ export class SeriesService implements OnModuleInit {
     );
 
     this.gatewayManagerService.handleBetPlaced(
+      userId,
       DateTime.utc().toISO(),
       currentState.context.codeName,
       walletAddress,
       amount.toString(),
       fighter,
+    );
+
+    await this.activityStreamService.track(
+      currentState.context.codeName,
+      matchId,
+      DateTime.utc(),
+      'betPlaced',
+      {
+        amount: amount.toString(),
+        fighter,
+      },
+      userId,
     );
 
     return true;

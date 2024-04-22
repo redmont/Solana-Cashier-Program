@@ -3,6 +3,7 @@ import { InjectModel, Model } from 'nestjs-dynamoose';
 import { Key } from './interfaces/key.interface';
 import { MatchModel } from './interfaces/match.interface';
 import { SeriesModel } from './interfaces/series.interface';
+import { ActivityStreamModel } from './interfaces/activityStream.interface';
 
 @Injectable()
 export class QueryStoreService {
@@ -11,11 +12,13 @@ export class QueryStoreService {
     private readonly seriesModel: Model<SeriesModel, Key>,
     @InjectModel('match')
     private readonly matchModel: Model<MatchModel, Key>,
+    @InjectModel('activityStream')
+    private readonly activityStreamModel: Model<ActivityStreamModel, Key>,
   ) {}
 
   async getSeries(seriesCodeName: string) {
     const series = await this.seriesModel.get({
-      pk: `series:${seriesCodeName}`,
+      pk: `series#${seriesCodeName}`,
       sk: 'series',
     });
 
@@ -25,7 +28,7 @@ export class QueryStoreService {
   async saveSeries(codeName: string, state: string) {
     await this.seriesModel.create(
       {
-        pk: `series:${codeName}`,
+        pk: `series#${codeName}`,
         sk: 'series',
         state,
         bets: [],
@@ -40,7 +43,7 @@ export class QueryStoreService {
   async updateSeries(codeName: string, state: string, startTime?: string) {
     await this.seriesModel.update(
       {
-        pk: `series:${codeName}`,
+        pk: `series#${codeName}`,
         sk: 'series',
       },
       {
@@ -77,7 +80,7 @@ export class QueryStoreService {
   ) {
     await this.seriesModel.update(
       {
-        pk: `series:${seriesCodeName}`,
+        pk: `series#${seriesCodeName}`,
         sk: 'series',
       },
       {
@@ -97,12 +100,31 @@ export class QueryStoreService {
   async setBets(seriesCodeName: string, bets: any[]) {
     await this.matchModel.update(
       {
-        pk: `series:${seriesCodeName}`,
+        pk: `series#${seriesCodeName}`,
         sk: 'series',
       },
       {
         bets,
       },
     );
+  }
+
+  async createActivityStreamItem(
+    seriesCodeName: string,
+    timestamp: string,
+    matchId: string,
+    message: string,
+    userId?: string,
+  ) {
+    let pk = `activityStream#${seriesCodeName}#${matchId}`;
+    if (userId) {
+      pk += `#${userId}`;
+    }
+
+    await this.activityStreamModel.create({
+      pk,
+      sk: timestamp,
+      message,
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { Inject, UseGuards } from '@nestjs/common';
+import { Inject, OnModuleInit, UseGuards } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -33,22 +33,33 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Socket } from './websocket/socket';
 import { QueryStoreService } from 'query-store';
 import { IJwtAuthService } from './jwt-auth/jwt-auth.interface';
+import { ConfigService } from '@nestjs/config';
 
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
 })
-export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class AppGateway
+  implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
+
+  private instanceId: string;
+  private clientUserIdMap: Map<string, string> = new Map();
 
   constructor(
     @Inject('BROKER') private readonly broker: ClientProxy,
     private readonly query: QueryStoreService,
     @Inject('JWT_AUTH_SERVICE')
     private readonly jwtAuthService: IJwtAuthService,
+    private readonly configService: ConfigService,
   ) {}
+
+  onModuleInit() {
+    this.instanceId = this.configService.get<string>('instanceId');
+  }
 
   @UseGuards(JwtAuthGuard)
   handleConnection(client: Socket, ...args: any[]) {
@@ -66,11 +77,33 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       if (tokenValid) {
         const decodedToken = this.jwtAuthService.decode(token);
+
+        const userId = decodedToken.sub;
+
+        this.clientUserIdMap.set(client.id, userId);
+
+        this.broker.emit('gateway.userConnected', {
+          userId,
+          instanceId: this.instanceId,
+        });
+
+        client.join(`user-${userId}`);
       }
     }
   }
 
-  handleDisconnect(client: Socket) {}
+  handleDisconnect(client: Socket) {
+    const userId = this.clientUserIdMap.get(client.id);
+
+    if (userId) {
+      this.broker.emit('gateway.userDisconnected', {
+        userId,
+        instanceId: this.instanceId,
+      });
+
+      this.clientUserIdMap.delete(client.id);
+    }
+  }
 
   @SubscribeMessage(GetMatchStatusMessage.messageType)
   public async status(
@@ -139,5 +172,13 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log('Emitting message of type', messageType);
 
     this.server.emit(messageType, data);
+  }
+
+  public publishToUser<T extends GatewayEvent>(userId: string, data: T) {
+    const messageType = (data.constructor as any).messageType;
+
+    console.log('Emitting message of type', messageType, 'to user', userId);
+
+    this.server.to(`user-${userId}`).emit(messageType, data);
   }
 }

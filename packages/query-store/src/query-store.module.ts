@@ -10,6 +10,7 @@ import { DynamooseModule } from 'nestjs-dynamoose';
 import { MatchSchema } from './schemas/match.schema';
 import { QueryStoreService } from '.';
 import { SeriesSchema } from './schemas/series.schema';
+import { ActivityStreamSchema } from './schemas/activityStream.schema';
 
 interface QueryStoreOptions {
   tableName: string;
@@ -56,6 +57,20 @@ export class QueryStoreModule {
         useFactory: async (_: any, options: QueryStoreOptions) => {
           return {
             schema: SeriesSchema,
+            options: {
+              tableName: options.tableName,
+              create: options.isDynamoDbLocal,
+            },
+          };
+        },
+        inject: ['QUERY_STORE_OPTIONS'],
+      },
+      {
+        name: 'activityStream',
+        imports: options.imports || [],
+        useFactory: async (_: any, options: QueryStoreOptions) => {
+          return {
+            schema: ActivityStreamSchema,
             options: {
               tableName: options.tableName,
               create: options.isDynamoDbLocal,

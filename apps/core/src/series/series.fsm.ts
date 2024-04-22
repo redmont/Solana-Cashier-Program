@@ -20,7 +20,10 @@ export interface SeriesContext {
   matchId: string;
   serverId: string;
   capabilities: ServerCapabilities;
-  winningFighter: string;
+  winningFighter?: {
+    displayName: string;
+    codeName: string;
+  };
 }
 
 export interface FSMDependencies {
@@ -39,10 +42,14 @@ export interface FSMDependencies {
     capabilities: ServerCapabilities,
     matchId: string,
     config: SeriesConfig,
-  ) => Promise<string>;
+  ) => Promise<{ codeName: string; displayName: string }>;
   distributeWinnings: (
+    codeName: string,
     matchId: string,
-    winningFighter: string,
+    winningFighter: {
+      displayName: string;
+      codeName: string;
+    },
   ) => Promise<void>;
   resetBets: (codeName: string) => Promise<void>;
   onStateChange: (state: string, context: SeriesContext) => Promise<void>;
@@ -113,7 +120,7 @@ export function createSeriesFSM(
         return serverDetails;
       }),
       determineOutcome: fromPromise<
-        string,
+        { displayName: string; codeName: string },
         {
           serverId: string;
           capabilities: {
@@ -145,9 +152,16 @@ export function createSeriesFSM(
       ),
       distributeWinnings: fromPromise<
         void,
-        { matchId: string; winningFighter: string }
-      >(async ({ input: { matchId, winningFighter } }) => {
-        await distributeWinnings(matchId, winningFighter);
+        {
+          codeName: string;
+          matchId: string;
+          winningFighter: {
+            displayName: string;
+            codeName: string;
+          };
+        }
+      >(async ({ input: { codeName, matchId, winningFighter } }) => {
+        await distributeWinnings(codeName, matchId, winningFighter);
       }),
       resetBets: fromPromise<void, string>(async ({ input }) => {
         await resetBets(input);
@@ -368,7 +382,10 @@ export function createSeriesFSM(
               distributeWinnings: {
                 invoke: {
                   src: 'distributeWinnings',
-                  input: ({ context: { matchId, winningFighter } }) => ({
+                  input: ({
+                    context: { codeName, matchId, winningFighter },
+                  }) => ({
+                    codeName,
                     matchId,
                     winningFighter,
                   }),

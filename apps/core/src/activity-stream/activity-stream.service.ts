@@ -1,19 +1,49 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ActivityStreamItem } from './interfaces/activity-stream-item.interface';
 import { Key } from 'src/interfaces/key';
-import { Model } from 'nestjs-dynamoose';
+import { InjectModel, Model } from 'nestjs-dynamoose';
 import { DateTime } from 'luxon';
+import { QueryStoreService } from 'query-store';
+import { GatewayManagerService } from 'src/gateway-manager/gateway-manager.service';
 
 export type Activity = 'betPlaced' | 'win' | 'loss';
+
+const pascalCase = (str: string) =>
+  str.replace(/(\w)(\w*)/g, (_, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
+const pluralise = (amount: string, singular: string, plural: string) =>
+  amount === '1' ? singular : plural;
 
 @Injectable()
 export class ActivityStreamService {
   constructor(
-    @Inject('activityStreamItem')
+    @InjectModel('activityStreamItem')
     private readonly activityStreamItemModel: Model<ActivityStreamItem, Key>,
+    private readonly queryStore: QueryStoreService,
+    private readonly gatewayManager: GatewayManagerService,
   ) {}
 
+  private generateMessage(activity: Activity, data: any) {
+    switch (activity) {
+      case 'betPlaced':
+        return `Stake confirmed: ${data.amount} ${pluralise(data.amount, 'point', 'points')} on ${pascalCase(data.fighter)}!`;
+      case 'win': {
+        return `${data.winningFighter} wins! You won ${data.amount} ${pluralise(data.amount, 'point', 'points')}!`;
+      }
+      case 'loss': {
+        if (data.winningFighter) {
+          return `${data.winningFighter} wins! Better luck next time.`;
+        } else {
+          return `Draw! Better luck next time.`;
+        }
+      }
+
+      default:
+        return '';
+    }
+  }
+
   async track(
+    seriesCodeName: string,
     matchId: string,
     timestamp: DateTime,
     activity: Activity,
@@ -32,13 +62,17 @@ export class ActivityStreamService {
       activity,
       data,
     });
+
+    const message = this.generateMessage(activity, data);
+
+    await this.queryStore.createActivityStreamItem(
+      seriesCodeName,
+      sk,
+      matchId,
+      message,
+      userId,
+    );
+
+    this.gatewayManager.handleActivityStreamItem(userId, sk, message);
   }
 }
-
-/*
-
-activityStream#{matchId}#{userId}
-
-
-
-*/

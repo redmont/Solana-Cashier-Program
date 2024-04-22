@@ -17,6 +17,7 @@ import {
   SliderTrack,
   Stack,
   Heading,
+  useToast,
 } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -31,6 +32,8 @@ import {
   MatchUpdatedEvent,
   Message,
   GatewayEvent,
+  BalanceUpdatedEvent,
+  ActivityStreamEvent,
 } from 'ui-gateway-messages';
 import { sendMessage, socket } from '../socket';
 import { FighterSelector } from '../components/FighterSelector';
@@ -40,8 +43,12 @@ import { shortenWalletAddress } from '../utils';
 const series = 'frogs-vs-dogs-1';
 
 export default function Page(): JSX.Element {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const toast = useToast();
+  const controls = useAnimation();
   const { tokenIsValid, authenticate, authToken } = useAuth();
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   const [balance, setBalance] = useState(0);
 
   const [fighter, setFighter] = useState('');
@@ -57,7 +64,9 @@ export default function Page(): JSX.Element {
   const [startTime, setStartTime] = useState<DateTime | undefined>();
   const [winner, setWinner] = useState('');
   const [startsIn, setStartsIn] = useState('');
-  const controls = useAnimation();
+  const [activityStream, setActivityStream] = useState<
+    { message: string; timestamp: string }[]
+  >([]);
 
   useEffect(() => {
     setIsAuthenticated(tokenIsValid);
@@ -204,16 +213,37 @@ export default function Page(): JSX.Element {
       ]);
     }
 
+    function onBalanceUpdated(data: BalanceUpdatedEvent) {
+      setBalance(parseInt(data.balance));
+    }
+
+    function onActivityStream(data: ActivityStreamEvent) {
+      setActivityStream((previousItems) => {
+        const items = [...previousItems, data];
+        // Sort by timestamp (lexicographically, thanks to ISO 8601)
+        items.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+
+        // We only want the last 50 items, if there are more than 50 in the array
+        if (items.length > 50) {
+          return items.slice(-50);
+        }
+
+        return items;
+      });
+    }
+
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
-    socket.on('matchStatus', onMatchStatus);
+    socket.on(BalanceUpdatedEvent.messageType, onBalanceUpdated);
     socket.on(BetPlacedEvent.messageType, onBetPlaced);
+    socket.on(ActivityStreamEvent.messageType, onActivityStream);
 
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
-      socket.off('matchStatus', onMatchStatus);
+      socket.off(BalanceUpdatedEvent.messageType, onBalanceUpdated);
       socket.off(BetPlacedEvent.messageType, onBetPlaced);
+      socket.off(ActivityStreamEvent.messageType, onActivityStream);
     };
   }, []);
 
@@ -230,14 +260,21 @@ export default function Page(): JSX.Element {
   };
 
   const placeBet = async () => {
-    const response = await sendMessage(
-      socket,
-      new PlaceBetMessage(series, betAmount, fighter.toLowerCase()),
-    );
-
-    console.log('Place bet response', response);
-
-    getBalance();
+    try {
+      await sendMessage(
+        socket,
+        new PlaceBetMessage(series, betAmount, fighter.toLowerCase()),
+      );
+    } catch (err: any) {
+      toast({
+        title: 'Cannot place bet',
+        description: err.message,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      console.log('Error', err.message);
+    }
   };
 
   useEffect(() => {
@@ -384,13 +421,6 @@ export default function Page(): JSX.Element {
                 </Box>
               </HStack>
             </Center>
-            {/* <video
-              src={matchStatus === 'bets' ? '/game_idle.mp4' : '/game_play.mp4'}
-              height="100%"
-              autoPlay
-              loop={matchStatus === 'bets'}
-              muted
-            /> */}
             <iframe
               src="https://viewer.millicast.com?streamId=WBYdQB/brawlers-dev-2&controls=false&showLabels=false"
               allowFullScreen
@@ -518,8 +548,15 @@ export default function Page(): JSX.Element {
             area={'messages'}
             color="whiteAlpha.700"
             fontWeight="normal"
-            fontFamily="monospace"
-          ></GridItem>
+          >
+            <h3>Activity stream</h3>
+
+            {activityStream.map((item, i) => (
+              <Box key={i} py="10px" borderBottom="1px solid white">
+                <Box>{item.message}</Box>
+              </Box>
+            ))}
+          </GridItem>
           <GridItem area={'footer'}></GridItem>
         </Grid>
       </Container>

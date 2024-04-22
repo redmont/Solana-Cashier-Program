@@ -37,4 +37,20 @@ export class GatewayManagerController {
   async handleBalanceUpdated(data: CashierBalanceUpdatedEvent) {
     this.gatewayManagerService.handleBalanceUpdated(data.userId, data.balance);
   }
+
+  @EventPattern('gateway.userConnected')
+  async handleUserConnected(data: { userId: string; instanceId: string }) {
+    this.gatewayManagerService.handleUserConnected(
+      data.userId,
+      data.instanceId,
+    );
+  }
+
+  @EventPattern('gateway.userDisconnected')
+  async handleUserDisconnected(data: { userId: string; instanceId: string }) {
+    this.gatewayManagerService.handleUserDisconnected(
+      data.userId,
+      data.instanceId,
+    );
+  }
 }

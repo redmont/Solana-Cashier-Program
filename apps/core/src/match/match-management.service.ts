@@ -63,7 +63,7 @@ export class MatchManagementService {
     },
     matchId: string,
     seriesConfig: SeriesConfig,
-  ): Promise<string> {
+  ): Promise<{ codeName: string; displayName: string }> {
     const matchParameters = parseSeriesConfig(seriesConfig);
     const healthValues = [0.1, 0.2, 0.3];
 
@@ -112,8 +112,12 @@ export class MatchManagementService {
     // Winning fighter is the one with positive health, otherwise null (draw)
     const winningFighter = outcome.find((fighter) => fighter.health > 0);
 
-    return winningFighter
-      ? seriesConfig.fighters[winningFighter.id].codeName
-      : null;
+    if (!winningFighter) {
+      return null;
+    }
+
+    const { codeName, displayName } = seriesConfig.fighters[winningFighter.id];
+
+    return { codeName, displayName };
   }
 }
