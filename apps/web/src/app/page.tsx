@@ -95,19 +95,22 @@ export default function Page(): JSX.Element {
   async function subscribeAndGet<
     TSubscribe extends GatewayEvent,
     TGet extends Message,
-  >({
-    subscribe,
-    get,
-  }: {
-    subscribe: {
-      eventType: string;
-      handler: (data: TSubscribe) => Promise<void>;
-    };
-    get: {
-      message: TGet;
-      handler: (data: any) => Promise<void>;
-    };
-  }) {
+  >(
+    subscriptions: { eventType: string; handler: (data: any) => void }[],
+    {
+      subscribe,
+      get,
+    }: {
+      subscribe: {
+        eventType: string;
+        handler: (data: TSubscribe) => Promise<void>;
+      };
+      get: {
+        message: TGet;
+        handler: (data: any) => Promise<void>;
+      };
+    },
+  ) {
     const buffer: TSubscribe[] = [];
 
     const bufferHandler = async (data: TSubscribe) => {
@@ -131,6 +134,10 @@ export default function Page(): JSX.Element {
     }
 
     socket.on(subscribe.eventType, subscribe.handler);
+    subscriptions.push({
+      eventType: subscribe.eventType,
+      handler: subscribe.handler,
+    });
 
     return response;
   }
@@ -140,6 +147,8 @@ export default function Page(): JSX.Element {
       onConnect();
     }
 
+    const subscriptions: any[] = [];
+
     async function onConnect() {
       setWebSocketConnected(true);
       setTransport(socket.io.engine.transport.name);
@@ -148,7 +157,7 @@ export default function Page(): JSX.Element {
         setTransport(transport.name);
       });
 
-      const matchStatus = await subscribeAndGet({
+      const matchStatus = await subscribeAndGet(subscriptions, {
         subscribe: {
           eventType: MatchUpdatedEvent.messageType,
           handler: onMatchUpdated,
@@ -159,7 +168,7 @@ export default function Page(): JSX.Element {
         },
       });
 
-      await subscribeAndGet({
+      await subscribeAndGet(subscriptions, {
         subscribe: {
           eventType: ActivityStreamEvent.messageType,
           handler: onActivityStream,
@@ -275,7 +284,6 @@ export default function Page(): JSX.Element {
     socket.on(BalanceUpdatedEvent.messageType, onBalanceUpdated);
     socket.on(BetPlacedEvent.messageType, onBetPlaced);
     socket.on(BetsUpdatedEvent.messageType, onBetsUpdated);
-    socket.on(ActivityStreamEvent.messageType, onActivityStream);
 
     return () => {
       socket.off('connect', onConnect);
@@ -283,7 +291,10 @@ export default function Page(): JSX.Element {
       socket.off(BalanceUpdatedEvent.messageType, onBalanceUpdated);
       socket.off(BetPlacedEvent.messageType, onBetPlaced);
       socket.off(BetsUpdatedEvent.messageType, onBetsUpdated);
-      socket.off(ActivityStreamEvent.messageType, onActivityStream);
+
+      for (const { eventType, handler } of subscriptions) {
+        socket.off(eventType, handler);
+      }
     };
   }, []);
 
