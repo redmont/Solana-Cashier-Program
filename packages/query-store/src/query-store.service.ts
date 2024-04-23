@@ -54,8 +54,8 @@ export class QueryStoreService {
         sk: 'series',
       },
       {
-        matchId,
         state,
+        matchId: matchId ?? undefined,
         startTime: startTime ?? undefined,
         winner: winner ?? undefined,
       },
