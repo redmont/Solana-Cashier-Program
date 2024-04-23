@@ -121,6 +121,10 @@ export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
   }
 
   handleBetsUpdated(seriesCodeName: string, bets: any[]) {
-    this.emitToAll(BetsUpdatedEvent.messageType, { seriesCodeName, bets });
+    this.emitToAll(BetsUpdatedEvent.messageType, {
+      timestamp: DateTime.utc().toISO(),
+      seriesCodeName,
+      bets,
+    });
   }
 }
