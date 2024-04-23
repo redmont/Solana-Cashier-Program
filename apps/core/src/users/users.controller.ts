@@ -13,7 +13,6 @@ export class UsersController {
 
   @MessagePattern(EnsureUserIdMessage.messageType)
   async handleEnsureUserId(@Payload() data: EnsureUserIdPayload) {
-    console.log("Handling 'EnsureUserIdMessage'");
     const { walletAddress } = data;
 
     let userId =

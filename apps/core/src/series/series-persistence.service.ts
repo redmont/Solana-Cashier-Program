@@ -17,7 +17,7 @@ export class SeriesPersistenceService {
   }
 
   async create(codeName: string, displayName: string) {
-    const savedSeries = await this.seriesModel.create(
+    await this.seriesModel.create(
       {
         pk: 'series',
         sk: codeName,
@@ -29,7 +29,7 @@ export class SeriesPersistenceService {
       },
     );
 
-    await this.queryStore.saveSeries(codeName, '');
+    await this.queryStore.saveSeries(codeName, '', '');
   }
 
   async saveState(codeName: string, state: any) {
@@ -44,7 +44,19 @@ export class SeriesPersistenceService {
     );
   }
 
-  async savePublicState(codeName: string, state: any, startTime?: DateTime) {
-    await this.queryStore.updateSeries(codeName, state, startTime?.toISO());
+  async savePublicState(
+    codeName: string,
+    matchId: string,
+    state: any,
+    startTime?: DateTime,
+    winner?: string,
+  ) {
+    await this.queryStore.updateSeries(
+      codeName,
+      matchId,
+      state,
+      startTime?.toISO(),
+      winner,
+    );
   }
 }

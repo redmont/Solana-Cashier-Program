@@ -57,10 +57,11 @@ export class GameServerService {
 
         this.gameServerFSMs.set(serverId, fsm);
 
-        console.log('Added server', serverId);
+        this.logger.log(`Added server ${serverId}`);
       } else {
-        console.log('Server already exists', serverId);
         fsm.send({ type: 'READY' });
+
+        this.logger.log(`Existing server '${serverId}' is ready`);
       }
     } else if (data.type === 'matchFinished') {
       const fsm = this.gameServerFSMs.get(serverId);
@@ -98,7 +99,9 @@ export class GameServerService {
     // We're not checking server capabilities yet,
     // so we just return the first server that's ready.
 
-    console.log('Number of available servers:', this.gameServerFSMs.size);
+    this.logger.debug(
+      `Number of available servers: ${this.gameServerFSMs.size}`,
+    );
 
     for (let [key, fsm] of this.gameServerFSMs.entries()) {
       const snapshot = fsm.getSnapshot();

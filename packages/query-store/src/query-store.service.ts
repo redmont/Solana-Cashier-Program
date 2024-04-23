@@ -25,11 +25,12 @@ export class QueryStoreService {
     return series;
   }
 
-  async saveSeries(codeName: string, state: string) {
+  async saveSeries(codeName: string, matchId: string, state: string) {
     await this.seriesModel.create(
       {
         pk: `series#${codeName}`,
         sk: 'series',
+        matchId,
         state,
         bets: [],
       },
@@ -40,15 +41,23 @@ export class QueryStoreService {
     );
   }
 
-  async updateSeries(codeName: string, state: string, startTime?: string) {
+  async updateSeries(
+    codeName: string,
+    matchId: string,
+    state: string,
+    startTime?: string,
+    winner?: string,
+  ) {
     await this.seriesModel.update(
       {
         pk: `series#${codeName}`,
         sk: 'series',
       },
       {
+        matchId,
         state,
         startTime: startTime ?? undefined,
+        winner: winner ?? undefined,
       },
     );
   }
@@ -57,8 +66,6 @@ export class QueryStoreService {
     seriesCodeName: string,
     match: { state: string; bets: any[] },
   ) {
-    console.log('persisting match read model', match);
-
     await this.matchModel.create(
       {
         pk: `match:${seriesCodeName}`,
@@ -126,5 +133,24 @@ export class QueryStoreService {
       sk: timestamp,
       message,
     });
+  }
+
+  async getActivityStream(
+    seriesCodeName: string,
+    matchId: string,
+    userId?: string,
+  ) {
+    let pk = `activityStream#${seriesCodeName}#${matchId}`;
+    if (userId) {
+      pk += `#${userId}`;
+    }
+
+    const items = await this.activityStreamModel
+      .query({
+        pk,
+      })
+      .exec();
+
+    return items;
   }
 }

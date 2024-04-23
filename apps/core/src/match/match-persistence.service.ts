@@ -45,8 +45,6 @@ export class MatchPersistenceService {
       },
     );
 
-    console.log('state is:', state);
-
     await this.queryStore.saveMatch(seriesCodeName, {
       state,
       bets: [],
@@ -73,7 +71,6 @@ export class MatchPersistenceService {
   }
 
   async getBets(matchId: string) {
-    console.log('GEt bets for match ID', matchId);
     return await this.betModel
       .query({
         pk: `bet#${matchId}`,

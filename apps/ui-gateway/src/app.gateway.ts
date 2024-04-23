@@ -1,4 +1,4 @@
-import { Inject, OnModuleInit, UseGuards } from '@nestjs/common';
+import { Inject, Logger, OnModuleInit, UseGuards } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -15,17 +15,15 @@ import { sendBrokerMessage } from 'broker-comms';
 import {
   PlaceBetMessage as PlaceBetUiGatewayMessage,
   GetBalanceMessage as GetBalanceUiGatewayMessage,
-  GetStatusMessage as GetStatusUiGatewayMessage,
+  GetActivityStreamMessage as GetActivityStreamUiGatewayMessage,
   GetMatchStatusMessage,
   GatewayEvent,
 } from 'ui-gateway-messages';
 import {
-  GetSeriesMessage,
   PlaceBetMessage,
   GetBalanceMessage,
   GetBalanceMessageResponse,
   PlaceBetMessageResponse,
-  GetSeriesMessageResponse,
   SubscribeToSeriesMessage,
   SubscribeToSeriesResponse,
 } from 'core-messages';
@@ -43,6 +41,8 @@ import { ConfigService } from '@nestjs/config';
 export class AppGateway
   implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect
 {
+  private readonly logger: Logger = new Logger(AppGateway.name);
+
   @WebSocketServer()
   server: Server;
 
@@ -110,20 +110,17 @@ export class AppGateway
     @MessageBody() data: GetMatchStatusMessage,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log("got 'get match status' msg");
     const { series } = data;
-    //const x = await this.queryService.getMatchStatus();
-
-    //console.log('Cache response', x);
 
     await sendBrokerMessage<
       SubscribeToSeriesMessage,
       SubscribeToSeriesResponse
     >(this.broker, new SubscribeToSeriesMessage(series, client.id));
 
-    const { state, bets } = await this.query.getSeries(series);
+    const { matchId, state, bets, startTime, winner } =
+      await this.query.getSeries(series);
 
-    return { state, bets, success: true };
+    return { matchId, state, bets, startTime, winner, success: true };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -166,10 +163,32 @@ export class AppGateway
     return { ...result, success: true };
   }
 
+  @SubscribeMessage(GetActivityStreamUiGatewayMessage.messageType)
+  public async getActivityStream(
+    @MessageBody() data: GetActivityStreamUiGatewayMessage,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const userId = this.clientUserIdMap.get(client.id);
+
+    const activityStream = await this.query.getActivityStream(
+      data.series,
+      data.matchId,
+      userId ?? undefined,
+    );
+
+    return {
+      success: true,
+      messages: activityStream.map((item) => ({
+        timestamp: item.sk,
+        message: item.message,
+      })),
+    };
+  }
+
   public publish<T extends GatewayEvent>(data: T) {
     const messageType = (data.constructor as any).messageType;
 
-    console.log('Emitting message of type', messageType);
+    this.logger.verbose(`Emitting message of type ${messageType}`);
 
     this.server.emit(messageType, data);
   }
@@ -177,7 +196,9 @@ export class AppGateway
   public publishToUser<T extends GatewayEvent>(userId: string, data: T) {
     const messageType = (data.constructor as any).messageType;
 
-    console.log('Emitting message of type', messageType, 'to user', userId);
+    this.logger.verbose(
+      `Emitting message of type '${messageType}' to user '${userId}'`,
+    );
 
     this.server.to(`user-${userId}`).emit(messageType, data);
   }

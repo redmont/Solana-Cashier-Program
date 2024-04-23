@@ -10,7 +10,15 @@ export const SeriesSchema = new Schema({
     rangeKey: true,
   },
   state: String,
+  matchId: {
+    type: String,
+    required: false,
+  },
   startTime: {
+    type: String,
+    required: false,
+  },
+  winner: {
     type: String,
     required: false,
   },

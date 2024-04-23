@@ -85,10 +85,8 @@ export function createSeriesFSM(
     actors: {
       generateMatchId: fromPromise<string, string>(
         async ({ input: codeName }) => {
-          console.log('Generating match ID');
           const matchId = uuid();
 
-          console.log(`Code name '${codeName}', matchId '${matchId}'`);
           setCurrentMatchId(codeName, matchId);
 
           return matchId;
@@ -143,12 +141,8 @@ export function createSeriesFSM(
         );
       }),
       setStartTime: fromPromise<DateTime, number>(
-        async ({ input: betPlacementTime }) => {
-          const startTime = DateTime.utc().plus({ seconds: betPlacementTime });
-          console.log('Setting start time to', startTime);
-
-          return startTime;
-        },
+        async ({ input: betPlacementTime }) =>
+          DateTime.utc().plus({ seconds: betPlacementTime }),
       ),
       distributeWinnings: fromPromise<
         void,

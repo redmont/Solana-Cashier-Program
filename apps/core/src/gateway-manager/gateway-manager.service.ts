@@ -5,6 +5,7 @@ import {
   BetPlacedEvent,
   MatchUpdatedEvent,
   ActivityStreamEvent,
+  BetsUpdatedEvent,
 } from 'core-messages';
 import { DateTime } from 'luxon';
 import { ClientDiscovery } from './client-discovery';
@@ -44,11 +45,11 @@ export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
 
   handleMatchUpdated(
     seriesCodeName: string,
+    matchId: string,
     state: string,
     startTime: DateTime,
     winner: string,
   ) {
-    console.log("Emitting 'match updated' to all clients", startTime?.toISO());
     const timestamp = DateTime.utc().toISO();
 
     this.emitToAll(
@@ -56,6 +57,7 @@ export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
       new MatchUpdatedEvent(
         timestamp,
         seriesCodeName,
+        matchId,
         state,
         startTime?.toISO(),
         winner,
@@ -116,5 +118,9 @@ export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
       ActivityStreamEvent.messageType,
       new ActivityStreamEvent(timestamp, userId, message),
     );
+  }
+
+  handleBetsUpdated(seriesCodeName: string, bets: any[]) {
+    this.emitToAll(BetsUpdatedEvent.messageType, { seriesCodeName, bets });
   }
 }

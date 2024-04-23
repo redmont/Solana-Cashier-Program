@@ -23,7 +23,6 @@ export class AccountController {
 
   @MessagePattern(GetBalanceMessage.messageType)
   async handleGetBalance(@Payload() data: GetBalanceMessage) {
-    console.log('Getting account details for account', data.accountId);
     const account = await this.readModelService.getAccount(data.accountId);
 
     return {

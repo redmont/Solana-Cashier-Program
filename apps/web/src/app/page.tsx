@@ -25,15 +25,17 @@ import { DateTime } from 'luxon';
 import { ConnectKitButton } from 'connectkit';
 import { motion, useAnimation } from 'framer-motion';
 import {
+  Message,
   PlaceBetMessage,
   GetBalanceMessage,
   GetMatchStatusMessage,
+  GetActivityStreamMessage,
   BetPlacedEvent,
   MatchUpdatedEvent,
-  Message,
   GatewayEvent,
   BalanceUpdatedEvent,
   ActivityStreamEvent,
+  BetsUpdatedEvent,
 } from 'ui-gateway-messages';
 import { sendMessage, socket } from '../socket';
 import { FighterSelector } from '../components/FighterSelector';
@@ -54,6 +56,7 @@ export default function Page(): JSX.Element {
   const [fighter, setFighter] = useState('');
   const [isWebSocketConnected, setWebSocketConnected] = useState(false);
   const [transport, setTransport] = useState('N/A');
+  const [matchId, setMatchId] = useState('');
   const [matchStatus, setMatchStatus] = useState<
     'pending' | 'bets' | 'started' | 'completed'
   >('pending');
@@ -62,7 +65,7 @@ export default function Page(): JSX.Element {
     { walletAddress: string; amount: number; fighter: string }[]
   >([]);
   const [startTime, setStartTime] = useState<DateTime | undefined>();
-  const [winner, setWinner] = useState('');
+  const [winner, setWinner] = useState<string | undefined>();
   const [startsIn, setStartsIn] = useState('');
   const [activityStream, setActivityStream] = useState<
     { message: string; timestamp: string }[]
@@ -102,7 +105,7 @@ export default function Page(): JSX.Element {
     };
     get: {
       message: TGet;
-      handler: (data: TGet) => Promise<void>;
+      handler: (data: any) => Promise<void>;
     };
   }) {
     const buffer: TSubscribe[] = [];
@@ -128,6 +131,8 @@ export default function Page(): JSX.Element {
     }
 
     socket.on(subscribe.eventType, subscribe.handler);
+
+    return response;
   }
 
   useEffect(() => {
@@ -143,7 +148,7 @@ export default function Page(): JSX.Element {
         setTransport(transport.name);
       });
 
-      await subscribeAndGet({
+      const matchStatus = await subscribeAndGet({
         subscribe: {
           eventType: MatchUpdatedEvent.messageType,
           handler: onMatchUpdated,
@@ -151,6 +156,17 @@ export default function Page(): JSX.Element {
         get: {
           message: new GetMatchStatusMessage(series),
           handler: onMatchStatus,
+        },
+      });
+
+      await subscribeAndGet({
+        subscribe: {
+          eventType: ActivityStreamEvent.messageType,
+          handler: onActivityStream,
+        },
+        get: {
+          message: new GetActivityStreamMessage(series, matchStatus.matchId),
+          handler: onGetActivityStream,
         },
       });
     }
@@ -161,10 +177,13 @@ export default function Page(): JSX.Element {
     }
 
     function handleMatchState(
+      matchId: string,
       state: string,
-      startTime: string,
-      winner: string,
+      startTime?: string,
+      winner?: string,
     ) {
+      setMatchId(matchId);
+
       if (startTime) {
         const dt = DateTime.fromISO(startTime);
         setStartTime(dt);
@@ -189,20 +208,33 @@ export default function Page(): JSX.Element {
     }
 
     async function onMatchUpdated(data: MatchUpdatedEvent) {
-      const { state, startTime, winner } = data;
+      const { matchId, state, startTime, winner } = data;
 
-      handleMatchState(state, startTime, winner);
+      handleMatchState(matchId, state, startTime, winner);
     }
 
-    async function onMatchStatus(data: any) {
-      console.log('Match status', data);
-      const { state, startTime, bets, outcome } = data;
+    async function onMatchStatus(
+      data: typeof GetMatchStatusMessage.responseType,
+    ) {
+      console.log('Got match status', data);
 
-      handleMatchState(state, startTime, outcome);
+      const { matchId, state, startTime, bets, winner } = data;
+
+      handleMatchState(matchId, state, startTime, winner);
 
       if (bets) {
         setBets(bets);
       }
+    }
+
+    async function onGetActivityStream(
+      data: typeof GetActivityStreamMessage.responseType,
+    ) {
+      console.log('Got activity stream', data);
+
+      setActivityStream(
+        data.messages.sort((a, b) => a.timestamp.localeCompare(b.timestamp)),
+      );
     }
 
     function onBetPlaced(data: BetPlacedEvent) {
@@ -217,7 +249,13 @@ export default function Page(): JSX.Element {
       setBalance(parseInt(data.balance));
     }
 
-    function onActivityStream(data: ActivityStreamEvent) {
+    function onBetsUpdated(data: BetsUpdatedEvent) {
+      setBets(
+        data.bets.map((bet) => ({ ...bet, amount: parseInt(bet.amount) })),
+      );
+    }
+
+    async function onActivityStream(data: ActivityStreamEvent) {
       setActivityStream((previousItems) => {
         const items = [...previousItems, data];
         // Sort by timestamp (lexicographically, thanks to ISO 8601)
@@ -236,6 +274,7 @@ export default function Page(): JSX.Element {
     socket.on('disconnect', onDisconnect);
     socket.on(BalanceUpdatedEvent.messageType, onBalanceUpdated);
     socket.on(BetPlacedEvent.messageType, onBetPlaced);
+    socket.on(BetsUpdatedEvent.messageType, onBetsUpdated);
     socket.on(ActivityStreamEvent.messageType, onActivityStream);
 
     return () => {
@@ -243,6 +282,7 @@ export default function Page(): JSX.Element {
       socket.off('disconnect', onDisconnect);
       socket.off(BalanceUpdatedEvent.messageType, onBalanceUpdated);
       socket.off(BetPlacedEvent.messageType, onBetPlaced);
+      socket.off(BetsUpdatedEvent.messageType, onBetsUpdated);
       socket.off(ActivityStreamEvent.messageType, onActivityStream);
     };
   }, []);
@@ -458,7 +498,8 @@ export default function Page(): JSX.Element {
                 marginLeft="-200px"
                 textAlign="center"
               >
-                {winner} wins!
+                {winner && `${winner} wins!`}
+                {!winner && 'Draw!'}
               </Box>
             )}
           </GridItem>

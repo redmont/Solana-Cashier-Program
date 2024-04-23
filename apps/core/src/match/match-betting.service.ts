@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { MatchPersistenceService } from './match-persistence.service';
 import { sendBrokerMessage } from 'broker-comms';
 import { ClientProxy } from '@nestjs/microservices';
@@ -9,6 +9,8 @@ import { DateTime } from 'luxon';
 
 @Injectable()
 export class MatchBettingService {
+  private readonly logger: Logger = new Logger(MatchBettingService.name);
+
   constructor(
     private readonly matchPersistenceService: MatchPersistenceService,
     @Inject('BROKER') private readonly broker: ClientProxy,
@@ -20,7 +22,9 @@ export class MatchBettingService {
     matchId: string,
     winningFighter: { displayName: string; codeName: string },
   ) {
-    console.log('Distributing winnings, winning fighter is', winningFighter);
+    this.logger.log(
+      `Distributing winnings, winning fighter is '${winningFighter}'`,
+    );
     const bets = await this.matchPersistenceService.getBets(matchId);
 
     // Winnings come from the total amount bet on the losing fighter
@@ -29,7 +33,7 @@ export class MatchBettingService {
         .filter((bet) => bet.fighter !== winningFighter?.codeName)
         .reduce((acc, bet) => acc + bet.amount, 0) * 0.95;
 
-    console.log('Win pool is', totalWinPool);
+    this.logger.log(`Win pool is: '${totalWinPool}'`);
 
     const wins = [];
 

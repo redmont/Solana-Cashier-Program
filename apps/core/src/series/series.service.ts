@@ -115,16 +115,20 @@ export class SeriesService implements OnModuleInit {
         },
         resetBets: async (codeName) => {
           await this.queryStore.setBets(codeName, []);
+
+          this.gatewayManagerService.handleBetsUpdated(codeName, []);
         },
         onStateChange: async (state, context) => {
           await this.seriesPersistenceService.savePublicState(
             codeName,
+            context.matchId,
             state,
             context.startTime,
           );
 
           this.gatewayManagerService.handleMatchUpdated(
             codeName,
+            context.matchId,
             state,
             context.startTime,
             context.winningFighter?.codeName,
@@ -227,8 +231,6 @@ export class SeriesService implements OnModuleInit {
       throw new Error('Failed to debit user');
     }
 
-    console.log('Creating bet for match...');
-
     await this.matchPersistenceService.createBet(
       matchId,
       userId,
@@ -236,7 +238,6 @@ export class SeriesService implements OnModuleInit {
       fighter,
     );
 
-    console.log('Creating bet in query store');
     await this.queryStore.createBet(
       currentState.context.codeName,
       walletAddress,

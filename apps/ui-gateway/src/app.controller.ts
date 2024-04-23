@@ -4,6 +4,7 @@ import {
   ActivityStreamEvent,
   BalanceUpdatedEvent,
   BetPlacedEvent,
+  BetsUpdatedEvent,
   MatchUpdatedEvent,
 } from 'core-messages';
 import {
@@ -11,6 +12,7 @@ import {
   MatchUpdatedEvent as MatchUpdatedUiGatewayEvent,
   BalanceUpdatedEvent as BalanceUpdatedUiGatewayEvent,
   ActivityStreamEvent as ActivityStreamUiGatewayEvent,
+  BetsUpdatedEvent as BetsUpdatedUiGatewayEvent,
 } from 'ui-gateway-messages';
 import { AppGateway } from './app.gateway';
 import { DateTime } from 'luxon';
@@ -38,7 +40,8 @@ export class AppController {
 
   @EventPattern(MatchUpdatedEvent.messageType)
   onMatchUpdated(@Payload() data: MatchUpdatedEvent) {
-    const { timestamp, seriesCodeName, state, startTime, winner } = data;
+    const { timestamp, seriesCodeName, matchId, state, startTime, winner } =
+      data;
 
     const ts = DateTime.fromISO(timestamp);
 
@@ -49,12 +52,11 @@ export class AppController {
 
     this.lastEventTimestamp = ts;
 
-    console.log("Got 'match updated' event");
-
     this.gateway.publish(
       new MatchUpdatedUiGatewayEvent(
         timestamp,
         seriesCodeName,
+        matchId,
         state,
         startTime,
         winner,
@@ -65,8 +67,6 @@ export class AppController {
   @EventPattern(BalanceUpdatedEvent.messageType)
   onBalanceUpdated(@Payload() data: BalanceUpdatedEvent) {
     const { timestamp, userId, balance } = data;
-
-    console.log("Got 'balance updated' event", userId, balance);
 
     this.gateway.publishToUser(
       userId,
@@ -81,6 +81,15 @@ export class AppController {
     this.gateway.publishToUser(
       userId,
       new ActivityStreamUiGatewayEvent(timestamp, message),
+    );
+  }
+
+  @EventPattern(BetsUpdatedEvent.messageType)
+  onBetsUpdated(@Payload() data: BetsUpdatedEvent) {
+    const { timestamp, seriesCodeName, bets } = data;
+
+    this.gateway.publish(
+      new BetsUpdatedUiGatewayEvent(timestamp, seriesCodeName, bets),
     );
   }
 }

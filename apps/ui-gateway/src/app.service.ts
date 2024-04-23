@@ -59,8 +59,6 @@ export class AppService implements OnModuleInit, OnModuleDestroy {
       };
 
       send();
-
-      console.log('Successfully registered instance');
     }, 1000 * 10);
   }
 }
