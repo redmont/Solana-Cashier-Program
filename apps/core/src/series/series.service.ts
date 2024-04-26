@@ -65,7 +65,7 @@ export class SeriesService implements OnModuleInit {
 
       const codeName = series.sk;
 
-      await this.initSeries(series.sk, persistedState);
+      await this.initSeries(series.sk, series.displayName, persistedState);
       if (persistedState.value?.runMatch) {
         this.instanceMatches.set(codeName, persistedState.context.matchId);
       }
@@ -84,14 +84,14 @@ export class SeriesService implements OnModuleInit {
     }
   }
 
-  async initSeries(codeName: string, state?: any) {
+  async initSeries(codeName: string, displayName: string, state?: any) {
     if (this.fsmInstances.has(codeName)) {
       throw new Error(`Series with codeName ${codeName} already exists`);
     }
 
     const promiseQueue = new PromiseQueue();
     const fsmInstance = createActor(
-      createSeriesFSM(codeName, {
+      createSeriesFSM(codeName, displayName, {
         logger: this.logger,
         setCurrentMatchId: (codeName, matchId) => {
           this.instanceMatches.set(codeName, matchId);
@@ -156,7 +156,7 @@ export class SeriesService implements OnModuleInit {
   async createSeries(codeName: string, displayName: string) {
     await this.seriesPersistenceService.create(codeName, displayName);
 
-    this.initSeries(codeName);
+    this.initSeries(codeName, displayName);
   }
 
   sendEvent(codeName: string, event: SeriesEvent) {
@@ -171,9 +171,11 @@ export class SeriesService implements OnModuleInit {
   listSeries() {
     const series = [];
     this.fsmInstances.forEach((value, key) => {
+      const snapshot = value.fsm.getSnapshot();
       series.push({
-        seriesId: key,
-        currentState: value.fsm.getSnapshot().value,
+        id: key,
+        displayName: snapshot.context.displayName,
+        state: snapshot.value,
       });
     });
     return series;

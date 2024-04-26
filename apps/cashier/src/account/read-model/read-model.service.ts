@@ -9,11 +9,16 @@ export class ReadModelService {
     private readonly accountModel: Model<Account, ReadModelKey>,
   ) {}
 
-  async upsertAccount(accountId: string, balance: number) {
+  async upsertAccount(
+    accountId: string,
+    primaryWalletAddress: string,
+    balance: number,
+  ) {
     await this.accountModel.create(
       {
-        pk: `account#${accountId}`,
-        sk: `account`,
+        pk: `account`,
+        sk: `account#${accountId}`,
+        primaryWalletAddress,
         balance,
       },
       {
@@ -24,6 +29,16 @@ export class ReadModelService {
   }
 
   async getAccount(accountId: string) {
-    return this.accountModel.get({ pk: `account#${accountId}`, sk: `account` });
+    return this.accountModel.get({ pk: `account`, sk: `account#${accountId}` });
+  }
+
+  async getAllAccounts() {
+    return this.accountModel.query({ pk: 'account' }).exec();
+  }
+
+  async getAccountByWalletAddress(walletAddress: string) {
+    return this.accountModel
+      .query({ primaryWalletAddress: walletAddress })
+      .exec();
   }
 }

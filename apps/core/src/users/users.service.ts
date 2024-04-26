@@ -1,23 +1,23 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { InjectModel, Model } from "nestjs-dynamoose";
-import { v4 as uuid } from "uuid";
-import { User, UserWallet } from "./users.interface";
-import { Key } from "src/interfaces/key";
-import { ClientProxy } from "@nestjs/microservices";
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectModel, Model } from 'nestjs-dynamoose';
+import { v4 as uuid } from 'uuid';
+import { User, UserWallet } from './users.interface';
+import { Key } from 'src/interfaces/key';
+import { ClientProxy } from '@nestjs/microservices';
 
 export class UserCreatedEvent {
   public userId: string;
-  public ethereumWalletAddress: string;
+  public primaryWalletAddress: string;
 }
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectModel("user")
+    @InjectModel('user')
     private readonly userModel: Model<User, Key>,
-    @InjectModel("userWallet")
+    @InjectModel('userWallet')
     private readonly userWalletModel: Model<UserWallet, Key>,
-    @Inject("BROKER") private broker: ClientProxy
+    @Inject('BROKER') private broker: ClientProxy,
   ) {}
   getUserById(id: string) {
     return this.userModel.get({ pk: `user#${id}`, sk: `user` });
@@ -25,7 +25,7 @@ export class UsersService {
 
   async getUserIdByWalletAddress(walletAddress: string) {
     const userWallet = await this.userWalletModel
-      .query("pk")
+      .query('pk')
       .eq(`wallet#${walletAddress}`)
       .exec();
 
@@ -38,7 +38,7 @@ export class UsersService {
 
   async getUserByWalletAddress(walletAddress: string) {
     const user = await this.userModel
-      .query("ethereumWalletAddress")
+      .query('ethereumWalletAddress')
       .eq(walletAddress)
       .exec();
 
@@ -46,7 +46,7 @@ export class UsersService {
   }
 
   async createUser(walletAddress: string) {
-    const id = uuid().replace(/-/g, "");
+    const id = uuid().replace(/-/g, '');
 
     const user: User = {
       pk: `user#${id}`,
@@ -66,9 +66,9 @@ export class UsersService {
 
     const userCreatedEvent = new UserCreatedEvent();
     userCreatedEvent.userId = id;
-    userCreatedEvent.ethereumWalletAddress = walletAddress;
+    userCreatedEvent.primaryWalletAddress = walletAddress;
 
-    this.broker.emit("user.created", userCreatedEvent);
+    this.broker.emit('user.created', userCreatedEvent);
 
     return createdUser;
   }

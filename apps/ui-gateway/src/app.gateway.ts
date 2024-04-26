@@ -71,9 +71,7 @@ export class AppGateway
           client.data.authorizedUser = decodedToken;
           return true;
         })
-        .catch((error) => {
-          throw new WsException(error.message);
-        });
+        .catch((error) => {});
 
       if (tokenValid) {
         const decodedToken = this.jwtAuthService.decode(token);

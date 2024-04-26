@@ -27,9 +27,13 @@ export class QueryModelBusAdapter implements MessageChannelAdapter {
     >,
     options?: PublishMessageOptions,
   ) {
-    const { accountId, balance } = message.aggregate;
+    const { accountId, primaryWalletAddress, balance } = message.aggregate;
 
-    await this.readModelService.upsertAccount(accountId, balance);
+    await this.readModelService.upsertAccount(
+      accountId,
+      primaryWalletAddress,
+      balance,
+    );
 
     this.broker.emit(BalanceUpdatedEvent.messageType, {
       userId: accountId,

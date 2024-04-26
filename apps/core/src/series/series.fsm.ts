@@ -67,6 +67,7 @@ type InternalEvent = { type: SeriesEvent };
 
 export function createSeriesFSM(
   codeName: string,
+  displayName: string,
   {
     logger,
     setCurrentMatchId,
@@ -180,6 +181,7 @@ export function createSeriesFSM(
     initial: 'idle',
     context: {
       codeName,
+      displayName,
       config: {
         requiredCapabilities: {},
         betPlacementTime: 20,

@@ -1,26 +1,26 @@
-import { EventStore } from "@castore/core";
-import { Command, tuple } from "@castore/core";
+import { EventStore } from '@castore/core';
+import { Command, tuple } from '@castore/core';
 
-type Input = { accountId: string };
+type Input = { accountId: string; primaryWalletAddress: string };
 type Output = { accountId: string };
 type Context = {};
 
 export const createAccountCommand = (eventStore: EventStore) =>
   new Command({
-    commandId: "CREATE_ACCOUNT",
+    commandId: 'CREATE_ACCOUNT',
     requiredEventStores: tuple(eventStore),
     handler: async (
       commandInput: Input,
       [eventStore],
-      {}: Context
+      {}: Context,
     ): Promise<Output> => {
-      const { accountId } = commandInput;
+      const { accountId, primaryWalletAddress } = commandInput;
 
       await eventStore.pushEvent({
         aggregateId: accountId,
         version: 1,
-        type: "ACCOUNT_CREATED",
-        payload: { accountId },
+        type: 'ACCOUNT_CREATED',
+        payload: { primaryWalletAddress, accountId },
       });
 
       return { accountId };
