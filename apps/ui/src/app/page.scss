@@ -1,0 +1,178 @@
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.widget {
+  padding: 0.5rem 1rem 0.5rem;
+}
+
+.stream-container {
+  width: 100%;
+  height: 20rem;
+}
+
+.bet-list-widget {
+  .viewport {
+    display: none;
+  }
+}
+
+.stream-chat-widget {
+  height: 30rem;
+}
+
+@media screen and (min-width: 48rem) {
+  main {
+    display: grid;
+    grid-template-rows: auto auto auto auto;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    grid-auto-flow: row;
+    padding-bottom: 1rem;
+  }
+
+  .widget {
+    padding: 0.5rem 0 0 0;
+    height: 100%;
+  }
+
+  .widget-body {
+    height: 100%;
+  }
+
+  .stream-container {
+    grid-column: 1 / 3;
+    grid-row: 1;
+    height: 26rem;
+  }
+
+  .bet-list-widget {
+    grid-column: 1 / 3;
+    grid-row: 2;
+  }
+
+  .bet-placement-widget {
+    grid-column: 1 / 3;
+    grid-row: 3;
+
+    .widget-body {
+      flex-direction: row;
+    }
+
+    &.compact {
+      grid-column: 1;
+    }
+  }
+
+  .stream-chat-widget {
+    height: 30rem;
+  }
+}
+
+@media screen and (min-width: 75rem) {
+  main {
+    grid-template-rows: 10rem 17.75rem auto;
+    grid-template-columns: repeat(2, 25rem) auto;
+    gap: 1rem;
+  }
+
+  .stream-container {
+    grid-column: 1 / 3;
+    grid-row: 1 / 3;
+  }
+
+  .activity-stream-widget {
+    grid-column: 3;
+    grid-row: 1;
+    padding: 0;
+  }
+
+  .stream-chat-widget {
+    grid-column: 3;
+    grid-row: 2;
+    height: auto;
+  }
+
+  .bet-list-widget {
+    grid-column: 1;
+    grid-row: 3;
+
+    .viewport {
+      display: block;
+    }
+  }
+
+  .bet-placement-widget {
+    grid-column: 2 / 4;
+    grid-row: 3;
+
+    &.compact {
+      grid-column: 3;
+    }
+  }
+
+  .current-bet-widget {
+    grid-column: 2 / 3;
+    grid-row: 3;
+  }
+}
+
+@media screen and (min-width: 92rem) {
+  main {
+    grid-template-rows: 20rem 7rem auto;
+    grid-template-columns: auto repeat(2, 23.5rem) auto;
+    gap: 1rem;
+  }
+
+  .widget-body {
+    height: 100%;
+  }
+
+  .stream-container {
+    grid-column: 2 / 4;
+    grid-row: 1 / 3;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .bet-list-widget {
+    grid-column: 1;
+    grid-row: 1 / 4;
+
+    .viewport {
+      display: block;
+    }
+  }
+
+  .activity-stream-widget {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .stream-chat-widget {
+    grid-column: 4;
+    grid-row: 2 / 4;
+  }
+
+  .bet-placement-widget {
+    grid-column: 2 / 4;
+    grid-row: 3;
+
+    &.compact {
+      grid-column: 3;
+    }
+  }
+
+  .current-bet-widget {
+    grid-column: 2 / 3;
+    grid-row: 3;
+  }
+}

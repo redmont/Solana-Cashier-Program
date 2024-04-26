@@ -1,0 +1,16 @@
+{
+  "name": "broker-comms",
+  "version": "1.0.0",
+  "main": "./dist/index",
+  "types": "./dist/index",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "rxjs": "^7.8.1"
+  },
+  "dependencies": {
+    "@nestjs/microservices": "^10.3.7"
+  }
+}

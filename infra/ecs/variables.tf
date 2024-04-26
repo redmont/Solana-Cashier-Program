@@ -53,13 +53,23 @@ variable "ui_gateway_table_arn" {
   type        = string
 }
 
-variable "match_manager_table_name" {
-  description = "Match Manager table name"
+variable "core_table_name" {
+  description = "Core table name"
   type        = string
 }
 
-variable "match_manager_table_arn" {
-  description = "Match Manager table ARN"
+variable "core_table_arn" {
+  description = "Core table ARN"
+  type        = string
+}
+
+variable "query_store_table_name" {
+  description = "Query store table name"
+  type        = string
+}
+
+variable "query_store_table_arn" {
+  description = "Query store table ARN"
   type        = string
 }
 
@@ -80,5 +90,15 @@ variable "cashier_events_table_name" {
 
 variable "cashier_events_table_arn" {
   description = "Cashier events table ARN"
+  type        = string
+}
+
+variable "service_discovery_namespace_id" {
+  description = "Service discovery namespace ID"
+  type        = string
+}
+
+variable "service_discovery_namespace_arn" {
+  description = "Service discovery namespace ARN"
   type        = string
 }

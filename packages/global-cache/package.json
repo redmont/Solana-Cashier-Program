@@ -1,0 +1,16 @@
+{
+  "name": "global-cache",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.3.7"
+  },
+  "dependencies": {
+    "ioredis": "^5.3.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

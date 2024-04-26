@@ -1,4 +1,4 @@
-import { Schema } from "dynamoose";
+import { Schema } from 'dynamoose';
 
 export const AccountSchema = new Schema({
   pk: {
@@ -9,7 +9,13 @@ export const AccountSchema = new Schema({
     type: String,
     rangeKey: true,
   },
-  balance: {
-    type: Number,
+  balance: Number,
+  primaryWalletAddress: {
+    type: String,
+    index: {
+      name: 'primaryWalletAddress',
+      type: 'global',
+      project: true,
+    },
   },
 });

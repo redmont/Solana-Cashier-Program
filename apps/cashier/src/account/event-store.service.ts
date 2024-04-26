@@ -16,13 +16,13 @@ export class EventStoreService {
 
   constructor(configService: ConfigService) {
     const dynamoDBClient = new DynamoDBClient({
-      endpoint: configService.get<boolean>("IS_DDB_LOCAL")
+      endpoint: configService.get<boolean>("isDynamoDbLocal")
         ? "http://localhost:8765"
         : undefined,
     });
 
     const eventStorageAdapter = new DynamoDBSingleTableEventStorageAdapter({
-      tableName: () => configService.get<string>("EVENTS_TABLE_NAME"),
+      tableName: () => configService.get<string>("eventsTableName"),
       dynamoDBClient,
     });
 

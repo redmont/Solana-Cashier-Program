@@ -1,0 +1,17 @@
+.ordinals-modal {
+  width: 340px;
+
+  .avatar-section {
+    text-align: center;
+  }
+
+  .p-dialog-header,
+  .p-dialog-footer,
+  .p-dialog-content {
+    background: var(--surface-0);
+  }
+
+  .p-dialog-footer {
+    text-align: center;
+  }
+}

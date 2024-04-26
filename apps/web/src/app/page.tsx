@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import styles from "./page.module.css";
+import Image from 'next/image';
+import styles from './page.module.css';
 import {
   Button,
   Box,
@@ -17,41 +17,59 @@ import {
   SliderTrack,
   Stack,
   Heading,
-} from "@chakra-ui/react";
-import { useEffect, useMemo, useState } from "react";
+  useToast,
+} from '@chakra-ui/react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { DateTime } from "luxon";
-import { ConnectKitButton } from "connectkit";
-import { motion, useAnimation } from "framer-motion";
+import { DateTime } from 'luxon';
+import { ConnectKitButton } from 'connectkit';
+import { motion, useAnimation } from 'framer-motion';
 import {
+  Message,
   PlaceBetMessage,
   GetBalanceMessage,
-  GetStatusMessage,
-} from "ui-gateway-messages";
-import { sendMessage, socket } from "../socket";
-import { FighterSelector } from "../components/FighterSelector";
-import { useAuth } from "../components/AuthContextProvider";
-import { shortenWalletAddress } from "../utils";
+  GetMatchStatusMessage,
+  GetActivityStreamMessage,
+  BetPlacedEvent,
+  MatchUpdatedEvent,
+  GatewayEvent,
+  BalanceUpdatedEvent,
+  ActivityStreamEvent,
+  BetsUpdatedEvent,
+} from 'ui-gateway-messages';
+import { sendMessage, socket } from '../socket';
+import { FighterSelector } from '../components/FighterSelector';
+import { useAuth } from '../components/AuthContextProvider';
+import { shortenWalletAddress } from '../utils';
+
+const series = 'frogs-vs-dogs-1';
 
 export default function Page(): JSX.Element {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const toast = useToast();
+  const controls = useAnimation();
   const { tokenIsValid, authenticate, authToken } = useAuth();
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   const [balance, setBalance] = useState(0);
 
-  const [fighter, setFighter] = useState("");
+  const [fighter, setFighter] = useState('');
   const [isWebSocketConnected, setWebSocketConnected] = useState(false);
-  const [transport, setTransport] = useState("N/A");
+  const [transport, setTransport] = useState('N/A');
+  const [matchId, setMatchId] = useState('');
   const [matchStatus, setMatchStatus] = useState<
-    "bets" | "started" | "completed"
-  >("bets");
+    'pending' | 'bets' | 'started' | 'completed'
+  >('pending');
   const [betAmount, setBetAmount] = useState(20);
   const [bets, setBets] = useState<
     { walletAddress: string; amount: number; fighter: string }[]
   >([]);
   const [startTime, setStartTime] = useState<DateTime | undefined>();
-  const [winner, setWinner] = useState("");
-  const [startsIn, setStartsIn] = useState("");
-  const controls = useAnimation();
+  const [winner, setWinner] = useState<string | undefined>();
+  const [startsIn, setStartsIn] = useState('');
+  const [activityStream, setActivityStream] = useState<
+    { message: string; timestamp: string }[]
+  >([]);
 
   useEffect(() => {
     setIsAuthenticated(tokenIsValid);
@@ -67,107 +85,247 @@ export default function Page(): JSX.Element {
     if (startTime) {
       const interval = setInterval(() => {
         const diff = startTime.diffNow();
-        setStartsIn(diff.toFormat("m:ss"));
+        setStartsIn(diff.toFormat('m:ss'));
       }, 1000);
 
       return () => clearInterval(interval);
     }
   }, [startTime]);
 
+  async function subscribeAndGet<
+    TSubscribe extends GatewayEvent,
+    TGet extends Message,
+  >(
+    subscriptions: { eventType: string; handler: (data: any) => void }[],
+    {
+      subscribe,
+      get,
+    }: {
+      subscribe: {
+        eventType: string;
+        handler: (data: TSubscribe) => Promise<void>;
+      };
+      get: {
+        message: TGet;
+        handler: (data: any) => Promise<void>;
+      };
+    },
+  ) {
+    const buffer: TSubscribe[] = [];
+
+    const bufferHandler = async (data: TSubscribe) => {
+      buffer.push(data);
+    };
+
+    socket.on(subscribe.eventType, bufferHandler);
+
+    const response = await sendMessage(socket, get.message);
+
+    await get.handler(response);
+
+    socket.off(subscribe.eventType, bufferHandler);
+
+    const lastTimestamp = DateTime.fromISO(response.timestamp);
+
+    for (const message of buffer) {
+      if (DateTime.fromISO(message.timestamp) > lastTimestamp) {
+        await subscribe.handler(message);
+      }
+    }
+
+    socket.on(subscribe.eventType, subscribe.handler);
+    subscriptions.push({
+      eventType: subscribe.eventType,
+      handler: subscribe.handler,
+    });
+
+    return response;
+  }
+
   useEffect(() => {
     if (socket.connected) {
       onConnect();
     }
 
-    function onConnect() {
+    const subscriptions: any[] = [];
+
+    async function onConnect() {
       setWebSocketConnected(true);
       setTransport(socket.io.engine.transport.name);
 
-      socket.io.engine.on("upgrade", (transport) => {
+      socket.io.engine.on('upgrade', (transport) => {
         setTransport(transport.name);
       });
 
-      sendMessage(socket, GetStatusMessage).then((response) => {
-        console.log("Status response", response);
-        if (response.bets) {
-          setBets(response.bets);
-        }
-        if (response.startTime) {
-          const dt = DateTime.fromISO(response.startTime);
-          setStartTime(dt);
-        }
-        if (response.state) {
-        }
-        console.log(response);
-
-        onMatchStatus(response);
+      const matchStatus = await subscribeAndGet(subscriptions, {
+        subscribe: {
+          eventType: MatchUpdatedEvent.messageType,
+          handler: onMatchUpdated,
+        },
+        get: {
+          message: new GetMatchStatusMessage(series),
+          handler: onMatchStatus,
+        },
       });
 
-      getBalance();
+      await subscribeAndGet(subscriptions, {
+        subscribe: {
+          eventType: ActivityStreamEvent.messageType,
+          handler: onActivityStream,
+        },
+        get: {
+          message: new GetActivityStreamMessage(series, matchStatus.matchId),
+          handler: onGetActivityStream,
+        },
+      });
     }
 
     function onDisconnect() {
       setWebSocketConnected(false);
-      setTransport("N/A");
+      setTransport('N/A');
     }
 
-    function onMatchStatus(data: any) {
-      console.log("Match status", data);
-      const { state, startTime, bets, outcome } = data;
+    function handleMatchState(
+      matchId: string,
+      state: string,
+      startTime?: string,
+      winner?: string,
+    ) {
+      setMatchId(matchId);
 
-      setBets(bets);
-
-      if (state === "AcceptingBets") {
+      if (startTime) {
         const dt = DateTime.fromISO(startTime);
         setStartTime(dt);
-        setMatchStatus("bets");
       }
 
-      if (state === "InProgress") {
-        setMatchStatus("started");
+      if (state === 'pendingStart') {
+        setMatchStatus('pending');
       }
 
-      if (state === "Completed") {
-        setWinner(outcome);
-        setMatchStatus("completed");
+      if (state === 'bettingOpen') {
+        setMatchStatus('bets');
+      }
+
+      if (state === 'matchInProgress') {
+        setMatchStatus('started');
+      }
+
+      if (state === 'matchFinished') {
+        setWinner(winner);
+        setMatchStatus('completed');
       }
     }
 
-    function onBets(bets: any) {
-      console.log("onBets", bets);
+    async function onMatchUpdated(data: MatchUpdatedEvent) {
+      const { matchId, state, startTime, winner } = data;
+
+      handleMatchState(matchId, state, startTime, winner);
+    }
+
+    async function onMatchStatus(
+      data: typeof GetMatchStatusMessage.responseType,
+    ) {
+      console.log('Got match status', data);
+
+      const { matchId, state, startTime, bets, winner } = data;
+
+      handleMatchState(matchId, state, startTime, winner);
+
       if (bets) {
         setBets(bets);
       }
     }
 
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-    socket.on("matchStatus", onMatchStatus);
-    socket.on("bets", onBets);
+    async function onGetActivityStream(
+      data: typeof GetActivityStreamMessage.responseType,
+    ) {
+      console.log('Got activity stream', data);
+
+      setActivityStream(
+        data.messages.sort((a, b) => a.timestamp.localeCompare(b.timestamp)),
+      );
+    }
+
+    function onBetPlaced(data: BetPlacedEvent) {
+      const { walletAddress, amount, fighter } = data;
+      setBets((prev) => [
+        ...prev,
+        { walletAddress, amount: parseInt(amount), fighter },
+      ]);
+    }
+
+    function onBalanceUpdated(data: BalanceUpdatedEvent) {
+      setBalance(parseInt(data.balance));
+    }
+
+    function onBetsUpdated(data: BetsUpdatedEvent) {
+      setBets(
+        data.bets.map((bet) => ({ ...bet, amount: parseInt(bet.amount) })),
+      );
+    }
+
+    async function onActivityStream(data: ActivityStreamEvent) {
+      setActivityStream((previousItems) => {
+        const items = [...previousItems, data];
+        // Sort by timestamp (lexicographically, thanks to ISO 8601)
+        items.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+
+        // We only want the last 50 items, if there are more than 50 in the array
+        if (items.length > 50) {
+          return items.slice(-50);
+        }
+
+        return items;
+      });
+    }
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+    socket.on(BalanceUpdatedEvent.messageType, onBalanceUpdated);
+    socket.on(BetPlacedEvent.messageType, onBetPlaced);
+    socket.on(BetsUpdatedEvent.messageType, onBetsUpdated);
 
     return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-      socket.off("matchStatus", onMatchStatus);
-      socket.off("bets", onBets);
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      socket.off(BalanceUpdatedEvent.messageType, onBalanceUpdated);
+      socket.off(BetPlacedEvent.messageType, onBetPlaced);
+      socket.off(BetsUpdatedEvent.messageType, onBetsUpdated);
+
+      for (const { eventType, handler } of subscriptions) {
+        socket.off(eventType, handler);
+      }
     };
   }, []);
 
   const roundedBalance = useMemo(() => {
     // Balance rounded to 2 decimal places
-    return Math.round(balance * 100) / 100;
+    const bal = Math.round(balance * 100) / 100;
+    return bal < 0 ? 1 : bal;
   }, [balance]);
 
   const getBalance = async () => {
-    const response = await sendMessage(socket, GetBalanceMessage);
-    console.log("Balance response", response);
+    const response = await sendMessage(socket, new GetBalanceMessage());
+    console.log('Balance response', response.balance);
     setBalance(response.balance);
   };
 
   const placeBet = async () => {
-    await sendMessage(socket, PlaceBetMessage, betAmount, fighter);
-
-    getBalance();
+    try {
+      await sendMessage(
+        socket,
+        new PlaceBetMessage(series, betAmount, fighter.toLowerCase()),
+      );
+    } catch (err: any) {
+      toast({
+        title: 'Cannot place bet',
+        description: err.message,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      console.log('Error', err.message);
+    }
   };
 
   useEffect(() => {
@@ -181,6 +339,12 @@ export default function Page(): JSX.Element {
       });
   }, [balance, controls]);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      getBalance();
+    }
+  }, [isAuthenticated]);
+
   return (
     <main className={styles.main}>
       <Container maxW="container.xl">
@@ -189,14 +353,14 @@ export default function Page(): JSX.Element {
                   "book stream messages"
                   "book controls messages"
                   "footer footer footer"`}
-          gridTemplateRows={"80px 1fr 0.5fr 100%"}
-          gridTemplateColumns={"250px 1fr 250px"}
+          gridTemplateRows={'80px 1fr 0.5fr 100%'}
+          gridTemplateColumns={'250px 1fr 250px'}
           h="100vh"
           gap="1"
           color="blackAlpha.700"
           fontWeight="bold"
         >
-          <GridItem pt="20px" area={"header"}>
+          <GridItem pt="20px" area={'header'}>
             <HStack justifyContent="space-between">
               <Box>
                 <Image src="/logo.jpg" alt="Brawlers" width={150} height={50} />
@@ -225,7 +389,7 @@ export default function Page(): JSX.Element {
               </HStack>
             </HStack>
           </GridItem>
-          <GridItem pl="2" bg="blackAlpha.600" area={"book"} color="white">
+          <GridItem pl="2" bg="blackAlpha.600" area={'book'} color="white">
             <HStack textAlign="center" justifyContent="center" gap="0">
               <Box
                 borderRightWidth="1px"
@@ -237,9 +401,9 @@ export default function Page(): JSX.Element {
                 <Heading size="md">Pepe</Heading>
                 <Box mt="5px">
                   {bets
-                    .filter((x) => x.fighter === "Pepe")
+                    .filter((x) => x.fighter === 'pepe')
                     .map((x) => x.amount)
-                    .reduce((prev, curr) => prev + curr, 0)}{" "}
+                    .reduce((prev, curr) => prev + curr, 0)}{' '}
                 </Box>
               </Box>
               <Box
@@ -252,16 +416,16 @@ export default function Page(): JSX.Element {
                 <Heading size="md">Doge</Heading>
                 <Box mt="5px">
                   {bets
-                    .filter((x) => x.fighter === "Doge")
+                    .filter((x) => x.fighter === 'doge')
                     .map((x) => x.amount)
-                    .reduce((prev, curr) => prev + curr, 0)}{" "}
+                    .reduce((prev, curr) => prev + curr, 0)}{' '}
                 </Box>
               </Box>
             </HStack>
             <HStack textAlign="center" alignItems="flex-start" fontSize="14px">
               <Box width="100%">
                 {bets
-                  .filter((x) => x.fighter === "Pepe")
+                  .filter((x) => x.fighter === 'pepe')
                   .map((bet, i) => (
                     <HStack key={i} justifyContent="space-between">
                       <Box>{shortenWalletAddress(bet.walletAddress)}</Box>
@@ -271,7 +435,7 @@ export default function Page(): JSX.Element {
               </Box>
               <Box width="100%">
                 {bets
-                  .filter((x) => x.fighter === "Doge")
+                  .filter((x) => x.fighter === 'doge')
                   .map((bet, i) => (
                     <HStack key={i} justifyContent="space-between">
                       <Box>{shortenWalletAddress(bet.walletAddress)}</Box>
@@ -282,7 +446,7 @@ export default function Page(): JSX.Element {
             </HStack>
           </GridItem>
 
-          <GridItem bg="black" area={"stream"} position="relative">
+          <GridItem bg="black" area={'stream'} position="relative">
             <Center
               position="absolute"
               top="0"
@@ -296,26 +460,25 @@ export default function Page(): JSX.Element {
                 width="100%"
                 gap="40px"
                 justifyContent={
-                  matchStatus === "bets" ? "center" : "space-between"
+                  matchStatus === 'bets' ? 'center' : 'space-between'
                 }
               >
                 <Box>
                   <Image src="/pepe.jpg" alt="Pepe" width={64} height={64} />
                 </Box>
-                {matchStatus === "bets" && <Box color="white">vs</Box>}
+                {matchStatus === 'bets' && <Box color="white">vs</Box>}
                 <Box>
                   <Image src="/doge.jpg" alt="Doge" width={64} height={64} />
                 </Box>
               </HStack>
             </Center>
-            <video
-              src={matchStatus === "bets" ? "/game_idle.mp4" : "/game_play.mp4"}
-              height="100%"
-              autoPlay
-              loop={matchStatus === "bets"}
-              muted
-            />
-            {matchStatus === "bets" && (
+            <iframe
+              src="https://viewer.millicast.com?streamId=WBYdQB/brawlers-dev-2&controls=false&showLabels=false"
+              allowFullScreen
+              width="100%"
+              height="480"
+            ></iframe>
+            {matchStatus === 'bets' && (
               <Box
                 position="absolute"
                 left="50%"
@@ -332,7 +495,7 @@ export default function Page(): JSX.Element {
                 Fight starts in {startsIn}
               </Box>
             )}
-            {matchStatus === "completed" && (
+            {matchStatus === 'completed' && (
               <Box
                 position="absolute"
                 left="50%"
@@ -346,7 +509,8 @@ export default function Page(): JSX.Element {
                 marginLeft="-200px"
                 textAlign="center"
               >
-                {winner} wins!
+                {winner && `${winner} wins!`}
+                {!winner && 'Draw!'}
               </Box>
             )}
           </GridItem>
@@ -354,7 +518,7 @@ export default function Page(): JSX.Element {
           <GridItem
             pb="40px"
             bg="green.300"
-            area={"controls"}
+            area={'controls'}
             bgColor="gray.700"
             color="white"
             position="relative"
@@ -368,11 +532,12 @@ export default function Page(): JSX.Element {
                   borderRadius="2px"
                   color="white"
                 >
-                  {matchStatus === "bets" && "Bets are open"}
-                  {matchStatus === "started" && "Match in progress"}
-                  {matchStatus === "completed" && "Match completed"}
+                  {matchStatus === 'pending' && 'Match starting soon'}
+                  {matchStatus === 'bets' && 'Bets are open'}
+                  {matchStatus === 'started' && 'Match in progress'}
+                  {matchStatus === 'completed' && 'Match completed'}
                 </Box>
-                {matchStatus === "bets" && (
+                {matchStatus === 'bets' && (
                   <Box
                     px="20px"
                     py="10px"
@@ -391,8 +556,8 @@ export default function Page(): JSX.Element {
                 <Box mb="10px">Choose a fighter</Box>
 
                 <FighterSelector
-                  fighter1={{ name: "Pepe", image: "/pepe.jpg" }}
-                  fighter2={{ name: "Doge", image: "/doge.jpg" }}
+                  fighter1={{ name: 'Pepe', image: '/pepe.jpg' }}
+                  fighter2={{ name: 'Doge', image: '/doge.jpg' }}
                   onChange={(val) => setFighter(val)}
                 />
               </Box>
@@ -432,12 +597,19 @@ export default function Page(): JSX.Element {
           <GridItem
             pl="2"
             bg="blackAlpha.600"
-            area={"messages"}
+            area={'messages'}
             color="whiteAlpha.700"
             fontWeight="normal"
-            fontFamily="monospace"
-          ></GridItem>
-          <GridItem area={"footer"}></GridItem>
+          >
+            <h3>Activity stream</h3>
+
+            {activityStream.map((item, i) => (
+              <Box key={i} py="10px" borderBottom="1px solid white">
+                <Box>{item.message}</Box>
+              </Box>
+            ))}
+          </GridItem>
+          <GridItem area={'footer'}></GridItem>
         </Grid>
       </Container>
     </main>

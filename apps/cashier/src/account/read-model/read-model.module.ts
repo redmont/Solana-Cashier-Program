@@ -1,19 +1,19 @@
-import { Module } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { DynamooseModule } from "nestjs-dynamoose";
-import { ReadModelService } from "./read-model.service";
-import { AccountSchema } from "./account.schema";
+import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { DynamooseModule } from 'nestjs-dynamoose';
+import { ReadModelService } from './read-model.service';
+import { AccountSchema } from './account.schema';
 
 @Module({
   imports: [
     DynamooseModule.forFeatureAsync([
       {
-        name: "accountModel",
+        name: 'accountModel',
         useFactory: (_, configService: ConfigService) => {
           return {
             schema: AccountSchema,
             options: {
-              tableName: configService.get<string>("READ_MODEL_TABLE_NAME"),
+              tableName: configService.get<string>('readModelTableName'),
             },
           };
         },

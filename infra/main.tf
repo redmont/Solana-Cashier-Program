@@ -43,10 +43,15 @@ module "ecs" {
 
   ui_gateway_table_name         = aws_dynamodb_table.ui_gateway_table.name
   ui_gateway_table_arn          = aws_dynamodb_table.ui_gateway_table.arn
-  match_manager_table_name      = aws_dynamodb_table.match_manager_table.name
-  match_manager_table_arn       = aws_dynamodb_table.match_manager_table.arn
+  core_table_name               = aws_dynamodb_table.core_table.name
+  core_table_arn                = aws_dynamodb_table.core_table.arn
+  query_store_table_name        = aws_dynamodb_table.query_store_table.name
+  query_store_table_arn         = aws_dynamodb_table.query_store_table.arn
   cashier_read_model_table_name = aws_dynamodb_table.cashier_read_model_table.name
   cashier_read_model_table_arn  = aws_dynamodb_table.cashier_read_model_table.arn
   cashier_events_table_name     = aws_dynamodb_table.cashier_events_table.name
   cashier_events_table_arn      = aws_dynamodb_table.cashier_events_table.arn
+
+  service_discovery_namespace_id  = aws_service_discovery_private_dns_namespace.discovery_namespace.id
+  service_discovery_namespace_arn = aws_service_discovery_private_dns_namespace.discovery_namespace.arn
 }

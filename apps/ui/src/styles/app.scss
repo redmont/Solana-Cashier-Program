@@ -1,0 +1,81 @@
+@import './_variables';
+@import './theme-base/_components';
+@import './_extensions';
+@import './_components';
+@import './_pages';
+
+:root {
+  --surface-a: #{$shade800};
+  --surface-b: #{$shade900};
+  --surface-c: #{$hoverBg};
+  --surface-d: #{$shade600};
+  --surface-e: #{$shade800};
+  --surface-f: #{$shade800};
+  --body-bg: #{$solidSurfaceColor};
+  --text-color: #{$shade100};
+  --text-color-secondary: #{$shade100};
+  --primary-color: #{$primaryColor};
+  --primary-color-text: #{$primaryTextColor};
+  --font-family: #{$fontFamily};
+  --surface-0: #0a061a;
+  --surface-50: #231f31;
+  --surface-100: #3b3848;
+  --surface-200: #54515f;
+  --surface-300: #6c6a76;
+  --surface-400: #85838d;
+  --surface-500: #9d9ba3;
+  --surface-600: #b6b4ba;
+  --surface-700: #cecdd1;
+  --surface-800: #e7e6e8;
+  --surface-900: #ffffff;
+  --gray-50: #e7e6e8;
+  --gray-100: #cecdd1;
+  --gray-200: #b6b4ba;
+  --gray-300: #9d9ba3;
+  --gray-400: #85838d;
+  --gray-500: #6c6a76;
+  --gray-600: #54515f;
+  --gray-700: #3b3848;
+  --gray-800: #231f31;
+  --gray-900: #0a061a;
+  --content-padding: #{$panelContentPadding};
+  --inline-spacing: #{$inlineSpacing};
+  --border-radius: #{$borderRadius};
+  --surface-ground: linear-gradient(180deg, #2e323f 0%, #0a061a 100%);
+  --surface-section: linear-gradient(180deg, #2e323f 0%, #0a061a 100%);
+  --surface-card: rgba(255, 255, 255, 0.05);
+  --surface-overlay: linear-gradient(180deg, #2e323f 0%, #0a061a 100%);
+  --surface-border: rgba(255, 255, 255, 0.15);
+  --surface-hover: rgba(255, 255, 255, 0.05);
+  --maskbg: #{$maskBg};
+  --focus-ring: #{$focusShadow};
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  font-size: $scale;
+}
+
+body {
+  font-weight: 400;
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  background: var(--body-bg);
+  color: var(--text-color);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+}
+
+iframe {
+  border: 0;
+}

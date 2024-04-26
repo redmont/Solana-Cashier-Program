@@ -1,29 +1,34 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { InjectModel, Model } from "nestjs-dynamoose";
-import { v4 as uuid } from "uuid";
-import { DateTime } from "luxon";
-import { recoverMessageAddress } from "viem";
-import { config } from "src/config";
-import { Key } from "src/interfaces/key";
-import { JWT_AUTH_SERVICE } from "src/jwt-auth/jwt-auth.constants";
-import { IJwtAuthService } from "src/jwt-auth/jwt-auth.interface";
-import { Nonce } from "./nonce.interface";
-import { ClientProxy } from "@nestjs/microservices";
-import { catchError, firstValueFrom, map, throwError, timeout } from "rxjs";
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectModel, Model } from 'nestjs-dynamoose';
+import { v4 as uuid } from 'uuid';
+import { DateTime } from 'luxon';
+import { recoverMessageAddress } from 'viem';
+import { Key } from 'src/interfaces/key';
+import { JWT_AUTH_SERVICE } from 'src/jwt-auth/jwt-auth.constants';
+import { IJwtAuthService } from 'src/jwt-auth/jwt-auth.interface';
+import { Nonce } from './nonce.interface';
+import { ClientProxy } from '@nestjs/microservices';
+import { sendBrokerMessage } from 'broker-comms';
+import {
+  EnsureUserIdMessage,
+  EnsureUserIdMessageReturnType,
+} from 'core-messages';
+import { ConfigService } from '@nestjs/config';
 
 const welcomeMessage = `Welcome to Brawlers!\nSign this message to continue.\n\n`;
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel("nonce")
+    private readonly configService: ConfigService,
+    @InjectModel('nonce')
     private readonly nonceModel: Model<Nonce, Key>,
     @Inject(JWT_AUTH_SERVICE) private readonly jwtAuthService: IJwtAuthService,
-    @Inject("BROKER_REDIS") private redisClient: ClientProxy
+    @Inject('BROKER') private broker: ClientProxy,
   ) {}
 
   async getNonceMessage(walletAddress: string) {
-    const nonce = uuid().replace(/-/g, "");
+    const nonce = uuid().replace(/-/g, '');
 
     this.nonceModel.create({
       pk: `nonce#${walletAddress.toLowerCase()}`,
@@ -39,7 +44,7 @@ export class AuthService {
   async getToken(
     walletAddress: string,
     message: string,
-    signedMessage: string
+    signedMessage: string,
   ) {
     const recoveredAddress = await recoverMessageAddress({
       message,
@@ -47,7 +52,7 @@ export class AuthService {
     });
 
     if (recoveredAddress.toLowerCase() !== walletAddress.toLowerCase()) {
-      throw new Error("Invalid signature");
+      throw new Error('Invalid signature');
     }
 
     const nonce = message.substring(welcomeMessage.length);
@@ -57,7 +62,7 @@ export class AuthService {
       sk: nonce,
     });
     if (!nonceEntry) {
-      throw new Error("Invalid signature");
+      throw new Error('Invalid signature');
     }
 
     await this.nonceModel.delete({
@@ -67,29 +72,16 @@ export class AuthService {
 
     const timestamp = DateTime.fromISO(nonceEntry.timestamp);
     const nonceAge = DateTime.utc().diff(timestamp);
-    if (nonceAge.as("milliseconds") > config.nonceTtl) {
-      return new Error("Invalid nonce");
+    if (
+      nonceAge.as('milliseconds') > this.configService.get<number>('nonceTtl')
+    ) {
+      return new Error('Invalid nonce');
     }
 
-    const result = await firstValueFrom(
-      this.redisClient
-        .send("matchManager.ensureUserId", {
-          walletAddress: walletAddress,
-        })
-        .pipe(
-          timeout(30000),
-          map((response: any) => {
-            console.log("UI gateway - ensureUserId success!", response);
-            // Success...
-            return response;
-          }),
-          catchError((error) => {
-            // Error...
-
-            return throwError(() => new Error(error));
-          })
-        )
-    );
+    const result = await sendBrokerMessage<
+      EnsureUserIdMessage,
+      EnsureUserIdMessageReturnType
+    >(this.broker, new EnsureUserIdMessage(walletAddress));
 
     const { userId } = result;
 

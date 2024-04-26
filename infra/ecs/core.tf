@@ -1,0 +1,266 @@
+resource "aws_ecr_repository" "core_cr" {
+  name = "${var.prefix}-core-cr-${var.environment}"
+}
+
+data "aws_iam_policy_document" "core_task_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "core_task_role" {
+  name               = "${var.prefix}-core-task-role-${var.environment}"
+  assume_role_policy = data.aws_iam_policy_document.core_task_role.json
+}
+
+# Allow DynamoDB access
+resource "aws_iam_policy" "core_policy" {
+  name = "${var.prefix}-core-policy-${var.environment}"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "dynamodb:DescribeTable",
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:UpdateItem"
+        ],
+        Resource = [var.core_table_arn, var.query_store_table_arn]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "core_policy" {
+  role       = aws_iam_role.core_task_role.name
+  policy_arn = aws_iam_policy.core_policy.arn
+}
+
+locals {
+  core_container_definition = {
+    name   = "core"
+    cpu    = 256
+    memory = 512
+    portMappings = [
+      {
+        name          = "game-server-websocket",
+        containerPort = 8080,
+        protocol      = "tcp"
+      }
+    ],
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        "awslogs-group"         = aws_cloudwatch_log_group.log_group.name
+        "awslogs-region"        = "ap-southeast-1"
+        "awslogs-stream-prefix" = "core"
+      }
+    },
+    environment = [
+      {
+        name = "NATS_URI", value = "nats://nats.${var.prefix}.${var.environment}.local:4222"
+      },
+      {
+        name = "BROKER_REDIS_HOST", value = var.redis_host
+      },
+      {
+        name = "BROKER_REDIS_PORT", value = var.redis_port
+      },
+      {
+        name = "TABLE_NAME", value = var.core_table_name
+      },
+      {
+        name = "QUERY_STORE_TABLE_NAME", value = var.query_store_table_name
+      },
+      {
+        name = "GAME_SERVER_WS_PORT", value = "8080"
+      }
+    ]
+  }
+
+  core_ecr_image = aws_ecr_repository.core_cr.repository_url
+
+  core_local_container_overrides = {
+    image   = "node:21"
+    command = ["node", "/prod/server/dist/main.js"]
+    mountPoints = [
+      {
+        sourceVolume  = "local_volume"
+        containerPath = "/prod/server"
+        readOnly      = false
+      }
+    ],
+    volumes = var.environment == "local" ? [{
+      name = "local_volume"
+      host = {
+        sourcePath = "${var.root_dir}/apps/core/dist"
+      }
+    }] : []
+  }
+}
+
+resource "aws_lb_target_group" "game_server_lb_tg" {
+  name        = "${var.prefix}-game-server-lb-tg-${var.environment}"
+  port        = 8080
+  protocol    = "TCP"
+  target_type = "ip"
+  vpc_id      = var.vpc_id
+  health_check {
+    protocol = "TCP"
+  }
+}
+
+resource "aws_acm_certificate" "game_server_lb_cert" {
+  domain_name       = "game-server.${var.environment}.brawlers.bltzr.gg"
+  validation_method = "DNS"
+}
+
+resource "aws_lb_listener" "game_server_lb_listener" {
+  load_balancer_arn = var.lb_arn
+  port              = 8080
+  protocol          = var.environment == "local" ? "HTTP" : "TLS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = aws_acm_certificate.game_server_lb_cert.arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.game_server_lb_tg.arn
+  }
+}
+
+resource "aws_ecs_task_definition" "core_task_definition" {
+  family                   = "${var.prefix}-core-${var.environment}"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = 512
+  memory                   = 1024
+  task_role_arn            = aws_iam_role.core_task_role.arn
+  execution_role_arn       = aws_iam_role.ecs_tasks_execution_role.arn
+
+  container_definitions = jsonencode([
+    merge(
+      local.core_container_definition,
+      {
+        image       = var.environment == "local" ? local.core_local_container_overrides.image : local.core_ecr_image,
+        command     = var.environment == "local" ? local.core_local_container_overrides.command : null,
+        mountPoints = var.environment == "local" ? local.core_local_container_overrides.mountPoints : null,
+        volumes     = var.environment == "local" ? local.core_local_container_overrides.volumes : null,
+        dependsOn = [
+          {
+            containerName = "nats"
+            condition     = "START"
+          }
+        ]
+      }
+    ),
+    {
+      name   = "nats"
+      image  = "nats:2.10.14-alpine"
+      cpu    = 256
+      memory = 512
+      portMappings = [
+        {
+          containerPort = 4222
+          protocol      = "tcp"
+          name          = "nats-client"
+        },
+        {
+          containerPort = 6222
+          protocol      = "tcp"
+          name          = "nats-monitor"
+        },
+        {
+          containerPort = 8222
+          protocol      = "tcp"
+          name          = "nats-cluster"
+        },
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.log_group.name
+          "awslogs-region"        = "ap-southeast-1"
+          "awslogs-stream-prefix" = "nats"
+        }
+      }
+    }
+  ])
+
+  dynamic "volume" {
+    for_each = var.environment == "local" ? [1] : []
+    content {
+      name      = "local_volume"
+      host_path = "${var.root_dir}/apps/core/dist"
+    }
+  }
+}
+
+resource "aws_ecs_service" "core_service" {
+  name            = "${var.prefix}-core-svc-${var.environment}"
+  cluster         = aws_ecs_cluster.cluster.id
+  task_definition = aws_ecs_task_definition.core_task_definition.arn
+  desired_count   = 1
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.game_server_lb_tg.arn
+    container_name   = "core"
+    container_port   = 8080
+  }
+
+  network_configuration {
+    subnets         = var.vpc_private_subnets
+    security_groups = [aws_security_group.task_sg.id]
+  }
+
+  capacity_provider_strategy {
+    capacity_provider = "FARGATE"
+    weight            = 1
+  }
+
+  service_connect_configuration {
+    enabled   = true
+    namespace = var.service_discovery_namespace_arn
+    service {
+      discovery_name = "core"
+      port_name      = "game-server-websocket"
+      client_alias {
+        port = 8080
+      }
+    }
+
+    service {
+      discovery_name = "nats"
+      port_name      = "nats-client"
+      client_alias {
+        port = 4222
+      }
+    }
+  }
+
+  # service_registries {
+  #   registry_arn = aws_service_discovery_service.ui_gateway_service.arn
+  # }
+}
+
+# resource "aws_service_discovery_service" "core_service" {
+#   name = "core"
+#   dns_config {
+#     namespace_id = var.service_discovery_namespace_id
+#     dns_records {
+#       ttl  = 10
+#       type = "A"
+#     }
+#   }
+# }

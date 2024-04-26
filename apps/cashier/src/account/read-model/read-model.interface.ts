@@ -4,5 +4,6 @@ export interface ReadModelKey {
 }
 
 export interface Account extends ReadModelKey {
+  primaryWalletAddress: string;
   balance: number;
 }

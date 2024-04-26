@@ -3,16 +3,21 @@ import {
   MessageChannelAdapter,
   PublishMessageOptions,
   StateCarryingMessage,
-} from "@castore/core";
+} from '@castore/core';
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 
-import { Injectable } from "@nestjs/common";
-import { AccountAggregate } from "src/account/aggregates";
-import { ReadModelService } from "src/account/read-model/read-model.service";
-import { AccountEventDetails } from "src/account/reducers/accounts-reducer";
+import { AccountAggregate } from 'src/account/aggregates';
+import { ReadModelService } from 'src/account/read-model/read-model.service';
+import { AccountEventDetails } from 'src/account/reducers/accounts-reducer';
+import { BalanceUpdatedEvent } from 'cashier-messages';
 
 @Injectable()
 export class QueryModelBusAdapter implements MessageChannelAdapter {
-  constructor(private readonly readModelService: ReadModelService) {}
+  constructor(
+    private readonly readModelService: ReadModelService,
+    @Inject('BROKER') private readonly broker: ClientProxy,
+  ) {}
 
   async publishMessage(
     message: StateCarryingMessage<
@@ -20,17 +25,23 @@ export class QueryModelBusAdapter implements MessageChannelAdapter {
       AccountEventDetails,
       AccountAggregate
     >,
-    options?: PublishMessageOptions
+    options?: PublishMessageOptions,
   ) {
+    const { accountId, primaryWalletAddress, balance } = message.aggregate;
+
     await this.readModelService.upsertAccount(
-      message.aggregate.accountId,
-      message.aggregate.balance
+      accountId,
+      primaryWalletAddress,
+      balance,
     );
 
-    console.log(message.aggregate);
+    this.broker.emit(BalanceUpdatedEvent.messageType, {
+      userId: accountId,
+      balance: balance.toString(),
+    });
   }
   publishMessages: (
     messages: Message[],
-    options?: PublishMessageOptions
+    options?: PublishMessageOptions,
   ) => Promise<void>;
 }

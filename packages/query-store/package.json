@@ -1,0 +1,17 @@
+{
+  "name": "query-store",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.3.7"
+  },
+  "dependencies": {
+    "dynamoose": "^4.0.0",
+    "nestjs-dynamoose": "^0.5.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

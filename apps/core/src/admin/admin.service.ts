@@ -1,0 +1,66 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { sendBrokerMessage } from 'broker-comms';
+import {
+  CreditByWalletAddressMessage as CreditMessage,
+  CreditByWalletAddressMessageResponse as CreditMessageResponse,
+  DebitByWalletAddressMessage as DebitMessage,
+  DebitByWalletAddressMessageResponse as DebitMessageResponse,
+} from 'cashier-messages';
+
+@Injectable()
+export class AdminService {
+  constructor(@Inject('BROKER') private readonly broker: ClientProxy) {}
+
+  async processPointsBalancesUpload(file: Express.Multer.File) {
+    const fileData = file.buffer.toString();
+
+    const lines = fileData.split('\n');
+
+    const items = lines.map((line) => {
+      const [walletAddress, amount] = line.split(',');
+
+      return { walletAddress, amount: parseInt(amount, 10) };
+    });
+
+    let credits = 0;
+    let debits = 0;
+    const errors = [];
+
+    for (const item of items) {
+      if (item.amount > 0) {
+        try {
+          await sendBrokerMessage<CreditMessage, CreditMessageResponse>(
+            this.broker,
+            new CreditMessage(item.walletAddress, item.amount),
+          );
+          credits++;
+        } catch (e) {
+          errors.push({
+            ...e,
+            walletAddress: item.walletAddress,
+            amount: item.amount,
+            type: 'credit',
+          });
+        }
+      } else if (item.amount < 0) {
+        try {
+          await sendBrokerMessage<DebitMessage, DebitMessageResponse>(
+            this.broker,
+            new DebitMessage(item.walletAddress, Math.abs(item.amount)),
+          );
+          debits++;
+        } catch (e) {
+          errors.push({
+            ...e,
+            walletAddress: item.walletAddress,
+            amount: item.amount,
+            type: 'debit',
+          });
+        }
+      }
+    }
+
+    return { credits, debits, errors };
+  }
+}

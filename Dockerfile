@@ -9,11 +9,11 @@ COPY . /usr/src/app
 WORKDIR /usr/src/app
 RUN find . -name '.env*' -exec rm -f {} \;
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN pnpm build --filter=!web --filter=!docs
+RUN pnpm build --filter=!web --filter=!docs --filter=!ui --filter=!admin
 RUN pnpm deploy --filter=ui-gateway --prod /prod/ui-gateway
 RUN cp -r apps/ui-gateway/dist/ /prod/ui-gateway/
-RUN pnpm deploy --filter=match-manager --prod /prod/match-manager
-RUN cp -r apps/match-manager/dist/ /prod/match-manager/
+RUN pnpm deploy --filter=core --prod /prod/core
+RUN cp -r apps/core/dist/ /prod/core/
 RUN pnpm deploy --filter=cashier --prod /prod/cashier
 RUN cp -r apps/cashier/dist/ /prod/cashier/
 
@@ -23,9 +23,9 @@ WORKDIR /prod/ui-gateway
 EXPOSE 3333
 CMD ["node", "dist/main.js"]
 
-FROM base AS match-manager
-COPY --from=build /prod/match-manager /prod/match-manager
-WORKDIR /prod/match-manager
+FROM base AS core
+COPY --from=build /prod/core /prod/core
+WORKDIR /prod/core
 CMD ["node", "dist/main.js"]
 
 FROM base AS cashier

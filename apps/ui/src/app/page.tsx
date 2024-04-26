@@ -1,94 +1,41 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import { useAppState } from '@/components/AppStateProvider';
+import { EthConnectButton, useEthWallet } from '@/components/web3';
+import { BetPlacementWidget } from '@/components/betPlacementWidget';
+import { CurrentBetWidget } from '@/components/currentBetWidget';
+import { HistoricalBetPanel } from '@/components/historicalBetPanel';
+import { twitchChannel } from '@/config';
+import { BetListWidget } from '@/components/betListWidget';
+import { ActivityStreamWidget } from '@/components/activityStreamWidget';
+import { TwitchChat } from 'react-twitch-embed';
 
 export default function Home() {
+  const { isReady, isConnected } = useEthWallet();
+
+  const { currentBets } = useAppState();
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <main>
+      <div className="stream-container">
+        <iframe
+          src="https://viewer.millicast.com?streamId=WBYdQB/brawlers-dev-1&controls=false&showLabels=false"
+          allowFullScreen
+          width="100%"
+          height="100%"
+        ></iframe>
       </div>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+      <BetListWidget />
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+      {isReady && isConnected && <BetPlacementWidget compact={!!currentBets} />}
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+      {isReady && isConnected && currentBets && <CurrentBetWidget />}
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
+      <ActivityStreamWidget />
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+      <div className="widget stream-chat-widget">
+        <TwitchChat channel={twitchChannel} width="100%" height="100%" />
       </div>
     </main>
   );

@@ -1,18 +1,23 @@
-import { Global, Module } from "@nestjs/common";
-import { ClientsModule, Transport } from "@nestjs/microservices";
-import { config } from "./config";
+import { Global, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Global()
 @Module({
   imports: [
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
-        name: "BROKER_REDIS",
-        transport: Transport.REDIS,
-        options: {
-          host: config.redisHost,
-          port: parseInt(config.redisPort),
+        name: 'BROKER',
+        imports: [ConfigModule],
+        useFactory: async (configService: ConfigService) => {
+          return {
+            transport: Transport.NATS,
+            options: {
+              servers: [configService.get<string>('natsUri')],
+            },
+          };
         },
+        inject: [ConfigService],
       },
     ]),
   ],

@@ -1,27 +1,95 @@
-import { EventPattern, Payload } from "@nestjs/microservices";
-
-import { Controller } from "@nestjs/common";
-import { AppService } from "./app.service";
-import { AppGateway } from "./app.gateway";
+import { Controller } from '@nestjs/common';
+import { EventPattern, Payload } from '@nestjs/microservices';
+import {
+  ActivityStreamEvent,
+  BalanceUpdatedEvent,
+  BetPlacedEvent,
+  BetsUpdatedEvent,
+  MatchUpdatedEvent,
+} from 'core-messages';
+import {
+  BetPlacedEvent as BetPlacedUiGatewayEvent,
+  MatchUpdatedEvent as MatchUpdatedUiGatewayEvent,
+  BalanceUpdatedEvent as BalanceUpdatedUiGatewayEvent,
+  ActivityStreamEvent as ActivityStreamUiGatewayEvent,
+  BetsUpdatedEvent as BetsUpdatedUiGatewayEvent,
+} from 'ui-gateway-messages';
+import { AppGateway } from './app.gateway';
+import { DateTime } from 'luxon';
 
 @Controller()
 export class AppController {
-  constructor(
-    private readonly appService: AppService,
-    private readonly appGateway: AppGateway
-  ) {}
+  private lastEventTimestamp: DateTime;
 
-  @EventPattern("bets")
-  bets(@Payload() data: any) {
-    console.log("Got bets update");
-    this.appService.setBets(data);
-    this.appGateway.publish("bets", data);
+  constructor(private readonly gateway: AppGateway) {}
+
+  @EventPattern(BetPlacedEvent.messageType)
+  onBetPlaced(@Payload() data: BetPlacedEvent) {
+    const { ts, seriesCodeName, walletAddress, amount, fighter } = data;
+
+    this.gateway.publish(
+      new BetPlacedUiGatewayEvent(
+        ts,
+        seriesCodeName,
+        walletAddress,
+        amount,
+        fighter,
+      ),
+    );
   }
 
-  @EventPattern("matchStatus")
-  matchStarted(@Payload() data: any) {
-    console.log("Got matchStatus update", data);
-    this.appService.setMatchStatus(data);
-    this.appGateway.publish("matchStatus", data);
+  @EventPattern(MatchUpdatedEvent.messageType)
+  onMatchUpdated(@Payload() data: MatchUpdatedEvent) {
+    const { timestamp, seriesCodeName, matchId, state, startTime, winner } =
+      data;
+
+    const ts = DateTime.fromISO(timestamp);
+
+    if (ts < this.lastEventTimestamp) {
+      console.log('Discarding late event');
+      return;
+    }
+
+    this.lastEventTimestamp = ts;
+
+    this.gateway.publish(
+      new MatchUpdatedUiGatewayEvent(
+        timestamp,
+        seriesCodeName,
+        matchId,
+        state,
+        startTime,
+        winner,
+      ),
+    );
+  }
+
+  @EventPattern(BalanceUpdatedEvent.messageType)
+  onBalanceUpdated(@Payload() data: BalanceUpdatedEvent) {
+    const { timestamp, userId, balance } = data;
+
+    this.gateway.publishToUser(
+      userId,
+      new BalanceUpdatedUiGatewayEvent(timestamp, balance),
+    );
+  }
+
+  @EventPattern(ActivityStreamEvent.messageType)
+  onActivityStream(@Payload() data: ActivityStreamEvent) {
+    const { timestamp, userId, message } = data;
+
+    this.gateway.publishToUser(
+      userId,
+      new ActivityStreamUiGatewayEvent(timestamp, message),
+    );
+  }
+
+  @EventPattern(BetsUpdatedEvent.messageType)
+  onBetsUpdated(@Payload() data: BetsUpdatedEvent) {
+    const { timestamp, seriesCodeName, bets } = data;
+
+    this.gateway.publish(
+      new BetsUpdatedUiGatewayEvent(timestamp, seriesCodeName, bets),
+    );
   }
 }

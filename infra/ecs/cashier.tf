@@ -70,6 +70,9 @@ locals {
     },
     environment = [
       {
+        name = "NATS_URI", value = "nats://nats.${var.prefix}.${var.environment}.local:4222"
+      },
+      {
         name = "REDIS_HOST", value = var.redis_host
       },
       {
@@ -149,5 +152,10 @@ resource "aws_ecs_service" "cashier_service" {
   capacity_provider_strategy {
     capacity_provider = "FARGATE"
     weight            = 1
+  }
+
+  service_connect_configuration {
+    enabled   = true
+    namespace = var.service_discovery_namespace_arn
   }
 }

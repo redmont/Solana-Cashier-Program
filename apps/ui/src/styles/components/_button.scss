@@ -1,0 +1,29 @@
+.p-button {
+  &:focus {
+    @include focused-ring(rgba($buttonBg, 0.7));
+  }
+
+  &.p-button-secondary:enabled:focus {
+    @include focused-ring(rgba($secondaryButtonBg, 0.7));
+  }
+
+  &.p-button-success:enabled:focus {
+    @include focused-ring(rgba($successButtonBg, 0.7));
+  }
+
+  &.p-button-info:enabled:focus {
+    @include focused-ring(rgba($infoButtonBg, 0.7));
+  }
+
+  &.p-button-warning:enabled:focus {
+    @include focused-ring(rgba($warningButtonBg, 0.7));
+  }
+
+  &.p-button-help:enabled:focus {
+    @include focused-ring(rgba($helpButtonBg, 0.7));
+  }
+
+  &.p-button-danger:enabled:focus {
+    @include focused-ring(rgba($dangerButtonBg, 0.7));
+  }
+}

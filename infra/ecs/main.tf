@@ -7,6 +7,20 @@ resource "aws_security_group" "task_sg" {
     cidr_blocks = [var.vpc_cidr_block]
   }
 
+  ingress {
+    from_port   = 4222
+    to_port     = 4222
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+  }
+
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
