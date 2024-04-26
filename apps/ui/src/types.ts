@@ -5,3 +5,9 @@ export interface ChildContainerProps {
 }
 
 export type Fighter = 'doge' | 'pepe';
+
+export interface Bet {
+  amount: string;
+  fighter: string;
+  walletAddress: string;
+}
