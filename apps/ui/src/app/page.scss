@@ -68,6 +68,11 @@ main {
     }
   }
 
+  .connect-wallet-widget {
+    grid-column: 1 / 3;
+    grid-row: 3;
+  }
+
   .stream-chat-widget {
     height: 30rem;
   }
@@ -113,6 +118,11 @@ main {
     &.compact {
       grid-column: 3;
     }
+  }
+
+  .connect-wallet-widget {
+    grid-column: 2 / 4;
+    grid-row: 3;
   }
 
   .current-bet-widget {

@@ -14,6 +14,7 @@ import { BetListWidget } from '@/components/betListWidget';
 import { ActivityStreamWidget } from '@/components/activityStreamWidget';
 import { TwitchChat } from 'react-twitch-embed';
 import { streamUrl } from '@/config';
+import { ConnectWalletWidget } from '@/components/connectWalletWidget';
 
 export default function Home() {
   const { isReady, isConnected } = useEthWallet();
@@ -35,6 +36,8 @@ export default function Home() {
       </div>
 
       <BetListWidget />
+
+      {isReady && !isConnected && <ConnectWalletWidget />}
 
       {isReady && isConnected && <BetPlacementWidget compact={isBetPlaced} />}
 
