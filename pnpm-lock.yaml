@@ -339,6 +339,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.28.14
         version: 5.28.14(react@18.2.0)
+      '@types/ws':
+        specifier: ^8.5.10
+        version: 8.5.10
       '@vercel/analytics':
         specifier: ^1.2.2
         version: 1.2.2(next@14.1.4)(react@18.2.0)
@@ -354,6 +357,9 @@ importers:
       next:
         specifier: 14.1.4
         version: 14.1.4(@babel/core@7.24.4)(react-dom@18.2.0)(react@18.2.0)(sass@1.74.1)
+      posthog-js:
+        specifier: ^1.130.1
+        version: 1.130.1
       primeflex:
         specifier: 3.3.1
         version: 3.3.1
@@ -372,6 +378,12 @@ importers:
       react-twitch-embed:
         specifier: ^3.0.2
         version: 3.0.2(react-dom@18.2.0)(react@18.2.0)
+      socket.io-client:
+        specifier: ^4.7.5
+        version: 4.7.5(bufferutil@4.0.8)(utf-8-validate@6.0.3)
+      ui-gateway-messages:
+        specifier: workspace:*
+        version: link:../../packages/ui-gateway-messages
       wagmi:
         specifier: ^2.5.7
         version: 2.5.18(@tanstack/react-query@5.28.14)(@types/react@18.2.61)(react-dom@18.2.0)(react-native@0.73.6)(react@18.2.0)(typescript@5.3.3)(viem@2.9.9)
@@ -7224,7 +7236,6 @@ packages:
     resolution: {integrity: sha512-vmQSUcfalpIq0R9q7uTo2lXs6eGIpt9wtnLdMv9LVpIjCA/+ufZRozlVoVelIYixx1ugCBKDhn89vnsEGOCx9A==}
     dependencies:
       '@types/node': 20.11.24
-    dev: true
 
   /@types/yargs-parser@21.0.3:
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
@@ -10872,6 +10883,10 @@ packages:
     dependencies:
       bser: 2.1.1
 
+  /fflate@0.4.8:
+    resolution: {integrity: sha512-FJqqoDBR00Mdj9ppamLa/Y7vxm+PRmNWA67N846RvsoYVMKB4q3y/de5PA7gUmRMYK/8CMz2GDZQmCRN1wBcWA==}
+    dev: false
+
   /figures@3.2.0:
     resolution: {integrity: sha512-yaduQFRKLXYOGgEn6AZau90j3ggSOyiqXU0F9JZfeXYhNa+Jk4X+s45A2zg5jns87GAFa34BBm2kXw4XpNcbdg==}
     engines: {node: '>=8'}
@@ -14196,6 +14211,13 @@ packages:
       nanoid: 3.3.7
       picocolors: 1.0.0
       source-map-js: 1.0.2
+    dev: false
+
+  /posthog-js@1.130.1:
+    resolution: {integrity: sha512-BC283kxeJnVIeAxn7ZPHf5sCTA6oXs4uvo9fdGAsbKwwfmF9g09rnJOOaoF95J/auf8HT4YB6Vt2KytqtJD44w==}
+    dependencies:
+      fflate: 0.4.8
+      preact: 10.20.1
     dev: false
 
   /preact@10.20.1:

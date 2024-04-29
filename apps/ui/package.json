@@ -10,17 +10,21 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.28.14",
+    "@types/ws": "^8.5.10",
     "@vercel/analytics": "^1.2.2",
     "connectkit": "^1.7.2",
     "dayjs": "^1.11.10",
     "jwt-decode": "^4.0.0",
     "next": "14.1.4",
+    "posthog-js": "^1.130.1",
     "primeflex": "3.3.1",
     "primeicons": "^6.0.1",
     "primereact": "10.6.2",
     "react": "^18",
     "react-dom": "^18",
     "react-twitch-embed": "^3.0.2",
+    "socket.io-client": "^4.7.5",
+    "ui-gateway-messages": "workspace:*",
     "wagmi": "^2.5.7"
   },
   "devDependencies": {

@@ -5,3 +5,17 @@ export interface ChildContainerProps {
 }
 
 export type Fighter = 'doge' | 'pepe';
+
+export interface Bet {
+  amount: string;
+  fighter: string;
+  walletAddress: string;
+}
+
+export enum MatchStatus {
+  Unknown = '',
+  BetsOpen = 'bettingOpen',
+  PendingStart = 'pendingStart',
+  InProgress = 'matchInProgress',
+  Finished = 'matchFinished',
+}

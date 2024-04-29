@@ -1,58 +1,89 @@
-import { FC, useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { FC, useState, useCallback, useRef, useEffect } from 'react';
 import { classNames } from 'primereact/utils';
 import { Slider, SliderChangeEvent } from 'primereact/slider';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 import dayjs from 'dayjs';
 
-import { Fighter } from '@/types';
-import { useAppState } from '../AppStateProvider';
-import { useRewardRates } from '@/hooks/useRewardRates';
+import { Fighter, MatchStatus } from '@/types';
+import { matchSeries } from '@/config';
+import { useSocket, useAppState, usePostHog } from '@/hooks';
+import { PlaceBetMessage } from 'ui-gateway-messages';
 
 export interface BetPlacementWidgetProps {
   compact?: boolean;
 }
 
+const matchStatusText: Record<MatchStatus, string> = {
+  [MatchStatus.Unknown]: 'Unknown',
+  [MatchStatus.BetsOpen]: 'Pool is open',
+  [MatchStatus.PendingStart]: 'Pool is closed',
+  [MatchStatus.InProgress]: 'Match in progress',
+  [MatchStatus.Finished]: 'Match is finished',
+};
+
 export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
-  const { ownedPoints, totalBets, placeBet } = useAppState();
+  const { balance } = useAppState();
   const [betPercent, setBetPercent] = useState(0);
   const [betPoints, setBetPoints] = useState(0);
   const [fighter, setFighter] = useState<Fighter>('doge');
   const [timeLeft, setTimeLeft] = useState('00 : 00');
+  const [matchTime, setMatchTime] = useState('00 : 00');
   const countdown = useRef<NodeJS.Timeout>();
-  const rewardRates = useRewardRates();
+  const { match } = useAppState();
+  const { send } = useSocket();
+  const posthog = usePostHog();
 
   useEffect(() => {
-    countdown.current = setInterval(() => {
-      const value = dayjs().format('mm[m] : ss[s]');
+    if (!match?.startTime) return;
 
-      setTimeLeft(value);
+    countdown.current = setInterval(() => {
+      const startTime = dayjs(match.startTime);
+      let millisLeft = startTime.diff();
+      let millisSince = dayjs().diff(startTime);
+
+      if (millisLeft < 0) millisLeft = 0;
+
+      const timeLeftVal = dayjs.duration(millisLeft).format('mm[m] : ss[s]');
+      const matchTimeVal = dayjs.duration(millisSince).format('mm[m] : ss[s]');
+
+      setTimeLeft(timeLeftVal);
+      setMatchTime(matchTimeVal);
     }, 1000);
 
     return () => clearInterval(countdown.current);
-  }, []);
+  }, [match?.startTime]);
 
-  const handlePointsChange = useCallback((evt: InputNumberChangeEvent) => {
-    const points = evt?.value || 0;
-    const percent = ownedPoints ? Math.floor((points / ownedPoints) * 100) : 0;
+  const handlePointsChange = useCallback(
+    (evt: InputNumberChangeEvent) => {
+      const points = evt?.value || 0;
+      const percent = balance ? Math.floor((points / balance) * 100) : 0;
 
-    setBetPoints(points);
-    setBetPercent(percent);
-  }, []);
+      setBetPoints(points);
+      setBetPercent(percent);
+    },
+    [balance],
+  );
 
-  const handlePercentChange = useCallback((evt: SliderChangeEvent) => {
-    const percent = evt.value as number;
-    const points = Math.floor((ownedPoints * percent) / 100);
+  const handlePercentChange = useCallback(
+    (evt: SliderChangeEvent) => {
+      const percent = evt.value as number;
+      const points = Math.floor((balance * percent) / 100);
 
-    setBetPercent(percent);
-    setBetPoints(points);
-  }, []);
+      setBetPercent(percent);
+      setBetPoints(points);
+    },
+    [balance],
+  );
 
-  const winRewards = useMemo(() => {
-    const total = totalBets[fighter] ?? 0;
+  const placeBet = useCallback(async () => {
+    await send(new PlaceBetMessage(matchSeries, betPoints, fighter));
 
-    return total ? Math.floor(betPoints / total) * total : 0;
-  }, [totalBets]);
+    posthog?.capture('Stake Placed', {
+      fighter,
+      stake: betPoints,
+    });
+  }, [betPoints, fighter]);
 
   return (
     <div
@@ -62,8 +93,19 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
     >
       <div className="widget-body framed">
         <div className="widget-header">
-          <div className="widget-label">Pool Open</div>
-          <div className="widget-label">{timeLeft}</div>
+          {match?.status && (
+            <div className="widget-label">
+              {matchStatusText[match?.status || MatchStatus.Unknown]}
+            </div>
+          )}
+
+          {match?.status === MatchStatus.BetsOpen && (
+            <div className="widget-label match-timer">{timeLeft}</div>
+          )}
+
+          {match?.status === MatchStatus.InProgress && (
+            <div className="widget-label match-timer">{matchTime}</div>
+          )}
         </div>
 
         <div className="widget-section">
@@ -120,8 +162,10 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
                 label="Confirm"
                 size="large"
                 className="w-full mt-3 confirm-button-compact"
-                disabled={betPoints === 0}
-                onClick={() => placeBet(fighter, betPoints)}
+                disabled={
+                  betPoints === 0 || match?.status !== MatchStatus.BetsOpen
+                }
+                onClick={placeBet}
               />
             )}
           </div>
@@ -140,7 +184,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
 
                 <div className="bet-win-rewards flex justify-content-between text-white">
                   <span>Current win rate:</span>
-                  <span>{rewardRates[fighter]}x</span>
+                  <span>{match?.bets[fighter].winRate}x</span>
                 </div>
               </div>
             </div>
@@ -153,9 +197,11 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
               <Button
                 label="Confirm"
                 size="large"
-                className="w-full text-base text-200"
-                disabled={betPoints === 0}
-                onClick={() => placeBet(fighter, betPoints)}
+                className="w-full text-base"
+                disabled={
+                  betPoints === 0 || match?.status !== MatchStatus.BetsOpen
+                }
+                onClick={placeBet}
               />
             </div>
           </div>

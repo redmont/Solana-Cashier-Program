@@ -17,6 +17,16 @@ $activity-stream-header-height: 3rem;
     border-bottom: 1px solid var(--surface-50);
   }
 
+  .chat-empty {
+    min-height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    color: var(--surface-500);
+    height: calc(100% - $activity-stream-header-height);
+  }
+
   .chat-viewport {
     flex-grow: 1;
     overflow-y: auto;
@@ -34,7 +44,7 @@ $activity-stream-header-height: 3rem;
     line-height: 1.5;
   }
 
-  .chat-sender {
+  .chat-message-timestamp {
     font-weight: bold;
     padding-right: 0.5rem;
   }

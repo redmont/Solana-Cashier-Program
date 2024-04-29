@@ -1,36 +1,55 @@
 'use client';
 
-import { useAppState } from '@/components/AppStateProvider';
-import { EthConnectButton, useEthWallet } from '@/components/web3';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+
+dayjs.extend(duration);
+
+import { useEthWallet, useAppState } from '@/hooks';
 import { BetPlacementWidget } from '@/components/betPlacementWidget';
 import { CurrentBetWidget } from '@/components/currentBetWidget';
-import { HistoricalBetPanel } from '@/components/historicalBetPanel';
 import { twitchChannel } from '@/config';
 import { BetListWidget } from '@/components/betListWidget';
 import { ActivityStreamWidget } from '@/components/activityStreamWidget';
 import { TwitchChat } from 'react-twitch-embed';
+import { streamUrl, trailerUrl } from '@/config';
+import { ConnectWalletWidget } from '@/components/connectWalletWidget';
+import { MatchStatus } from '@/types';
 
 export default function Home() {
   const { isReady, isConnected } = useEthWallet();
 
-  const { currentBets } = useAppState();
+  const { match } = useAppState();
+
+  const isBetPlaced =
+    !!match && match.bets.doge.stake + match.bets.pepe.stake > 0;
 
   return (
     <main>
       <div className="stream-container">
-        <iframe
-          src="https://viewer.millicast.com?streamId=WBYdQB/brawlers-dev-1&controls=false&showLabels=false"
-          allowFullScreen
-          width="100%"
-          height="100%"
-        ></iframe>
+        {match?.status !== MatchStatus.Finished && (
+          <iframe
+            src={streamUrl}
+            allowFullScreen
+            width="100%"
+            height="100%"
+          ></iframe>
+        )}
+
+        {match?.status === MatchStatus.Finished && (
+          <video className="trailer-video" autoPlay muted src={trailerUrl} />
+        )}
+
+        <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
       </div>
 
       <BetListWidget />
 
-      {isReady && isConnected && <BetPlacementWidget compact={!!currentBets} />}
+      {isReady && !isConnected && <ConnectWalletWidget />}
 
-      {isReady && isConnected && currentBets && <CurrentBetWidget />}
+      {isReady && isConnected && <BetPlacementWidget compact={isBetPlaced} />}
+
+      {isReady && isConnected && isBetPlaced && <CurrentBetWidget />}
 
       <ActivityStreamWidget />
 

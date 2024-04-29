@@ -1,49 +1,34 @@
 import { FC } from 'react';
+import { useAppState } from '@/hooks';
+import { useActivityStream } from './useActivityStream';
 
 export const ActivityStreamWidget: FC = () => {
+  const { match } = useAppState();
+  const { messages } = useActivityStream(match?.matchId);
+
   return (
     <div className="widget activity-stream-widget">
       <div className="widget-body">
         <div className="header">Activity Stream</div>
 
-        <div className="chat-viewport">
-          <div className="chat-body">
-            <div className="chat-message">
-              <span className="chat-sender text-primary">Bet placed:</span>
-              [?????] points on [Fighter]
-            </div>
+        {messages.length === 0 && (
+          <div className="chat-empty">No activity yet.</div>
+        )}
 
-            <div className="chat-message">
-              <span className="chat-sender text-primary">Get ready:</span>
-              Fight starts in 5 seconds
-            </div>
-
-            <div className="chat-message">
-              <span className="chat-sender text-primary">Get ready:</span>
-              Fight starts in 4 seconds
-            </div>
-
-            <div className="chat-message">
-              <span className="chat-sender text-primary">Get ready:</span>
-              Fight starts in 3 seconds
-            </div>
-
-            <div className="chat-message">
-              <span className="chat-sender text-primary">Get ready:</span>
-              Fight starts in 2 seconds
-            </div>
-
-            <div className="chat-message">
-              <span className="chat-sender text-primary">Get ready:</span>
-              Fight starts in 1 seconds
-            </div>
-
-            <div className="chat-message">
-              <span className="chat-sender text-primary">Let's go:</span>
-              Fight has started!
+        {messages.length > 0 && (
+          <div className="chat-viewport">
+            <div className="chat-body">
+              {messages.map((msg, index) => (
+                <div key={index} className="chat-message">
+                  <span className="chat-message-timestamp text-primary">
+                    [{msg.timestamp}]
+                  </span>
+                  {msg.text}
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

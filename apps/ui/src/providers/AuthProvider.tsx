@@ -10,9 +10,11 @@ import {
 } from 'react';
 import { useSignMessage } from 'wagmi';
 import { jwtDecode } from 'jwt-decode';
-import { useEthWallet } from '@/components/web3/EthWalletProvider';
+
 import { serverUrl } from '@/config';
 import { ManualPromise } from '@/utils';
+
+import { useEthWallet } from './EthWalletProvider';
 
 const AUTH_TOKEN_STORAGE_KEY = 'authToken';
 

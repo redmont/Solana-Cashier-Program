@@ -1,32 +1,34 @@
 'use client';
 
 import React from 'react';
-import { EthWalletProvider } from '../web3';
-import { AuthProvider } from '../AuthProvider';
-import { AppStateProvider } from '../AppStateProvider';
 
-import { EthConnectButton, EthMobileConnectButton } from '@/components/web3';
+import { EthConnectButton, EthMobileConnectButton } from '../EthConnectButton';
 import { ChildContainerProps } from '@/types';
+import { useAppState } from '@/hooks';
+import { usePostHog } from '@/hooks/usePostHog';
 
 export const Layout = (props: ChildContainerProps) => {
+  usePostHog();
+
+  const { balance } = useAppState();
+
   return (
-    <EthWalletProvider>
-      <AuthProvider>
-        <AppStateProvider>
-          <div className="layout">
-            <div className="logo-container">
-              <img src="/logo.svg" alt="Logo" />
-            </div>
+    <div className="layout">
+      <div className="logo-container">
+        <img className="logo-mobile" src="/logo-mobile.png" alt="Logo" />
+        <img className="logo" src="/logo.png" alt="Logo" />
+      </div>
 
-            <div className="topbar-tools">
-              <EthConnectButton className="p-button-secondary p-button-outlined hidden md:block" />
-              <EthMobileConnectButton className="md:hidden" />
-            </div>
+      <div className="topbar-tools">
+        <div className="topbar-balance">
+          <span>Balance: {balance} points</span>
+        </div>
 
-            {props.children}
-          </div>
-        </AppStateProvider>
-      </AuthProvider>
-    </EthWalletProvider>
+        <EthConnectButton className="p-button-secondary p-button-outlined hidden md:block" />
+        <EthMobileConnectButton className="md:hidden" />
+      </div>
+
+      {props.children}
+    </div>
   );
 };
