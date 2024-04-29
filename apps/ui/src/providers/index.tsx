@@ -8,14 +8,17 @@ import { ChildContainerProps } from '@/types';
 import { EthWalletProvider } from './EthWalletProvider';
 import { AuthProvider } from './AuthProvider';
 import { SocketProvider } from './SocketProvider';
+import { PostHogProvider } from './PostHogProvider';
 
 export const AppProviders = (props: ChildContainerProps) => {
   return (
     <EthWalletProvider>
       <AuthProvider>
-        <SocketProvider>
-          <AppStateProvider>{props.children}</AppStateProvider>
-        </SocketProvider>
+        <PostHogProvider>
+          <SocketProvider>
+            <AppStateProvider>{props.children}</AppStateProvider>
+          </SocketProvider>
+        </PostHogProvider>
       </AuthProvider>
     </EthWalletProvider>
   );

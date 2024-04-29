@@ -1,4 +1,4 @@
-import { FC, useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { FC, useState, useCallback, useRef, useEffect } from 'react';
 import { classNames } from 'primereact/utils';
 import { Slider, SliderChangeEvent } from 'primereact/slider';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 
 import { Fighter, MatchStatus } from '@/types';
 import { matchSeries } from '@/config';
-import { useSocket, useAppState } from '@/hooks';
+import { useSocket, useAppState, usePostHog } from '@/hooks';
 import { PlaceBetMessage } from 'ui-gateway-messages';
 
 export interface BetPlacementWidgetProps {
@@ -31,6 +31,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
   const countdown = useRef<NodeJS.Timeout>();
   const { match } = useAppState();
   const { send } = useSocket();
+  const posthog = usePostHog();
 
   useEffect(() => {
     if (!match?.startTime) return;
@@ -73,6 +74,11 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
 
   const placeBet = useCallback(async () => {
     await send(new PlaceBetMessage(matchSeries, betPoints, fighter));
+
+    posthog?.capture('Stake Placed', {
+      fighter,
+      stake: betPoints,
+    });
   }, [betPoints, fighter]);
 
   return (
