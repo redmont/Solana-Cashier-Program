@@ -1,18 +1,17 @@
 import mixpanel from 'mixpanel-browser';
 import { useEffect } from 'react';
 import { useAccount } from 'wagmi';
-
-const apiKey = process.env.NEXT_PUBLIC_MIXPANEL_API_KEY;
+import { mixpanelApiKey } from '@/config';
 
 export const Analytics = () => {
   const { address, isConnected } = useAccount();
 
   useEffect(() => {
-    if (!apiKey) {
+    if (!mixpanelApiKey) {
       return;
     }
 
-    mixpanel.init(apiKey, {
+    mixpanel.init(mixpanelApiKey, {
       debug: true,
       track_pageview: true,
       persistence: 'localStorage',
@@ -20,7 +19,7 @@ export const Analytics = () => {
   }, []);
 
   useEffect(() => {
-    if (!apiKey) {
+    if (!mixpanelApiKey) {
       return;
     }
 

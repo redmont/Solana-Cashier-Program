@@ -354,6 +354,9 @@ importers:
       jwt-decode:
         specifier: ^4.0.0
         version: 4.0.0
+      mixpanel-browser:
+        specifier: ^2.49.0
+        version: 2.49.0
       next:
         specifier: 14.1.4
         version: 14.1.4(@babel/core@7.24.4)(react-dom@18.2.0)(react@18.2.0)(sass@1.74.1)
@@ -385,6 +388,9 @@ importers:
         specifier: ^2.5.7
         version: 2.5.18(@tanstack/react-query@5.28.14)(@types/react@18.2.61)(react-dom@18.2.0)(react-native@0.73.6)(react@18.2.0)(typescript@5.3.3)(viem@2.9.9)
     devDependencies:
+      '@types/mixpanel-browser':
+        specifier: ^2.49.0
+        version: 2.49.0
       '@types/node':
         specifier: ^20
         version: 20.11.24
@@ -7122,6 +7128,10 @@ packages:
     resolution: {integrity: sha512-K0VQKziLUWkVKiRVrx4a40iPaxTUefQmjtkQofBkYRcoaaL/8rhwDWww9qWbrgicNOgnpIsMxyNIUM4+n6dUIA==}
     dev: true
 
+  /@types/mixpanel-browser@2.49.0:
+    resolution: {integrity: sha512-StmgUnS58d44DmIAEX9Kk8qwisAYCl6E2qulIjYyHXUPuJCPOuyUMTTKBp+aU2F2do+kxAzCxiBtsB4fnBT9Fg==}
+    dev: true
+
   /@types/mocha@10.0.6:
     resolution: {integrity: sha512-dJvrYWxP/UcXm36Qn36fxhUKu8A/xMRXVT2cliFF1Z7UA9liG5Psj3ezNSZw+5puH2czDXRLcXQxf8JbJt0ejg==}
     dev: true
@@ -13369,6 +13379,10 @@ packages:
       - bufferutil
       - utf-8-validate
       - zod
+    dev: false
+
+  /mixpanel-browser@2.49.0:
+    resolution: {integrity: sha512-RZJCO7XXuuHBAWG5fd9Mavz994M7v7W3Qiaq8NzmN631pa4BQ0vNZQtRFqKcCCOBn4xqOZbX2GkuC7ZkQoL4cQ==}
     dev: false
 
   /mkdirp@0.5.6:
