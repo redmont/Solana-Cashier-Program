@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { useAppState } from '../appStateProvider';
+import { useAppState } from '@/hooks';
 import { useActivityStream } from './useActivityStream';
 
 export const ActivityStreamWidget: FC = () => {

@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { useAppState } from '../appStateProvider/AppStateProvider';
+import { useAppState } from '@/hooks';
 
 export const CurrentBetWidget: FC = () => {
   const { match } = useAppState();

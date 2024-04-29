@@ -11,3 +11,11 @@ export interface Bet {
   fighter: string;
   walletAddress: string;
 }
+
+export enum MatchStatus {
+  Unknown = '',
+  BetsOpen = 'bettingOpen',
+  PendingStart = 'pendingStart',
+  InProgress = 'matchInProgress',
+  Finished = 'matchFinished',
+}

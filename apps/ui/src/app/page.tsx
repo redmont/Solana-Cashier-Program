@@ -5,8 +5,7 @@ import duration from 'dayjs/plugin/duration';
 
 dayjs.extend(duration);
 
-import { useAppState } from '@/components/appStateProvider';
-import { useEthWallet } from '@/components/web3';
+import { useEthWallet, useAppState } from '@/hooks';
 import { BetPlacementWidget } from '@/components/betPlacementWidget';
 import { CurrentBetWidget } from '@/components/currentBetWidget';
 import { twitchChannel } from '@/config';
