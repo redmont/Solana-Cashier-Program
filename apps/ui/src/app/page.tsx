@@ -12,8 +12,9 @@ import { twitchChannel } from '@/config';
 import { BetListWidget } from '@/components/betListWidget';
 import { ActivityStreamWidget } from '@/components/activityStreamWidget';
 import { TwitchChat } from 'react-twitch-embed';
-import { streamUrl } from '@/config';
+import { streamUrl, trailerUrl } from '@/config';
 import { ConnectWalletWidget } from '@/components/connectWalletWidget';
+import { MatchStatus } from '@/types';
 
 export default function Home() {
   const { isReady, isConnected } = useEthWallet();
@@ -26,12 +27,18 @@ export default function Home() {
   return (
     <main>
       <div className="stream-container">
-        <iframe
-          src={streamUrl}
-          allowFullScreen
-          width="100%"
-          height="100%"
-        ></iframe>
+        {match?.status !== MatchStatus.Finished && (
+          <iframe
+            src={streamUrl}
+            allowFullScreen
+            width="100%"
+            height="100%"
+          ></iframe>
+        )}
+
+        {match?.status === MatchStatus.Finished && (
+          <video className="trailer-video" autoPlay muted src={trailerUrl} />
+        )}
 
         <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
       </div>
