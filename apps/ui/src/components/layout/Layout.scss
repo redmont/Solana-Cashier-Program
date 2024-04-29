@@ -12,6 +12,18 @@
 .logo-container {
   grid-row: 1;
   grid-column: 1;
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+}
+
+.logo,
+.logo-mobile {
+  height: 3rem;
+}
+
+.logo {
+  display: none;
 }
 
 .topbar-tools {
@@ -20,8 +32,9 @@
   align-self: center;
   justify-self: right;
   display: flex;
-  gap: 2rem;
+  gap: 1rem;
   align-items: center;
+  padding: 0 1rem;
 }
 
 .topbar-balance {
@@ -53,6 +66,14 @@ main {
   .layout {
     max-width: 48rem;
     padding: 0 1rem;
+  }
+
+  .logo {
+    display: block;
+  }
+
+  .logo-mobile {
+    display: none;
   }
 }
 

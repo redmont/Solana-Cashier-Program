@@ -19,7 +19,12 @@ export const Layout = (props: ChildContainerProps) => {
               {({ balance }) => (
                 <div className="layout">
                   <div className="logo-container">
-                    <img src="/logo.svg" alt="Logo" />
+                    <img
+                      className="logo-mobile"
+                      src="/logo-mobile.png"
+                      alt="Logo"
+                    />
+                    <img className="logo" src="/logo.png" alt="Logo" />
                   </div>
 
                   <div className="topbar-tools">
