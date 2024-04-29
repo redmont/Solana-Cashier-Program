@@ -28,6 +28,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
   const [betPoints, setBetPoints] = useState(0);
   const [fighter, setFighter] = useState<Fighter>('doge');
   const [timeLeft, setTimeLeft] = useState('00 : 00');
+  const [matchTime, setMatchTime] = useState('00 : 00');
   const countdown = useRef<NodeJS.Timeout>();
   const { match } = useAppState();
   const { send } = useSocket();
@@ -38,13 +39,16 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
 
     countdown.current = setInterval(() => {
       const startTime = dayjs(match.startTime);
-      let millisLeft = startTime.diff(dayjs());
+      let millisLeft = startTime.diff();
+      let millisSince = dayjs().diff(startTime);
 
       if (millisLeft < 0) millisLeft = 0;
 
-      const value = dayjs.duration(millisLeft).format('mm[m] : ss[s]');
+      const timeLeftVal = dayjs.duration(millisLeft).format('mm[m] : ss[s]');
+      const matchTimeVal = dayjs.duration(millisSince).format('mm[m] : ss[s]');
 
-      setTimeLeft(value);
+      setTimeLeft(timeLeftVal);
+      setMatchTime(matchTimeVal);
     }, 1000);
 
     return () => clearInterval(countdown.current);
@@ -96,7 +100,11 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
           )}
 
           {match?.status === MatchStatus.BetsOpen && (
-            <div className="widget-label">{timeLeft}</div>
+            <div className="widget-label match-timer">{timeLeft}</div>
+          )}
+
+          {match?.status === MatchStatus.InProgress && (
+            <div className="widget-label match-timer">{matchTime}</div>
           )}
         </div>
 

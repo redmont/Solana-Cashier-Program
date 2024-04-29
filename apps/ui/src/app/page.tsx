@@ -33,7 +33,7 @@ export default function Home() {
           height="100%"
         ></iframe>
 
-        <img className="barcode" src="/barcode.png" alt="Join Barcode" />
+        <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
       </div>
 
       <BetListWidget />
