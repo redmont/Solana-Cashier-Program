@@ -4,5 +4,4 @@ export { useSocket } from '@/providers/SocketProvider';
 export { useAppState } from '@/providers/appStateProvider';
 
 export * from './useDeferredState';
-export * from './useMixpanel';
 export * from './usePostHog';

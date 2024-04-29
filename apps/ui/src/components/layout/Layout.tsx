@@ -4,11 +4,10 @@ import React from 'react';
 
 import { EthConnectButton, EthMobileConnectButton } from '../EthConnectButton';
 import { ChildContainerProps } from '@/types';
-import { useAppState, useMixpanel } from '@/hooks';
+import { useAppState } from '@/hooks';
 import { usePostHog } from '@/hooks/usePostHog';
 
 export const Layout = (props: ChildContainerProps) => {
-  useMixpanel();
   usePostHog();
 
   const { balance } = useAppState();
