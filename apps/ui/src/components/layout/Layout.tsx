@@ -5,6 +5,7 @@ import { EthWalletProvider } from '../web3';
 import { AuthProvider } from '../AuthProvider';
 import { AppStateProvider, AppStateContext } from '../appStateProvider';
 import { SocketProvider } from '../SocketProvider';
+import { Analytics } from '../Analytics';
 
 import { EthConnectButton, EthMobileConnectButton } from '@/components/web3';
 import { ChildContainerProps } from '@/types';
@@ -32,6 +33,8 @@ export const Layout = (props: ChildContainerProps) => {
                   </div>
 
                   {props.children}
+
+                  <Analytics />
                 </div>
               )}
             </AppStateContext.Consumer>
