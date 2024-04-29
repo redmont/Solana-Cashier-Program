@@ -5,10 +5,9 @@ import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 import dayjs from 'dayjs';
 
-import { Fighter } from '@/types';
+import { Fighter, MatchStatus } from '@/types';
 import { matchSeries } from '@/config';
-import { useAppState, MatchStatus } from '../appStateProvider';
-import { useSocket } from '@/components/SocketProvider';
+import { useSocket, useAppState } from '@/hooks';
 import { PlaceBetMessage } from 'ui-gateway-messages';
 
 export interface BetPlacementWidgetProps {

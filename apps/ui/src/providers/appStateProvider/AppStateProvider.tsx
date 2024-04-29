@@ -12,7 +12,7 @@ import {
   useReducer,
 } from 'react';
 import { useEthWallet } from '../web3';
-import { useSocket } from '../SocketProvider';
+import { useSocket } from '../../providers/SocketProvider';
 
 import {
   Message,
