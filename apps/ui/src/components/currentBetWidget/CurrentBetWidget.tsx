@@ -1,10 +1,8 @@
 import { FC } from 'react';
-import { useAppState } from '../AppStateProvider';
-import { useRewardRates } from '@/hooks/useRewardRates';
+import { useAppState } from '../appStateProvider/AppStateProvider';
 
 export const CurrentBetWidget: FC = () => {
-  const { currentBets } = useAppState();
-  const { doge: dogeReward, pepe: pepeReward } = useRewardRates();
+  const { match } = useAppState();
 
   return (
     <div className="widget current-bet-widget">
@@ -21,12 +19,12 @@ export const CurrentBetWidget: FC = () => {
 
           <div className="bet-purchase-price mt-3 flex justify-content-between text-white">
             <span>Total staked:</span>
-            <span>{currentBets?.doge ?? 0} points</span>
+            <span>{match?.bets.doge.stake} points</span>
           </div>
 
           <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
             <span>Current win rate:</span>
-            <span>{dogeReward}x</span>
+            <span>{match?.bets.doge.winRate}x</span>
           </div>
         </div>
 
@@ -42,12 +40,12 @@ export const CurrentBetWidget: FC = () => {
 
           <div className="bet-purchase-price mt-3 flex justify-content-between text-white">
             <span>Total staked:</span>
-            <span>{currentBets?.pepe ?? 0} points</span>
+            <span>{match?.bets.pepe.stake} points</span>
           </div>
 
           <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
             <span>Current win rate:</span>
-            <span>{pepeReward}x</span>
+            <span>{match?.bets.pepe.winRate}x</span>
           </div>
         </div>
       </div>

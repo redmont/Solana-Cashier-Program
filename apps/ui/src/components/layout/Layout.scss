@@ -19,6 +19,29 @@
   grid-column: 2;
   align-self: center;
   justify-self: right;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.topbar-balance {
+  background-color: rgba(11, 209, 138, 0.1);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: $borderRadius;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .balance-label {
+    background: var(--primary-700);
+    line-height: 1.5rem;
+    color: #000;
+    padding: 0 0.5rem;
+    font-weight: bold;
+    border-radius: $borderRadius;
+  }
 }
 
 main {

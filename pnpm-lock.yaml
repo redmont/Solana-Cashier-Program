@@ -339,6 +339,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.28.14
         version: 5.28.14(react@18.2.0)
+      '@types/ws':
+        specifier: ^8.5.10
+        version: 8.5.10
       '@vercel/analytics':
         specifier: ^1.2.2
         version: 1.2.2(next@14.1.4)(react@18.2.0)
@@ -372,6 +375,12 @@ importers:
       react-twitch-embed:
         specifier: ^3.0.2
         version: 3.0.2(react-dom@18.2.0)(react@18.2.0)
+      socket.io-client:
+        specifier: ^4.7.5
+        version: 4.7.5(bufferutil@4.0.8)(utf-8-validate@6.0.3)
+      ui-gateway-messages:
+        specifier: workspace:*
+        version: link:../../packages/ui-gateway-messages
       wagmi:
         specifier: ^2.5.7
         version: 2.5.18(@tanstack/react-query@5.28.14)(@types/react@18.2.61)(react-dom@18.2.0)(react-native@0.73.6)(react@18.2.0)(typescript@5.3.3)(viem@2.9.9)
@@ -7224,7 +7233,6 @@ packages:
     resolution: {integrity: sha512-vmQSUcfalpIq0R9q7uTo2lXs6eGIpt9wtnLdMv9LVpIjCA/+ufZRozlVoVelIYixx1ugCBKDhn89vnsEGOCx9A==}
     dependencies:
       '@types/node': 20.11.24
-    dev: true
 
   /@types/yargs-parser@21.0.3:
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
