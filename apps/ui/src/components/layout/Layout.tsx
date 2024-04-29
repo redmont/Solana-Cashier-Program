@@ -1,13 +1,14 @@
 'use client';
 
 import React from 'react';
-import { Analytics } from '../Analytics';
 
 import { EthConnectButton, EthMobileConnectButton } from '../EthConnectButton';
 import { ChildContainerProps } from '@/types';
-import { useAppState } from '@/hooks';
+import { useAppState, useMixpanel } from '@/hooks';
 
 export const Layout = (props: ChildContainerProps) => {
+  useMixpanel();
+
   const { balance } = useAppState();
 
   return (

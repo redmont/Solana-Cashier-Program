@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { mixpanelApiKey } from '@/config';
 
-export const Analytics = () => {
+export function useMixpanel() {
   const { address, isConnected } = useAccount();
 
   useEffect(() => {
@@ -29,6 +29,4 @@ export const Analytics = () => {
       mixpanel.reset();
     }
   }, [address, isConnected]);
-
-  return null;
-};
+}
