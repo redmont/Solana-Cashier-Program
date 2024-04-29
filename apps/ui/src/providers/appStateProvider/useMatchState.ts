@@ -1,6 +1,6 @@
 import { Bet } from '@/types';
 import { useEffect } from 'react';
-import { useSocket } from '../SocketProvider';
+import { useSocket } from '../../providers/SocketProvider';
 
 import {
   GetMatchStatusMessage,

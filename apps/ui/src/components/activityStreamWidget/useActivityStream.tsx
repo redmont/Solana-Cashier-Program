@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import dayjs from 'dayjs';
-import { useSocket } from '../SocketProvider';
+import { useSocket } from '../../providers/SocketProvider';
 
 import {
   GetActivityStreamMessage,

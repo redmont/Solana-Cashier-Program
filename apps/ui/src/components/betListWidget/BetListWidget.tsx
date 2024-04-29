@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { useAppState } from '../appStateProvider/AppStateProvider';
+import { useAppState } from '@/hooks';
 import { truncateEthAddress } from '../../utils';
 
 export const BetListWidget: FC = () => {

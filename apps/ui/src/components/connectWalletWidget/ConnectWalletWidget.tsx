@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { EthConnectButton } from '../web3/EthConnectButton';
+import { EthConnectButton } from '../EthConnectButton';
 
 export const ConnectWalletWidget: FC = () => {
   return (

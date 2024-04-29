@@ -1,7 +1,7 @@
-import { Fighter, Bet } from '@/types';
 import { useMemo } from 'react';
-import { useEthWallet } from '../web3';
 
+import { Fighter, Bet, MatchStatus } from '@/types';
+import { useEthWallet } from '../EthWalletProvider';
 import { MatchState, useMatchState } from './useMatchState';
 
 export interface FighterBets {
@@ -9,14 +9,6 @@ export interface FighterBets {
   total: number;
   stake: number;
   winRate: string;
-}
-
-export enum MatchStatus {
-  Unknown = '',
-  BetsOpen = 'bettingOpen',
-  PendingStart = 'pendingStart',
-  InProgress = 'matchInProgress',
-  Finished = 'matchFinished',
 }
 
 export type MatchInfo = Omit<MatchState, 'bets' | 'state'> & {
