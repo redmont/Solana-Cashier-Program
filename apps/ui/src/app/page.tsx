@@ -37,7 +37,13 @@ export default function Home() {
         )}
 
         {match?.status === MatchStatus.Finished && (
-          <video className="trailer-video" autoPlay muted src={trailerUrl} />
+          <video
+            className="trailer-video"
+            autoPlay
+            muted
+            playsInline
+            src={trailerUrl}
+          />
         )}
 
         <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
