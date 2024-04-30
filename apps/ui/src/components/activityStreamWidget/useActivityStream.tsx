@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import dayjs from 'dayjs';
 import { useSocket } from '../../providers/SocketProvider';
 
@@ -21,6 +21,7 @@ export interface ActivityStreamData {
 
 export function useActivityStream(matchId?: string) {
   const { send, subscribe, connected } = useSocket();
+  const isReady = useRef<boolean>(false);
 
   const [state, patchState, setState] = useDeferredState<ActivityStreamData>({
     messages: [],
@@ -53,7 +54,7 @@ export function useActivityStream(matchId?: string) {
 
   useEffect(() => {
     console.log('Get Activity Stream', connected, matchId);
-    if (!connected || !matchId) return;
+    if (!connected || !matchId || isReady.current) return;
 
     send(new GetActivityStreamMessage(matchSeries, matchId)).then(
       (response: unknown) => {
@@ -68,9 +69,11 @@ export function useActivityStream(matchId?: string) {
             timestamp: dayjs(m.timestamp).format('HH:mm:ss'),
           })),
         });
+
+        isReady.current = true;
       },
     );
-  }, [connected]);
+  }, [connected, matchId]);
 
   return state;
 }
