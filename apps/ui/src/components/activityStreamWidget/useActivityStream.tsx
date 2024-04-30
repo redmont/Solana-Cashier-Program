@@ -70,7 +70,7 @@ export function useActivityStream(matchId?: string) {
         });
       },
     );
-  }, [connected, matchId]);
+  }, [connected]);
 
   return state;
 }

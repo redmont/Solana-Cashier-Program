@@ -21,7 +21,7 @@ export const Layout = (props: ChildContainerProps) => {
 
       <div className="topbar-tools">
         <div className="topbar-balance">
-          <span>Balance: {balance} points</span>
+          <span>Balance: {Math.floor(balance)} points</span>
         </div>
 
         <EthConnectButton className="p-button-secondary p-button-outlined hidden md:block" />
