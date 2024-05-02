@@ -17,6 +17,37 @@ export default function Leaderboard() {
         <div className="body">
           <MobileRecord highlighted />
           <MobileRecord />
+
+          <div className="table">
+            <div className="table-header">
+              <div className="rank">Rank</div>
+              <div className="player">Player</div>
+              <div className="wins">Wins</div>
+              <div className="losses">Losses</div>
+              <div className="winrate">Win Rate</div>
+              <div className="points">Points</div>
+            </div>
+
+            <div className="table-body">
+              <div className="table-row highlighted">
+                <div className="rank">1</div>
+                <div className="player">0xbfj5fZ...dbv3</div>
+                <div className="wins">45</div>
+                <div className="losses">2</div>
+                <div className="winrate">96%</div>
+                <div className="points">3,214,765</div>
+              </div>
+
+              <div className="table-row">
+                <div className="rank">1</div>
+                <div className="player">0xbfj5fZ...dbv3</div>
+                <div className="wins">45</div>
+                <div className="losses">2</div>
+                <div className="winrate">96%</div>
+                <div className="points">3,214,765</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
@@ -36,7 +67,7 @@ const MobileRecord: FC<MobileRecordProps> = ({ highlighted }) => {
     >
       <div className="mobile-record-body">
         <div className="rank">1</div>
-        <div className="wallet">0xbfj5fZ...dbv3</div>
+        <div className="player">0xbfj5fZ...dbv3</div>
         <div className="points-label">Points:</div>
         <div className="points-value">3,214,765</div>
         <div className="winrate-label">Winrate:</div>
