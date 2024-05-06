@@ -5,16 +5,17 @@ import duration from 'dayjs/plugin/duration';
 
 dayjs.extend(duration);
 
+import { TwitchChat } from 'react-twitch-embed';
+import { MatchStatus } from '@/types';
+import { twitchChannel, streamUrl, trailerUrl } from '@/config';
 import { useEthWallet, useAppState } from '@/hooks';
 import { BetPlacementWidget } from '@/components/betPlacementWidget';
 import { CurrentBetWidget } from '@/components/currentBetWidget';
-import { twitchChannel } from '@/config';
 import { BetListWidget } from '@/components/betListWidget';
 import { ActivityStreamWidget } from '@/components/activityStreamWidget';
-import { TwitchChat } from 'react-twitch-embed';
-import { streamUrl, trailerUrl } from '@/config';
 import { ConnectWalletWidget } from '@/components/connectWalletWidget';
-import { MatchStatus } from '@/types';
+import { MatchResultWidget } from '@/components/matchResultWidget';
+
 
 export default function Home() {
   const { isReady, isConnected } = useEthWallet();
@@ -23,6 +24,8 @@ export default function Home() {
 
   const isBetPlaced =
     !!match && match.bets.doge.stake + match.bets.pepe.stake > 0;
+
+  const isMatchFinished = true; // match?.status === MatchStatus.Finished;
 
   return (
     <main>
@@ -53,9 +56,11 @@ export default function Home() {
 
       {isReady && !isConnected && <ConnectWalletWidget />}
 
-      {isReady && isConnected && <BetPlacementWidget compact={isBetPlaced} />}
+      {isReady && isConnected && isMatchFinished && <MatchResultWidget />}
 
-      {isReady && isConnected && isBetPlaced && <CurrentBetWidget />}
+      {isReady && isConnected && !isMatchFinished && <BetPlacementWidget compact={isBetPlaced} />}
+
+      {isReady && isConnected && !isMatchFinished && isBetPlaced && <CurrentBetWidget />}
 
       <ActivityStreamWidget />
 

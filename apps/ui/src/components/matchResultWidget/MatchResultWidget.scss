@@ -1,0 +1,74 @@
+.match-result-widget {
+  .widget-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 1rem;
+  }
+
+  .fighter-image-box {
+    padding: 0.5rem;
+    background: rgba(76, 220, 136, 0.1);
+  }
+
+  .fighter-image {
+    width: 6rem;
+    height: 6rem;
+  }
+
+  .doge-image {
+    display: none;
+  }
+
+  .result-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    font-size: 0.875rem;
+    gap: 0.5rem;
+  }
+
+  .result-title {
+    font-size: 1rem;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .win-amount {
+    font-size: 2.5rem;
+    color: #4cdc88;
+    padding: 0.5rem 0;
+
+    &::after {
+      font-size: 1rem;
+      content: ' points';
+      vertical-align: top;
+      line-height: 2rem;
+      margin-left: 0.5rem;
+    }
+  }
+
+  .bet-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 1rem;
+    align-self: stretch;
+  }
+
+  .widget-actions {
+    margin-top: 1rem;
+    width: 100%;
+
+    button {
+      height: 2.5rem;
+      font-size: 1rem;
+      padding: 0 2rem;
+      border: 1px solid #4cdc88;
+      color: #4cdc88;
+      width: 100%;
+    }
+  }
+}
