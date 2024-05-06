@@ -15,9 +15,9 @@ import {
   GetBalanceMessage as CashierGetBalanceMessage,
   GetBalanceMessageResponse as CashierGetBalanceMessageResponse,
 } from 'cashier-messages';
-import { SeriesService } from './series.service';
 import { sendBrokerMessage } from 'broker-comms';
 import { OnEvent } from '@nestjs/event-emitter';
+import { SeriesService } from './series.service';
 
 @Controller()
 export class SeriesController {

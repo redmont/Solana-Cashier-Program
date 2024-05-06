@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { createActor } from 'xstate';
-import { createGameServerFSM } from './game-server.fsm';
+import { MatchParameters, createGameServerFSM } from './game-server.fsm';
 import { ClientProxy } from '@nestjs/microservices';
 import { sendBrokerMessage } from 'broker-comms';
 import {
@@ -13,6 +13,8 @@ import {
 import { ServerMessage } from './models/server-message';
 import { ServerCapabilities } from './models/server-capabilities';
 import { GameServerConfigService } from '../game-server-config/game-server-config.service';
+import { GameServerCapabilities } from '@/game-server-capabilities/game-server-capabilities.interface';
+import { GameServerCapabilitiesService } from '@/game-server-capabilities/game-server-capabilities.service';
 
 @Injectable()
 export class GameServerService {
@@ -23,21 +25,31 @@ export class GameServerService {
     private eventEmitter: EventEmitter2,
     @Inject('BROKER') private readonly broker: ClientProxy,
     private readonly gameServerConfigService: GameServerConfigService,
+    private readonly gameServerCapabilitiesService: GameServerCapabilitiesService,
   ) {}
 
   async handleGameServerMessage(serverId: string, data: any) {
     this.logger.verbose(`Received message from game server`, data);
 
     if (data.type === 'ready') {
+      const {
+        capabilities,
+      }: {
+        capabilities: ServerCapabilities;
+      } = data;
+
+      // Register capabilities
+      await this.gameServerCapabilitiesService.register(
+        capabilities.models.head,
+        capabilities.models.torso,
+        capabilities.models.legs,
+        capabilities.finishingMoves,
+        capabilities.levels,
+      );
+
       const fsm = this.gameServerFSMs.get(serverId);
 
       if (!fsm) {
-        const {
-          capabilities,
-        }: {
-          capabilities: ServerCapabilities;
-        } = data;
-
         const fsm = createActor(
           createGameServerFSM(
             serverId,
@@ -94,7 +106,7 @@ export class GameServerService {
 
   async allocateServerForMatch(
     matchId: string,
-    matchParameters: any,
+    matchParameters: MatchParameters,
   ): Promise<{ serverId: string; capabilities: any; streamUrl: string }> {
     // We're not checking server capabilities yet,
     // so we just return the first server that's ready.

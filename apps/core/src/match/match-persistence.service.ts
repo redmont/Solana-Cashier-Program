@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
+import { v4 as uuid } from 'uuid';
+import { QueryStoreService } from 'query-store';
 import { Key } from 'src/interfaces/key';
 import { Match } from './interfaces/match.interface';
 import { Bet } from './interfaces/bet.interface';
-import { v4 as uuid } from 'uuid';
-import { QueryStoreService } from 'query-store';
 
 @Injectable()
 export class MatchPersistenceService {

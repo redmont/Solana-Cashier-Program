@@ -1,4 +1,4 @@
-import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
 import { Controller, Logger } from '@nestjs/common';
 import { createAccountCommand } from './commands/create-account.command';
@@ -7,6 +7,7 @@ import { creditAccountCommand } from './commands/credit-account.command';
 import { ReadModelService } from 'src/account/read-model/read-model.service';
 import { debitAccountCommand } from './commands/debit-account.command';
 import {
+  CreateAccountMessage,
   CreditMessage,
   CreditByWalletAddressMessage,
   DebitMessage,
@@ -24,6 +25,29 @@ export class AccountController {
     private readonly eventStore: ConnectedEventStore,
     private readonly readModelService: ReadModelService,
   ) {}
+
+  @MessagePattern(CreateAccountMessage.messageType)
+  async handleCreateAccount(@Payload() data: CreateAccountMessage) {
+    await createAccountCommand(this.eventStore).handler(
+      {
+        accountId: data.accountId,
+        primaryWalletAddress: data.primaryWalletAddress,
+      },
+      [this.eventStore],
+      {},
+    );
+
+    await creditAccountCommand(this.eventStore).handler(
+      {
+        accountId: data.accountId,
+        amount: 1000,
+      },
+      [this.eventStore],
+      {},
+    );
+
+    return { success: true };
+  }
 
   @MessagePattern(GetBalanceMessage.messageType)
   async handleGetBalance(@Payload() data: GetBalanceMessage) {
@@ -147,26 +171,5 @@ export class AccountController {
         };
       }),
     };
-  }
-
-  @EventPattern('user.created')
-  async userCreated(@Payload() data: any) {
-    await createAccountCommand(this.eventStore).handler(
-      {
-        accountId: data.userId,
-        primaryWalletAddress: data.primaryWalletAddress,
-      },
-      [this.eventStore],
-      {},
-    );
-
-    await creditAccountCommand(this.eventStore).handler(
-      {
-        accountId: data.userId,
-        amount: 1000,
-      },
-      [this.eventStore],
-      {},
-    );
   }
 }

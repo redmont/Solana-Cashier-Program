@@ -1,12 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
 import { v4 as uuid } from 'uuid';
-import { DateTime } from 'luxon';
 import { recoverMessageAddress } from 'viem';
-import { Key } from 'src/interfaces/key';
-import { JWT_AUTH_SERVICE } from 'src/jwt-auth/jwt-auth.constants';
-import { IJwtAuthService } from 'src/jwt-auth/jwt-auth.interface';
-import { Nonce } from './nonce.interface';
 import { ClientProxy } from '@nestjs/microservices';
 import { sendBrokerMessage } from 'broker-comms';
 import {
@@ -14,6 +9,11 @@ import {
   EnsureUserIdMessageReturnType,
 } from 'core-messages';
 import { ConfigService } from '@nestjs/config';
+import { Key } from '@/interfaces/key';
+import dayjs from '@/dayjs';
+import { JWT_AUTH_SERVICE } from '@/jwt-auth/jwt-auth.constants';
+import { IJwtAuthService } from '@/jwt-auth/jwt-auth.interface';
+import { Nonce } from './nonce.interface';
 
 const welcomeMessage = `Welcome to Brawlers!\nSign this message to continue.\n\n`;
 
@@ -33,7 +33,7 @@ export class AuthService {
     this.nonceModel.create({
       pk: `nonce#${walletAddress.toLowerCase()}`,
       sk: nonce,
-      timestamp: DateTime.utc().toISO(),
+      timestamp: dayjs.utc().toISOString(),
     });
 
     const messageToSign = welcomeMessage + nonce;
@@ -70,11 +70,9 @@ export class AuthService {
       sk: nonce,
     });
 
-    const timestamp = DateTime.fromISO(nonceEntry.timestamp);
-    const nonceAge = DateTime.utc().diff(timestamp);
-    if (
-      nonceAge.as('milliseconds') > this.configService.get<number>('nonceTtl')
-    ) {
+    const timestamp = dayjs(nonceEntry.timestamp);
+    const nonceAge = dayjs.utc().diff(timestamp);
+    if (nonceAge > this.configService.get<number>('nonceTtl')) {
       return new Error('Invalid nonce');
     }
 

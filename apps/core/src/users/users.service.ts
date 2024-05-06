@@ -1,9 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
 import { v4 as uuid } from 'uuid';
+import { ClientProxy } from '@nestjs/microservices';
 import { User, UserWallet } from './users.interface';
 import { Key } from 'src/interfaces/key';
-import { ClientProxy } from '@nestjs/microservices';
+import { sendBrokerMessage } from 'broker-comms';
+import {
+  CreateAccountMessage,
+  CreateAccountMessageResponse,
+} from 'cashier-messages';
 
 export class UserCreatedEvent {
   public userId: string;
@@ -64,11 +69,12 @@ export class UsersService {
 
     await this.userWalletModel.create(wallet);
 
-    const userCreatedEvent = new UserCreatedEvent();
-    userCreatedEvent.userId = id;
-    userCreatedEvent.primaryWalletAddress = walletAddress;
+    await sendBrokerMessage<CreateAccountMessage, CreateAccountMessageResponse>(
+      this.broker,
+      new CreateAccountMessage(id, walletAddress),
+    );
 
-    this.broker.emit('user.created', userCreatedEvent);
+    // Todo - delete user if account creation fails
 
     return createdUser;
   }

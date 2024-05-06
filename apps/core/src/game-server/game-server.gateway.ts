@@ -7,8 +7,9 @@ import {
 import { Observable } from 'rxjs';
 import { WebSocket } from 'ws';
 import { OnEvent } from '@nestjs/event-emitter';
-import { GameServerService } from './game-server.service';
 import { Logger } from '@nestjs/common';
+import { v4 as uuid } from 'uuid';
+import { GameServerService } from './game-server.service';
 import { ServerMessage } from './models/server-message';
 
 @WebSocketGateway({
@@ -22,7 +23,7 @@ export class GameServerGateway implements OnGatewayDisconnect {
   server: any;
 
   constructor(private gameServerService: GameServerService) {}
-  
+
   handleDisconnect(client: any) {
     const serverId = this.getServerIdFromSocket(client);
 
@@ -47,6 +48,12 @@ export class GameServerGateway implements OnGatewayDisconnect {
   @SubscribeMessage('')
   onEvent(client: WebSocket, data: any): Observable<any> {
     let serverId;
+
+    // Send message acknowledgement
+    if (data.messageId && data?.type && data.type.toLowerCase() !== 'ok') {
+      client.send(JSON.stringify({ type: 'ok', messageId: data.messageId }));
+    }
+
     if (data.type === 'ready') {
       serverId = data.serverId;
       // If we already have the exact same websocket mapped to the serverId,
@@ -76,10 +83,13 @@ export class GameServerGateway implements OnGatewayDisconnect {
     payload: T;
   }) {
     const { serverId, payload } = data;
+
     this.logger.verbose(`Sending data to game server`, data);
     const server = this.serverIdToSocket.get(serverId);
     if (server) {
-      server.send(JSON.stringify(payload));
+      const messageId = uuid();
+
+      server.send(JSON.stringify({ ...payload, messageId }));
     }
   }
 }

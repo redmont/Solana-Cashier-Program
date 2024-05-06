@@ -13,6 +13,7 @@ export class MatchSetup extends ServerMessage {
       };
       displayName: string;
     }[],
+    public readonly level: string,
   ) {
     super('matchSetup');
   }

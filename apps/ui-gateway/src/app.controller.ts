@@ -14,12 +14,13 @@ import {
   ActivityStreamEvent as ActivityStreamUiGatewayEvent,
   BetsUpdatedEvent as BetsUpdatedUiGatewayEvent,
 } from 'ui-gateway-messages';
+import { Dayjs } from 'dayjs';
+import dayjs from '@/dayjs';
 import { AppGateway } from './app.gateway';
-import { DateTime } from 'luxon';
 
 @Controller()
 export class AppController {
-  private lastEventTimestamp: DateTime;
+  private lastEventTimestamp: Dayjs;
 
   constructor(private readonly gateway: AppGateway) {}
 
@@ -43,7 +44,7 @@ export class AppController {
     const { timestamp, seriesCodeName, matchId, state, startTime, winner } =
       data;
 
-    const ts = DateTime.fromISO(timestamp);
+    const ts = dayjs(timestamp);
 
     if (ts < this.lastEventTimestamp) {
       console.log('Discarding late event');
