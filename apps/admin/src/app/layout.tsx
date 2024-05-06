@@ -17,6 +17,7 @@ import { Aside } from '@/components/Aside';
 import {
   AiOutlineDollarCircle,
   AiOutlineHome,
+  AiOutlineOrderedList,
   AiOutlineSetting,
   AiOutlineTrophy,
   AiOutlineUser,
@@ -27,6 +28,7 @@ import { BrandName } from '@/constants';
 const menuItems = [
   { text: 'Dashboard', icon: AiOutlineHome, path: '/' },
   { text: 'Series', icon: AiOutlineTrophy, path: '/series' },
+  { text: 'Roster', icon: AiOutlineOrderedList, path: '/roster' },
   { text: 'Points', icon: AiOutlineDollarCircle, path: '/points' },
   {
     text: 'Game server configs',
