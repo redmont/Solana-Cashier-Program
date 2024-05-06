@@ -1,4 +1,29 @@
 .match-result-widget {
+  &.winner-doge {
+    .fighter-image-box {
+      background: rgba(240, 172, 93, 0.1);
+    }
+
+    .win-amount {
+      color: #f0ac5d;
+    }
+
+    .widget-actions {
+      button {
+        border-color: #f0ac5d;
+        color: #f0ac5d;
+      }
+    }
+
+    .doge-image {
+      display: block;
+    }
+
+    .pepe-image {
+      display: none;
+    }
+  }
+
   .widget-content {
     display: flex;
     flex-direction: column;
@@ -42,11 +67,13 @@
     padding: 0.5rem 0;
 
     &::after {
-      font-size: 1rem;
+      font-size: 0.875rem;
+      font-weight: bold;
       content: ' points';
       vertical-align: top;
-      line-height: 2rem;
+      line-height: 2.5rem;
       margin-left: 0.5rem;
+      text-transform: uppercase;
     }
   }
 
@@ -55,7 +82,7 @@
     flex-direction: row;
     justify-content: space-between;
     gap: 1rem;
-    align-self: stretch;
+    width: 13rem;
   }
 
   .widget-actions {
@@ -69,6 +96,37 @@
       border: 1px solid #4cdc88;
       color: #4cdc88;
       width: 100%;
+    }
+  }
+
+  @media screen and (min-width: 48rem) {
+    .widget-body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .widget-content {
+      flex-direction: row;
+      width: auto;
+      gap: 2rem;
+    }
+
+    .fighter-image {
+      width: 12rem;
+      height: 12rem;
+    }
+
+    .result-info {
+      width: auto;
+      align-items: flex-start;
+    }
+
+    .widget-actions {
+      button {
+        width: auto;
+      }
     }
   }
 }

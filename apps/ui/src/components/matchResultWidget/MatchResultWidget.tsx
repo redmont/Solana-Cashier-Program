@@ -1,9 +1,15 @@
+import { Fighter } from '@/types';
 import { Button } from 'primereact/button';
+import { classNames } from 'primereact/utils';
 import { FC } from 'react';
 
 export const MatchResultWidget: FC = () => {
+  const winner: Fighter = 'doge';
+
   return (
-    <div className="widget match-result-widget">
+    <div
+      className={classNames('widget match-result-widget', `winner-${winner}`)}
+    >
       <div className="widget-body framed">
         <div className="widget-header">
           <div className="widget-label">Match Finished</div>
@@ -16,7 +22,7 @@ export const MatchResultWidget: FC = () => {
           </div>
 
           <div className="result-info">
-            <div className="result-title">Pepe Wins</div>
+            <div className="result-title">{winner} Wins!</div>
 
             <div className="win-amount">+2600</div>
 
