@@ -37,7 +37,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
 
   useEffect(() => {
     if (balance < betPoints) {
-      setError('Insufficient balance of points');
+      setError('Insufficient points balance');
     } else {
       setError('');
     }
