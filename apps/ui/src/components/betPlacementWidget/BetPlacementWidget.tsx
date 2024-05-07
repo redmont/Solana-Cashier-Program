@@ -24,6 +24,7 @@ const matchStatusText: Record<MatchStatus, string> = {
 
 export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
   const { balance } = useAppState();
+  const [error, setError] = useState('');
   const [betPercent, setBetPercent] = useState(0);
   const [betPoints, setBetPoints] = useState(0);
   const [fighter, setFighter] = useState<Fighter>('doge');
@@ -33,6 +34,14 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
   const { match } = useAppState();
   const { send } = useSocket();
   const posthog = usePostHog();
+
+  useEffect(() => {
+    if (balance < betPoints) {
+      setError('Insufficient balance of points');
+    } else {
+      setError('');
+    }
+  }, [balance, betPoints]);
 
   useEffect(() => {
     if (!match?.startTime) return;
@@ -190,16 +199,24 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
             </div>
 
             <div className="bet-confirmation">
-              <div className="text-xs text-600 mb-2">
-                Stakes are locked until the end of the fight.
-              </div>
+              {!error && (
+                <div className="text-sm text-600 mb-2">
+                  Stakes are locked until the end of the fight.
+                </div>
+              )}
+
+              {error && (
+                <div className="text-sm mb-2 text-red-500">{error}</div>
+              )}
 
               <Button
                 label="Confirm"
                 size="large"
                 className="w-full text-base"
                 disabled={
-                  betPoints === 0 || match?.status !== MatchStatus.BetsOpen
+                  !!error ||
+                  betPoints === 0 ||
+                  match?.status !== MatchStatus.BetsOpen
                 }
                 onClick={placeBet}
               />
