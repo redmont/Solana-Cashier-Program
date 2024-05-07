@@ -25,7 +25,7 @@ const matchStatusText: Record<MatchStatus, string> = {
 export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
   const { balance } = useAppState();
   const [error, setError] = useState('');
-  const [betPercent, setBetPercent] = useState(0);
+  const [betPercent, setBetPercent] = useState(25);
   const [betPoints, setBetPoints] = useState(0);
   const [fighter, setFighter] = useState<Fighter>('doge');
   const [timeLeft, setTimeLeft] = useState('00 : 00');
@@ -42,6 +42,10 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
       setError('');
     }
   }, [balance, betPoints]);
+
+  useEffect(() => {
+    setBetPoints(Math.floor((balance * betPercent) / 100));
+  }, [balance, betPercent]);
 
   useEffect(() => {
     if (!match?.startTime) return;
@@ -149,11 +153,15 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
           <div className="points-selection">
             <div className="points-slider-box">
               <div className="points-slider-labels">
-                <span>0%</span>
+                <span>1%</span>
                 <span>100%</span>
               </div>
 
-              <Slider value={betPercent} onChange={handlePercentChange} />
+              <Slider
+                min={1}
+                value={betPercent}
+                onChange={handlePercentChange}
+              />
             </div>
 
             <div className="points-input-group p-inputgroup">
