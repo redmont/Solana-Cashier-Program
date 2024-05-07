@@ -3,9 +3,9 @@ import { MatchPersistenceService } from './match-persistence.service';
 import { sendBrokerMessage } from 'broker-comms';
 import { ClientProxy } from '@nestjs/microservices';
 import { CreditMessage } from 'cashier-messages';
-import { QueryStoreService } from 'query-store';
 import { ActivityStreamService } from 'src/activity-stream/activity-stream.service';
-import { DateTime } from 'luxon';
+import dayjs from '@/dayjs';
+import { SeriesConfig } from '@/series/series-config.model';
 
 @Injectable()
 export class MatchBettingService {
@@ -17,10 +17,15 @@ export class MatchBettingService {
     private readonly activityStreamService: ActivityStreamService,
   ) {}
 
+  async getBets(matchId: string) {
+    return this.matchPersistenceService.getBets(matchId);
+  }
+
   async distributeWinnings(
     seriesCodeName: string,
     matchId: string,
     winningFighter: { displayName: string; codeName: string },
+    seriesConfig: SeriesConfig,
   ) {
     this.logger.log(
       `Distributing winnings, winning fighter is '${winningFighter}'`,
@@ -33,6 +38,10 @@ export class MatchBettingService {
         .filter((bet) => bet.fighter !== winningFighter?.codeName)
         .reduce((acc, bet) => acc + bet.amount, 0) * 0.95;
 
+    const totalWinningWagers = bets
+      .filter((bet) => bet.fighter === winningFighter?.codeName)
+      .reduce((acc, bet) => acc + bet.amount, 0);
+
     this.logger.log(`Win pool is: '${totalWinPool}'`);
 
     const wins = [];
@@ -41,8 +50,13 @@ export class MatchBettingService {
     for (const bet of bets.filter(
       (bet) => bet.fighter === winningFighter?.codeName,
     )) {
+      // Win is proportional to the total amount bet on the winning fighter
       const poolWinnings =
-        totalWinPool > 0 ? (bet.amount / totalWinPool) * totalWinPool : 0;
+        totalWinningWagers > 0
+          ? (bet.amount / totalWinningWagers) * totalWinPool
+          : 0;
+
+      // The win amount is the original bet amount plus the proportional winnings
       const winAmount = bet.amount + poolWinnings;
 
       if (winAmount > 0) {
@@ -75,7 +89,7 @@ export class MatchBettingService {
       await this.activityStreamService.track(
         seriesCodeName,
         matchId,
-        DateTime.utc(),
+        dayjs.utc(),
         'win',
         {
           amount: amount,
@@ -89,7 +103,7 @@ export class MatchBettingService {
       await this.activityStreamService.track(
         seriesCodeName,
         matchId,
-        DateTime.utc(),
+        dayjs.utc(),
         'loss',
         {
           winningFighter: winningFighter?.displayName,

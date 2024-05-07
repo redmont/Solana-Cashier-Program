@@ -9,13 +9,30 @@ export const SeriesSchema = new Schema({
     type: String,
     rangeKey: true,
   },
-  displayName: {
-    type: String,
+  displayName: String,
+  betPlacementTime: Number,
+  fighters: {
+    type: Array,
+    schema: [
+      {
+        type: Object,
+        schema: {
+          codeName: { type: String, required: true },
+          displayName: { type: String, required: true },
+          ticker: { type: String, required: true },
+          model: {
+            type: Object,
+            schema: {
+              head: { type: String, required: true },
+              torso: { type: String, required: true },
+              legs: { type: String, required: true },
+            },
+          },
+        },
+      },
+    ],
   },
-  state: {
-    type: String,
-  },
-  context: {
-    type: Object,
-  },
+  level: String,
+  state: String,
+  context: Object,
 });

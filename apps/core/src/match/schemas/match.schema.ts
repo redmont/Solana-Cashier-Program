@@ -1,5 +1,4 @@
 import { Schema } from 'dynamoose';
-import { DateTime } from 'luxon';
 
 export const MatchSchema = new Schema({
   pk: {

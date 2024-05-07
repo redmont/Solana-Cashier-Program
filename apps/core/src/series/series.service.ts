@@ -1,22 +1,23 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Actor, createActor } from 'xstate';
-import { createSeriesFSM, SeriesEvent } from './series.fsm';
-import { SeriesPersistenceService } from './series-persistence.service';
-import { OnEvent } from '@nestjs/event-emitter';
-import { MatchManagementService } from '../match/match-management.service';
+import { ClientProxy } from '@nestjs/microservices';
 import { sendBrokerMessage } from 'broker-comms';
 import { DebitMessage, DebitMessageResponse } from 'cashier-messages';
-import { ClientProxy } from '@nestjs/microservices';
-import { MatchPersistenceService } from '../match/match-persistence.service';
 import { QueryStoreService } from 'query-store';
+import dayjs from '@/dayjs';
+import { createSeriesFSM, SeriesEvent } from './fsm/series.fsm';
+import { SeriesPersistenceService } from './series-persistence.service';
+import { MatchManagementService } from '../match/match-management.service';
+import { MatchPersistenceService } from '../match/match-persistence.service';
+
 import { MatchBettingService } from '../match/match-betting.service';
 import { GatewayManagerService } from '../gateway-manager/gateway-manager.service';
 import { PromiseQueue } from '../promise-queue';
-import { DateTime } from 'luxon';
-import { ActivityStreamService } from 'src/activity-stream/activity-stream.service';
+import { ActivityStreamService } from '@/activity-stream/activity-stream.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
-export class SeriesService implements OnModuleInit {
+export class SeriesService {
   private readonly logger = new Logger(SeriesService.name);
 
   private fsmInstances: Map<
@@ -35,9 +36,10 @@ export class SeriesService implements OnModuleInit {
     private readonly matchManagementService: MatchManagementService,
     private readonly gatewayManagerService: GatewayManagerService,
     @Inject('BROKER') private readonly broker: ClientProxy,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  async onModuleInit() {
+  async initialise() {
     await this.restoreState();
   }
 
@@ -52,25 +54,25 @@ export class SeriesService implements OnModuleInit {
 
       const persistedState = JSON.parse(series.state);
 
-      if (persistedState.context.startTime) {
-        // Start time would be a string, so we need to convert it back to a date
-        persistedState.context.startTime = DateTime.fromISO(
-          persistedState.context.startTime,
-        );
-      }
       // 'done' states get stuck
       if (persistedState.value?.runMatch?.bettingOpen === 'done') {
         persistedState.value.runMatch = 'retryAllocation';
       }
 
+      /*
       const codeName = series.sk;
 
+      console.log('Initialising persisted state', persistedState);
+
+      
       await this.initSeries(series.sk, series.displayName, persistedState);
       if (persistedState.value?.runMatch) {
         this.instanceMatches.set(codeName, persistedState.context.matchId);
-      }
+      }*/
+      await this.initSeries(series.sk, series.displayName, undefined);
 
       // Jump-start
+      /*
       if (persistedState.value?.runMatch === 'retryAllocation') {
         this.sendEvent(codeName, 'RETRY_ALLOCATION');
       } else if (persistedState.value?.runMatch?.bettingOpen) {
@@ -80,7 +82,11 @@ export class SeriesService implements OnModuleInit {
         this.sendEvent(codeName, 'RUN_MATCH.FINISH_MATCH');
       } else if (persistedState.value === 'runMatchAfterDelay') {
         this.sendEvent(codeName, 'RUN');
-      }
+      } else if (
+        persistedState.value.runMatch?.bettingClosed === 'onStateChange'
+      ) {
+        this.sendEvent(codeName, 'RUN');
+      }*/
     }
   }
 
@@ -93,24 +99,41 @@ export class SeriesService implements OnModuleInit {
     const fsmInstance = createActor(
       createSeriesFSM(codeName, displayName, {
         logger: this.logger,
+        getSeriesConfig: async (codeName) => {
+          const x = await this.seriesPersistenceService.getOne(codeName);
+          return {
+            requiredCapabilities: {},
+            betPlacementTime: x.betPlacementTime,
+            fighters: x.fighters,
+            level: x.level,
+          };
+        },
         setCurrentMatchId: (codeName, matchId) => {
           this.instanceMatches.set(codeName, matchId);
         },
         allocateServerForMatch: (matchId, config) =>
           this.matchManagementService.allocateServerForMatch(matchId, config),
-        determineOutcome: async (serverId, capabilities, matchId, config) => {
+        determineOutcome: async (
+          serverId,
+          capabilities,
+          matchId,
+          config,
+          samplingStartTime,
+        ) => {
           return await this.matchManagementService.determineOutcome(
             serverId,
-            capabilities,
+            capabilities.finishingMoves,
             matchId,
             config,
+            samplingStartTime,
           );
         },
-        distributeWinnings: async (codeName, matchId, fighter) => {
+        distributeWinnings: async (codeName, matchId, fighter, config) => {
           await this.matchBettingService.distributeWinnings(
             codeName,
             matchId,
             fighter,
+            config,
           );
         },
         resetBets: async (codeName) => {
@@ -134,6 +157,9 @@ export class SeriesService implements OnModuleInit {
             context.winningFighter?.codeName,
           );
         },
+        matchCompleted: async () => {
+          this.eventEmitter.emit('series.matchCompleted', codeName);
+        },
       }),
       {
         snapshot: state,
@@ -153,8 +179,29 @@ export class SeriesService implements OnModuleInit {
     this.fsmInstances.set(codeName, { fsm: fsmInstance, promiseQueue });
   }
 
-  async createSeries(codeName: string, displayName: string) {
-    await this.seriesPersistenceService.create(codeName, displayName);
+  async createSeries(
+    codeName: string,
+    displayName: string,
+    betPlacementTime: number,
+    fighters: {
+      codeName: string;
+      displayName: string;
+      ticker: string;
+      model: {
+        head: string;
+        torso: string;
+        legs: string;
+      };
+    }[],
+    level: string,
+  ) {
+    await this.seriesPersistenceService.create(
+      codeName,
+      displayName,
+      betPlacementTime,
+      fighters,
+      level,
+    );
 
     this.initSeries(codeName, displayName);
   }
@@ -249,7 +296,7 @@ export class SeriesService implements OnModuleInit {
 
     this.gatewayManagerService.handleBetPlaced(
       userId,
-      DateTime.utc().toISO(),
+      dayjs.utc().toISOString(),
       currentState.context.codeName,
       walletAddress,
       amount.toString(),
@@ -259,7 +306,7 @@ export class SeriesService implements OnModuleInit {
     await this.activityStreamService.track(
       currentState.context.codeName,
       matchId,
-      DateTime.utc(),
+      dayjs.utc(),
       'betPlaced',
       {
         amount: amount.toString(),

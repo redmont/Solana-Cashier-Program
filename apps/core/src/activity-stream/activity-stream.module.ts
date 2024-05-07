@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ActivityStreamService } from './activity-stream.service';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { ConfigService } from '@nestjs/config';
+import { ActivityStreamService } from './activity-stream.service';
 import { ActivityStreamItemSchema } from './activity-stream-item.schema';
 import { GatewayManagerModule } from 'src/gateway-manager/gateway-manager.module';
 

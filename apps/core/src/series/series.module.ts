@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
+import { DynamooseModule } from 'nestjs-dynamoose';
+import { ConfigService } from '@nestjs/config';
 import { SeriesService } from './series.service';
 import { SeriesController } from './series.controller';
 import { SeriesPersistenceService } from './series-persistence.service';
-import { DynamooseModule } from 'nestjs-dynamoose';
-import { ConfigService } from '@nestjs/config';
 import { SeriesSchema } from './series.schema';
 import { MatchModule } from 'src/match/match.module';
 import { GatewayManagerModule } from 'src/gateway-manager/gateway-manager.module';

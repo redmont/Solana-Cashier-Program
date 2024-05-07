@@ -1,59 +1,8 @@
-import { Logger } from '@nestjs/common';
-import { setup, fromPromise, assign } from 'xstate';
-import { DateTime } from 'luxon';
-import { v4 as uuid } from 'uuid';
-import { SeriesConfig } from './series-config.model';
-
-interface ServerCapabilities {
-  finishingMoves: string[];
-  models: {
-    head: string;
-    torso: string;
-    legs: string;
-  }[];
-}
-
-export interface SeriesContext {
-  codeName: string;
-  config: SeriesConfig;
-  startTime: DateTime | null;
-  matchId: string;
-  serverId: string;
-  capabilities: ServerCapabilities;
-  winningFighter?: {
-    displayName: string;
-    codeName: string;
-  };
-}
-
-export interface FSMDependencies {
-  logger: Logger;
-  setCurrentMatchId: (codeName: string, matchId: string) => void;
-  allocateServerForMatch: (
-    matchId: string,
-    config: SeriesConfig,
-  ) => Promise<{
-    serverId: string;
-    capabilities: ServerCapabilities;
-    streamUrl: string;
-  } | null>;
-  determineOutcome: (
-    serverId: string,
-    capabilities: ServerCapabilities,
-    matchId: string,
-    config: SeriesConfig,
-  ) => Promise<{ codeName: string; displayName: string }>;
-  distributeWinnings: (
-    codeName: string,
-    matchId: string,
-    winningFighter: {
-      displayName: string;
-      codeName: string;
-    },
-  ) => Promise<void>;
-  resetBets: (codeName: string) => Promise<void>;
-  onStateChange: (state: string, context: SeriesContext) => Promise<void>;
-}
+import { setup, assign } from 'xstate';
+import dayjs from '@/dayjs';
+import { getActors } from './actors';
+import { FSMDependencies } from './fsm-dependencies';
+import { SeriesContext } from './series-context';
 
 export type SeriesEvent =
   | 'RUN'
@@ -68,113 +17,18 @@ type InternalEvent = { type: SeriesEvent };
 export function createSeriesFSM(
   codeName: string,
   displayName: string,
-  {
-    logger,
-    setCurrentMatchId,
-    allocateServerForMatch,
-    determineOutcome,
-    distributeWinnings,
-    resetBets,
-    onStateChange,
-  }: FSMDependencies,
+  fsmDependencies: FSMDependencies,
 ) {
   return setup({
     types: {} as {
       context: SeriesContext;
       events: InternalEvent;
     },
-    actors: {
-      generateMatchId: fromPromise<string, string>(
-        async ({ input: codeName }) => {
-          const matchId = uuid();
-
-          setCurrentMatchId(codeName, matchId);
-
-          return matchId;
-        },
-      ),
-      allocateServerForMatch: fromPromise<
-        {
-          serverId: string;
-          capabilities: {
-            finishingMoves: string[];
-            models: {
-              head: string;
-              torso: string;
-              legs: string;
-            }[];
-          };
-          streamUrl: string;
-        },
-        { matchId: string; config: SeriesConfig }
-      >(async ({ input }) => {
-        const serverDetails = await allocateServerForMatch(
-          input.matchId,
-          input.config,
-        );
-        if (!serverDetails) {
-          throw new Error('No server available');
-        }
-
-        return serverDetails;
-      }),
-      determineOutcome: fromPromise<
-        { displayName: string; codeName: string },
-        {
-          serverId: string;
-          capabilities: {
-            finishingMoves: string[];
-            models: {
-              head: string;
-              torso: string;
-              legs: string;
-            }[];
-          };
-          matchId: string;
-          config: SeriesConfig;
-        }
-      >(async ({ input }) => {
-        return await determineOutcome(
-          input.serverId,
-          input.capabilities,
-          input.matchId,
-          input.config,
-        );
-      }),
-      setStartTime: fromPromise<DateTime, number>(
-        async ({ input: betPlacementTime }) =>
-          DateTime.utc().plus({ seconds: betPlacementTime }),
-      ),
-      distributeWinnings: fromPromise<
-        void,
-        {
-          codeName: string;
-          matchId: string;
-          winningFighter: {
-            displayName: string;
-            codeName: string;
-          };
-        }
-      >(async ({ input: { codeName, matchId, winningFighter } }) => {
-        await distributeWinnings(codeName, matchId, winningFighter);
-      }),
-      resetBets: fromPromise<void, string>(async ({ input }) => {
-        await resetBets(input);
-      }),
-      onStateChange: fromPromise<
-        void,
-        { state: string; context: SeriesContext }
-      >(async ({ input }) => {
-        await onStateChange(input.state, input.context);
-      }),
-    },
+    actors: getActors(fsmDependencies),
     delays: {
       BETTING_OPEN_TIME: ({ context }) => {
         return context.config.betPlacementTime * 1000;
       },
-    },
-    guards: {
-      canRerunMatch: () => true,
     },
   }).createMachine({
     id: 'series',
@@ -184,38 +38,33 @@ export function createSeriesFSM(
       displayName,
       config: {
         requiredCapabilities: {},
-        betPlacementTime: 20,
-        fighters: [
-          {
-            displayName: 'Doge',
-            codeName: 'doge',
-            model: {
-              head: 'H_DogeA',
-              torso: 'T_DogeA',
-              legs: 'L_DogeA',
-            },
-          },
-          {
-            displayName: 'Pepe',
-            codeName: 'pepe',
-            model: {
-              head: 'H_PepeA',
-              torso: 'T_PepeA',
-              legs: 'L_PepeA',
-            },
-          },
-        ],
+        betPlacementTime: 30,
+        fighters: [],
+        level: '',
       },
       matchId: null,
       serverId: null,
       startTime: null,
+      samplingStartTime: null,
       capabilities: null,
       winningFighter: null,
     },
     states: {
       idle: {
         on: {
-          RUN: 'runMatch',
+          RUN: 'getSeriesConfig',
+        },
+      },
+      getSeriesConfig: {
+        invoke: {
+          src: 'getSeriesConfig',
+          input: ({ context }) => context.codeName,
+          onDone: {
+            target: 'runMatch',
+            actions: assign({
+              config: ({ event }) => event.output,
+            }),
+          },
         },
       },
       runMatch: {
@@ -292,7 +141,8 @@ export function createSeriesFSM(
               setStartTime: {
                 invoke: {
                   src: 'setStartTime',
-                  input: ({ context: { config } }) => config.betPlacementTime,
+                  input: ({ context: { config } }) =>
+                    config.betPlacementTime + 10_000,
                   onDone: {
                     target: 'onStateChange',
                     actions: assign({
@@ -329,19 +179,33 @@ export function createSeriesFSM(
                     state: 'matchInProgress',
                     context,
                   }),
-                  onDone: 'determineOutcome',
+                  onDone: {
+                    actions: assign({
+                      samplingStartTime: () => dayjs.utc().toISOString(),
+                    }),
+                  },
+                },
+                after: {
+                  10_000: 'determineOutcome',
                 },
               },
               determineOutcome: {
                 invoke: {
                   src: 'determineOutcome',
                   input: ({
-                    context: { serverId, capabilities, matchId, config },
+                    context: {
+                      serverId,
+                      capabilities,
+                      matchId,
+                      config,
+                      samplingStartTime,
+                    },
                   }) => ({
                     serverId,
                     capabilities,
                     matchId,
                     config,
+                    samplingStartTime,
                   }),
                   onDone: {
                     target: 'done',
@@ -355,11 +219,20 @@ export function createSeriesFSM(
                 type: 'final',
               },
             },
+            on: {
+              RUN: 'matchInProgress',
+            },
             onDone: 'matchInProgress',
           },
           matchInProgress: {
             on: {
               'RUN_MATCH.FINISH_MATCH': 'distributeWinnings',
+            },
+            // Timeout, in case we never get a 'match finished' state from the game server
+            after: {
+              120_000: {
+                target: 'distributeWinnings',
+              },
             },
           },
           distributeWinnings: {
@@ -379,11 +252,12 @@ export function createSeriesFSM(
                 invoke: {
                   src: 'distributeWinnings',
                   input: ({
-                    context: { codeName, matchId, winningFighter },
+                    context: { codeName, matchId, winningFighter, config },
                   }) => ({
                     codeName,
                     matchId,
                     winningFighter,
+                    config,
                   }),
                   onDone: 'done',
                 },
@@ -399,23 +273,13 @@ export function createSeriesFSM(
           },
         },
         onDone: {
-          target: 'checkReRunCondition',
+          target: 'matchCompleted',
         },
       },
-      checkReRunCondition: {
-        always: [
-          // Conditional transition using a guard to check if the series should continue
-          { target: 'runMatchAfterDelay', guard: 'canRerunMatch' },
-          // Default transition if no conditions above are met
-          { target: 'idle' },
-        ],
-      },
-      runMatchAfterDelay: {
-        on: {
-          RUN: 'runMatch',
-        },
-        after: {
-          10_000: 'runMatch',
+      matchCompleted: {
+        invoke: {
+          src: 'matchCompleted',
+          onDone: 'idle',
         },
       },
     },

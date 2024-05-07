@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { GlobalClientsModule } from './global-clients-module';
@@ -12,6 +12,9 @@ import { UsersModule } from './users/users.module';
 import { GatewayManagerModule } from './gateway-manager/gateway-manager.module';
 import { AdminModule } from './admin/admin.module';
 import { ActivityStreamModule } from './activity-stream/activity-stream.module';
+import { RosterModule } from './roster/roster.module';
+import { SeriesService } from './series/series.service';
+import { RosterService } from './roster/roster.service';
 
 @Module({
   imports: [
@@ -63,6 +66,17 @@ import { ActivityStreamModule } from './activity-stream/activity-stream.module';
     },
     UsersModule,
     AdminModule,
+    RosterModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(
+    private readonly seriesService: SeriesService,
+    private readonly rosterService: RosterService,
+  ) {}
+
+  async onModuleInit() {
+    await this.seriesService.initialise();
+    await this.rosterService.initialise();
+  }
+}

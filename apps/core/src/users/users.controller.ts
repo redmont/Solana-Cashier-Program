@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { UsersService } from './users.service';
 import { EnsureUserIdMessage } from 'core-messages';
+import { UsersService } from './users.service';
 
 interface EnsureUserIdPayload {
   walletAddress: string;

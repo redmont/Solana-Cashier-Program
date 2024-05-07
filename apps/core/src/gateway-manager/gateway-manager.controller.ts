@@ -6,8 +6,6 @@ import {
 } from 'core-messages';
 import { GatewayManagerService } from './gateway-manager.service';
 import { BalanceUpdatedEvent as CashierBalanceUpdatedEvent } from 'cashier-messages';
-import { BalanceUpdatedEvent } from 'core-messages';
-import { DateTime } from 'luxon';
 
 @Controller()
 export class GatewayManagerController {

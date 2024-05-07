@@ -4,12 +4,12 @@ import {
   ClientProxyFactory,
   Transport,
 } from '@nestjs/microservices';
-import { DateTime } from 'luxon';
+import dayjs from '../dayjs';
 
 interface ClientInstance {
   id: string;
   proxy: ClientProxy;
-  lastSeen: DateTime;
+  lastSeen: dayjs.Dayjs;
 }
 
 export class ClientDiscovery {
@@ -27,7 +27,7 @@ export class ClientDiscovery {
   private start() {
     this.timeoutInterval = setInterval(() => {
       this.instances = this.instances.filter((c) => {
-        const diff = DateTime.utc().diff(c.lastSeen, 'seconds').seconds;
+        const diff = dayjs.utc().diff(c.lastSeen, 'seconds');
         return diff < 60;
       });
     }, 1000 * 30);
@@ -47,12 +47,12 @@ export class ClientDiscovery {
   addClient(instanceId: string) {
     const client = this.instances.find((c) => c.id === instanceId);
     if (client) {
-      client.lastSeen = DateTime.utc();
+      client.lastSeen = dayjs.utc();
     } else {
       this.instances.push({
         id: instanceId,
         proxy: this.createClientProxy(instanceId),
-        lastSeen: DateTime.utc(),
+        lastSeen: dayjs.utc(),
       });
     }
   }

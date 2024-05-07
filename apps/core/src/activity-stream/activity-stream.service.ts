@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel, Model } from 'nestjs-dynamoose';
+import { QueryStoreService } from 'query-store';
+import { Dayjs } from 'dayjs';
 import { ActivityStreamItem } from './interfaces/activity-stream-item.interface';
 import { Key } from 'src/interfaces/key';
-import { InjectModel, Model } from 'nestjs-dynamoose';
-import { DateTime } from 'luxon';
-import { QueryStoreService } from 'query-store';
 import { GatewayManagerService } from 'src/gateway-manager/gateway-manager.service';
 
 export type Activity = 'betPlaced' | 'win' | 'loss';
@@ -45,7 +45,7 @@ export class ActivityStreamService {
   async track(
     seriesCodeName: string,
     matchId: string,
-    timestamp: DateTime,
+    timestamp: Dayjs,
     activity: Activity,
     data: any,
     userId?: string,

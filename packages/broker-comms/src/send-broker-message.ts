@@ -1,5 +1,5 @@
 import { ClientProxy } from '@nestjs/microservices';
-import { catchError, firstValueFrom, map, timeout } from 'rxjs';
+import { catchError, firstValueFrom, map, retry, timeout, timer } from 'rxjs';
 import { BrokerMessage } from './broker-message';
 import { BaseResponse } from './base-response';
 
@@ -12,6 +12,14 @@ export async function sendBrokerMessage<
   const response = await firstValueFrom(
     clientProxy.send(messageType, message).pipe(
       timeout(30000),
+      retry({
+        count: 5,
+        delay: (_error, retryIndex) => {
+          const interval = 10_000;
+          const delay = Math.pow(2, retryIndex - 1) * interval;
+          return timer(delay);
+        },
+      }),
       map((response) => {
         if (!response.success) {
           throw new Error(

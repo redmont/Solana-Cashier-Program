@@ -1,4 +1,4 @@
-import { Key } from "src/interfaces/key";
+import { Key } from 'src/interfaces/key';
 
 export interface User extends Key {
   userId: string;

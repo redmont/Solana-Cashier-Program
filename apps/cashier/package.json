@@ -31,7 +31,6 @@
     "dotenv": "^16.4.5",
     "dynamoose": "^4.0.0",
     "ioredis": "^5.3.2",
-    "luxon": "^3.4.4",
     "mathjs": "^12.4.1",
     "nats": "^2.22.0",
     "nestjs-dynamoose": "^0.5.8",
@@ -42,7 +41,6 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@types/luxon": "^3.4.2",
     "@types/node": "^20.12.7",
     "typescript": "^5.3.3"
   }

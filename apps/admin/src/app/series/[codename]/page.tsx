@@ -1,49 +1,42 @@
 'use client';
 
-import { FieldTemplateProps, RJSFSchema } from '@rjsf/utils';
+import {
+  FieldTemplateProps,
+  ObjectFieldTemplateProps,
+  RJSFSchema,
+} from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import Form, { UiSchema } from '@rjsf/chakra-ui';
-import { Box, FormControl, HStack } from '@chakra-ui/react';
+import {
+  Box,
+  Card,
+  CardBody,
+  FormControl,
+  HStack,
+  Heading,
+} from '@chakra-ui/react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import axios from 'axios';
 
-const schema: RJSFSchema = {
-  title: 'Series',
-  type: 'object',
-  required: ['displayName'],
-  properties: {
-    displayName: { type: 'string', title: 'Display name' },
-    betPlacementTime: { type: 'number', title: 'Bet placement time' },
-    fighters: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          codeName: { type: 'string', title: 'Code name' },
-          displayName: { type: 'string', title: 'Display name' },
-          model: {
-            type: 'object',
-            properties: {
-              head: {
-                type: 'string',
-                title: 'Head',
-                enum: ['H_BrawlerA', 'H_PepeA', 'H_DogeA'],
-              },
-              torso: {
-                type: 'string',
-                title: 'Torso',
-                enum: ['T_BrawlerA', 'T_PepeA', 'T_DogeA'],
-              },
-              legs: {
-                type: 'string',
-                title: 'Legs',
-                enum: ['L_BrawlerA', 'L_PepeA', 'L_DogeA'],
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-};
+const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+
+interface CreateSeriesRequest {
+  codeName: string;
+  displayName: string;
+  betPlacementTime: number;
+  fighters: {
+    codeName: string;
+    displayName: string;
+    thumbnail: string;
+    model: {
+      head: string;
+      torso: string;
+      legs: string;
+    };
+  }[];
+  level: string;
+}
 
 const SecondsFieldTemplate = ({
   id,
@@ -67,12 +60,132 @@ const uiSchema: UiSchema = {
   betPlacementTime: {
     'ui:FieldTemplate': SecondsFieldTemplate,
   },
+  uploadThumbnail: {
+    'ui:options': {
+      accept: '.png',
+      filePreview: true,
+    },
+  },
 };
 
-const EditSeries = () => {
+const EditSeries = ({ params }: { params: { codename: string } }) => {
+  const { isPending, error, data } = useQuery<{
+    capabilities: {
+      headModels: string[];
+      torsoModels: string[];
+      legModels: string[];
+      finishingMoves: string[];
+      levels: string[];
+    };
+  }>({
+    queryKey: ['game-server-capabilities'],
+  });
+
+  const createSeriesMutation = useMutation({
+    mutationFn: (data: CreateSeriesRequest) => {
+      return axios.post(`${baseUrl}/series`, data);
+    },
+  });
+
+  const ObjectFieldTemplate = (props: ObjectFieldTemplateProps) => {
+    if (props.title === 'Fighter') {
+      return (
+        <Card>
+          <CardBody>
+            <Heading as="h6">{props.title}</Heading>
+            <Box mb={2}>{props.description}</Box>
+            {props.properties.map((element) => (
+              <Box className="property-wrapper">{element.content}</Box>
+            ))}
+          </CardBody>
+        </Card>
+      );
+    }
+
+    return (
+      <>
+        <Heading as="h6">{props.title}</Heading>
+        <Box mb={2}>{props.description}</Box>
+        {props.properties.map((element) => (
+          <Box className="property-wrapper">{element.content}</Box>
+        ))}
+      </>
+    );
+  };
+
+  const schema: RJSFSchema = useMemo(
+    () => ({
+      title: 'Series',
+      type: 'object',
+      required: ['displayName'],
+      properties: {
+        codeName: { type: 'string', title: 'Code name' },
+        displayName: { type: 'string', title: 'Display name' },
+        betPlacementTime: { type: 'number', title: 'Bet placement time' },
+        fighters: {
+          type: 'array',
+          title: 'Fighters',
+          items: {
+            type: 'object',
+            title: 'Fighter',
+            properties: {
+              codeName: { type: 'string', title: 'Code name' },
+              displayName: { type: 'string', title: 'Display name' },
+              ticker: { type: 'string', title: 'Ticker' },
+              thumbnail: {},
+              uploadThumbnail: {
+                type: 'string',
+                format: 'data-url',
+                title: 'Upload thumbnail (.png)',
+              },
+              model: {
+                type: 'object',
+                title: 'Model',
+                properties: {
+                  head: {
+                    type: 'string',
+                    title: 'Head',
+                    enum: data?.capabilities.headModels,
+                  },
+                  torso: {
+                    type: 'string',
+                    title: 'Torso',
+                    enum: data?.capabilities.torsoModels,
+                  },
+                  legs: {
+                    type: 'string',
+                    title: 'Legs',
+                    enum: data?.capabilities.legModels,
+                  },
+                },
+              },
+            },
+          },
+        },
+        level: {
+          title: 'Level',
+          enum: data?.capabilities.levels,
+        },
+      },
+    }),
+    [data],
+  );
+
+  const onSubmit = ({ formData }: any) => {
+    if (params.codename === 'new') {
+      createSeriesMutation.mutateAsync(formData);
+    }
+  };
+
   return (
     <Box>
-      <Form schema={schema} uiSchema={uiSchema} validator={validator} />
+      <Form
+        schema={schema}
+        uiSchema={uiSchema}
+        validator={validator}
+        templates={{ ObjectFieldTemplate }}
+        onSubmit={onSubmit}
+      />
     </Box>
   );
 };

@@ -21,7 +21,6 @@ import {
 } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { DateTime } from 'luxon';
 import { ConnectKitButton } from 'connectkit';
 import { motion, useAnimation } from 'framer-motion';
 import {
@@ -37,6 +36,8 @@ import {
   ActivityStreamEvent,
   BetsUpdatedEvent,
 } from 'ui-gateway-messages';
+import dayjs from '../dayjs';
+import { Dayjs } from 'dayjs';
 import { sendMessage, socket } from '../socket';
 import { FighterSelector } from '../components/FighterSelector';
 import { useAuth } from '../components/AuthContextProvider';
@@ -64,7 +65,7 @@ export default function Page(): JSX.Element {
   const [bets, setBets] = useState<
     { walletAddress: string; amount: number; fighter: string }[]
   >([]);
-  const [startTime, setStartTime] = useState<DateTime | undefined>();
+  const [startTime, setStartTime] = useState<Dayjs | undefined>();
   const [winner, setWinner] = useState<string | undefined>();
   const [startsIn, setStartsIn] = useState('');
   const [activityStream, setActivityStream] = useState<
@@ -84,8 +85,14 @@ export default function Page(): JSX.Element {
   useEffect(() => {
     if (startTime) {
       const interval = setInterval(() => {
-        const diff = startTime.diffNow();
-        setStartsIn(diff.toFormat('m:ss'));
+        const diff = startTime.diff(dayjs.utc(), 'seconds');
+        setStartsIn(
+          dayjs
+            .duration({
+              seconds: diff,
+            })
+            .format('m:ss'),
+        );
       }, 1000);
 
       return () => clearInterval(interval);
@@ -125,10 +132,10 @@ export default function Page(): JSX.Element {
 
     socket.off(subscribe.eventType, bufferHandler);
 
-    const lastTimestamp = DateTime.fromISO(response.timestamp);
+    const lastTimestamp = dayjs(response.timestamp);
 
     for (const message of buffer) {
-      if (DateTime.fromISO(message.timestamp) > lastTimestamp) {
+      if (dayjs(message.timestamp) > lastTimestamp) {
         await subscribe.handler(message);
       }
     }
@@ -194,7 +201,7 @@ export default function Page(): JSX.Element {
       setMatchId(matchId);
 
       if (startTime) {
-        const dt = DateTime.fromISO(startTime);
+        const dt = dayjs(startTime);
         setStartTime(dt);
       }
 

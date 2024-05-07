@@ -1,22 +1,22 @@
-import { Module } from "@nestjs/common";
-import { UsersService } from "./users.service";
-import { GlobalClientsModule } from "src/global-clients-module";
-import { DynamooseModule } from "nestjs-dynamoose";
-import { ConfigService } from "@nestjs/config";
-import { UserSchema, UserWalletSchema } from "./users.schema";
-import { UsersController } from "./users.controller";
+import { Module } from '@nestjs/common';
+import { DynamooseModule } from 'nestjs-dynamoose';
+import { ConfigService } from '@nestjs/config';
+import { UsersService } from './users.service';
+import { GlobalClientsModule } from 'src/global-clients-module';
+import { UserSchema, UserWalletSchema } from './users.schema';
+import { UsersController } from './users.controller';
 
 @Module({
   imports: [
     DynamooseModule.forFeatureAsync([
       {
-        name: "user",
+        name: 'user',
         useFactory: (_, configService: ConfigService) => {
           return {
             schema: UserSchema,
             options: {
-              tableName: configService.get<string>("tableName"),
-              create: configService.get<boolean>("isDynamoDbLocal"),
+              tableName: configService.get<string>('tableName'),
+              create: configService.get<boolean>('isDynamoDbLocal'),
             },
           };
         },
@@ -25,13 +25,13 @@ import { UsersController } from "./users.controller";
     ]),
     DynamooseModule.forFeatureAsync([
       {
-        name: "userWallet",
+        name: 'userWallet',
         useFactory: (_, configService: ConfigService) => {
           return {
             schema: UserWalletSchema,
             options: {
-              tableName: configService.get<string>("tableName"),
-              create: configService.get<boolean>("isDynamoDbLocal"),
+              tableName: configService.get<string>('tableName'),
+              create: configService.get<boolean>('isDynamoDbLocal'),
             },
           };
         },

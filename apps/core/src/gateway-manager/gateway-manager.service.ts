@@ -7,7 +7,8 @@ import {
   ActivityStreamEvent,
   BetsUpdatedEvent,
 } from 'core-messages';
-import { DateTime } from 'luxon';
+import dayjs from '@/dayjs';
+import { Dayjs } from 'dayjs';
 import { ClientDiscovery } from './client-discovery';
 
 @Injectable()
@@ -47,10 +48,10 @@ export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
     seriesCodeName: string,
     matchId: string,
     state: string,
-    startTime: DateTime,
+    startTime: string,
     winner: string,
   ) {
-    const timestamp = DateTime.utc().toISO();
+    const timestamp = dayjs.utc().toISOString();
 
     this.emitToAll(
       MatchUpdatedEvent.messageType,
@@ -59,7 +60,7 @@ export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
         seriesCodeName,
         matchId,
         state,
-        startTime?.toISO(),
+        startTime,
         winner,
       ),
     );
@@ -90,7 +91,7 @@ export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
     this.emitToClient(
       userId,
       BalanceUpdatedEvent.messageType,
-      new BalanceUpdatedEvent(DateTime.utc().toISO(), userId, balance),
+      new BalanceUpdatedEvent(dayjs.utc().toISOString(), userId, balance),
     );
   }
 
@@ -122,7 +123,7 @@ export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
 
   handleBetsUpdated(seriesCodeName: string, bets: any[]) {
     this.emitToAll(BetsUpdatedEvent.messageType, {
-      timestamp: DateTime.utc().toISO(),
+      timestamp: dayjs.utc().toISOString(),
       seriesCodeName,
       bets,
     });
