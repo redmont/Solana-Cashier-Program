@@ -4,6 +4,7 @@ import { FC } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import { Button } from 'primereact/button';
+import { ScrollPanel } from 'primereact/scrollpanel';
 
 export default function Leaderboard() {
   return (
@@ -22,8 +23,13 @@ export default function Leaderboard() {
         <div className="body">
           <MobileRecord highlighted />
           <MobileRecord />
+          <MobileRecord />
+          <MobileRecord />
+          <MobileRecord />
+          <MobileRecord />
+          <MobileRecord />
 
-          <div className="table">
+          <ScrollPanel className="table">
             <div className="table-header">
               <div className="rank">Rank</div>
               <div className="player">Player</div>
@@ -162,7 +168,7 @@ export default function Leaderboard() {
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollPanel>
         </div>
       </div>
     </main>
