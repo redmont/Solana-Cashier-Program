@@ -25,7 +25,7 @@ export default function Home() {
     !!match && match.bets.doge.stake + match.bets.pepe.stake > 0;
 
   return (
-    <main>
+    <main className="main-page">
       <div className="stream-container">
         {match?.status !== MatchStatus.Finished && (
           <iframe

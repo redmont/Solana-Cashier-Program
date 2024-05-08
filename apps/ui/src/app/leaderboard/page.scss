@@ -1,0 +1,269 @@
+.leaderboard-page {
+  align-items: center;
+  padding: 0 0.75rem;
+}
+
+.leaderboard {
+  width: 100%;
+  background-color: #0e0e10;
+  padding: 1rem;
+  border-radius: $borderRadius;
+
+  .header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    h1 {
+      font-size: 1.125rem;
+      font-weight: 500;
+      margin: 0;
+    }
+  }
+
+  .search-input-group {
+    width: auto;
+
+    button {
+      height: 2.5rem;
+      width: 2.5rem;
+      color: #c8ccd8;
+      border: 0;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  .search-input {
+    height: 2.5rem;
+    padding: 0 1rem;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 3rem;
+  }
+
+  .mobile-record {
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: $borderRadius;
+    border: 1px solid rgba(76, 220, 136, 0.16);
+
+    &.highlighted {
+      border: 1px solid $primaryColor;
+      background-color: rgba(76, 220, 136, 0.08);
+    }
+  }
+
+  .mobile-record-body {
+    width: 100%;
+    padding: 0.5rem;
+    display: grid;
+    align-items: center;
+    grid-template-columns: 3rem 6rem auto;
+    grid-template-rows: repeat(3, 2rem);
+    column-gap: 0.5rem;
+
+    .rank {
+      grid-column: 1 / 2;
+      grid-row: 1;
+      font-size: 1.25rem;
+      font-weight: bold;
+      justify-self: center;
+    }
+
+    .player {
+      grid-column: 2 / 4;
+      grid-row: 1;
+    }
+
+    .points-label {
+      grid-column: 2;
+      grid-row: 2;
+    }
+
+    .points-value {
+      grid-column: 3;
+      grid-row: 2;
+    }
+
+    .winrate-label {
+      grid-column: 2;
+      grid-row: 3;
+    }
+
+    .winrate-value {
+      grid-column: 3;
+      grid-row: 3;
+    }
+  }
+
+  .mobile-record-footer {
+    display: flex;
+
+    .stat {
+      flex-grow: 1;
+      width: 50%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
+
+      &:first-child {
+        border-bottom-left-radius: $borderRadius;
+      }
+
+      &:last-child {
+        border-bottom-right-radius: $borderRadius;
+      }
+
+      &.wins {
+        background-color: #173026;
+      }
+
+      &.losses {
+        background-color: #180f11;
+      }
+    }
+  }
+
+  .table {
+    display: none;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+
+    .rank {
+      width: 5rem;
+      font-weight: bold;
+    }
+
+    .player {
+      width: 10rem;
+      text-align: left;
+      flex-grow: 1;
+    }
+
+    .wins,
+    .losses {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wins {
+      width: 6rem;
+      background-color: #173026;
+      height: 100%;
+    }
+
+    .losses {
+      width: 6rem;
+      background-color: #180f11;
+      height: 100%;
+    }
+
+    .winrate {
+      width: 8rem;
+    }
+
+    .points {
+      width: 8rem;
+      text-align: left;
+    }
+  }
+
+  .table-header,
+  .table-row {
+    display: flex;
+    flex-direction: row;
+    height: 2.5rem;
+    align-items: center;
+  }
+
+  .table-header {
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    flex-direction: row;
+    height: 2.5rem;
+  }
+
+  .table-viewport {
+    height: calc(100% - 2.5rem);
+    overflow: auto;
+  }
+
+  .table-row {
+    margin-top: 0.5rem;
+    border-radius: $borderRadius;
+    border: 1px solid rgba(76, 220, 136, 0.16);
+
+    &.highlighted {
+      border: 1px solid $primaryColor;
+      background-color: rgba(76, 220, 136, 0.08);
+    }
+  }
+}
+
+@media screen and (min-width: 36rem) {
+  .leaderboard {
+    .mobile-record {
+      font-size: 1rem;
+    }
+
+    .mobile-record-body {
+      grid-template-columns: 4rem 6rem auto;
+
+      .rank {
+        font-size: 1.25rem;
+      }
+    }
+
+    .header {
+      height: 2.5rem;
+    }
+
+    .body {
+      height: calc(100% - 2.5rem);
+    }
+  }
+}
+
+@media screen and (min-width: 48rem) {
+  .leaderboard-page {
+    padding-bottom: 1rem;
+  }
+
+  .leaderboard {
+    padding: 1.5rem;
+    height: 100%;
+
+    .header {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mobile-record {
+      display: none;
+    }
+
+    .table {
+      display: block;
+    }
+  }
+}
+
+@media screen and (min-width: 75rem) {
+  .leaderboard {
+    max-width: 75rem;
+
+    .table {
+      .winrate {
+        width: 20rem;
+      }
+    }
+  }
+}
