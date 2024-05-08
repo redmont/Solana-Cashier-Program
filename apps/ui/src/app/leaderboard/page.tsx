@@ -3,6 +3,7 @@
 import { FC } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
+import { Button } from 'primereact/button';
 
 export default function Leaderboard() {
   return (
@@ -11,7 +12,11 @@ export default function Leaderboard() {
         <div className="header">
           <h1>Leaderboard</h1>
 
-          <InputText />
+          <div className="search-input-group p-inputgroup">
+            <InputText className="search-input" placeholder="Search" />
+
+            <Button icon="pi pi-search" className="p-button-" />
+          </div>
         </div>
 
         <div className="body">
@@ -28,23 +33,133 @@ export default function Leaderboard() {
               <div className="points">Points</div>
             </div>
 
-            <div className="table-body">
-              <div className="table-row highlighted">
-                <div className="rank">1</div>
-                <div className="player">0xbfj5fZ...dbv3</div>
-                <div className="wins">45</div>
-                <div className="losses">2</div>
-                <div className="winrate">96%</div>
-                <div className="points">3,214,765</div>
-              </div>
+            <div className="table-viewport">
+              <div className="table-body">
+                <div className="table-row highlighted">
+                  <div className="rank">1</div>
+                  <div className="player">0xbfj5fZ...dbv3</div>
+                  <div className="wins">45</div>
+                  <div className="losses">2</div>
+                  <div className="winrate">96%</div>
+                  <div className="points">3,214,765</div>
+                </div>
 
-              <div className="table-row">
-                <div className="rank">1</div>
-                <div className="player">0xbfj5fZ...dbv3</div>
-                <div className="wins">45</div>
-                <div className="losses">2</div>
-                <div className="winrate">96%</div>
-                <div className="points">3,214,765</div>
+                <div className="table-row">
+                  <div className="rank">1</div>
+                  <div className="player">0xbfj5fZ...dbv3</div>
+                  <div className="wins">45</div>
+                  <div className="losses">2</div>
+                  <div className="winrate">96%</div>
+                  <div className="points">3,214,765</div>
+                </div>
+
+                <div className="table-row">
+                  <div className="rank">1</div>
+                  <div className="player">0xbfj5fZ...dbv3</div>
+                  <div className="wins">45</div>
+                  <div className="losses">2</div>
+                  <div className="winrate">96%</div>
+                  <div className="points">3,214,765</div>
+                </div>
+
+                <div className="table-row">
+                  <div className="rank">1</div>
+                  <div className="player">0xbfj5fZ...dbv3</div>
+                  <div className="wins">45</div>
+                  <div className="losses">2</div>
+                  <div className="winrate">96%</div>
+                  <div className="points">3,214,765</div>
+                </div>
+
+                <div className="table-row">
+                  <div className="rank">1</div>
+                  <div className="player">0xbfj5fZ...dbv3</div>
+                  <div className="wins">45</div>
+                  <div className="losses">2</div>
+                  <div className="winrate">96%</div>
+                  <div className="points">3,214,765</div>
+                </div>
+
+                <div className="table-row">
+                  <div className="rank">1</div>
+                  <div className="player">0xbfj5fZ...dbv3</div>
+                  <div className="wins">45</div>
+                  <div className="losses">2</div>
+                  <div className="winrate">96%</div>
+                  <div className="points">3,214,765</div>
+                </div>
+
+                <div className="table-row">
+                  <div className="rank">1</div>
+                  <div className="player">0xbfj5fZ...dbv3</div>
+                  <div className="wins">45</div>
+                  <div className="losses">2</div>
+                  <div className="winrate">96%</div>
+                  <div className="points">3,214,765</div>
+                </div>
+
+                <div className="table-row">
+                  <div className="rank">1</div>
+                  <div className="player">0xbfj5fZ...dbv3</div>
+                  <div className="wins">45</div>
+                  <div className="losses">2</div>
+                  <div className="winrate">96%</div>
+                  <div className="points">3,214,765</div>
+                </div>
+
+                <div className="table-row">
+                  <div className="rank">1</div>
+                  <div className="player">0xbfj5fZ...dbv3</div>
+                  <div className="wins">45</div>
+                  <div className="losses">2</div>
+                  <div className="winrate">96%</div>
+                  <div className="points">3,214,765</div>
+                </div>
+
+                <div className="table-row">
+                  <div className="rank">1</div>
+                  <div className="player">0xbfj5fZ...dbv3</div>
+                  <div className="wins">45</div>
+                  <div className="losses">2</div>
+                  <div className="winrate">96%</div>
+                  <div className="points">3,214,765</div>
+                </div>
+
+                <div className="table-row">
+                  <div className="rank">1</div>
+                  <div className="player">0xbfj5fZ...dbv3</div>
+                  <div className="wins">45</div>
+                  <div className="losses">2</div>
+                  <div className="winrate">96%</div>
+                  <div className="points">3,214,765</div>
+                </div>
+
+                <div className="table-row">
+                  <div className="rank">1</div>
+                  <div className="player">0xbfj5fZ...dbv3</div>
+                  <div className="wins">45</div>
+                  <div className="losses">2</div>
+                  <div className="winrate">96%</div>
+                  <div className="points">3,214,765</div>
+                </div>
+
+                <div className="table-row">
+                  <div className="rank">1</div>
+                  <div className="player">0xbfj5fZ...dbv3</div>
+                  <div className="wins">45</div>
+                  <div className="losses">2</div>
+                  <div className="winrate">96%</div>
+                  <div className="points">3,214,765</div>
+                </div>
+
+                <div className="table-row">
+                  <div className="rank">1</div>
+                  <div className="player">0xbfj5fZ...dbv3</div>
+                  <div className="wins">45</div>
+                  <div className="losses">2</div>
+                  <div className="winrate">96%</div>
+                  <div className="points">3,214,765</div>
+                </div>
               </div>
             </div>
           </div>
