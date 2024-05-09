@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from './users.service';
-import { GlobalClientsModule } from 'src/global-clients-module';
+import { GlobalClientsModule } from '@/globalClientsModule';
 import { UserSchema, UserWalletSchema } from './users.schema';
 import { UsersController } from './users.controller';
 

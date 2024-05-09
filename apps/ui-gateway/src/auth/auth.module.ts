@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { NonceSchema } from './nonce.schema';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtAuthModule } from 'src/jwt-auth/jwt-auth.module';
+import { JwtAuthModule } from '@/jwtAuth/jwtAuth.module';
 
 @Module({
   imports: [

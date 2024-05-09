@@ -1,7 +1,7 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DynamooseModule } from 'nestjs-dynamoose';
-import { GlobalClientsModule } from './global-clients-module';
+import { GlobalClientsModule } from './globalClientsModule';
 import { SeriesModule } from './series/series.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RedisCacheModule } from 'global-cache';

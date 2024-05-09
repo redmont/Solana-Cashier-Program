@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import configuration from './configuration';
 import { AppModule } from './app.module';
-import { RedisIoAdapter } from './websocket/redis-io-adapter';
+import { RedisIoAdapter } from './websocket/redisIoAdapter';
 
 async function bootstrap() {
   const config = configuration();

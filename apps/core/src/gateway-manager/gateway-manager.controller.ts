@@ -1,16 +1,11 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern } from '@nestjs/microservices';
-import {
-  RegisterGatewayInstanceMessage,
-  SubscribeToSeriesMessage,
-} from 'core-messages';
+import { RegisterGatewayInstanceMessage } from 'core-messages';
 import { GatewayManagerService } from './gateway-manager.service';
 import { BalanceUpdatedEvent as CashierBalanceUpdatedEvent } from 'cashier-messages';
 
 @Controller()
 export class GatewayManagerController {
-  private readonly subscriptions = {};
-
   constructor(private readonly gatewayManagerService: GatewayManagerService) {}
 
   @EventPattern(RegisterGatewayInstanceMessage.messageType)
@@ -19,15 +14,6 @@ export class GatewayManagerController {
 
     this.gatewayManagerService.registerInstance(instanceId);
 
-    return { success: true };
-  }
-
-  @EventPattern(SubscribeToSeriesMessage.messageType)
-  async handleSubscribeToSeries(data: {
-    seriesCodeName: string;
-    clientId: string;
-  }) {
-    this.subscriptions[data.clientId] = data.seriesCodeName;
     return { success: true };
   }
 

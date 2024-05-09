@@ -12,6 +12,7 @@ export class SeriesConfigFighter {
   public displayName: string;
   public codeName: string;
   public ticker: string;
+  public thumbnailUrl: string;
   public model: {
     head: string;
     torso: string;

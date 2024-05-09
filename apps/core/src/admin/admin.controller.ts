@@ -78,7 +78,7 @@ export class AdminController {
       codeName,
       displayName,
       betPlacementTime,
-      fighters,
+      fighters.map((fighter) => ({ ...fighter, thumbnailUrl: '' })),
       level,
     );
   }

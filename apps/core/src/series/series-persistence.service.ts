@@ -28,6 +28,7 @@ export class SeriesPersistenceService {
       codeName: string;
       displayName: string;
       ticker: string;
+      thumbnailUrl: string;
       model: {
         head: string;
         torso: string;
@@ -68,13 +69,20 @@ export class SeriesPersistenceService {
   async savePublicState(
     codeName: string,
     matchId: string,
+    fighters: {
+      codeName: string;
+      displayName: string;
+      ticker: string;
+      thumbnailUrl: string;
+    }[],
     state: any,
     startTime?: string,
     winner?: string,
   ) {
-    await this.queryStore.updateSeries(
+    await this.queryStore.updateCurrentMatch(
       codeName,
       matchId,
+      fighters,
       state,
       startTime,
       winner,

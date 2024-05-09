@@ -11,8 +11,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Key } from '@/interfaces/key';
 import dayjs from '@/dayjs';
-import { JWT_AUTH_SERVICE } from '@/jwt-auth/jwt-auth.constants';
-import { IJwtAuthService } from '@/jwt-auth/jwt-auth.interface';
+import { JWT_AUTH_SERVICE } from '@/jwtAuth/jwtAuth.constants';
+import { IJwtAuthService } from '@/jwtAuth/jwtAuth.interface';
 import { Nonce } from './nonce.interface';
 
 const welcomeMessage = `Welcome to Brawlers!\nSign this message to continue.\n\n`;

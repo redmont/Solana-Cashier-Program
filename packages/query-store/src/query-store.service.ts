@@ -1,12 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
 import { Key } from './interfaces/key.interface';
 import { MatchModel } from './interfaces/match.interface';
 import { SeriesModel } from './interfaces/series.interface';
 import { ActivityStreamModel } from './interfaces/activityStream.interface';
+import { CurrentMatchModel } from './interfaces/currentMatch.interface';
+import { UserMatchResult } from './interfaces/userMatchResult.interface';
 
 @Injectable()
-export class QueryStoreService {
+export class QueryStoreService implements OnModuleInit {
   constructor(
     @InjectModel('series')
     private readonly seriesModel: Model<SeriesModel, Key>,
@@ -14,7 +16,31 @@ export class QueryStoreService {
     private readonly matchModel: Model<MatchModel, Key>,
     @InjectModel('activityStream')
     private readonly activityStreamModel: Model<ActivityStreamModel, Key>,
+    @InjectModel('currentMatch')
+    private readonly currentMatchModel: Model<CurrentMatchModel, Key>,
+    @InjectModel('userMatchResult')
+    private readonly userMatchResultModel: Model<UserMatchResult, Key>,
   ) {}
+
+  async onModuleInit() {
+    // Ensure there is a current match item
+    const currentMatch = await this.currentMatchModel.get({
+      pk: 'currentMatch',
+      sk: 'currentMatch',
+    });
+
+    if (!currentMatch) {
+      await this.currentMatchModel.create({
+        pk: 'currentMatch',
+        sk: 'currentMatch',
+        fighters: [],
+        state: 'idle',
+        bets: [],
+        matchId: '',
+        seriesCodeName: '',
+      });
+    }
+  }
 
   async getSeries(seriesCodeName: string) {
     const series = await this.seriesModel.get({
@@ -23,6 +49,18 @@ export class QueryStoreService {
     });
 
     return series;
+  }
+
+  async getCurrentMatch() {
+    const currentMatch = await this.currentMatchModel.get({
+      pk: 'currentMatch',
+      sk: 'currentMatch',
+    });
+
+    return {
+      ...currentMatch,
+      bets: currentMatch.bets ?? [],
+    };
   }
 
   async saveSeries(codeName: string, matchId: string, state: string) {
@@ -58,6 +96,55 @@ export class QueryStoreService {
         matchId: matchId ?? undefined,
         startTime: startTime ?? undefined,
         winner: winner ?? undefined,
+      },
+    );
+  }
+
+  async updateCurrentMatch(
+    seriesCodeName: string,
+    matchId: string,
+    fighters: {
+      codeName: string;
+      displayName: string;
+      ticker: string;
+      thumbnailUrl: string;
+    }[],
+    state: string,
+    startTime?: string,
+    winner?: string,
+  ) {
+    await this.currentMatchModel.update(
+      {
+        pk: `currentMatch`,
+        sk: 'currentMatch',
+      },
+      {
+        seriesCodeName,
+        fighters,
+        state,
+        matchId: matchId ?? undefined,
+        startTime: startTime ?? undefined,
+        winner: winner ?? undefined,
+      },
+    );
+  }
+
+  async saveCurrentMatch(
+    seriesCodeName: string,
+    matchId: string,
+    state: string,
+    startTime?: string,
+  ) {
+    await this.currentMatchModel.update(
+      {
+        pk: `currentMatch`,
+        sk: 'currentMatch',
+      },
+      {
+        seriesCodeName,
+        matchId,
+        state,
+        startTime,
       },
     );
   }
@@ -116,6 +203,19 @@ export class QueryStoreService {
     );
   }
 
+  async resetCurrentMatch() {
+    await this.currentMatchModel.update(
+      {
+        pk: `currentMatch`,
+        sk: 'currentMatch',
+      },
+      {
+        state: 'idle',
+        winner: '',
+      },
+    );
+  }
+
   async createActivityStreamItem(
     seriesCodeName: string,
     timestamp: string,
@@ -152,5 +252,13 @@ export class QueryStoreService {
       .exec();
 
     return items;
+  }
+
+  async createUserMatchResult(matchId: string, userId: string, amount: number) {
+    await this.userMatchResultModel.create({
+      pk: `userMatchResult#${matchId}`,
+      sk: userId,
+      amount,
+    });
   }
 }

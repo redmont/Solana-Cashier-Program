@@ -7,6 +7,7 @@ export interface Series extends Key {
     codeName: string;
     displayName: string;
     ticker: string;
+    thumbnailUrl: string;
     model: {
       head: string;
       torso: string;

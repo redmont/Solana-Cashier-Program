@@ -4,4 +4,5 @@ export interface Bet extends Key {
   userId: string;
   amount: number;
   fighter: string;
+  createdAt: string;
 }

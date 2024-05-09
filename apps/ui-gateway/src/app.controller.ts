@@ -5,6 +5,7 @@ import {
   BalanceUpdatedEvent,
   BetPlacedEvent,
   BetsUpdatedEvent,
+  MatchResultEvent,
   MatchUpdatedEvent,
 } from 'core-messages';
 import {
@@ -13,6 +14,7 @@ import {
   BalanceUpdatedEvent as BalanceUpdatedUiGatewayEvent,
   ActivityStreamEvent as ActivityStreamUiGatewayEvent,
   BetsUpdatedEvent as BetsUpdatedUiGatewayEvent,
+  MatchResultEvent as MatchResultUiGatewayEvent,
 } from 'ui-gateway-messages';
 import { Dayjs } from 'dayjs';
 import dayjs from '@/dayjs';
@@ -91,6 +93,21 @@ export class AppController {
 
     this.gateway.publish(
       new BetsUpdatedUiGatewayEvent(timestamp, seriesCodeName, bets),
+    );
+  }
+
+  @EventPattern(MatchResultEvent.messageType)
+  onMatchResult(@Payload() data: MatchResultEvent) {
+    const { timestamp, matchId, betAmount, winAmount, fighter } = data;
+
+    this.gateway.publish(
+      new MatchResultUiGatewayEvent(
+        timestamp,
+        matchId,
+        betAmount,
+        winAmount,
+        fighter,
+      ),
     );
   }
 }

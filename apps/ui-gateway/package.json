@@ -29,6 +29,7 @@
     "@socket.io/redis-adapter": "^8.3.0",
     "broker-comms": "workspace:*",
     "core-messages": "workspace:*",
+    "cashier-read-model": "workspace:*",
     "dayjs": "^1.11.10",
     "dotenv": "^16.4.5",
     "dynamoose": "^4.0.0",

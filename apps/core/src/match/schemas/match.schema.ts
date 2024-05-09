@@ -1,25 +1,30 @@
 import { Schema } from 'dynamoose';
 
-export const MatchSchema = new Schema({
-  pk: {
-    type: String,
-    hashKey: true,
+export const MatchSchema = new Schema(
+  {
+    pk: {
+      type: String,
+      hashKey: true,
+    },
+    sk: {
+      type: String,
+      rangeKey: true,
+    },
+    seriesCodeName: {
+      type: String,
+    },
+    state: {
+      type: String,
+    },
+    startTime: {
+      type: String,
+      required: false,
+    },
+    context: {
+      type: Object,
+    },
   },
-  sk: {
-    type: String,
-    rangeKey: true,
+  {
+    timestamps: true,
   },
-  seriesCodeName: {
-    type: String,
-  },
-  state: {
-    type: String,
-  },
-  startTime: {
-    type: String,
-    required: false,
-  },
-  context: {
-    type: Object,
-  },
-});
+);

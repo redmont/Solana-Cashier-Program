@@ -1,11 +1,6 @@
 import { MessagePattern, Payload } from '@nestjs/microservices';
-
 import { Controller, Logger } from '@nestjs/common';
-import { createAccountCommand } from './commands/create-account.command';
 import { ConnectedEventStore } from '@castore/core';
-import { creditAccountCommand } from './commands/credit-account.command';
-import { ReadModelService } from 'src/account/read-model/read-model.service';
-import { debitAccountCommand } from './commands/debit-account.command';
 import {
   CreateAccountMessage,
   CreditMessage,
@@ -16,6 +11,10 @@ import {
   GetBalanceMessage,
   GetAllBalancesMessageResponse,
 } from 'cashier-messages';
+import { ReadModelService } from 'cashier-read-model';
+import { createAccountCommand } from './commands/createAccount.command';
+import { creditAccountCommand } from './commands/creditAccount.command';
+import { debitAccountCommand } from './commands/debitAccount.command';
 
 @Controller()
 export class AccountController {
@@ -55,7 +54,7 @@ export class AccountController {
 
     return {
       success: true,
-      balance: account.balance,
+      balance: account?.balance ?? 0,
     };
   }
 

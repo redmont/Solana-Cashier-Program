@@ -7,12 +7,12 @@ import { QueryStoreService } from 'query-store';
 import dayjs from '@/dayjs';
 import { createSeriesFSM, SeriesEvent } from './fsm/series.fsm';
 import { SeriesPersistenceService } from './series-persistence.service';
-import { MatchManagementService } from '../match/match-management.service';
-import { MatchPersistenceService } from '../match/match-persistence.service';
+import { MatchManagementService } from '../match/matchManagement.service';
+import { MatchPersistenceService } from '../match/matchPersistence.service';
 
-import { MatchBettingService } from '../match/match-betting.service';
+import { MatchBettingService } from '../match/matchBetting.service';
 import { GatewayManagerService } from '../gateway-manager/gateway-manager.service';
-import { PromiseQueue } from '../promise-queue';
+import { PromiseQueue } from '../promiseQueue';
 import { ActivityStreamService } from '@/activity-stream/activity-stream.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -138,6 +138,7 @@ export class SeriesService {
         },
         resetBets: async (codeName) => {
           await this.queryStore.setBets(codeName, []);
+          await this.queryStore.resetCurrentMatch();
 
           this.gatewayManagerService.handleBetsUpdated(codeName, []);
         },
@@ -145,6 +146,14 @@ export class SeriesService {
           await this.seriesPersistenceService.savePublicState(
             codeName,
             context.matchId,
+            context.config.fighters.map(
+              ({ codeName, displayName, ticker, thumbnailUrl }) => ({
+                codeName,
+                displayName,
+                ticker,
+                thumbnailUrl,
+              }),
+            ),
             state,
             context.startTime,
           );
@@ -187,6 +196,7 @@ export class SeriesService {
       codeName: string;
       displayName: string;
       ticker: string;
+      thumbnailUrl: string;
       model: {
         head: string;
         torso: string;
