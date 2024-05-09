@@ -38,25 +38,6 @@ curl --location 'http://localhost:8080/admin/game-server-configs' \
 
 Create the series:
 
-```
-interface CreateSeriesRequest {
-  codeName: string;
-  displayName: string;
-  betPlacementTime: number;
-  fighters: {
-    codeName: string;
-    displayName: string;
-    ticker: string;
-    model: {
-      head: string;
-      torso: string;
-      legs: string;
-    };
-  }[];
-  level: string;
-}
-```
-
 ```sh
 curl --location 'http://localhost:8080/admin/series' \
 --header 'Content-Type: application/json' \
@@ -87,6 +68,17 @@ curl --location 'http://localhost:8080/admin/series' \
         }
     ],
     "level": "level001"
+}'
+```
+
+Update the roster:
+
+```sh
+curl -X PUT --location 'http://localhost:8080/admin/roster' \
+--header 'Content-Type: application/json' \
+--data '{
+    "scheduleType": "linear",
+    "series": ["dogs-vs-frogs"]
 }'
 ```
 
