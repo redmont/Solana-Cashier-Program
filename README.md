@@ -38,22 +38,55 @@ curl --location 'http://localhost:8080/admin/game-server-configs' \
 
 Create the series:
 
+```
+interface CreateSeriesRequest {
+  codeName: string;
+  displayName: string;
+  betPlacementTime: number;
+  fighters: {
+    codeName: string;
+    displayName: string;
+    ticker: string;
+    model: {
+      head: string;
+      torso: string;
+      legs: string;
+    };
+  }[];
+  level: string;
+}
+```
+
 ```sh
 curl --location 'http://localhost:8080/admin/series' \
 --header 'Content-Type: application/json' \
 --data '{
-    "codeName": "frogs-vs-dogs-1",
-    "displayName": "Frogs vs Dogs"
-}'
-```
-
-Run the series:
-
-```sh
-curl --location 'http://localhost:8080/admin/series/run' \
---header 'Content-Type: application/json' \
---data '{
-    "codeName": "frogs-vs-dogs-1"
+    "codeName": "frogs-vs-dogs",
+    "displayName": "Frogs vs Dogs",
+    "betPlacementTime": 20,
+    "fighters": [
+        {
+            "codeName": "pepe",
+            "displayName": "Pepe",
+            "ticker": "PEPE",
+            "model": {
+                "head": "H_PepeA",
+                "torso": "T_PepeA",
+                "legs": "L_PepeA"
+            }
+        },
+        {
+            "codeName": "doge",
+            "displayName": "Doge",
+            "ticker": "DOGE",
+            "model": {
+                "head": "H_DogeA",
+                "torso": "T_DogeA",
+                "legs": "L_DogeA"
+            }
+        }
+    ],
+    "level": "level001"
 }'
 ```
 
@@ -61,22 +94,4 @@ curl --location 'http://localhost:8080/admin/series/run' \
 
 ```sh
 ./mock-ws-client.js
-```
-
-## WebSocket
-
-## Build Docker images
-
-```sh
-docker build --platform linux/amd64 . --target ui-gateway --tag brawl-ui-gateway-cr-dev
-docker tag brawl-ui-gateway-cr-dev:latest 875278257729.dkr.ecr.ap-southeast-1.amazonaws.com/brawl-ui-gateway-cr-dev:latest
-docker push 875278257729.dkr.ecr.ap-southeast-1.amazonaws.com/brawl-ui-gateway-cr-dev:latest
-
-docker build --platform linux/amd64 . --target core --tag brawl-core-cr-dev
-docker tag brawl-core-cr-dev:latest 875278257729.dkr.ecr.ap-southeast-1.amazonaws.com/brawl-core-cr-dev:latest
-docker push 875278257729.dkr.ecr.ap-southeast-1.amazonaws.com/brawl-core-cr-dev:latest
-
-docker build --platform linux/amd64 . --target cashier --tag brawl-cashier-cr-dev
-docker tag brawl-cashier-cr-dev:latest 875278257729.dkr.ecr.ap-southeast-1.amazonaws.com/brawl-cashier-cr-dev:latest
-docker push 875278257729.dkr.ecr.ap-southeast-1.amazonaws.com/brawl-cashier-cr-dev:latest
 ```
