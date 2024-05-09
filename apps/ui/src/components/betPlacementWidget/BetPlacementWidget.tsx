@@ -6,7 +6,6 @@ import { Button } from 'primereact/button';
 import dayjs from 'dayjs';
 
 import { Fighter, MatchStatus } from '@/types';
-import { matchSeries } from '@/config';
 import { useSocket, useAppState, usePostHog } from '@/hooks';
 import { PlaceBetMessage } from 'ui-gateway-messages';
 
@@ -90,13 +89,17 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
   );
 
   const placeBet = useCallback(async () => {
-    await send(new PlaceBetMessage(matchSeries, betPoints, fighter));
+    if (!match?.series) {
+      return;
+    }
+
+    await send(new PlaceBetMessage(match?.series, betPoints, fighter));
 
     posthog?.capture('Stake Placed', {
       fighter,
       stake: betPoints,
     });
-  }, [betPoints, fighter]);
+  }, [match?.series, betPoints, fighter]);
 
   return (
     <div

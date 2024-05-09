@@ -8,7 +8,6 @@ import {
 } from 'ui-gateway-messages';
 
 import { useDeferredState } from '@/hooks/useDeferredState';
-import { matchSeries } from '@/config';
 
 export interface ActivityStreamMessage {
   text: string;
@@ -19,7 +18,7 @@ export interface ActivityStreamData {
   messages: ActivityStreamMessage[];
 }
 
-export function useActivityStream(matchId?: string) {
+export function useActivityStream(series?: string, matchId?: string) {
   const { send, subscribe, connected } = useSocket();
   const isReady = useRef<boolean>(false);
 
@@ -54,9 +53,9 @@ export function useActivityStream(matchId?: string) {
 
   useEffect(() => {
     console.log('Get Activity Stream', connected, matchId);
-    if (!connected || !matchId || isReady.current) return;
+    if (!connected || !matchId || !series || isReady.current) return;
 
-    send(new GetActivityStreamMessage(matchSeries, matchId)).then(
+    send(new GetActivityStreamMessage(series, matchId)).then(
       (response: unknown) => {
         const { messages } =
           response as typeof GetActivityStreamMessage.responseType;
