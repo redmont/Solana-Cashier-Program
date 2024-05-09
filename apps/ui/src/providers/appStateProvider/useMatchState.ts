@@ -10,7 +10,6 @@ import {
 } from 'ui-gateway-messages';
 
 import { useDeferredState } from '@/hooks/useDeferredState';
-import { matchSeries } from '@/config';
 
 export interface MatchState {
   bets: Bet[];
@@ -64,7 +63,7 @@ export function useMatchState() {
   useEffect(() => {
     if (!connected) return;
 
-    send(new GetMatchStatusMessage(matchSeries)).then(
+    send(new GetMatchStatusMessage()).then(
       (matchStatus: unknown) => {
         const { matchId, state, startTime, winner, bets } =
           matchStatus as typeof GetMatchStatusMessage.responseType;

@@ -1,10 +1,13 @@
+import { useAppState } from '@/hooks';
+import { useMatchInfo } from '@/providers/appStateProvider/useMatchInfo';
 import { Fighter } from '@/types';
 import { Button } from 'primereact/button';
 import { classNames } from 'primereact/utils';
 import { FC } from 'react';
 
 export const MatchResultWidget: FC = () => {
-  const winner: Fighter = 'doge';
+  const { match } = useAppState();
+  const { winner } = match || {};
 
   return (
     <div

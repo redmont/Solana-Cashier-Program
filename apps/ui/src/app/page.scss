@@ -29,7 +29,7 @@
 }
 
 .stream-chat-widget {
-  height: 30rem;
+  min-height: 30rem;
 }
 
 @media screen and (min-width: 48rem) {
@@ -115,6 +115,7 @@
   .stream-chat-widget {
     grid-column: 3;
     grid-row: 2;
+    min-height: 0;
     height: auto;
   }
 

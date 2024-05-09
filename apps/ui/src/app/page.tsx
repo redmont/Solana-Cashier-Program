@@ -16,7 +16,6 @@ import { ActivityStreamWidget } from '@/components/activityStreamWidget';
 import { ConnectWalletWidget } from '@/components/connectWalletWidget';
 import { MatchResultWidget } from '@/components/matchResultWidget';
 
-
 export default function Home() {
   const { isReady, isConnected } = useEthWallet();
 
@@ -25,7 +24,7 @@ export default function Home() {
   const isBetPlaced =
     !!match && match.bets.doge.stake + match.bets.pepe.stake > 0;
 
-  const isMatchFinished = true; // match?.status === MatchStatus.Finished;
+  const isMatchFinished = match?.status === MatchStatus.Finished;
 
   return (
     <main className="main-page">
@@ -39,7 +38,7 @@ export default function Home() {
           ></iframe>
         )}
 
-        {match?.status === MatchStatus.Finished && (
+        {isMatchFinished && (
           <video
             className="trailer-video"
             autoPlay
@@ -58,9 +57,13 @@ export default function Home() {
 
       {isReady && isConnected && isMatchFinished && <MatchResultWidget />}
 
-      {isReady && isConnected && !isMatchFinished && <BetPlacementWidget compact={isBetPlaced} />}
+      {isReady && isConnected && !isMatchFinished && (
+        <BetPlacementWidget compact={isBetPlaced} />
+      )}
 
-      {isReady && isConnected && !isMatchFinished && isBetPlaced && <CurrentBetWidget />}
+      {isReady && isConnected && !isMatchFinished && isBetPlaced && (
+        <CurrentBetWidget />
+      )}
 
       <ActivityStreamWidget />
 
