@@ -6,6 +6,7 @@ import { SeriesModel } from './interfaces/series.interface';
 import { ActivityStreamModel } from './interfaces/activityStream.interface';
 import { CurrentMatchModel } from './interfaces/currentMatch.interface';
 import { UserMatchResult } from './interfaces/userMatchResult.interface';
+import { RosterModel } from './interfaces/roster.interface';
 
 @Injectable()
 export class QueryStoreService implements OnModuleInit {
@@ -20,6 +21,8 @@ export class QueryStoreService implements OnModuleInit {
     private readonly currentMatchModel: Model<CurrentMatchModel, Key>,
     @InjectModel('userMatchResult')
     private readonly userMatchResultModel: Model<UserMatchResult, Key>,
+    @InjectModel('roster')
+    private readonly rosterModel: Model<RosterModel, Key>,
   ) {}
 
   async onModuleInit() {
@@ -260,5 +263,28 @@ export class QueryStoreService implements OnModuleInit {
       sk: userId,
       amount,
     });
+  }
+
+  async updateRoster(roster: { codeName: string }[]) {
+    await this.rosterModel.create(
+      {
+        pk: 'roster',
+        sk: 'roster',
+        roster,
+      },
+      {
+        return: 'item',
+        overwrite: true,
+      },
+    );
+  }
+
+  async getRoster() {
+    const roster = await this.rosterModel.get({
+      pk: 'roster',
+      sk: 'roster',
+    });
+
+    return roster;
   }
 }

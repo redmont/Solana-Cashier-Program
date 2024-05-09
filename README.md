@@ -87,3 +87,76 @@ curl -X PUT --location 'http://localhost:8080/admin/roster' \
 ```sh
 ./mock-ws-client.js
 ```
+
+### Run roster of 3 series
+
+```sh
+curl --location 'http://localhost:8080/admin/series' \
+--header 'Content-Type: application/json' \
+--data '{
+    "codeName": "fightera-vs-fighterb",
+    "displayName": "Fighter A vs Fighter B",
+    "betPlacementTime": 20,
+    "fighters": [
+        {
+            "codeName": "fighter-a",
+            "displayName": "Fighter A",
+            "ticker": "PEPE",
+            "model": {
+                "head": "H_PepeA",
+                "torso": "T_PepeA",
+                "legs": "L_PepeA"
+            }
+        },
+        {
+            "codeName": "fighter-b",
+            "displayName": "Fighter B",
+            "ticker": "DOGE",
+            "model": {
+                "head": "H_DogeA",
+                "torso": "T_DogeA",
+                "legs": "L_DogeA"
+            }
+        }
+    ],
+    "level": "level001"
+}'
+
+curl --location 'http://localhost:8080/admin/series' \
+--header 'Content-Type: application/json' \
+--data '{
+    "codeName": "fighterc-vs-fighterd",
+    "displayName": "Fighter C vs Fighter D",
+    "betPlacementTime": 20,
+    "fighters": [
+        {
+            "codeName": "fighter-c",
+            "displayName": "Fighter C",
+            "ticker": "PEPE",
+            "model": {
+                "head": "H_PepeA",
+                "torso": "T_PepeA",
+                "legs": "L_PepeA"
+            }
+        },
+        {
+            "codeName": "fighter-d",
+            "displayName": "Fighter D",
+            "ticker": "DOGE",
+            "model": {
+                "head": "H_DogeA",
+                "torso": "T_DogeA",
+                "legs": "L_DogeA"
+            }
+        }
+    ],
+    "level": "level001"
+}'
+
+curl -X PUT --location 'http://localhost:8080/admin/roster' \
+--header 'Content-Type: application/json' \
+--data '{
+    "scheduleType": "linear",
+    "series": ["frogs-vs-dogs", "fightera-vs-fighterb", "fighterc-vs-fighterd"]
+}'
+```

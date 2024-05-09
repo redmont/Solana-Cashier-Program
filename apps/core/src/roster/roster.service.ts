@@ -4,8 +4,9 @@ import { Key } from '@/interfaces/key';
 import { createRosterFSM } from './roster.fsm';
 import { Roster } from './roster.interface';
 import { SeriesService } from '@/series/series.service';
-import { createActor } from 'xstate';
+import { Actor, createActor } from 'xstate';
 import { OnEvent } from '@nestjs/event-emitter';
+import { QueryStoreService } from 'query-store';
 
 @Injectable()
 export class RosterService {
@@ -15,11 +16,12 @@ export class RosterService {
     pk: 'roster',
     sk: 'roster',
   };
-  fsm: any;
+  fsm: Actor<ReturnType<typeof createRosterFSM>>;
 
   constructor(
     @InjectModel('roster') private readonly model: Model<Roster, Key>,
     private readonly seriesService: SeriesService,
+    private readonly queryStore: QueryStoreService,
   ) {}
 
   async initialise() {
@@ -71,7 +73,7 @@ export class RosterService {
         ...this.key,
         scheduleType: 'linear',
         series: [],
-        nextSeriesIndex: 0,
+        schedule: [],
       });
 
       return null;
@@ -81,25 +83,51 @@ export class RosterService {
       return null;
     }
 
-    let nextSeriesCodename = null;
+    const scheduleLength = 5;
 
-    if (roster.series.length > roster.nextSeriesIndex) {
-      nextSeriesCodename = roster.series[roster.nextSeriesIndex].codeName;
-
+    if (roster.schedule.length < scheduleLength) {
       if (roster.scheduleType === 'linear') {
-        if (roster.nextSeriesIndex === roster.series.length - 1) {
-          roster.nextSeriesIndex = 0;
+        if (roster.schedule.length === 0) {
+          // Populate the schedule with scheduleLength series, repeated if needed
+          for (let i = 0; i < scheduleLength; i++) {
+            const seriesIndex = i % roster.series.length;
+            roster.schedule.push(roster.series[seriesIndex]);
+          }
         } else {
-          roster.nextSeriesIndex += 1;
+          // Get last series in the schedule
+          const lastSeries = roster.schedule[roster.schedule.length - 1];
+
+          // Get the index of the last series in the roster
+          const lastSeriesIndex = roster.series.findIndex(
+            (series) => series.codeName === lastSeries.codeName,
+          );
+
+          // Populate up to scheduleLength series in the schedule,
+          // starting from the next series in the roster
+          const numberOfSeries = scheduleLength - roster.schedule.length;
+          for (let i = 1; i <= numberOfSeries; i++) {
+            const nextSeriesIndex =
+              (lastSeriesIndex + i) % roster.series.length;
+            roster.schedule.push(roster.series[nextSeriesIndex]);
+          }
         }
-      } else if (roster.scheduleType === 'random') {
-        const randomIndex = Math.floor(Math.random() * roster.series.length);
-        roster.nextSeriesIndex = randomIndex;
       }
-      await this.model.update(roster);
+
+      if (roster.scheduleType === 'random') {
+        const numberOfSeries = scheduleLength - roster.schedule.length;
+        for (let i = 1; i <= numberOfSeries; i++) {
+          const randomIndex = Math.floor(Math.random() * roster.series.length);
+          roster.schedule.push(roster.series[randomIndex]);
+        }
+      }
     }
 
-    return nextSeriesCodename;
+    const nextSeries = roster.schedule.shift();
+    await this.model.update(roster);
+
+    await this.queryStore.updateRoster(roster.schedule);
+
+    return nextSeries.codeName;
   }
 
   async runSeries(codeName: string) {
@@ -113,12 +141,8 @@ export class RosterService {
       return;
     }
 
-    const series = roster.series.find((series) => series.codeName === codeName);
-    if (!series) {
-      return;
-    }
+    roster.schedule.unshift({ codeName });
 
-    roster.nextSeriesIndex = roster.series.indexOf(series);
     await this.model.update(roster);
   }
 

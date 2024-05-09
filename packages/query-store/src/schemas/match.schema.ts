@@ -1,14 +1,5 @@
 import { Schema } from 'dynamoose';
 
-const BetSchema = new Schema({
-  walletAddress: {
-    type: String,
-  },
-  amount: {
-    type: String,
-  },
-});
-
 export const MatchSchema = new Schema({
   pk: {
     type: String,

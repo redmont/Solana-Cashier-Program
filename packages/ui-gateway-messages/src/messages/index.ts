@@ -4,3 +4,4 @@ export * from './placeBet';
 export * from './getMatchStatus';
 export * from './getActivityStream';
 export * from './getLeaderboard';
+export * from './getRoster';

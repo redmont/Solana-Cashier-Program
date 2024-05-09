@@ -9,19 +9,7 @@ export const RosterSchema = new Schema({
     type: String,
     rangeKey: true,
   },
-  scheduleType: String,
-  series: {
-    type: Array,
-    schema: [
-      {
-        type: Object,
-        schema: {
-          codeName: { type: String, required: true },
-        },
-      },
-    ],
-  },
-  schedule: {
+  roster: {
     type: Array,
     schema: [
       {

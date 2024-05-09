@@ -18,6 +18,7 @@ import {
   GetMatchStatusMessage,
   GetLeaderboardMessage,
   GatewayEvent,
+  GetRosterMessage,
 } from 'ui-gateway-messages';
 import {
   PlaceBetMessage,
@@ -211,6 +212,16 @@ export class AppGateway
       totalCount,
       items,
       currentUserItem,
+    };
+  }
+
+  @SubscribeMessage(GetRosterMessage.messageType)
+  public async getRoster() {
+    const { roster } = await this.query.getRoster();
+
+    return {
+      success: true,
+      roster: roster.map(({ codeName }) => ({ series: codeName })),
     };
   }
 
