@@ -23,8 +23,8 @@ export default function Leaderboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFiltered, setFiltered] = useState(false);
   const [records, setRecords] = useState<RecordProps[]>([]);
+  const [currentRecord, setCurrentRecord] = useState<RecordProps | null>(null);
   const { send, connected } = useSocket();
-  const { address } = useEthWallet();
 
   const getData = useCallback(
     async (query: string) => {
@@ -32,9 +32,11 @@ export default function Leaderboard() {
 
       const resp = await send(new GetLeaderboardMessage(100, 1, query));
 
-      const { items } = resp as GetLeaderboardMessageResponse;
+      const { items, currentUserItem = null } =
+        resp as GetLeaderboardMessageResponse;
 
       setRecords(items.slice(0, 100));
+      setCurrentRecord(currentUserItem);
     },
     [connected, send],
   );
@@ -86,12 +88,13 @@ export default function Leaderboard() {
             <div className="empty-state">No records yet</div>
           )}
 
+          {currentRecord && <MobileRecord {...currentRecord} highlighted />}
+
           {records.map(({ walletAddress, ...props }) => (
             <MobileRecord
               {...props}
               key={walletAddress}
               walletAddress={walletAddress}
-              highlighted={walletAddress === address}
             />
           ))}
 
@@ -107,12 +110,13 @@ export default function Leaderboard() {
               </div>
 
               <div className="table-body">
+                {currentRecord && <TableRow {...currentRecord} highlighted />}
+
                 {records.map(({ walletAddress, ...props }) => (
                   <TableRow
                     {...props}
                     key={walletAddress}
                     walletAddress={walletAddress}
-                    highlighted={walletAddress === address}
                   />
                 ))}
               </div>
