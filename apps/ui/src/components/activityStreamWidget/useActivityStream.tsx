@@ -52,7 +52,7 @@ export function useActivityStream(series?: string, matchId?: string) {
   }, [state]);
 
   useEffect(() => {
-    console.log('Get Activity Stream', connected, matchId);
+    console.log('Get Activity Stream', series, connected, matchId);
     if (!connected || !matchId || !series || isReady.current) return;
 
     send(new GetActivityStreamMessage(series, matchId)).then(
@@ -72,7 +72,7 @@ export function useActivityStream(series?: string, matchId?: string) {
         isReady.current = true;
       },
     );
-  }, [connected, matchId]);
+  }, [connected, series, matchId]);
 
   return state;
 }

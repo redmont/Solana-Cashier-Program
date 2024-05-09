@@ -7,6 +7,7 @@ import {
   BetPlacedEvent,
   MatchUpdatedEvent,
   BetsUpdatedEvent,
+  MatchResultEvent
 } from 'ui-gateway-messages';
 
 import { useDeferredState } from '@/hooks/useDeferredState';
@@ -18,6 +19,7 @@ export interface MatchState {
   state: string;
   startTime?: string;
   winner?: string;
+  winAmount?: string;
 }
 
 export function useMatchState() {
@@ -56,6 +58,12 @@ export function useMatchState() {
 
         patchState(timestamp || new Date(), { bets });
       }),
+      subscribe(MatchResultEvent.messageType, (message: MatchResultEvent) => {
+        console.log(MatchResultEvent.messageType, message);
+        const { winAmount, timestamp } = message;
+
+        patchState(timestamp, { winAmount });
+      })
     ];
 
     return () => {

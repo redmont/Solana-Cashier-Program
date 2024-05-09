@@ -4,7 +4,7 @@ import { useActivityStream } from './useActivityStream';
 
 export const ActivityStreamWidget: FC = () => {
   const { match } = useAppState();
-  const { messages } = useActivityStream(match?.matchId);
+  const { messages } = useActivityStream(match?.series, match?.matchId);
 
   return (
     <div className="widget activity-stream-widget">

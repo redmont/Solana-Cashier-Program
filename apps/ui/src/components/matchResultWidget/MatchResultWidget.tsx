@@ -7,7 +7,8 @@ import { FC } from 'react';
 
 export const MatchResultWidget: FC = () => {
   const { match } = useAppState();
-  const { winner } = match || {};
+  const { winner, winAmount, bets } = match || {};
+  const isWin = winAmount && +winAmount > 0;
 
   return (
     <div
@@ -27,17 +28,17 @@ export const MatchResultWidget: FC = () => {
           <div className="result-info">
             <div className="result-title">{winner} Wins!</div>
 
-            <div className="win-amount">+2600</div>
+            <div className="win-amount">{isWin ? `+${winAmount}` : 0}</div>
 
-            <div className="bet-info">
+            {/* <div className="bet-info">
               <div className="bet-info-label">Staked amount:</div>
-              <div className="bet-info-value">50 points</div>
+              <div className="bet-info-value">0 points</div>
             </div>
 
             <div className="bet-info">
               <div className="bet-info-label">Win rate:</div>
               <div className="bet-info-value">1.20x</div>
-            </div>
+            </div> */}
 
             <div className="widget-actions">
               <Button

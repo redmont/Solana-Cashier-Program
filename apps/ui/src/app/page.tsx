@@ -24,12 +24,12 @@ export default function Home() {
   const isBetPlaced =
     !!match && match.bets.doge.stake + match.bets.pepe.stake > 0;
 
-  const isMatchFinished = match?.status === MatchStatus.Finished;
+  const isMatchFinished = true; // match?.status === MatchStatus.Finished;
 
   return (
     <main className="main-page">
       <div className="stream-container">
-        {match?.status !== MatchStatus.Finished && (
+        {!isMatchFinished && (
           <iframe
             src={streamUrl}
             allowFullScreen

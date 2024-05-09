@@ -44,7 +44,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
 
   useEffect(() => {
     setBetPoints(Math.floor((balance * betPercent) / 100));
-  }, [balance, betPercent]);
+  }, [balance]);
 
   useEffect(() => {
     if (!match?.startTime) return;
