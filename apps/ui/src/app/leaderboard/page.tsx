@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useEffect, useState } from 'react';
+import { ChangeEvent, FC, useCallback, useEffect, useState } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import { Button } from 'primereact/button';
@@ -20,19 +20,46 @@ interface RecordProps {
 }
 
 export default function Leaderboard() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isFiltered, setFiltered] = useState(false);
   const [records, setRecords] = useState<RecordProps[]>([]);
   const { send, connected } = useSocket();
   const { address } = useEthWallet();
 
-  useEffect(() => {
-    if (!connected) return;
+  const getData = useCallback(
+    async (query: string) => {
+      if (!connected) return;
 
-    send(new GetLeaderboardMessage()).then((resp) => {
+      const resp = await send(new GetLeaderboardMessage(100, 1, query));
+
       const { items } = resp as GetLeaderboardMessageResponse;
 
       setRecords(items.slice(0, 100));
-    });
-  }, [connected, send]);
+    },
+    [connected, send],
+  );
+
+  useEffect(() => {
+    getData('');
+  }, [getData]);
+
+  const handleSearchQueryChange = useCallback(
+    (evt: ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(evt.target.value);
+    },
+    [],
+  );
+
+  const search = useCallback(async () => {
+    await getData(searchQuery);
+    setFiltered(true);
+  }, [searchQuery, getData]);
+
+  const clearSearch = useCallback(async () => {
+    await getData('');
+    setFiltered(false);
+    setSearchQuery('');
+  }, [getData]);
 
   return (
     <main className="leaderboard-page">
@@ -41,9 +68,16 @@ export default function Leaderboard() {
           <h1>Leaderboard</h1>
 
           <div className="search-input-group p-inputgroup">
-            <InputText className="search-input" placeholder="Search" />
+            <InputText
+              className="search-input"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={handleSearchQueryChange}
+            />
 
-            <Button icon="pi pi-search" />
+            <Button icon="pi pi-search" onClick={search} />
+
+            {isFiltered && <Button icon="pi pi-times" onClick={clearSearch} />}
           </div>
         </div>
 
