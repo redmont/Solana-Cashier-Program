@@ -1,4 +1,4 @@
-import { Schema } from "dynamoose";
+import { Schema } from 'dynamoose';
 
 export const NonceSchema = new Schema({
   pk: {

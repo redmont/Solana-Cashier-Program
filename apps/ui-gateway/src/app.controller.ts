@@ -28,11 +28,11 @@ export class AppController {
 
   @EventPattern(BetPlacedEvent.messageType)
   onBetPlaced(@Payload() data: BetPlacedEvent) {
-    const { ts, seriesCodeName, walletAddress, amount, fighter } = data;
+    const { timestamp, seriesCodeName, walletAddress, amount, fighter } = data;
 
     this.gateway.publish(
       new BetPlacedUiGatewayEvent(
-        ts,
+        timestamp,
         seriesCodeName,
         walletAddress,
         amount,
@@ -43,8 +43,15 @@ export class AppController {
 
   @EventPattern(MatchUpdatedEvent.messageType)
   onMatchUpdated(@Payload() data: MatchUpdatedEvent) {
-    const { timestamp, seriesCodeName, matchId, state, startTime, winner } =
-      data;
+    const {
+      timestamp,
+      seriesCodeName,
+      matchId,
+      state,
+      startTime,
+      winner,
+      fighters,
+    } = data;
 
     const ts = dayjs(timestamp);
 
@@ -60,6 +67,7 @@ export class AppController {
         timestamp,
         seriesCodeName,
         matchId,
+        fighters,
         state,
         startTime,
         winner,

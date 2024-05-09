@@ -1,21 +1,18 @@
 import { Module } from '@nestjs/common';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { ConfigService } from '@nestjs/config';
-import { SeriesService } from './series.service';
-import { SeriesController } from './series.controller';
-import { SeriesPersistenceService } from './seriesPersistence.service';
-import { SeriesSchema } from './series.schema';
-import { MatchModule } from 'src/match/match.module';
+import { ActivityStreamService } from './activityStream.service';
+import { ActivityStreamItemSchema } from './activityStreamItem.schema';
 import { GatewayManagerModule } from '@/gatewayManager/gatewayManager.module';
 
 @Module({
   imports: [
     DynamooseModule.forFeatureAsync([
       {
-        name: 'series',
+        name: 'activityStreamItem',
         useFactory: (_, configService: ConfigService) => {
           return {
-            schema: SeriesSchema,
+            schema: ActivityStreamItemSchema,
             options: {
               tableName: configService.get<string>('tableName'),
               create: configService.get<boolean>('isDynamoDbLocal'),
@@ -25,11 +22,9 @@ import { GatewayManagerModule } from '@/gatewayManager/gatewayManager.module';
         inject: [ConfigService],
       },
     ]),
-    MatchModule,
     GatewayManagerModule,
   ],
-  providers: [SeriesService, SeriesPersistenceService],
-  controllers: [SeriesController],
-  exports: [SeriesService],
+  providers: [ActivityStreamService],
+  exports: [ActivityStreamService],
 })
-export class SeriesModule {}
+export class ActivityStreamModule {}

@@ -3,10 +3,10 @@ import { MatchPersistenceService } from './matchPersistence.service';
 import { sendBrokerMessage } from 'broker-comms';
 import { ClientProxy } from '@nestjs/microservices';
 import { CreditMessage } from 'cashier-messages';
-import { ActivityStreamService } from 'src/activity-stream/activity-stream.service';
+import { ActivityStreamService } from '@/activityStream/activityStream.service';
 import dayjs from '@/dayjs';
-import { SeriesConfig } from '@/series/series-config.model';
-import { GatewayManagerService } from '@/gateway-manager/gateway-manager.service';
+import { SeriesConfig } from '@/series/seriesConfig.model';
+import { GatewayManagerService } from '@/gatewayManager/gatewayManager.service';
 import { MatchResultEvent } from 'core-messages';
 
 @Injectable()

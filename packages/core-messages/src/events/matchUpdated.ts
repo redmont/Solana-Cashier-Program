@@ -1,11 +1,12 @@
-import { GatewayEvent } from './gatewayEvent';
+import { BrokerEvent } from 'broker-comms';
+import { prefix } from '../constants';
 
-export class MatchUpdatedEvent extends GatewayEvent {
-  static messageType = 'event.matchUpdated';
+export class MatchUpdatedEvent extends BrokerEvent {
+  static messageType = `${prefix}.event.matchUpdated`;
 
   constructor(
     public readonly timestamp: string,
-    public readonly series: string,
+    public readonly seriesCodeName: string,
     public readonly matchId: string,
     public readonly fighters: {
       displayName: string;

@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Decimal, Pools, brawlersV2Preset } from '@bltzr-gg/croupier';
 import dayjs from '@/dayjs';
-import { GameServerService } from '../game-server/game-server.service';
-import { SeriesConfig } from '../series/series-config.model';
+import { SeriesConfig } from '../series/seriesConfig.model';
 import { MatchBettingService } from './matchBetting.service';
-import { AbstractMatchOutcomeService } from './match-outcome/abstract-match-outcome-service';
-import { ServerCapabilities } from '@/series/fsm/server-capabilities';
+import { AbstractMatchOutcomeService } from './matchOutcome/abstractMatchOutcomeService';
+import { ServerCapabilities } from '@/series/fsm/serverCapabilities';
+import { GameServerService } from '@/gameServer/gameServer.service';
 
 const parseSeriesConfig = (config: SeriesConfig) => {
   return {

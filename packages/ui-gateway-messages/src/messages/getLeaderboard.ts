@@ -3,6 +3,7 @@ import { Message } from './message';
 export interface GetLeaderboardMessageResponse extends Message {
   totalCount: number;
   items: {
+    rank: number;
     walletAddress: string;
     balance: string;
   }[];
@@ -14,6 +15,7 @@ export class GetLeaderboardMessage extends Message<GetLeaderboardMessageResponse
   constructor(
     public readonly pageSize?: number,
     public readonly page?: number,
+    public readonly searchQuery?: string,
   ) {
     super();
   }
