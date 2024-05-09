@@ -104,13 +104,21 @@ export class AppGateway
   }
 
   @SubscribeMessage(GetMatchStatusMessage.messageType)
-  public async status(@ConnectedSocket() client: Socket) {
-    const { matchId, seriesCodeName, state, bets, startTime, winner } =
-      await this.query.getCurrentMatch();
+  public async status() {
+    const {
+      matchId,
+      seriesCodeName,
+      fighters,
+      state,
+      bets,
+      startTime,
+      winner,
+    } = await this.query.getCurrentMatch();
 
     return {
       matchId,
       series: seriesCodeName,
+      fighters,
       state,
       bets,
       startTime,
@@ -182,19 +190,27 @@ export class AppGateway
   }
 
   @SubscribeMessage(GetLeaderboardMessage.messageType)
-  public async getLeaderboard(@MessageBody() data: GetLeaderboardMessage) {
-    console.log('get leaderboard');
+  public async getLeaderboard(
+    @MessageBody() { pageSize, page, searchQuery }: GetLeaderboardMessage,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const userId = this.clientUserIdMap.get(client?.id);
 
-    const { totalCount, items } =
+    console.log('User', userId);
+
+    const { totalCount, items, currentUserItem } =
       await this.cashierReadModelService.getLeaderboard(
-        data.pageSize,
-        data.page,
+        pageSize,
+        page,
+        userId,
+        searchQuery,
       );
 
     return {
       success: true,
       totalCount,
       items,
+      currentUserItem,
     };
   }
 

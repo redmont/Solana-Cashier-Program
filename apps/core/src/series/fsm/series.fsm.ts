@@ -1,8 +1,8 @@
 import { setup, assign } from 'xstate';
 import dayjs from '@/dayjs';
 import { getActors } from './actors';
-import { FSMDependencies } from './fsm-dependencies';
-import { SeriesContext } from './series-context';
+import { FSMDependencies } from './fsmDependencies';
+import { SeriesContext } from './seriesContext';
 
 export type SeriesEvent =
   | 'RUN'

@@ -6,14 +6,14 @@ import { DebitMessage, DebitMessageResponse } from 'cashier-messages';
 import { QueryStoreService } from 'query-store';
 import dayjs from '@/dayjs';
 import { createSeriesFSM, SeriesEvent } from './fsm/series.fsm';
-import { SeriesPersistenceService } from './series-persistence.service';
+import { SeriesPersistenceService } from './seriesPersistence.service';
 import { MatchManagementService } from '../match/matchManagement.service';
 import { MatchPersistenceService } from '../match/matchPersistence.service';
 
 import { MatchBettingService } from '../match/matchBetting.service';
-import { GatewayManagerService } from '../gateway-manager/gateway-manager.service';
+import { GatewayManagerService } from '../gatewayManager/gatewayManager.service';
 import { PromiseQueue } from '../promiseQueue';
-import { ActivityStreamService } from '@/activity-stream/activity-stream.service';
+import { ActivityStreamService } from '@/activityStream/activityStream.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
@@ -143,17 +143,19 @@ export class SeriesService {
           this.gatewayManagerService.handleBetsUpdated(codeName, []);
         },
         onStateChange: async (state, context) => {
+          const fighters = context.config.fighters.map(
+            ({ codeName, displayName, ticker, thumbnailUrl }) => ({
+              codeName,
+              displayName,
+              ticker,
+              thumbnailUrl,
+            }),
+          );
+
           await this.seriesPersistenceService.savePublicState(
             codeName,
             context.matchId,
-            context.config.fighters.map(
-              ({ codeName, displayName, ticker, thumbnailUrl }) => ({
-                codeName,
-                displayName,
-                ticker,
-                thumbnailUrl,
-              }),
-            ),
+            fighters,
             state,
             context.startTime,
           );
@@ -161,6 +163,7 @@ export class SeriesService {
           this.gatewayManagerService.handleMatchUpdated(
             codeName,
             context.matchId,
+            fighters,
             state,
             context.startTime,
             context.winningFighter?.codeName,

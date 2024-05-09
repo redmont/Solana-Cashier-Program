@@ -17,10 +17,10 @@ import {
   GetAllBalancesMessage,
   GetAllBalancesMessageResponse,
 } from 'cashier-messages';
-import { GameServerConfigService } from 'src/game-server-config/game-server-config.service';
+import { GameServerConfigService } from '@/gameServerConfig/gameServerConfig.service';
 import { SeriesService } from 'src/series/series.service';
 import { AdminService } from './admin.service';
-import { GameServerCapabilitiesService } from '@/game-server-capabilities/game-server-capabilities.service';
+import { GameServerCapabilitiesService } from '@/gameServerCapabilities/gameServerCapabilities.service';
 import { RosterService } from '@/roster/roster.service';
 
 interface CreateGameServerConfigRequest {

@@ -1,1 +1,1 @@
-export const prefix = "cashier";
+export const prefix = 'cashier';

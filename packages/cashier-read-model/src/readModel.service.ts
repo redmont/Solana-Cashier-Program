@@ -3,6 +3,7 @@ import { InjectModel, Model } from 'nestjs-dynamoose';
 import { Account } from './interfaces/account.interface';
 import { ReadModelKey } from './interfaces/key.interface';
 import { AccountCount } from './interfaces/accountCount.interface';
+import { SortOrder } from 'dynamoose/dist/General';
 
 @Injectable()
 export class ReadModelService {
@@ -63,23 +64,37 @@ export class ReadModelService {
       .exec();
   }
 
-  async getLeaderboard(pageSize: number = 50, pageNumber: number = 1) {
-    const accountCount = await this.accountCountModel.get({
-      pk: 'accountCount',
-      sk: 'accountCount',
-    });
-
-    const totalCount = accountCount ? accountCount.count : 0;
-
+  async getLeaderboard(
+    pageSize: number = 50,
+    pageNumber: number = 1,
+    userId: string = null,
+    searchQuery: string = null,
+  ): Promise<{
+    items: {
+      rank: number;
+      walletAddress: string;
+      balance: number;
+    }[];
+    totalCount?: number;
+    currentUserItem?: {
+      rank: number;
+      walletAddress: string;
+      balance: number;
+    };
+  }> {
     let currentPage = 1;
+    let rank = 1;
     let lastKey;
-    while (currentPage <= pageNumber) {
+    let currentUserItem;
+
+    do {
       const query = this.accountModel
         .query({
           pk: 'account',
         })
         .using('pkBalance')
-        .limit(pageSize);
+        .limit(pageSize)
+        .sort(SortOrder.descending);
       if (lastKey) {
         query.startAt(lastKey);
       }
@@ -88,21 +103,67 @@ export class ReadModelService {
       lastKey = response.lastKey;
       currentPage += 1;
 
-      if (currentPage > pageNumber) {
+      if (searchQuery) {
+        const matches = [];
+        for (const item of response) {
+          if (
+            item.primaryWalletAddress
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase())
+          ) {
+            matches.push({ ...item, rank });
+          }
+
+          rank++;
+        }
+
         return {
-          totalCount,
-          items: response
-            .filter((item) => item.balance > 0)
-            .map((item) => ({
-              walletAddress: item.primaryWalletAddress,
-              balance: item.balance,
-            })),
+          items: matches.map(({ rank, primaryWalletAddress, balance }) => ({
+            rank,
+            walletAddress: primaryWalletAddress,
+            balance,
+          })),
         };
+      } else {
+        if (userId) {
+          const userItem = response.find((x) => x.sk === `account#${userId}`);
+          if (userItem) {
+            currentUserItem = {
+              rank,
+              walletAddress: userItem.primaryWalletAddress,
+              balance: userItem.balance,
+            };
+          }
+        }
+
+        if (currentPage > pageNumber) {
+          const accountCount = await this.accountCountModel.get({
+            pk: 'accountCount',
+            sk: 'accountCount',
+          });
+
+          const totalCount = accountCount ? accountCount.count : 0;
+
+          return {
+            totalCount,
+            currentUserItem,
+            items: response
+              .map((item) => ({
+                rank: rank++,
+                walletAddress: item.primaryWalletAddress,
+                balance: item.balance,
+              }))
+              // Filter after mapping to ensure rank is correct
+              .filter((item) => item.balance > 0),
+          };
+        } else {
+          rank += response.length;
+        }
       }
-    }
+    } while (lastKey);
 
     return {
-      totalCount,
+      totalCount: 0,
       items: [],
     };
   }

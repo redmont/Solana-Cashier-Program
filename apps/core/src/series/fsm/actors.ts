@@ -1,9 +1,9 @@
 import { fromPromise } from 'xstate';
 import { v4 as uuid } from 'uuid';
 import dayjs from '@/dayjs';
-import { FSMDependencies } from './fsm-dependencies';
-import { SeriesConfig } from '../series-config.model';
-import { SeriesContext } from './series-context';
+import { FSMDependencies } from './fsmDependencies';
+import { SeriesConfig } from '../seriesConfig.model';
+import { SeriesContext } from './seriesContext';
 
 export const getActors = ({
   logger,
