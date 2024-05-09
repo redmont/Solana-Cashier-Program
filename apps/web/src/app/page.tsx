@@ -170,7 +170,7 @@ export default function Page(): JSX.Element {
           handler: onMatchUpdated,
         },
         get: {
-          message: new GetMatchStatusMessage(series),
+          message: new GetMatchStatusMessage(),
           handler: onMatchStatus,
         },
       });

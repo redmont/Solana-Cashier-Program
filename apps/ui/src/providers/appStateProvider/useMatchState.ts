@@ -10,7 +10,6 @@ import {
 } from 'ui-gateway-messages';
 
 import { useDeferredState } from '@/hooks/useDeferredState';
-import { matchSeries } from '@/config';
 
 export interface MatchState {
   bets: Bet[];
@@ -38,7 +37,7 @@ export function useMatchState() {
         bets: [...state.bets, { amount, fighter, walletAddress }],
       });
     });
-  }, [state]);
+  }, [state, patchState, subscribe]);
 
   useEffect(() => {
     const subscriptions = [
@@ -59,12 +58,12 @@ export function useMatchState() {
     return () => {
       subscriptions.forEach((unsubscribe) => unsubscribe());
     };
-  }, []);
+  }, [patchState, subscribe]);
 
   useEffect(() => {
     if (!connected) return;
 
-    send(new GetMatchStatusMessage(matchSeries)).then(
+    send(new GetMatchStatusMessage()).then(
       (matchStatus: unknown) => {
         const { matchId, state, startTime, winner, bets } =
           matchStatus as typeof GetMatchStatusMessage.responseType;
