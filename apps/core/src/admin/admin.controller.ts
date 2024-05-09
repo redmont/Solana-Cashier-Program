@@ -1,4 +1,4 @@
-import { Header, StreamableFile } from '@nestjs/common';
+import { Header, Put, StreamableFile } from '@nestjs/common';
 import {
   Body,
   Controller,
@@ -20,6 +20,8 @@ import {
 import { GameServerConfigService } from 'src/game-server-config/game-server-config.service';
 import { SeriesService } from 'src/series/series.service';
 import { AdminService } from './admin.service';
+import { GameServerCapabilitiesService } from '@/game-server-capabilities/game-server-capabilities.service';
+import { RosterService } from '@/roster/roster.service';
 
 interface CreateGameServerConfigRequest {
   codeName: string;
@@ -30,6 +32,28 @@ interface UpdateGameServerConfigRequest {
   streamUrl: string;
 }
 
+interface CreateSeriesRequest {
+  codeName: string;
+  displayName: string;
+  betPlacementTime: number;
+  fighters: {
+    codeName: string;
+    displayName: string;
+    ticker: string;
+    model: {
+      head: string;
+      torso: string;
+      legs: string;
+    };
+  }[];
+  level: string;
+}
+
+interface UpdateRosterRequest {
+  scheduleType: string;
+  series: string[];
+}
+
 @Controller('admin')
 export class AdminController {
   constructor(
@@ -37,6 +61,8 @@ export class AdminController {
     private readonly seriesService: SeriesService,
     private readonly gameServerConfigService: GameServerConfigService,
     private readonly adminService: AdminService,
+    private readonly gameServerCapabilitiesService: GameServerCapabilitiesService,
+    private readonly rosterService: RosterService,
   ) {}
 
   @Get('/series')
@@ -45,8 +71,16 @@ export class AdminController {
   }
 
   @Post('/series')
-  async createSeries(@Body() body: { codeName: string; displayName: string }) {
-    await this.seriesService.createSeries(body.codeName, body.displayName);
+  async createSeries(@Body() body: CreateSeriesRequest) {
+    const { codeName, displayName, betPlacementTime, fighters, level } = body;
+
+    await this.seriesService.createSeries(
+      codeName,
+      displayName,
+      betPlacementTime,
+      fighters.map((fighter) => ({ ...fighter, thumbnailUrl: '' })),
+      level,
+    );
   }
 
   @Post('/series/run')
@@ -69,6 +103,13 @@ export class AdminController {
     @Param('id') id: string,
     @Body() body: UpdateGameServerConfigRequest,
   ) {}
+
+  @Get('/game-server-capabilities')
+  async getGameServerCapabilities() {
+    return {
+      capabilities: await this.gameServerCapabilitiesService.getCapabilities(),
+    };
+  }
 
   @Get('/points-balances')
   async getPointsBalance() {
@@ -103,5 +144,15 @@ export class AdminController {
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     return this.adminService.processPointsBalancesUpload(file);
+  }
+
+  @Get('/roster')
+  getRoster() {
+    return this.rosterService.getRoster();
+  }
+
+  @Put('/roster')
+  updateRoster(@Body() body: UpdateRosterRequest) {
+    return this.rosterService.updateRoster(body.scheduleType, body.series);
   }
 }

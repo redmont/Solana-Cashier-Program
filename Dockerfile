@@ -5,6 +5,9 @@ RUN corepack enable
 RUN npm i -g @nestjs/cli
 
 FROM base AS build
+ARG NPM_TOKEN
+# Set up npmjs authentication
+RUN echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >~/.npmrc
 COPY . /usr/src/app
 WORKDIR /usr/src/app
 RUN find . -name '.env*' -exec rm -f {} \;

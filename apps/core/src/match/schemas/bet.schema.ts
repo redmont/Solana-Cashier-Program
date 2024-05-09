@@ -9,6 +9,7 @@ export const BetSchema = new Schema({
     type: String,
     rangeKey: true,
   },
+  createdAt: String,
   amount: Number,
   userId: String,
   fighter: String,

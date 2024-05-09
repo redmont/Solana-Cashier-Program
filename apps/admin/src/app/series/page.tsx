@@ -2,6 +2,8 @@
 
 import {
   Box,
+  Button,
+  HStack,
   IconButton,
   Skeleton,
   Table,
@@ -82,6 +84,11 @@ const Series = () => {
           </Tbody>
         </Table>
       </TableContainer>
+      <HStack justifyContent="flex-end" mt="4">
+        <Button onClick={() => router.push('/series/new')}>
+          Create series
+        </Button>
+      </HStack>
     </Box>
   );
 };

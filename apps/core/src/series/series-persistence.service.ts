@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
-import { Series } from './series.interface';
-import { Key } from 'src/interfaces/key';
 import { QueryStoreService } from 'query-store';
-import { DateTime } from 'luxon';
+import { Dayjs } from 'dayjs';
+import { Series } from './series.interface';
+import { Key } from '@/interfaces/key';
 
 @Injectable()
 export class SeriesPersistenceService {
@@ -16,18 +16,40 @@ export class SeriesPersistenceService {
     return this.seriesModel.query({ pk: 'series' }).exec();
   }
 
-  async create(codeName: string, displayName: string) {
-    await this.seriesModel.create(
-      {
-        pk: 'series',
-        sk: codeName,
-        displayName,
-      },
-      {
-        overwrite: true,
-        return: 'item',
-      },
-    );
+  async getOne(codeName: string) {
+    return this.seriesModel.get({ pk: 'series', sk: codeName });
+  }
+
+  async create(
+    codeName: string,
+    displayName: string,
+    betPlacementTime: number,
+    fighters: {
+      codeName: string;
+      displayName: string;
+      ticker: string;
+      thumbnailUrl: string;
+      model: {
+        head: string;
+        torso: string;
+        legs: string;
+      };
+    }[],
+    level: string,
+  ) {
+    const data = {
+      pk: 'series',
+      sk: codeName,
+      displayName,
+      betPlacementTime,
+      fighters,
+      level,
+    };
+
+    await this.seriesModel.create(data, {
+      overwrite: true,
+      return: 'item',
+    });
 
     await this.queryStore.saveSeries(codeName, '', '');
   }
@@ -47,15 +69,22 @@ export class SeriesPersistenceService {
   async savePublicState(
     codeName: string,
     matchId: string,
+    fighters: {
+      codeName: string;
+      displayName: string;
+      ticker: string;
+      thumbnailUrl: string;
+    }[],
     state: any,
-    startTime?: DateTime,
+    startTime?: string,
     winner?: string,
   ) {
-    await this.queryStore.updateSeries(
+    await this.queryStore.updateCurrentMatch(
       codeName,
       matchId,
+      fighters,
       state,
-      startTime?.toISO(),
+      startTime,
       winner,
     );
   }

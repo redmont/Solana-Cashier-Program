@@ -7,7 +7,6 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  WsException,
 } from '@nestjs/websockets';
 import { ClientProxy } from '@nestjs/microservices';
 import { Server } from 'socket.io';
@@ -17,6 +16,7 @@ import {
   GetBalanceMessage as GetBalanceUiGatewayMessage,
   GetActivityStreamMessage as GetActivityStreamUiGatewayMessage,
   GetMatchStatusMessage,
+  GetLeaderboardMessage,
   GatewayEvent,
 } from 'ui-gateway-messages';
 import {
@@ -24,14 +24,13 @@ import {
   GetBalanceMessage,
   GetBalanceMessageResponse,
   PlaceBetMessageResponse,
-  SubscribeToSeriesMessage,
-  SubscribeToSeriesResponse,
 } from 'core-messages';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { Socket } from './websocket/socket';
 import { QueryStoreService } from 'query-store';
-import { IJwtAuthService } from './jwt-auth/jwt-auth.interface';
+import { IJwtAuthService } from './jwtAuth/jwtAuth.interface';
 import { ConfigService } from '@nestjs/config';
+import { ReadModelService } from 'cashier-read-model';
 
 @WebSocketGateway({
   cors: {
@@ -50,11 +49,12 @@ export class AppGateway
   private clientUserIdMap: Map<string, string> = new Map();
 
   constructor(
+    private readonly configService: ConfigService,
     @Inject('BROKER') private readonly broker: ClientProxy,
     private readonly query: QueryStoreService,
     @Inject('JWT_AUTH_SERVICE')
     private readonly jwtAuthService: IJwtAuthService,
-    private readonly configService: ConfigService,
+    private readonly cashierReadModelService: ReadModelService,
   ) {}
 
   onModuleInit() {
@@ -104,21 +104,19 @@ export class AppGateway
   }
 
   @SubscribeMessage(GetMatchStatusMessage.messageType)
-  public async status(
-    @MessageBody() data: GetMatchStatusMessage,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const { series } = data;
+  public async status(@ConnectedSocket() client: Socket) {
+    const { matchId, seriesCodeName, state, bets, startTime, winner } =
+      await this.query.getCurrentMatch();
 
-    await sendBrokerMessage<
-      SubscribeToSeriesMessage,
-      SubscribeToSeriesResponse
-    >(this.broker, new SubscribeToSeriesMessage(series, client.id));
-
-    const { matchId, state, bets, startTime, winner } =
-      await this.query.getSeries(series);
-
-    return { matchId, state, bets, startTime, winner, success: true };
+    return {
+      matchId,
+      series: seriesCodeName,
+      state,
+      bets,
+      startTime,
+      winner,
+      success: true,
+    };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -180,6 +178,23 @@ export class AppGateway
         timestamp: item.sk,
         message: item.message,
       })),
+    };
+  }
+
+  @SubscribeMessage(GetLeaderboardMessage.messageType)
+  public async getLeaderboard(@MessageBody() data: GetLeaderboardMessage) {
+    console.log('get leaderboard');
+
+    const { totalCount, items } =
+      await this.cashierReadModelService.getLeaderboard(
+        data.pageSize,
+        data.page,
+      );
+
+    return {
+      success: true,
+      totalCount,
+      items,
     };
   }
 

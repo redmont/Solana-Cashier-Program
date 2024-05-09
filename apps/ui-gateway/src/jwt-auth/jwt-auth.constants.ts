@@ -1,1 +1,0 @@
-export const JWT_AUTH_SERVICE = "JWT_AUTH_SERVICE";

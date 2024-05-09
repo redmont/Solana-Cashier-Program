@@ -8,9 +8,11 @@ class SeriesConfigCapabilities {
   public finishingMoves?: string[];
 }
 
-class SeriesConfigFighter {
+export class SeriesConfigFighter {
   public displayName: string;
   public codeName: string;
+  public ticker: string;
+  public thumbnailUrl: string;
   public model: {
     head: string;
     torso: string;
@@ -36,4 +38,9 @@ export class SeriesConfig {
    * The time allowed for placing bets on the series.
    */
   public betPlacementTime: number;
+
+  /**
+   * The level used for the series.
+   */
+  public level: string;
 }

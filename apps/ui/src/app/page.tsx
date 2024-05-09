@@ -28,7 +28,7 @@ export default function Home() {
   const isMatchFinished = true; // match?.status === MatchStatus.Finished;
 
   return (
-    <main>
+    <main className="main-page">
       <div className="stream-container">
         {match?.status !== MatchStatus.Finished && (
           <iframe

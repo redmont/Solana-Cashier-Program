@@ -11,6 +11,8 @@ import { MatchSchema } from './schemas/match.schema';
 import { QueryStoreService } from '.';
 import { SeriesSchema } from './schemas/series.schema';
 import { ActivityStreamSchema } from './schemas/activityStream.schema';
+import { CurrentMatchSchema } from './schemas/currentMatch.schema';
+import { UserMatchResultSchema } from './schemas/userMatchResult.schema';
 
 interface QueryStoreOptions {
   tableName: string;
@@ -66,11 +68,39 @@ export class QueryStoreModule {
         inject: ['QUERY_STORE_OPTIONS'],
       },
       {
+        name: 'currentMatch',
+        imports: options.imports || [],
+        useFactory: async (_: any, options: QueryStoreOptions) => {
+          return {
+            schema: CurrentMatchSchema,
+            options: {
+              tableName: options.tableName,
+              create: options.isDynamoDbLocal,
+            },
+          };
+        },
+        inject: ['QUERY_STORE_OPTIONS'],
+      },
+      {
         name: 'activityStream',
         imports: options.imports || [],
         useFactory: async (_: any, options: QueryStoreOptions) => {
           return {
             schema: ActivityStreamSchema,
+            options: {
+              tableName: options.tableName,
+              create: options.isDynamoDbLocal,
+            },
+          };
+        },
+        inject: ['QUERY_STORE_OPTIONS'],
+      },
+      {
+        name: 'userMatchResult',
+        imports: options.imports || [],
+        useFactory: async (_: any, options: QueryStoreOptions) => {
+          return {
+            schema: UserMatchResultSchema,
             options: {
               tableName: options.tableName,
               create: options.isDynamoDbLocal,
