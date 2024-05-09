@@ -15,6 +15,7 @@ export type MatchInfo = Omit<MatchState, 'bets' | 'state'> & {
   bets: Record<Fighter, FighterBets>;
   status: MatchStatus;
   matchId?: string;
+  series?: string;
 };
 
 export function useMatchInfo() {
