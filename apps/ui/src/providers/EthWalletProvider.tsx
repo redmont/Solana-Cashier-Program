@@ -62,9 +62,9 @@ export const EthWalletProvider: FC<ChildContainerProps> = ({ children }) => {
   return (
     <DynamicContextProvider
       settings={{
-        environmentId: '866dfa15-a3f8-4f9a-bcb0-493e6ad952f2',
+        environmentId: '21452bd4-902f-40be-9b8f-5bc817b00e0e',
         walletConnectors: [EthereumWalletConnectors],
-        initialAuthenticationMode: 'connect-only',
+        // initialAuthenticationMode: 'connect-only',
       }}
     >
       <WagmiProvider config={wagmiConfig}>
