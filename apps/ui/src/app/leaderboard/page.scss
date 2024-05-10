@@ -1,6 +1,10 @@
 .leaderboard-page {
   align-items: center;
   padding: 0 0.75rem;
+
+  // Temporary
+  max-width: 48rem;
+  margin: 0 auto;
 }
 
 .leaderboard {
@@ -38,6 +42,14 @@
     padding: 0 1rem;
   }
 
+  .empty-state {
+    height: 100%;
+    min-height: 8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .body {
     display: flex;
     flex-direction: column;
@@ -63,7 +75,8 @@
     display: grid;
     align-items: center;
     grid-template-columns: 3rem 6rem auto;
-    grid-template-rows: repeat(3, 2rem);
+    // grid-template-rows: repeat(3, 2rem);
+    grid-template-rows: repeat(2, 2rem);
     column-gap: 0.5rem;
 
     .rank {
@@ -92,16 +105,21 @@
     .winrate-label {
       grid-column: 2;
       grid-row: 3;
+
+      display: none; // Hide temporarily
     }
 
     .winrate-value {
       grid-column: 3;
       grid-row: 3;
+
+      display: none; // Hide temporarily
     }
   }
 
   .mobile-record-footer {
-    display: flex;
+    //display: flex;
+    display: none; // Hide temporarily
 
     .stat {
       flex-grow: 1;
@@ -150,6 +168,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
+
+      display: none; // Hide temporarily
     }
 
     .wins {
@@ -166,6 +186,8 @@
 
     .winrate {
       width: 8rem;
+
+      display: none; // Hide temporarily
     }
 
     .points {

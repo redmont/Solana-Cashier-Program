@@ -39,7 +39,7 @@ export function useMatchState() {
         bets: [...state.bets, { amount, fighter, walletAddress }],
       });
     });
-  }, [state]);
+  }, [state, patchState, subscribe]);
 
   useEffect(() => {
     const subscriptions = [
@@ -61,7 +61,7 @@ export function useMatchState() {
     return () => {
       subscriptions.forEach((unsubscribe) => unsubscribe());
     };
-  }, []);
+  }, [patchState, subscribe]);
 
   useEffect(() => {
     if (!connected) return;
@@ -79,7 +79,7 @@ export function useMatchState() {
         bets,
       });
     });
-  }, [connected]);
+  }, [connected, send, setState]);
 
   return state;
 }

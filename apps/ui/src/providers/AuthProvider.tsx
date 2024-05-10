@@ -149,7 +149,9 @@ export const AuthProvider: FC<PropsWithChildren> = (props) => {
         localStorage?.setItem(AUTH_TOKEN_STORAGE_KEY, token);
 
         return promise.resolve(token);
-      } catch {}
+      } catch (err) {
+        console.error(err);
+      }
 
       return promise.resolve(null);
     };

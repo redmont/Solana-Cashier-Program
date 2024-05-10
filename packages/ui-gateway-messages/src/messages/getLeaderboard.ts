@@ -1,13 +1,16 @@
 import { Message } from './message';
 
+export interface LeaderboardItem {
+  rank: number;
+  walletAddress: string;
+  balance: string;
+}
+
 export interface GetLeaderboardMessageResponse extends Message {
   totalCount: number;
-  items: {
-    rank: number;
-    walletAddress: string;
-    balance: string;
-  }[];
+  items: LeaderboardItem[];
   success: boolean;
+  currentUserItem?: LeaderboardItem;
 }
 
 export class GetLeaderboardMessage extends Message<GetLeaderboardMessageResponse> {
