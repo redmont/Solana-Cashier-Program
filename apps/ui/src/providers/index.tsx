@@ -9,17 +9,20 @@ import { EthWalletProvider } from './EthWalletProvider';
 import { AuthProvider } from './AuthProvider';
 import { SocketProvider } from './SocketProvider';
 import { PostHogProvider } from './PostHogProvider';
+import Web2AuthProvider from './Web2AuthProvider';
 
 export const AppProviders = (props: ChildContainerProps) => {
   return (
     <EthWalletProvider>
-      <AuthProvider>
-        <PostHogProvider>
-          <SocketProvider>
-            <AppStateProvider>{props.children}</AppStateProvider>
-          </SocketProvider>
-        </PostHogProvider>
-      </AuthProvider>
+      <Web2AuthProvider>
+        <AuthProvider>
+          <PostHogProvider>
+            <SocketProvider>
+              <AppStateProvider>{props.children}</AppStateProvider>
+            </SocketProvider>
+          </PostHogProvider>
+        </AuthProvider>
+      </Web2AuthProvider>
     </EthWalletProvider>
   );
 };

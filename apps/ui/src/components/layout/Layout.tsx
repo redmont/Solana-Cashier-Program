@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { EthConnectButton, EthMobileConnectButton } from '../EthConnectButton';
+import { JoinButton, MobileJoinButton } from '@/components/JoinButton';
 import { ChildContainerProps } from '@/types';
 import { useAppState } from '@/hooks';
 import { usePostHog } from '@/hooks/usePostHog';
@@ -24,8 +24,8 @@ export const Layout = (props: ChildContainerProps) => {
           <span>Points: {Math.floor(balance)}</span>
         </div>
 
-        <EthConnectButton className="p-button-secondary p-button-outlined hidden md:block" />
-        <EthMobileConnectButton className="md:hidden" />
+        <JoinButton className="p-button-secondary p-button-outlined hidden md:block" />
+        <MobileJoinButton className="md:hidden" />
       </div>
 
       {props.children}
