@@ -1,5 +1,6 @@
 {
   "name": "broker-comms",
+  "private": true,
   "version": "1.0.0",
   "main": "./dist/index",
   "types": "./dist/index",

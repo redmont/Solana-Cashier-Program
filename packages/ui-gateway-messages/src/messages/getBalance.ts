@@ -1,13 +1,11 @@
 import { Message } from './message';
 
-export interface GetBalanceMessageResponse extends Message {
+export interface GetBalanceMessageResponse {
+  success: boolean;
   balance: number;
 }
 
-export class GetBalanceMessage extends Message<{
-  balance: number;
-  success: boolean;
-}> {
+export class GetBalanceMessage extends Message<GetBalanceMessageResponse> {
   static messageType = 'getBalance';
   constructor() {
     super();

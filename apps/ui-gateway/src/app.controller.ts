@@ -15,7 +15,7 @@ import {
   ActivityStreamEvent as ActivityStreamUiGatewayEvent,
   BetsUpdatedEvent as BetsUpdatedUiGatewayEvent,
   MatchResultEvent as MatchResultUiGatewayEvent,
-} from 'ui-gateway-messages';
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { Dayjs } from 'dayjs';
 import dayjs from '@/dayjs';
 import { AppGateway } from './app.gateway';

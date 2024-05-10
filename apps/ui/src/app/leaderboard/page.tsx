@@ -8,7 +8,7 @@ import { ScrollPanel } from 'primereact/scrollpanel';
 import {
   GetLeaderboardMessage,
   GetLeaderboardMessageResponse,
-} from 'ui-gateway-messages';
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { useEthWallet, useSocket } from '@/hooks';
 import { truncateEthAddress } from '@/utils';
 

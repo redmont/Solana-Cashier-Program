@@ -1,5 +1,6 @@
 {
   "name": "core",
+  "private": true,
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -28,6 +29,7 @@
     "@nestjs/platform-express": "^10.3.7",
     "@nestjs/platform-ws": "^10.3.7",
     "@nestjs/schedule": "^4.0.1",
+    "@nestjs/serve-static": "^4.0.2",
     "@nestjs/websockets": "^10.3.7",
     "broker-comms": "workspace:*",
     "cashier-messages": "workspace:*",
@@ -46,8 +48,9 @@
     "reflect-metadata": "^0.2.2",
     "rimraf": "^5.0.5",
     "rxjs": "^7.8.1",
+    "sharp": "^0.33.3",
     "socket.io": "^4.7.5",
-    "ui-gateway-messages": "workspace:*",
+    "@bltzr-gg/brawlers-ui-gateway-messages": "workspace:*",
     "uuid": "^9.0.1",
     "ws": "^8.16.0",
     "xstate": "^5.10.0"

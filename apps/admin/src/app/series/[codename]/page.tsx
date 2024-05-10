@@ -4,22 +4,26 @@ import {
   FieldTemplateProps,
   ObjectFieldTemplateProps,
   RJSFSchema,
+  RegistryWidgetsType,
+  WidgetProps,
 } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import Form, { UiSchema } from '@rjsf/chakra-ui';
 import {
   Box,
+  Button,
   Card,
   CardBody,
   FormControl,
+  FormLabel,
   HStack,
   Heading,
 } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import axios from 'axios';
-
-const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+import { baseUrl } from '@/config';
+import { MediaPickerModal } from '@/components/mediaLibrary/MediaPickerModal';
 
 interface CreateSeriesRequest {
   codeName: string;
@@ -56,14 +60,31 @@ const SecondsFieldTemplate = ({
   );
 };
 
+const MediaSelectorWidget = ({ required, value, onChange }: WidgetProps) => {
+  return (
+    <FormControl isRequired={required}>
+      <FormLabel>Thumbnail</FormLabel>
+      <MediaPickerModal
+        buttonLabel={value ? 'Change image' : 'Select image'}
+        onSelect={(path) => onChange(path)}
+      />
+    </FormControl>
+  );
+};
+
+const widgets: RegistryWidgetsType = {
+  mediaSelectorWidget: MediaSelectorWidget,
+};
+
 const uiSchema: UiSchema = {
   betPlacementTime: {
     'ui:FieldTemplate': SecondsFieldTemplate,
   },
-  uploadThumbnail: {
-    'ui:options': {
-      accept: '.png',
-      filePreview: true,
+  fighters: {
+    items: {
+      thumbnailPath: {
+        'ui:widget': MediaSelectorWidget,
+      },
     },
   },
 };
@@ -132,12 +153,7 @@ const EditSeries = ({ params }: { params: { codename: string } }) => {
               codeName: { type: 'string', title: 'Code name' },
               displayName: { type: 'string', title: 'Display name' },
               ticker: { type: 'string', title: 'Ticker' },
-              thumbnail: {},
-              uploadThumbnail: {
-                type: 'string',
-                format: 'data-url',
-                title: 'Upload thumbnail (.png)',
-              },
+              thumbnailPath: { type: 'string', title: 'Thumbnail' },
               model: {
                 type: 'object',
                 title: 'Model',
@@ -183,6 +199,7 @@ const EditSeries = ({ params }: { params: { codename: string } }) => {
         schema={schema}
         uiSchema={uiSchema}
         validator={validator}
+        widgets={widgets}
         templates={{ ObjectFieldTemplate }}
         onSubmit={onSubmit}
       />

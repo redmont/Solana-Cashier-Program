@@ -1,6 +1,6 @@
 import { Message } from './message';
 
-interface GetMatchStatusMessageResponse {
+export interface GetMatchStatusMessageResponse {
   success: boolean;
   matchId: string;
   series: string;

@@ -19,7 +19,7 @@ import {
   GetLeaderboardMessage,
   GatewayEvent,
   GetRosterMessage,
-} from 'ui-gateway-messages';
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
   GetBalanceMessage,

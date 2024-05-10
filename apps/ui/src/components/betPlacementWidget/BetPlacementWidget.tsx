@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 
 import { Fighter, MatchStatus } from '@/types';
 import { useSocket, useAppState, usePostHog } from '@/hooks';
-import { PlaceBetMessage } from 'ui-gateway-messages';
+import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 export interface BetPlacementWidgetProps {
   compact?: boolean;

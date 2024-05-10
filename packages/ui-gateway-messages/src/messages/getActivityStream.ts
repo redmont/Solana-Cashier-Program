@@ -1,6 +1,6 @@
 import { Message } from './message';
 
-interface GetActivityStreamMessageResponse {
+export interface GetActivityStreamMessageResponse {
   success: boolean;
   messages: { timestamp: string; message: string }[];
 }

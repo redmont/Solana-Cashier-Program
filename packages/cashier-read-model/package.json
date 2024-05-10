@@ -1,5 +1,6 @@
 {
   "name": "cashier-read-model",
+  "private": true,
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc"

@@ -5,7 +5,7 @@ import { useSocket } from '../../providers/SocketProvider';
 import {
   GetActivityStreamMessage,
   ActivityStreamEvent,
-} from 'ui-gateway-messages';
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { useDeferredState } from '@/hooks/useDeferredState';
 

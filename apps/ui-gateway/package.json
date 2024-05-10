@@ -1,5 +1,6 @@
 {
   "name": "ui-gateway",
+  "private": true,
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -45,7 +46,7 @@
     "rimraf": "^5.0.5",
     "rxjs": "^7.8.1",
     "socket.io": "^4.7.5",
-    "ui-gateway-messages": "workspace:*",
+    "@bltzr-gg/brawlers-ui-gateway-messages": "workspace:*",
     "uuid": "^9.0.1",
     "viem": "2.x"
   },

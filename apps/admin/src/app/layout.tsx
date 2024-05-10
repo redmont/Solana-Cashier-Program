@@ -16,6 +16,7 @@ import { BiMenu } from 'react-icons/bi';
 import { Aside } from '@/components/Aside';
 import {
   AiOutlineDollarCircle,
+  AiOutlineFileImage,
   AiOutlineHome,
   AiOutlineOrderedList,
   AiOutlineSetting,
@@ -24,6 +25,7 @@ import {
 } from 'react-icons/ai';
 import { IoEarthOutline } from 'react-icons/io5';
 import { BrandName } from '@/constants';
+import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
 
 const menuItems = [
   { text: 'Dashboard', icon: AiOutlineHome, path: '/' },
@@ -34,6 +36,11 @@ const menuItems = [
     text: 'Game server configs',
     icon: AiOutlineSetting,
     path: '/game-server-configs',
+  },
+  {
+    text: 'Media library',
+    icon: AiOutlineFileImage,
+    path: '/media-library',
   },
 ];
 
@@ -70,19 +77,7 @@ export default function RootLayout({
                 </Heading>
               </HStack>
               <HStack spacing="1">
-                <IconButton
-                  variant="ghost"
-                  isRound={true}
-                  size="lg"
-                  aria-label="earth icon"
-                  icon={<IoEarthOutline />}
-                />
-                <IconButton
-                  isRound={true}
-                  size="lg"
-                  aria-label="user icon"
-                  icon={<AiOutlineUser />}
-                />
+                <DynamicWidget />
               </HStack>
             </Flex>
             <HStack align="start" spacing={0}>
