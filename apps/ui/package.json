@@ -24,7 +24,7 @@
     "react-dom": "^18",
     "react-twitch-embed": "^3.0.2",
     "socket.io-client": "^4.7.5",
-    "ui-gateway-messages": "workspace:*",
+    "@bltzr-gg/brawlers-ui-gateway-messages": "workspace:*",
     "wagmi": "^2.5.7"
   },
   "devDependencies": {
