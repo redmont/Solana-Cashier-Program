@@ -7,26 +7,28 @@ import React, {
   createContext,
   useContext,
 } from 'react';
+import { http } from 'viem';
 import { createConfig, WagmiProvider, useAccount } from 'wagmi';
 import { mainnet } from 'wagmi/chains';
-import { getDefaultConfig, ConnectKitProvider } from 'connectkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  DynamicContextProvider,
+  DynamicUserProfile,
+} from '@dynamic-labs/sdk-react-core';
+import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
+import { DynamicWagmiConnector } from '@dynamic-labs/wagmi-connector';
 
 import { ChildContainerProps } from '@/types';
-import { walletConnectProjectId } from '@/config';
-
-import connectKitTheme from '@/styles/connectKitTheme.json';
 
 const queryClient = new QueryClient();
 
-export const wagmiConfig = createConfig(
-  getDefaultConfig({
-    walletConnectProjectId,
-    chains: [mainnet],
-    appName: 'Brawlers',
-    ssr: true,
-  }),
-);
+export const wagmiConfig = createConfig({
+  chains: [mainnet],
+  multiInjectedProviderDiscovery: false,
+  transports: {
+    [mainnet.id]: http(),
+  },
+});
 
 const EthWalletReadinessConext = createContext<{ isReady: boolean }>({
   isReady: false,
@@ -58,13 +60,24 @@ const EthWalletReadinessProvider: FC<ChildContainerProps> = ({ children }) => {
 
 export const EthWalletProvider: FC<ChildContainerProps> = ({ children }) => {
   return (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <ConnectKitProvider mode="dark" customTheme={connectKitTheme}>
-          <EthWalletReadinessProvider>{children}</EthWalletReadinessProvider>
-        </ConnectKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <DynamicContextProvider
+      settings={{
+        environmentId: '866dfa15-a3f8-4f9a-bcb0-493e6ad952f2',
+        walletConnectors: [EthereumWalletConnectors],
+        initialAuthenticationMode: 'connect-only',
+      }}
+    >
+      <WagmiProvider config={wagmiConfig}>
+        <QueryClientProvider client={queryClient}>
+          <DynamicWagmiConnector>
+            <EthWalletReadinessProvider>
+              {children}
+              <DynamicUserProfile />
+            </EthWalletReadinessProvider>
+          </DynamicWagmiConnector>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </DynamicContextProvider>
   );
 };
 

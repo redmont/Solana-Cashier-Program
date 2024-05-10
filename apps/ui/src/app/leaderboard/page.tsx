@@ -9,7 +9,7 @@ import {
   GetLeaderboardMessage,
   GetLeaderboardMessageResponse,
 } from 'ui-gateway-messages';
-import { useEthWallet, useSocket } from '@/hooks';
+import { useSocket } from '@/hooks';
 import { truncateEthAddress } from '@/utils';
 
 interface RecordProps {

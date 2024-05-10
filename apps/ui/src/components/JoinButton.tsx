@@ -19,6 +19,8 @@ export const JoinButton: FC<EthConnectButtonProps> = ({ ...props }) => {
     setShowDynamicUserProfile,
   } = useDynamicContext();
 
+  // Seems like isAuthenticated is set straight after page load
+  // but wallet address is not. Needs to be polished.
   const walletAddress = truncateEthAddress(primaryWallet?.address ?? '');
 
   const handleClick = useCallback(() => {
