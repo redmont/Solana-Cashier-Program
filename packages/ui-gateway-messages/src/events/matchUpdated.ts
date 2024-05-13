@@ -11,7 +11,7 @@ export class MatchUpdatedEvent extends GatewayEvent {
       displayName: string;
       codeName: string;
       ticker: string;
-      thumbnailUrl: string;
+      imageUrl: string;
     }[],
     public readonly state: string,
     public readonly startTime: string,

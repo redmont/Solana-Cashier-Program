@@ -1,12 +1,16 @@
 {
   "name": "core-messages",
+  "private": true,
   "version": "1.0.0",
-  "main": "./dist/index",
-  "types": "./dist/index",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "pnpm run build -- --watch"
   },
   "devDependencies": {
+    "tsup": "^8.0.2",
     "typescript": "^5.3.3",
     "broker-comms": "workspace:*"
   }

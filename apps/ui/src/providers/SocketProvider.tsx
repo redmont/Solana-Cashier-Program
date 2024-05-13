@@ -10,7 +10,7 @@ import {
   useState,
 } from 'react';
 import { Socket, io } from 'socket.io-client';
-import { Message, MessageConstructor, GatewayEvent } from 'ui-gateway-messages';
+import { Message, GatewayEvent } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { serverUrl } from '@/config';
 import { useAuth } from './AuthProvider';

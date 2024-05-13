@@ -9,17 +9,28 @@ export const MatchSchema = new Schema({
     type: String,
     rangeKey: true,
   },
-  state: String,
-  bets: {
+  seriesCodeName: String,
+  matchId: String,
+  startTime: String,
+  fighters: {
     type: Array,
     schema: [
       {
         type: Object,
         schema: {
-          walletAddress: { type: String, required: true },
-          amount: { type: String, required: true },
+          displayName: String,
+          codeName: String,
+          ticker: String,
+          imagePath: String,
+          betCount: Number,
         },
       },
     ],
+  },
+  winner: {
+    type: Object,
+    schema: {
+      codeName: String,
+    },
   },
 });

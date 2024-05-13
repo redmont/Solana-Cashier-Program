@@ -252,12 +252,19 @@ export function createSeriesFSM(
                 invoke: {
                   src: 'distributeWinnings',
                   input: ({
-                    context: { codeName, matchId, winningFighter, config },
+                    context: {
+                      codeName,
+                      matchId,
+                      winningFighter,
+                      config,
+                      startTime,
+                    },
                   }) => ({
                     codeName,
                     matchId,
                     winningFighter,
                     config,
+                    startTime,
                   }),
                   onDone: 'done',
                 },

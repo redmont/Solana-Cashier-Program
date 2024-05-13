@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
 import { QueryStoreService } from 'query-store';
-import { Dayjs } from 'dayjs';
 import { Series } from './series.interface';
 import { Key } from '@/interfaces/key';
 
@@ -28,7 +27,7 @@ export class SeriesPersistenceService {
       codeName: string;
       displayName: string;
       ticker: string;
-      thumbnailUrl: string;
+      imagePath: string;
       model: {
         head: string;
         torso: string;
@@ -54,6 +53,51 @@ export class SeriesPersistenceService {
     await this.queryStore.saveSeries(codeName, '', '');
   }
 
+  async update(
+    codeName: string,
+    displayName: string,
+    betPlacementTime: number,
+    fighters: {
+      codeName: string;
+      displayName: string;
+      ticker: string;
+      imagePath: string;
+      model: {
+        head: string;
+        torso: string;
+        legs: string;
+      };
+    }[],
+    level: string,
+  ) {
+    const series = await this.getOne(codeName);
+    if (!series) {
+      throw new Error('Series not found');
+    }
+
+    if (
+      fighters.length !== series.fighters.length ||
+      fighters.find(
+        (x) => !series.fighters.map((y) => y.codeName).includes(x.codeName),
+      )
+    ) {
+      throw new Error('Fighters do not match');
+    }
+
+    await this.seriesModel.update(
+      {
+        pk: 'series',
+        sk: codeName,
+      },
+      {
+        displayName,
+        betPlacementTime,
+        fighters,
+        level,
+      },
+    );
+  }
+
   async saveState(codeName: string, state: any) {
     await this.seriesModel.update(
       {
@@ -73,7 +117,7 @@ export class SeriesPersistenceService {
       codeName: string;
       displayName: string;
       ticker: string;
-      thumbnailUrl: string;
+      imagePath: string;
     }[],
     state: any,
     startTime?: string,

@@ -30,6 +30,7 @@ export interface FSMDependencies {
       codeName: string;
     },
     config: SeriesConfig,
+    startTime: string,
   ) => Promise<void>;
   resetBets: (codeName: string) => Promise<void>;
   onStateChange: (state: string, context: SeriesContext) => Promise<void>;

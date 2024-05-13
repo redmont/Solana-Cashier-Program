@@ -20,14 +20,6 @@ export async function sendBrokerMessage<
           return timer(delay);
         },
       }),
-      map((response) => {
-        if (!response.success) {
-          throw new Error(
-            `Response not successful: ${JSON.stringify(response)}`,
-          );
-        }
-        return response;
-      }),
       catchError((error) => {
         throw new Error(error.message);
       }),

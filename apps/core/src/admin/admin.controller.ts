@@ -1,4 +1,9 @@
-import { Header, Put, StreamableFile } from '@nestjs/common';
+import {
+  BadRequestException,
+  Header,
+  Put,
+  StreamableFile,
+} from '@nestjs/common';
 import {
   Body,
   Controller,
@@ -22,52 +27,71 @@ import { SeriesService } from 'src/series/series.service';
 import { AdminService } from './admin.service';
 import { GameServerCapabilitiesService } from '@/gameServerCapabilities/gameServerCapabilities.service';
 import { RosterService } from '@/roster/roster.service';
-
-interface CreateGameServerConfigRequest {
-  codeName: string;
-  streamUrl: string;
-}
-
-interface UpdateGameServerConfigRequest {
-  streamUrl: string;
-}
-
-interface CreateSeriesRequest {
-  codeName: string;
-  displayName: string;
-  betPlacementTime: number;
-  fighters: {
-    codeName: string;
-    displayName: string;
-    ticker: string;
-    model: {
-      head: string;
-      torso: string;
-      legs: string;
-    };
-  }[];
-  level: string;
-}
-
-interface UpdateRosterRequest {
-  scheduleType: string;
-  series: string[];
-}
+import {
+  UpdateSeriesRequest,
+  CreateSeriesRequest,
+  CreateGameServerConfigRequest,
+  UpdateGameServerConfigRequest,
+  UpdateRosterRequest,
+} from './models';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('admin')
 export class AdminController {
+  private readonly mediaUri: string;
+
   constructor(
-    @Inject('BROKER') private broker: ClientProxy,
+    private readonly configService: ConfigService,
     private readonly seriesService: SeriesService,
     private readonly gameServerConfigService: GameServerConfigService,
     private readonly adminService: AdminService,
     private readonly gameServerCapabilitiesService: GameServerCapabilitiesService,
     private readonly rosterService: RosterService,
-  ) {}
+    @Inject('BROKER') private broker: ClientProxy,
+  ) {
+    this.mediaUri = this.configService.get<string>('mediaUri');
+  }
+
+  getMediaUrl(path: string) {
+    return `${this.mediaUri}/${path}`;
+  }
 
   @Get('/series')
   async listSeries() {
     return { series: this.seriesService.listSeries() };
+  }
+
+  @Get('/series/:codeName')
+  async getSeries(@Param('codeName') codeName: string) {
+    const series = await this.seriesService.getSeries(codeName);
+    if (!series) {
+      throw new BadRequestException('Series not found');
+    }
+
+    const fighters = series.fighters.map((fighter) => ({
+      ...fighter,
+      imageUrl: this.getMediaUrl(fighter.imagePath),
+    }));
+
+    return {
+      ...series,
+      fighters,
+    };
+  }
+
+  @Put('/series/:codeName')
+  updateSeries(
+    @Param('codeName') codeName: string,
+    @Body() body: UpdateSeriesRequest,
+  ) {
+    const { displayName, betPlacementTime, fighters, level } = body;
+    return this.seriesService.updateSeries(
+      codeName,
+      displayName,
+      betPlacementTime,
+      fighters,
+      level,
+    );
   }
 
   @Post('/series')
@@ -78,7 +102,7 @@ export class AdminController {
       codeName,
       displayName,
       betPlacementTime,
-      fighters.map((fighter) => ({ ...fighter, thumbnailUrl: '' })),
+      fighters,
       level,
     );
   }

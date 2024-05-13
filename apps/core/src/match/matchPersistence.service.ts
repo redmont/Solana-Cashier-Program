@@ -2,56 +2,114 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
 import { v4 as uuid } from 'uuid';
 import { QueryStoreService } from 'query-store';
+import dayjs from '@/dayjs';
 import { Key } from 'src/interfaces/key';
 import { Match } from './interfaces/match.interface';
 import { Bet } from './interfaces/bet.interface';
 import { UserMatchResult } from './interfaces/userMatchResult.interface';
-import dayjs from '@/dayjs';
+import { UserMatch } from './interfaces/userMatch.interface';
 
 @Injectable()
 export class MatchPersistenceService {
   constructor(
     @InjectModel('match') private readonly matchModel: Model<Match, Key>,
+    @InjectModel('userMatch')
+    private readonly userMatchModel: Model<UserMatch, Key>,
     @InjectModel('bet') private readonly betModel: Model<Bet, Key>,
     @InjectModel('userMatchResult')
     private readonly userMatchResultModel: Model<UserMatchResult, Key>,
     private readonly queryStore: QueryStoreService,
   ) {}
 
-  async saveState(
-    id: string,
-    seriesCodeName: string,
-    state: any,
-    context: any,
-  ) {
-    let matchItem: Match = await this.matchModel.get({
+  async recordFightHistory({
+    seriesCodeName,
+    matchId,
+    startTime,
+    fighters,
+    winner,
+  }: {
+    seriesCodeName: string;
+    matchId: string;
+    startTime: string;
+    fighters: {
+      displayName: string;
+      codeName: string;
+      ticker: string;
+      imagePath: string;
+      betCount: number;
+    }[];
+    winner: {
+      codeName: string;
+    };
+  }) {
+    await this.matchModel.create({
       pk: 'match',
-      sk: id,
+      sk: `${startTime}#${seriesCodeName}`,
+      seriesCodeName,
+      matchId,
+      startTime,
+      fighters,
+      winner,
     });
-    if (!matchItem) {
-      matchItem = {
-        pk: 'match',
-        sk: id,
-        seriesCodeName,
-        startTime: '',
-      };
-    }
 
-    const savedMatch = await this.matchModel.create(
-      {
-        ...matchItem,
-        state,
-        startTime: context.startTime ? context.startTime.toISO() : '',
-      },
-      {
-        overwrite: true,
-        return: 'item',
-      },
-    );
+    await this.queryStore.createMatch({
+      seriesCodeName,
+      matchId,
+      startTime,
+      fighters,
+      winner,
+    });
+  }
 
-    await this.queryStore.saveMatch(seriesCodeName, {
-      state,
-      bets: [],
+  async recordUserMatchHistory({
+    userId,
+    betAmount,
+    winAmount,
+    seriesCodeName,
+    matchId,
+    startTime,
+    fighters,
+    winner,
+  }: {
+    userId: string;
+    betAmount: string;
+    winAmount: string;
+    seriesCodeName: string;
+    matchId: string;
+    startTime: string;
+    fighters: {
+      displayName: string;
+      codeName: string;
+      ticker: string;
+      imagePath: string;
+      betCount: number;
+    }[];
+    winner: {
+      codeName: string;
+    };
+  }) {
+    await this.userMatchModel.create({
+      pk: `match#${userId}`,
+      sk: `${startTime}#${seriesCodeName}`,
+      userId,
+      betAmount,
+      winAmount,
+      seriesCodeName,
+      matchId,
+      startTime,
+      fighters,
+      winner,
+    });
+
+    await this.queryStore.createUserMatch({
+      userId,
+      betAmount,
+      winAmount,
+      seriesCodeName,
+      matchId,
+      startTime,
+      fighters,
+      winner,
     });
   }
 

@@ -19,7 +19,11 @@ import {
   GetLeaderboardMessage,
   GatewayEvent,
   GetRosterMessage,
-} from 'ui-gateway-messages';
+  GetMatchHistoryMessage,
+  GetUserMatchHistoryMessage,
+  GetMatchHistoryMessageResponse,
+  GetUserMatchHistoryMessageResponse,
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
   GetBalanceMessage,
@@ -42,6 +46,7 @@ export class AppGateway
   implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect
 {
   private readonly logger: Logger = new Logger(AppGateway.name);
+  private readonly mediaUri: string;
 
   @WebSocketServer()
   server: Server;
@@ -56,10 +61,16 @@ export class AppGateway
     @Inject('JWT_AUTH_SERVICE')
     private readonly jwtAuthService: IJwtAuthService,
     private readonly cashierReadModelService: ReadModelService,
-  ) {}
+  ) {
+    this.mediaUri = this.configService.get<string>('mediaUri');
+  }
 
   onModuleInit() {
     this.instanceId = this.configService.get<string>('instanceId');
+  }
+
+  getMediaUrl(path: string) {
+    return `${this.mediaUri}/${path}`;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -105,7 +116,7 @@ export class AppGateway
   }
 
   @SubscribeMessage(GetMatchStatusMessage.messageType)
-  public async status() {
+  public async getMatchStatus() {
     const {
       matchId,
       seriesCodeName,
@@ -119,7 +130,10 @@ export class AppGateway
     return {
       matchId,
       series: seriesCodeName,
-      fighters,
+      fighters: fighters.map(({ imagePath, ...rest }) => ({
+        ...rest,
+        imageUrl: this.getMediaUrl(imagePath),
+      })),
       state,
       bets,
       startTime,
@@ -141,7 +155,7 @@ export class AppGateway
     const walletAddress = client.data.authorizedUser.claims.walletAddress;
 
     try {
-      const result = await sendBrokerMessage<
+      const { success, message } = await sendBrokerMessage<
         PlaceBetMessage,
         PlaceBetMessageResponse
       >(
@@ -149,7 +163,9 @@ export class AppGateway
         new PlaceBetMessage(series, userId, walletAddress, amount, fighter),
       );
 
-      return { ...result, success: true };
+      const error = message ? { message } : null;
+
+      return { success, error };
     } catch (e) {
       console.log('Place bet error', JSON.stringify(e));
       return { success: false, error: { message: e.message } };
@@ -197,8 +213,6 @@ export class AppGateway
   ) {
     const userId = this.clientUserIdMap.get(client?.id);
 
-    console.log('User', userId);
-
     const { totalCount, items, currentUserItem } =
       await this.cashierReadModelService.getLeaderboard(
         pageSize,
@@ -222,6 +236,46 @@ export class AppGateway
     return {
       success: true,
       roster: roster.map(({ codeName }) => ({ series: codeName })),
+    };
+  }
+
+  @SubscribeMessage(GetMatchHistoryMessage.messageType)
+  public async getMatchHistory(): Promise<GetMatchHistoryMessageResponse> {
+    const result = await this.query.getMatches();
+
+    const matches = result.map((match) => ({
+      ...match,
+      fighters: match.fighters.map((fighter) => ({
+        ...fighter,
+        imageUrl: this.getMediaUrl(fighter.imagePath),
+      })),
+    }));
+
+    return {
+      success: true,
+      matches,
+    };
+  }
+
+  @SubscribeMessage(GetUserMatchHistoryMessage.messageType)
+  public async getUserMatchHistory(
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetUserMatchHistoryMessageResponse> {
+    const userId = this.clientUserIdMap.get(client?.id);
+
+    const result = await this.query.getUserMatches(userId);
+
+    const matches = result.map((match) => ({
+      ...match,
+      fighters: match.fighters.map((fighter) => ({
+        ...fighter,
+        imageUrl: this.getMediaUrl(fighter.imagePath),
+      })),
+    }));
+
+    return {
+      success: true,
+      matches,
     };
   }
 

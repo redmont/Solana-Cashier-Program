@@ -5,3 +5,5 @@ export * from './getMatchStatus';
 export * from './getActivityStream';
 export * from './getLeaderboard';
 export * from './getRoster';
+export * from './getMatchHistory';
+export * from './getUserMatchHistory';

@@ -9,9 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@bltzr-gg/brawlers-ui-gateway-messages": "workspace:*",
     "@dynamic-labs/ethereum": "^2.0.6",
     "@dynamic-labs/sdk-react-core": "^2.0.6",
     "@dynamic-labs/wagmi-connector": "^2.0.6",
+    "@repo/eslint-config": "workspace:*",
     "@tanstack/react-query": "^5.28.14",
     "@types/ws": "^8.5.10",
     "@vercel/analytics": "^1.2.2",
@@ -27,7 +29,6 @@
     "react-dom": "^18",
     "react-twitch-embed": "^3.0.2",
     "socket.io-client": "^4.7.5",
-    "ui-gateway-messages": "workspace:*",
     "viem": "~2.9.9",
     "wagmi": "^2.8.5"
   },

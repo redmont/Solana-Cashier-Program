@@ -1,5 +1,5 @@
 import { Key } from './key.interface';
 
-export interface ActivityStreamModel extends Key {
+export interface ActivityStream extends Key {
   message: string;
 }

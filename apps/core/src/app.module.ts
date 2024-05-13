@@ -15,6 +15,7 @@ import { ActivityStreamModule } from './activityStream/activityStream.module';
 import { RosterModule } from './roster/roster.module';
 import { SeriesService } from './series/series.service';
 import { RosterService } from './roster/roster.service';
+import { MediaLibraryModule } from './mediaLibrary/mediaLibrary.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { RosterService } from './roster/roster.service';
     UsersModule,
     AdminModule,
     RosterModule,
+    MediaLibraryModule,
   ],
 })
 export class AppModule implements OnModuleInit {
