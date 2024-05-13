@@ -73,7 +73,7 @@ export const AuthProvider: FC<PropsWithChildren> = (props) => {
 
     return (decodedToken.exp ?? 0) > now;
   }, []);
-  console.log(walletAddress);
+
   const getToken = useCallback(
     async (address: string) => {
       const nonceResp = await fetch(`${serverUrl}/auth/get-nonce`, {

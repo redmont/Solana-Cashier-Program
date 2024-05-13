@@ -6,6 +6,7 @@ import React, {
   useEffect,
   createContext,
   useContext,
+  useRef,
 } from 'react';
 import { http } from 'viem';
 import { createConfig, WagmiProvider, useAccount } from 'wagmi';
@@ -14,6 +15,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   DynamicContextProvider,
   DynamicUserProfile,
+  useDynamicContext,
 } from '@dynamic-labs/sdk-react-core';
 import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
 import { DynamicWagmiConnector } from '@dynamic-labs/wagmi-connector';
@@ -36,20 +38,56 @@ const EthWalletReadinessConext = createContext<{ isReady: boolean }>({
 
 const EthWalletReadinessProvider: FC<ChildContainerProps> = ({ children }) => {
   const account = useAccount();
-  const [isReady, setReady] = useState<boolean | null>(null);
+  const { isAuthenticated } = useDynamicContext();
+  const [isReady, setReady] = useState<boolean>(false);
 
   const { isConnecting, isConnected } = account;
+
+  // 0: Initialisation
+  // 1: Waiting connection start
+  // 2: Connecting
+  const phase = useRef(0);
 
   // This use effect prevents UI from "jumping"
   // i.e. showing intermediate states before wallet connects
   // because it takes few loops to solicit final wallet connection state
   useEffect(() => {
-    if (isReady) return;
+    // If not authenticated with Dynamic it is not connected
+    if (!isAuthenticated) {
+      setReady(true);
+    }
 
-    if (isConnecting) setReady(false);
+    // If authenticated but no sign of previous connection
+    // then wait until connection starts
+    if (
+      isAuthenticated &&
+      phase.current === 0 &&
+      !isConnecting &&
+      !isConnecting
+    ) {
+      phase.current = 1;
+    }
 
-    if ((!isConnecting && isReady === false) || isConnected) setReady(true);
-  }, [isReady, isConnected, isConnecting]);
+    // If isConnecting or isConnection are appeared as true
+    // then wait until they are reset
+    if (phase.current === 0 && (isConnecting || isConnected)) {
+      phase.current = 1;
+      console.log('[Eth]', 'Resetting state');
+      return;
+    }
+
+    // Move to the Connecting phase
+    if (phase.current === 1 && isConnecting) {
+      phase.current = 2;
+      return;
+    }
+
+    // Once connecting goes from true to false
+    // we assume it is ready
+    if (phase.current === 2 && !isConnecting) {
+      setReady(true);
+    }
+  }, [isAuthenticated, isConnected, isConnecting]);
 
   return (
     <EthWalletReadinessConext.Provider value={{ isReady: isReady ?? false }}>
@@ -64,7 +102,7 @@ export const EthWalletProvider: FC<ChildContainerProps> = ({ children }) => {
       settings={{
         environmentId: '21452bd4-902f-40be-9b8f-5bc817b00e0e',
         walletConnectors: [EthereumWalletConnectors],
-        // initialAuthenticationMode: 'connect-only',
+        initialAuthenticationMode: 'connect-only',
       }}
     >
       <WagmiProvider config={wagmiConfig}>
