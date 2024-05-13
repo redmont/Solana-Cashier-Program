@@ -8,7 +8,7 @@ export interface GetMatchStatusMessageResponse {
     displayName: string;
     codeName: string;
     ticker: string;
-    thumbnailUrl: string;
+    imageUrl: string;
   }[];
   bets: any[];
   state: string;

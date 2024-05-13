@@ -1,9 +1,17 @@
 import { Key } from './key.interface';
 
-export interface MatchModel extends Key {
-  state: string;
-  bets: {
-    walletAddress: string;
-    amount: string;
+export interface Match extends Key {
+  seriesCodeName: string;
+  matchId: string;
+  startTime: string;
+  fighters: {
+    displayName: string;
+    codeName: string;
+    ticker: string;
+    imagePath: string;
+    betCount: number;
   }[];
+  winner: {
+    codeName: string;
+  };
 }

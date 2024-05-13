@@ -14,6 +14,7 @@ import { MatchOutcomeService } from './matchOutcome/matchOutcome.service';
 import { AbstractMatchOutcomeService } from './matchOutcome/abstractMatchOutcomeService';
 import { UserMatchResultSchema } from './schemas/userMatchResult.schema';
 import { GatewayManagerModule } from '@/gatewayManager/gatewayManager.module';
+import { UserMatchSchema } from './schemas/userMatch.schema';
 
 @Module({
   imports: [
@@ -24,6 +25,19 @@ import { GatewayManagerModule } from '@/gatewayManager/gatewayManager.module';
         useFactory: (_, configService: ConfigService) => {
           return {
             schema: MatchSchema,
+            options: {
+              tableName: configService.get<string>('tableName'),
+              create: configService.get<boolean>('isDynamoDbLocal'),
+            },
+          };
+        },
+        inject: [ConfigService],
+      },
+      {
+        name: 'userMatch',
+        useFactory: (_, configService: ConfigService) => {
+          return {
+            schema: UserMatchSchema,
             options: {
               tableName: configService.get<string>('tableName'),
               create: configService.get<boolean>('isDynamoDbLocal'),

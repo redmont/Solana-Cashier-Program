@@ -1,28 +1,33 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
 import { Key } from './interfaces/key.interface';
-import { MatchModel } from './interfaces/match.interface';
-import { SeriesModel } from './interfaces/series.interface';
-import { ActivityStreamModel } from './interfaces/activityStream.interface';
-import { CurrentMatchModel } from './interfaces/currentMatch.interface';
+import { Match } from './interfaces/match.interface';
+import { Series } from './interfaces/series.interface';
+import { ActivityStream } from './interfaces/activityStream.interface';
+import { CurrentMatch } from './interfaces/currentMatch.interface';
 import { UserMatchResult } from './interfaces/userMatchResult.interface';
-import { RosterModel } from './interfaces/roster.interface';
+import { Roster } from './interfaces/roster.interface';
+import { UserMatch } from './interfaces/userMatch.interface';
+import { GetMatchResult } from './models/getMatchResult';
+import { GetUserMatchResult } from './models/getUserMatchResult';
 
 @Injectable()
 export class QueryStoreService implements OnModuleInit {
   constructor(
     @InjectModel('series')
-    private readonly seriesModel: Model<SeriesModel, Key>,
+    private readonly seriesModel: Model<Series, Key>,
     @InjectModel('match')
-    private readonly matchModel: Model<MatchModel, Key>,
+    private readonly matchModel: Model<Match, Key>,
     @InjectModel('activityStream')
-    private readonly activityStreamModel: Model<ActivityStreamModel, Key>,
+    private readonly activityStreamModel: Model<ActivityStream, Key>,
     @InjectModel('currentMatch')
-    private readonly currentMatchModel: Model<CurrentMatchModel, Key>,
+    private readonly currentMatchModel: Model<CurrentMatch, Key>,
+    @InjectModel('userMatch')
+    private readonly userMatchModel: Model<UserMatch, Key>,
     @InjectModel('userMatchResult')
     private readonly userMatchResultModel: Model<UserMatchResult, Key>,
     @InjectModel('roster')
-    private readonly rosterModel: Model<RosterModel, Key>,
+    private readonly rosterModel: Model<Roster, Key>,
   ) {}
 
   async onModuleInit() {
@@ -110,7 +115,7 @@ export class QueryStoreService implements OnModuleInit {
       codeName: string;
       displayName: string;
       ticker: string;
-      thumbnailUrl: string;
+      imagePath: string;
     }[],
     state: string,
     startTime?: string,
@@ -152,23 +157,6 @@ export class QueryStoreService implements OnModuleInit {
     );
   }
 
-  async saveMatch(
-    seriesCodeName: string,
-    match: { state: string; bets: any[] },
-  ) {
-    await this.matchModel.create(
-      {
-        pk: `match:${seriesCodeName}`,
-        sk: 'match',
-        ...match,
-      },
-      {
-        overwrite: true,
-        return: 'item',
-      },
-    );
-  }
-
   async createBet(
     seriesCodeName: string,
     walletAddress: string,
@@ -195,7 +183,7 @@ export class QueryStoreService implements OnModuleInit {
   }
 
   async setBets(seriesCodeName: string, bets: any[]) {
-    await this.matchModel.update(
+    await this.seriesModel.update(
       {
         pk: `series#${seriesCodeName}`,
         sk: 'series',
@@ -257,6 +245,79 @@ export class QueryStoreService implements OnModuleInit {
     return items;
   }
 
+  async createMatch({
+    seriesCodeName,
+    matchId,
+    startTime,
+    fighters,
+    winner,
+  }: {
+    seriesCodeName: string;
+    matchId: string;
+    startTime: string;
+    fighters: {
+      displayName: string;
+      codeName: string;
+      ticker: string;
+      imagePath: string;
+      betCount: number;
+    }[];
+    winner: {
+      codeName: string;
+    };
+  }) {
+    await this.matchModel.create({
+      pk: 'match',
+      sk: `${startTime}#${seriesCodeName}`,
+      seriesCodeName,
+      matchId,
+      startTime,
+      fighters,
+      winner,
+    });
+  }
+
+  async createUserMatch({
+    userId,
+    betAmount,
+    winAmount,
+    seriesCodeName,
+    matchId,
+    startTime,
+    fighters,
+    winner,
+  }: {
+    userId: string;
+    betAmount: string;
+    winAmount: string;
+    seriesCodeName: string;
+    matchId: string;
+    startTime: string;
+    fighters: {
+      displayName: string;
+      codeName: string;
+      ticker: string;
+      imagePath: string;
+      betCount: number;
+    }[];
+    winner: {
+      codeName: string;
+    };
+  }) {
+    await this.userMatchModel.create({
+      pk: `match#${userId}`,
+      sk: `${startTime}#${seriesCodeName}`,
+      userId,
+      betAmount,
+      winAmount,
+      seriesCodeName,
+      matchId,
+      startTime,
+      fighters,
+      winner,
+    });
+  }
+
   async createUserMatchResult(matchId: string, userId: string, amount: number) {
     await this.userMatchResultModel.create({
       pk: `userMatchResult#${matchId}`,
@@ -286,5 +347,19 @@ export class QueryStoreService implements OnModuleInit {
     });
 
     return roster;
+  }
+
+  async getMatches(): Promise<GetMatchResult[]> {
+    const matches = await this.matchModel.query({ pk: 'match' }).exec();
+
+    return matches.map(({ pk, sk, ...rest }) => rest);
+  }
+
+  async getUserMatches(userId: string): Promise<GetUserMatchResult[]> {
+    const matches = await this.userMatchModel
+      .query({ pk: `match#${userId}` })
+      .exec();
+
+    return matches.map(({ pk, sk, userId, ...rest }) => rest);
   }
 }

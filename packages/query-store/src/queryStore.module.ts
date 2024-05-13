@@ -14,6 +14,7 @@ import { ActivityStreamSchema } from './schemas/activityStream.schema';
 import { CurrentMatchSchema } from './schemas/currentMatch.schema';
 import { UserMatchResultSchema } from './schemas/userMatchResult.schema';
 import { RosterSchema } from './schemas/roster.schema';
+import { UserMatchSchema } from './schemas/userMatch.schema';
 
 interface QueryStoreOptions {
   tableName: string;
@@ -88,6 +89,20 @@ export class QueryStoreModule {
         useFactory: async (_: any, options: QueryStoreOptions) => {
           return {
             schema: ActivityStreamSchema,
+            options: {
+              tableName: options.tableName,
+              create: options.isDynamoDbLocal,
+            },
+          };
+        },
+        inject: ['QUERY_STORE_OPTIONS'],
+      },
+      {
+        name: 'userMatch',
+        imports: options.imports || [],
+        useFactory: async (_: any, options: QueryStoreOptions) => {
+          return {
+            schema: UserMatchSchema,
             options: {
               tableName: options.tableName,
               create: options.isDynamoDbLocal,

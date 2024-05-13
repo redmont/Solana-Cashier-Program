@@ -2,6 +2,7 @@ import { Message } from './message';
 
 export interface PlaceBetMessageResponse {
   success: boolean;
+  message: string;
 }
 
 export class PlaceBetMessage extends Message<PlaceBetMessageResponse> {

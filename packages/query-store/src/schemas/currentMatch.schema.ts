@@ -32,7 +32,7 @@ export const CurrentMatchSchema = new Schema({
           codeName: { type: String, required: true },
           displayName: { type: String, required: true },
           ticker: { type: String, required: true },
-          thumbnailUrl: { type: String, required: true },
+          imagePath: { type: String, required: true },
         },
       },
     ],

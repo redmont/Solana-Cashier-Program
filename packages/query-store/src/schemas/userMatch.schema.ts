@@ -1,6 +1,6 @@
 import { Schema } from 'dynamoose';
 
-export const MatchSchema = new Schema({
+export const UserMatchSchema = new Schema({
   pk: {
     type: String,
     hashKey: true,
@@ -9,6 +9,9 @@ export const MatchSchema = new Schema({
     type: String,
     rangeKey: true,
   },
+  userId: String,
+  betAmount: String,
+  winAmount: String,
   seriesCodeName: String,
   matchId: String,
   startTime: String,

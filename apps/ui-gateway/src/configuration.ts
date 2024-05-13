@@ -18,4 +18,5 @@ export default () => ({
   queryStoreTableName: process.env.QUERY_STORE_TABLE_NAME,
   cashierReadModelTableName: process.env.CASHIER_READ_MODEL_TABLE_NAME,
   isDynamoDbLocal: process.env.IS_DDB_LOCAL === 'true',
+  mediaUri: process.env.MEDIA_URI,
 });

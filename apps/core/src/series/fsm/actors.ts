@@ -92,10 +92,21 @@ export const getActors = ({
         codeName: string;
       };
       config: SeriesConfig;
+      startTime: string;
     }
-  >(async ({ input: { codeName, matchId, winningFighter, config } }) => {
-    await distributeWinnings(codeName, matchId, winningFighter, config);
-  }),
+  >(
+    async ({
+      input: { codeName, matchId, winningFighter, config, startTime },
+    }) => {
+      await distributeWinnings(
+        codeName,
+        matchId,
+        winningFighter,
+        config,
+        startTime,
+      );
+    },
+  ),
   resetBets: fromPromise<void, string>(async ({ input }) => {
     await resetBets(input);
   }),

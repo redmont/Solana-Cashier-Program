@@ -1,6 +1,4 @@
-import { Key } from 'src/interfaces/key';
-
-export interface Series extends Key {
+export interface UpdateSeriesRequest {
   displayName: string;
   betPlacementTime: number;
   fighters: {
@@ -15,6 +13,4 @@ export interface Series extends Key {
     };
   }[];
   level: string;
-  state?: string;
-  context?: any;
 }

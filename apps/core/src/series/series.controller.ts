@@ -18,6 +18,7 @@ import {
 import { sendBrokerMessage } from 'broker-comms';
 import { OnEvent } from '@nestjs/event-emitter';
 import { SeriesService } from './series.service';
+import { PlaceBetMessageResponse } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 @Controller()
 export class SeriesController {
@@ -27,9 +28,11 @@ export class SeriesController {
   ) {}
 
   @MessagePattern(PlaceBetMessage.messageType)
-  async handleBetPlaced(@Payload() data: PlaceBetMessage) {
+  async handlePlaceBet(
+    @Payload() data: PlaceBetMessage,
+  ): Promise<PlaceBetMessageResponse> {
     try {
-      const success = await this.seriesService.placeBet(
+      const { success, message } = await this.seriesService.placeBet(
         data.seriesCodeName,
         data.userId,
         data.walletAddress,
@@ -37,7 +40,7 @@ export class SeriesController {
         data.fighter,
       );
 
-      return { success };
+      return { success, message };
     } catch (e) {
       throw new RpcException(e.message);
     }

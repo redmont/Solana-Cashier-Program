@@ -14,7 +14,10 @@ import {
 import { ReadModelService } from 'cashier-read-model';
 import { createAccountCommand } from './commands/createAccount.command';
 import { creditAccountCommand } from './commands/creditAccount.command';
-import { debitAccountCommand } from './commands/debitAccount.command';
+import {
+  InsufficientBalanceError,
+  debitAccountCommand,
+} from './commands/debitAccount.command';
 
 @Controller()
 export class AccountController {
@@ -70,8 +73,12 @@ export class AccountController {
         {},
       );
     } catch (e) {
-      this.logger.error('Error debiting account', e);
-      return { success: false, error: e.message };
+      if (e instanceof InsufficientBalanceError) {
+        return { success: false, error: 'Insufficient balance' };
+      } else {
+        this.logger.error('Error debiting account', e);
+        return { success: false, error: e.message };
+      }
     }
 
     return { success: true };
@@ -119,8 +126,12 @@ export class AccountController {
         {},
       );
     } catch (e) {
-      this.logger.error('Error debiting account', e);
-      return { success: false, error: e.message };
+      if (e instanceof InsufficientBalanceError) {
+        return { success: false, error: 'Insufficient balance' };
+      } else {
+        this.logger.error('Error debiting account', e);
+        return { success: false, error: e.message };
+      }
     }
 
     return { success: true };

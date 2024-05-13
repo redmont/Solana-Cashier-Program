@@ -1,7 +1,9 @@
 import { BrokerMessage, BaseResponse } from 'broker-comms';
 import { prefix } from '../constants';
 
-export type PlaceBetMessageResponse = BaseResponse;
+export type PlaceBetMessageResponse = BaseResponse & {
+  message?: string;
+};
 
 export class PlaceBetMessage extends BrokerMessage<PlaceBetMessageResponse> {
   static messageType = `${prefix}.placeBet`;

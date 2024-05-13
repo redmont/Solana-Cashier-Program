@@ -12,7 +12,7 @@ export class MatchUpdatedEvent extends BrokerEvent {
       displayName: string;
       codeName: string;
       ticker: string;
-      thumbnailUrl: string;
+      imagePath: string;
     }[],
     public readonly state: string,
     public readonly startTime: string,

@@ -1,6 +1,4 @@
-import { Key } from 'src/interfaces/key';
-
-export interface Match extends Key {
+export interface GetMatchResult {
   seriesCodeName: string;
   matchId: string;
   startTime: string;

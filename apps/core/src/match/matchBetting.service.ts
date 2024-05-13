@@ -29,6 +29,7 @@ export class MatchBettingService {
     matchId: string,
     winningFighter: { displayName: string; codeName: string },
     seriesConfig: SeriesConfig,
+    startTime: string,
   ) {
     this.logger.log(
       `Distributing winnings, winning fighter is '${winningFighter}'`,
@@ -83,6 +84,14 @@ export class MatchBettingService {
       .map((bet) => bet.userId)
       .filter((value, index, self) => self.indexOf(value) === index);
 
+    // Augment fighters with bet counts
+    const fightersWithBetCounts = seriesConfig.fighters.map((fighter) => {
+      const betCount = bets.filter(
+        (bet) => bet.fighter === fighter.codeName,
+      ).length;
+      return { ...fighter, betCount };
+    });
+
     for (const userId of Object.keys(winsPerUser)) {
       const amount = winsPerUser[userId];
 
@@ -125,6 +134,18 @@ export class MatchBettingService {
           winningFighter.codeName,
         ),
       );
+
+      // Create user match history
+      await this.matchPersistenceService.recordUserMatchHistory({
+        userId,
+        betAmount: betAmount.toString(),
+        winAmount: netWinAmount.toString(),
+        seriesCodeName,
+        matchId,
+        startTime,
+        winner: winningFighter,
+        fighters: fightersWithBetCounts,
+      });
     }
 
     for (const loserUserId of losers) {
@@ -159,10 +180,31 @@ export class MatchBettingService {
           timestamp,
           matchId,
           betAmount.toString(),
-          (-betAmount).toString(),
+          '0',
           winningFighter.codeName,
         ),
       );
+
+      // Create user match history
+      await this.matchPersistenceService.recordUserMatchHistory({
+        userId: loserUserId,
+        betAmount: betAmount.toString(),
+        winAmount: '0',
+        seriesCodeName,
+        matchId,
+        startTime,
+        winner: winningFighter,
+        fighters: fightersWithBetCounts,
+      });
     }
+
+    // Record fight history
+    await this.matchPersistenceService.recordFightHistory({
+      seriesCodeName,
+      matchId,
+      startTime,
+      winner: winningFighter,
+      fighters: fightersWithBetCounts,
+    });
   }
 }

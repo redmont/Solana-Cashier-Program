@@ -50,6 +50,7 @@ curl --location 'http://localhost:8080/admin/series' \
             "codeName": "pepe",
             "displayName": "Pepe",
             "ticker": "PEPE",
+            "imagePath": "",
             "model": {
                 "head": "H_PepeA",
                 "torso": "T_PepeA",
@@ -60,6 +61,7 @@ curl --location 'http://localhost:8080/admin/series' \
             "codeName": "doge",
             "displayName": "Doge",
             "ticker": "DOGE",
+            "imagePath": "",
             "model": {
                 "head": "H_DogeA",
                 "torso": "T_DogeA",
@@ -102,6 +104,7 @@ curl --location 'http://localhost:8080/admin/series' \
             "codeName": "fighter-a",
             "displayName": "Fighter A",
             "ticker": "PEPE",
+            "imagePath": "",
             "model": {
                 "head": "H_PepeA",
                 "torso": "T_PepeA",
@@ -112,6 +115,7 @@ curl --location 'http://localhost:8080/admin/series' \
             "codeName": "fighter-b",
             "displayName": "Fighter B",
             "ticker": "DOGE",
+            "imagePath": "",
             "model": {
                 "head": "H_DogeA",
                 "torso": "T_DogeA",
@@ -133,6 +137,7 @@ curl --location 'http://localhost:8080/admin/series' \
             "codeName": "fighter-c",
             "displayName": "Fighter C",
             "ticker": "PEPE",
+            "imagePath": "",
             "model": {
                 "head": "H_PepeA",
                 "torso": "T_PepeA",
@@ -143,6 +148,7 @@ curl --location 'http://localhost:8080/admin/series' \
             "codeName": "fighter-d",
             "displayName": "Fighter D",
             "ticker": "DOGE",
+            "imagePath": "",
             "model": {
                 "head": "H_DogeA",
                 "torso": "T_DogeA",

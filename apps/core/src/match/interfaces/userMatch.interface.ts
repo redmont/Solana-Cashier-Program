@@ -1,6 +1,9 @@
 import { Key } from 'src/interfaces/key';
 
-export interface Match extends Key {
+export interface UserMatch extends Key {
+  userId: string;
+  betAmount: string;
+  winAmount: string;
   seriesCodeName: string;
   matchId: string;
   startTime: string;

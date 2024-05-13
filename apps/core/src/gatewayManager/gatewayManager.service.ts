@@ -51,7 +51,7 @@ export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
       displayName: string;
       codeName: string;
       ticker: string;
-      thumbnailUrl: string;
+      imagePath: string;
     }[],
     state: string,
     startTime: string,

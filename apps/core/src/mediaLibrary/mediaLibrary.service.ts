@@ -3,17 +3,50 @@ import { InjectModel } from 'nestjs-dynamoose';
 import * as fs from 'fs';
 import * as fsPath from 'path';
 import sharp from 'sharp';
+import { ConfigService } from '@nestjs/config';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 @Injectable()
 export class MediaLibraryService {
-  constructor(@InjectModel('media') private readonly media: any) {}
+  private readonly bucketName: string;
+  private readonly s3Client: S3Client;
+
+  constructor(
+    configService: ConfigService,
+    @InjectModel('media') private readonly media: any,
+  ) {
+    this.bucketName = configService.get('mediaLibraryBucketName');
+    if (this.bucketName) {
+      this.s3Client = new S3Client({});
+    }
+  }
+
+  private async writeFile(filePath: string, contents: Buffer) {
+    if (this.bucketName) {
+      await this.s3Client.send(
+        new PutObjectCommand({
+          Bucket: this.bucketName,
+          Key: filePath,
+          Body: contents,
+        }),
+      );
+    } else {
+      // Ensure folder path exists
+      fs.mkdirSync(fsPath.dirname(filePath), { recursive: true });
+
+      // Write file
+      fs.writeFileSync(filePath, contents);
+    }
+  }
 
   private async generateThumbnail(filePath: string, mimeType: string) {
     if (mimeType.startsWith('image')) {
       // Generate thumbnail
-      await sharp(filePath)
-        .resize(128, 128)
-        .toFile(filePath.replace(/(\.[\w\d_-]+)$/i, '_thumb$1'));
+      const contents = await sharp(filePath).resize(128, 128).toBuffer();
+      await this.writeFile(
+        filePath.replace(/(\.[\w\d_-]+)$/i, '_thumb$1'),
+        contents,
+      );
     }
   }
 
@@ -77,10 +110,7 @@ export class MediaLibraryService {
         ? fsPath.join(__dirname, '../', 'media', path, name)
         : fsPath.join(__dirname, '../', 'media', name);
 
-    // Ensure folder path exists
-    fs.mkdirSync(fsPath.dirname(filePath), { recursive: true });
-
-    fs.writeFileSync(filePath, file.buffer);
+    await this.writeFile(filePath, file.buffer);
 
     await this.media.create({
       pk: `media#${path}`,

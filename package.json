@@ -4,7 +4,7 @@
   "scripts": {
     "build": "turbo build",
     "start": "turbo start",
-    "dev": "turbo dev",
+    "dev": "turbo dev --concurrency 15",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "publish-packages": "turbo run build && changeset version && changeset publish"

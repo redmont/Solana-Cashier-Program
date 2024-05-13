@@ -1,6 +1,6 @@
 import { Key } from './key.interface';
 
-export interface RosterModel extends Key {
+export interface Roster extends Key {
   roster: {
     codeName: string;
   }[];

@@ -4,6 +4,8 @@ type Input = { accountId: string; amount: number };
 type Output = { accountId: string };
 type Context = {};
 
+export class InsufficientBalanceError extends Error {}
+
 export const debitAccountCommand = (eventStore: EventStore) =>
   new Command({
     commandId: 'DEBIT_ACCOUNT',
@@ -26,7 +28,7 @@ export const debitAccountCommand = (eventStore: EventStore) =>
 
       // Check if the account has enough balance
       if ((accountAggregate as any).balance < amount) {
-        throw new Error(
+        throw new InsufficientBalanceError(
           `Account with id ${accountId} does not have enough balance`,
         );
       }
