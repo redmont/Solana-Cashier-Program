@@ -2,15 +2,16 @@
 
 import React from 'react';
 
-import { EthConnectButton, EthMobileConnectButton } from '../EthConnectButton';
+import { JoinButton, MobileJoinButton } from '@/components/JoinButton';
 import { ChildContainerProps } from '@/types';
-import { useAppState } from '@/hooks';
+import { useAppState, useEthWallet } from '@/hooks';
 import { usePostHog } from '@/hooks/usePostHog';
 
 export const Layout = (props: ChildContainerProps) => {
   usePostHog();
 
   const { balance } = useAppState();
+  const { isReady } = useEthWallet();
 
   return (
     <div className="layout">
@@ -19,14 +20,16 @@ export const Layout = (props: ChildContainerProps) => {
         <img className="logo" src="/logo.png" alt="Logo" />
       </div>
 
-      <div className="topbar-tools">
-        <div className="topbar-balance">
-          <span>Points: {Math.floor(balance)}</span>
-        </div>
+      {isReady && (
+        <div className="topbar-tools">
+          <div className="topbar-balance">
+            <span>Points: {Math.floor(balance)}</span>
+          </div>
 
-        <EthConnectButton className="p-button-secondary p-button-outlined hidden md:block" />
-        <EthMobileConnectButton className="md:hidden" />
-      </div>
+          <JoinButton className="p-button-secondary p-button-outlined hidden md:block" />
+          <MobileJoinButton className="md:hidden" />
+        </div>
+      )}
 
       {props.children}
     </div>

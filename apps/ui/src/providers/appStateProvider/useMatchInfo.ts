@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { Fighter, Bet, MatchStatus } from '@/types';
-import { useEthWallet } from '../EthWalletProvider';
+import { useEthWallet } from '@/hooks';
 import { MatchState, useMatchState } from './useMatchState';
 
 export interface FighterBets {
@@ -21,7 +21,7 @@ export type MatchInfo = Omit<MatchState, 'bets' | 'state'> & {
 export function useMatchInfo() {
   const { bets, state, ...matchState } = useMatchState();
 
-  const { address } = useEthWallet();
+  const { address: walletAddress } = useEthWallet();
 
   return useMemo(() => {
     const result: MatchInfo = {
@@ -41,7 +41,7 @@ export function useMatchInfo() {
       fighterBets.list.push(bet);
       fighterBets.total += +bet.amount;
 
-      if (address === bet.walletAddress) {
+      if (walletAddress === bet.walletAddress) {
         fighterBets.stake += +bet.amount;
       }
     });
@@ -60,5 +60,5 @@ export function useMatchInfo() {
     });
 
     return result;
-  }, [bets, matchState]);
+  }, [state, bets, matchState, walletAddress]);
 }
