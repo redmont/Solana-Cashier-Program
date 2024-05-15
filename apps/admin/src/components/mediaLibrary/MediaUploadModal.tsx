@@ -10,21 +10,31 @@ import {
   ModalOverlay,
   useDisclosure,
 } from '@chakra-ui/react';
-import { useMutation } from '@tanstack/react-query';
-import { ChangeEvent, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ChangeEvent, useMemo, useState } from 'react';
 import { FileUpload } from '../FileUpload';
 
 export const MediaUploadModal = ({
+  path,
   isOpen,
   onOpen,
   onClose,
 }: {
+  path: string[];
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
 }) => {
+  const queryClient = useQueryClient();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const apiPath = useMemo(() => {
+    if (path) {
+      return `media-library/files?path=${path.join('/')}`;
+    }
+    return 'media-library/files';
+  }, [path]);
 
   const uploadMutation = useMutation({
     mutationFn: (fileData: File) => {
@@ -53,6 +63,10 @@ export const MediaUploadModal = ({
       const data = await response.json();
     } finally {
       setIsLoading(false);
+      queryClient.invalidateQueries({
+        queryKey: [apiPath],
+      });
+      onClose();
     }
   };
 

@@ -5,6 +5,7 @@ import { MediaLibrary } from '@/components/mediaLibrary/MediaLibrary';
 import { MediaUploadModal } from '@/components/mediaLibrary/MediaUploadModal';
 import { Button, ButtonGroup, Stack, useDisclosure } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { AiOutlineFileAdd, AiOutlineFolderAdd } from 'react-icons/ai';
 
 const MediaLibraryPage = ({ params }: { params: { path: string[] } }) => {
@@ -43,6 +44,7 @@ const MediaLibraryPage = ({ params }: { params: { path: string[] } }) => {
         <MediaLibrary path={params.path} onChangePath={handleChangePath} />
       </Stack>
       <MediaUploadModal
+        path={params.path}
         isOpen={uploadIsOpen}
         onOpen={uploadOnOpen}
         onClose={uploadOnClose}
