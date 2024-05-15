@@ -18,7 +18,7 @@ export const CurrentBetWidget: FC = () => {
 
         <div className="fighter-bet">
           <div className="fighter-tile">
-            <img src="/doge.svg" />
+            <img src={fighters[0]?.imageUrl} />
             {fighters[0]?.displayName}
           </div>
 
@@ -39,7 +39,7 @@ export const CurrentBetWidget: FC = () => {
 
         <div className="fighter-bet">
           <div className="fighter-tile">
-            <img src="/pepe.svg" />
+            <img src={fighters[1]?.imageUrl} />
             {fighters[1]?.displayName}
           </div>
 

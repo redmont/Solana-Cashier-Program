@@ -140,7 +140,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
                 })}
                 onClick={() => setSelectedIndex(0)}
               >
-                <img src="/doge.svg" />
+                <img src={fighters[0]?.imageUrl} />
                 {fighters[0]?.displayName}
               </div>
 
@@ -153,7 +153,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
                 onClick={() => setSelectedIndex(1)}
               >
                 {fighters[1]?.displayName}
-                <img src="/pepe.svg" />
+                <img src={fighters[1]?.imageUrl} />
               </div>
             </div>
           </div>
