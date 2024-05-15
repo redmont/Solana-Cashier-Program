@@ -12,9 +12,10 @@ import { twitchChannel } from '@/config';
 import { BetListWidget } from '@/components/betListWidget';
 import { ActivityStreamWidget } from '@/components/activityStreamWidget';
 import { TwitchChat } from 'react-twitch-embed';
-import { streamUrl, trailerUrl } from '@/config';
+import { trailerUrl } from '@/config';
 import { ConnectWalletWidget } from '@/components/connectWalletWidget';
 import { MatchStatus } from '@/types';
+import { VideoStream } from '@/components/videoStream';
 
 export default function Home() {
   const { isReady, isConnected } = useEthWallet();
@@ -27,14 +28,7 @@ export default function Home() {
   return (
     <main className="main-page">
       <div className="stream-container">
-        {match?.status !== MatchStatus.Finished && (
-          <iframe
-            src={streamUrl}
-            allowFullScreen
-            width="100%"
-            height="100%"
-          ></iframe>
-        )}
+        {match?.status !== MatchStatus.Finished && <VideoStream />}
 
         {match?.status === MatchStatus.Finished && (
           <video
