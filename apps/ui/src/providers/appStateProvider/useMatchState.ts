@@ -1,4 +1,4 @@
-import { Bet } from '@/types';
+import { Bet, Fighter } from '@/types';
 import { useEffect } from 'react';
 import { useSocket } from '../../providers/SocketProvider';
 
@@ -12,6 +12,7 @@ import {
 import { useDeferredState } from '@/hooks/useDeferredState';
 
 export interface MatchState {
+  fighters: Fighter[];
   bets: Bet[];
   matchId: string;
   series: string;
@@ -24,6 +25,7 @@ export function useMatchState() {
   const { send, subscribe, connected } = useSocket();
 
   const [state, patchState, setState] = useDeferredState<MatchState>({
+    fighters: [],
     matchId: '',
     series: '',
     state: '',
@@ -67,10 +69,11 @@ export function useMatchState() {
     if (!connected) return;
 
     send(new GetMatchStatusMessage()).then((matchStatus: unknown) => {
-      const { matchId, series, state, startTime, winner, bets } =
+      const { matchId, series, state, startTime, winner, bets, fighters } =
         matchStatus as typeof GetMatchStatusMessage.responseType;
 
       setState(new Date(), {
+        fighters,
         matchId,
         series,
         state,

@@ -4,7 +4,12 @@ export interface ChildContainerProps {
   children: ReactNode;
 }
 
-export type Fighter = 'doge' | 'pepe';
+export interface Fighter {
+  displayName: string;
+  codeName: string;
+  ticker: string;
+  imageUrl: string;
+}
 
 export interface Bet {
   amount: string;

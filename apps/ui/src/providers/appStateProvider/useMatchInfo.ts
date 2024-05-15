@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { Fighter, Bet, MatchStatus } from '@/types';
+import { Bet, MatchStatus } from '@/types';
 import { useEthWallet } from '@/hooks';
 import { MatchState, useMatchState } from './useMatchState';
 
@@ -12,7 +12,7 @@ export interface FighterBets {
 }
 
 export type MatchInfo = Omit<MatchState, 'bets' | 'state'> & {
-  bets: Record<Fighter, FighterBets>;
+  bets: Record<string, FighterBets>;
   status: MatchStatus;
   matchId?: string;
   series?: string;
@@ -24,17 +24,19 @@ export function useMatchInfo() {
   const { address: walletAddress } = useEthWallet();
 
   return useMemo(() => {
+    const fighters = matchState.fighters.map((f) => f.ticker);
+
     const result: MatchInfo = {
       ...matchState,
       status: state as MatchStatus,
       bets: {
-        pepe: { list: [], total: 0, stake: 0, winRate: '1.00' },
-        doge: { list: [], total: 0, stake: 0, winRate: '1.00' },
+        [fighters[0]]: { list: [], total: 0, stake: 0, winRate: '1.00' },
+        [fighters[1]]: { list: [], total: 0, stake: 0, winRate: '1.00' },
       },
     };
 
     bets.forEach((bet) => {
-      const fighterBets = result.bets[bet.fighter as Fighter];
+      const fighterBets = result.bets[bet.fighter];
 
       if (!fighterBets) return;
 
@@ -47,7 +49,8 @@ export function useMatchInfo() {
     });
 
     Object.entries(result.bets).forEach(([fighter, info]) => {
-      const opponent: Fighter = fighter === 'doge' ? 'pepe' : 'doge';
+      const fighterIndex = fighters.indexOf(fighter);
+      const opponent = fighters[(fighterIndex + 1) % 2];
 
       if (!info.stake) return '1.00';
 
@@ -56,7 +59,7 @@ export function useMatchInfo() {
       const rate = info.total ? info.stake / info.total : 0;
       const win = opTotalBet * rate + info.stake;
 
-      result.bets[fighter as Fighter].winRate = (win / info.stake).toFixed(2);
+      result.bets[fighter].winRate = (win / info.stake).toFixed(2);
     });
 
     return result;
