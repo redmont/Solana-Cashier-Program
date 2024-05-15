@@ -10,7 +10,7 @@ const parseStreamUrl = () => {
   return { accountId, streamName: stream };
 };
 
-export const MillicastStream = () => {
+const MillicastStream: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const { accountId, streamName } = parseStreamUrl();
@@ -48,3 +48,5 @@ export const MillicastStream = () => {
     ></video>
   );
 };
+
+export default MillicastStream;

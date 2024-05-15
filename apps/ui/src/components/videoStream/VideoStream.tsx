@@ -1,5 +1,14 @@
 import { streamUrl } from '@/config';
-import { MillicastStream } from './MillicastStream';
+import dynamic from 'next/dynamic';
+
+// The Millicast SDK does not support SSR,
+// so we need to load it dynamically.
+const MillicastStream = dynamic(
+  () => import('@/components/videoStream/MillicastStream'),
+  {
+    ssr: false,
+  },
+);
 
 export const VideoStream = () => {
   if (streamUrl.indexOf('millicast.com') > -1) {
