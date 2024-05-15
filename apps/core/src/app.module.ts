@@ -47,6 +47,9 @@ import { MediaLibraryModule } from './mediaLibrary/mediaLibrary.module';
     QueryStoreModule.registerAsync({
       useFactory: (configService: ConfigService) => {
         return {
+          local:  configService.get<boolean>('isDynamoDbLocal')
+          ? 'http://localhost:8765'
+          : false,
           tableName: configService.get<string>('queryStoreTableName'),
           isDynamoDbLocal: configService.get<boolean>('isDynamoDbLocal'),
         };
@@ -57,10 +60,6 @@ import { MediaLibraryModule } from './mediaLibrary/mediaLibrary.module';
     GatewayManagerModule,
     SeriesModule,
     GameServerModule,
-    {
-      global: true,
-      module: QueryStoreModule,
-    },
     {
       global: true,
       module: ActivityStreamModule,

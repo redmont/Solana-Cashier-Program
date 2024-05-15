@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
 import { GameServerConfig } from './gameServerConfig.interface';
-import { Key } from 'query-store/dist/interfaces/key.interface';
+import { Key } from '@/interfaces/key';
 
 @Injectable()
 export class GameServerConfigService {

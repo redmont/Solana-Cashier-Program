@@ -17,6 +17,7 @@ import { RosterSchema } from './schemas/roster.schema';
 import { UserMatchSchema } from './schemas/userMatch.schema';
 
 interface QueryStoreOptions {
+  local?: string | boolean;
   tableName: string;
   isDynamoDbLocal: boolean;
 }
@@ -144,6 +145,14 @@ export class QueryStoreModule {
     return {
       module: QueryStoreModule,
       imports: [
+        DynamooseModule.forRootAsync({
+          useFactory: async (options: QueryStoreOptions) => {
+            return {
+              local: options.local,
+            };
+          },
+          inject: ['QUERY_STORE_OPTIONS'],
+        }),
         DynamooseModule.forFeatureAsync(models),
         ...(options.imports || []),
       ],
