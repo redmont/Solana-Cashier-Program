@@ -59,7 +59,7 @@ export class QueryStoreService implements OnModuleInit {
     return series;
   }
 
-  async getCurrentMatch() {
+  async getCurrentMatch(): Promise<CurrentMatch> {
     const currentMatch = await this.currentMatchModel.get({
       pk: 'currentMatch',
       sk: 'currentMatch',

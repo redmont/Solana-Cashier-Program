@@ -10,9 +10,10 @@ ARG NPM_TOKEN
 RUN echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >~/.npmrc
 COPY . /usr/src/app
 WORKDIR /usr/src/app
+RUN rm -rf node_modules
 RUN find . -name '.env*' -exec rm -f {} \;
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN pnpm build --filter=!web --filter=!docs --filter=!ui --filter=!admin
+RUN pnpm build --filter=!docs --filter=!ui --filter=!admin
 RUN pnpm deploy --filter=ui-gateway --prod /prod/ui-gateway
 RUN cp -r apps/ui-gateway/dist/ /prod/ui-gateway/
 RUN pnpm deploy --filter=core --prod /prod/core

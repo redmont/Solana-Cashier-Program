@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@nestjs/common": "^10.3.7",
-    "dynamoose": "^4.0.0",
+    "dynamoose": "^4.0.1",
     "nestjs-dynamoose": "^0.5.8"
   },
   "devDependencies": {

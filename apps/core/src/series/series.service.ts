@@ -15,6 +15,7 @@ import { GatewayManagerService } from '../gatewayManager/gatewayManager.service'
 import { PromiseQueue } from '../promiseQueue';
 import { ActivityStreamService } from '@/activityStream/activityStream.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Series } from './series.interface';
 
 @Injectable()
 export class SeriesService {
@@ -252,7 +253,9 @@ export class SeriesService {
     );
   }
 
-  async getSeries(codeName: string) {
+  async getSeries(
+    codeName: string,
+  ): Promise<Omit<Series, 'sk'> & { codeName: string }> {
     const series = await this.seriesPersistenceService.getOne(codeName);
 
     if (!series) {

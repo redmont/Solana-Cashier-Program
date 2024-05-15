@@ -19,12 +19,14 @@ import {
   HStack,
   Heading,
   Image,
+  useToast,
 } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import axios from 'axios';
 import { baseUrl } from '@/config';
 import { MediaPickerModal } from '@/components/mediaLibrary/MediaPickerModal';
+import { useRouter } from 'next/navigation';
 
 interface CreateSeriesRequest {
   codeName: string;
@@ -124,6 +126,8 @@ const uiSchema: UiSchema = {
 };
 
 const EditSeries = ({ params }: { params: { codename: string } }) => {
+  const router = useRouter();
+  const toast = useToast();
   const [formData, setFormData] = useState(null);
 
   const { data: gameServerCapabilities } = useQuery<{
@@ -237,8 +241,14 @@ const EditSeries = ({ params }: { params: { codename: string } }) => {
   const onSubmit = ({ formData }: any) => {
     if (params.codename === 'new') {
       createSeriesMutation.mutateAsync(formData);
+      router.push('/series');
     } else {
       updateSeriesMutation.mutateAsync(formData);
+      toast({
+        title: 'Series updated',
+        status: 'success',
+        position: 'bottom-right',
+      });
     }
   };
 

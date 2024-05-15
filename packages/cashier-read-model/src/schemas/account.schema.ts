@@ -1,6 +1,6 @@
 import { Schema } from 'dynamoose';
 
-export const AccountSchema = new Schema({
+const AccountSchema = new Schema({
   pk: {
     type: String,
     hashKey: true,
@@ -25,3 +25,5 @@ export const AccountSchema = new Schema({
     },
   },
 });
+
+export { AccountSchema };

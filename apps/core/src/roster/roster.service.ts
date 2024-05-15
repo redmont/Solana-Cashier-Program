@@ -45,7 +45,7 @@ export class RosterService {
     this.fsm.send({ type: 'run' });
   }
 
-  async getRoster() {
+  async getRoster(): Promise<Omit<Roster, 'pk' | 'sk'> | null> {
     const roster = await this.model.get(this.key);
 
     if (!roster) {
