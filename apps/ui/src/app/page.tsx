@@ -21,8 +21,12 @@ export default function Home() {
 
   const { match } = useAppState();
 
-  const isBetPlaced =
-    !!match && match.bets.doge.stake + match.bets.pepe.stake > 0;
+  const isBetPlaced = !!(
+    match &&
+    match?.fighters.reduce((result, { codeName }) => {
+      return result + (match.bets[codeName]?.stake ?? 0);
+    }, 0)
+  );
 
   return (
     <main className="main-page">
