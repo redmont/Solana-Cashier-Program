@@ -8,7 +8,6 @@ import {
   BetsUpdatedEvent,
 } from 'core-messages';
 import dayjs from '@/dayjs';
-import { Dayjs } from 'dayjs';
 import { ClientDiscovery } from './clientDiscovery';
 
 @Injectable()

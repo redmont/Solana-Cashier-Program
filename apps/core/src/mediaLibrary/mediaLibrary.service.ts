@@ -39,13 +39,17 @@ export class MediaLibraryService {
     }
   }
 
-  private async generateThumbnail(filePath: string, mimeType: string) {
+  private async generateThumbnail(
+    contents: Buffer,
+    filePath: string,
+    mimeType: string,
+  ) {
     if (mimeType.startsWith('image')) {
       // Generate thumbnail
-      const contents = await sharp(filePath).resize(128, 128).toBuffer();
+      const resizedContents = await sharp(contents).resize(128, 128).toBuffer();
       await this.writeFile(
         filePath.replace(/(\.[\w\d_-]+)$/i, '_thumb$1'),
-        contents,
+        resizedContents,
       );
     }
   }
@@ -105,10 +109,15 @@ export class MediaLibraryService {
       }
     } while (existingFile);
 
-    const filePath =
-      path !== '_ROOT_'
-        ? fsPath.join(__dirname, '../', 'media', path, name)
-        : fsPath.join(__dirname, '../', 'media', name);
+    let filePath: string;
+    if (!this.bucketName) {
+      filePath =
+        path !== '_ROOT_'
+          ? fsPath.join(__dirname, '../', 'media', path, name)
+          : fsPath.join(__dirname, '../', 'media', name);
+    } else {
+      filePath = path === '_ROOT_' ? name : `${path}/${name}`;
+    }
 
     await this.writeFile(filePath, file.buffer);
 
@@ -118,6 +127,6 @@ export class MediaLibraryService {
       mimeType: file.mimetype,
     });
 
-    await this.generateThumbnail(filePath, file.mimetype);
+    await this.generateThumbnail(file.buffer, filePath, file.mimetype);
   }
 }

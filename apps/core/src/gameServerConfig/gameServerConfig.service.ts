@@ -25,7 +25,7 @@ export class GameServerConfigService {
     });
   }
 
-  async getAll() {
+  async getAll(): Promise<Omit<GameServerConfig, 'pk' | 'sk'>[]> {
     const result = await this.gameServerConfig
       .query({ pk: 'gameServerConfig' })
       .exec();
