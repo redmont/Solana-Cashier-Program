@@ -9,11 +9,12 @@
     "dev": "pnpm run build -- --watch"
   },
   "dependencies": {
+    "@nestjs/common": "^10.3.7",
     "dynamoose": "^4.0.0",
-    "nestjs-dynamoose": "^0.5.8",
-    "@nestjs/common": "^10.3.7"
+    "nestjs-dynamoose": "^0.5.8"
   },
   "devDependencies": {
+    "@types/node": "^20.12.12",
     "tsup": "^8.0.2",
     "typescript": "^5.4.5"
   }
