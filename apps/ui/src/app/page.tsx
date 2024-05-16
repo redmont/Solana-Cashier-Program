@@ -21,6 +21,7 @@ export default function Home() {
   const { isReady, isConnected } = useEthWallet();
 
   const { match } = useAppState();
+  const { fighters = [] } = match ?? {};
 
   const isBetPlaced = !!(
     match &&
@@ -32,6 +33,18 @@ export default function Home() {
   return (
     <main className="main-page">
       <div className="stream-container">
+        {match?.status === MatchStatus.InProgress && (
+          <>
+            <div className="fighter-image">
+              <img src={fighters[0]?.imageUrl} />
+            </div>
+
+            <div className="fighter-image">
+              <img src={fighters[1]?.imageUrl} />
+            </div>
+          </>
+        )}
+
         {match?.status !== MatchStatus.Finished && <VideoStream />}
 
         {match?.status === MatchStatus.Finished && (
