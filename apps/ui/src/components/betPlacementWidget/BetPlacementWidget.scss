@@ -54,6 +54,7 @@
     flex-grow: 1;
     cursor: pointer;
     text-transform: uppercase;
+    height: 2.5rem;
 
     &:last-child {
       justify-content: flex-end;
@@ -62,6 +63,10 @@
     &.selected {
       border-color: $primary500;
       background-color: rgba(11, 209, 138, 0.1);
+    }
+
+    img {
+      height: 100%;
     }
   }
 
