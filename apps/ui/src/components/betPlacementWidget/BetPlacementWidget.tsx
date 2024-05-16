@@ -1,4 +1,11 @@
-import { FC, useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import {
+  FC,
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  MouseEvent,
+} from 'react';
 import { classNames } from 'primereact/utils';
 import { Slider, SliderChangeEvent } from 'primereact/slider';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
@@ -106,6 +113,16 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
     });
   }, [match?.series, betPoints, selectedFighter?.codeName]);
 
+  const handleClickAreaClick = useCallback((evt: MouseEvent) => {
+    const element = evt.target as Element;
+    const { left, width } = element.getBoundingClientRect();
+
+    const clickX = evt.clientX - left;
+    const pct = Math.round((clickX / width) * 100);
+
+    setBetPercent(pct);
+  }, []);
+
   return (
     <div
       className={classNames('widget bet-placement-widget', {
@@ -170,6 +187,11 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
                 value={betPercent}
                 onChange={handlePercentChange}
               />
+
+              <div
+                className="points-slider-clickarea"
+                onClick={handleClickAreaClick}
+              ></div>
             </div>
 
             <div className="points-input-group p-inputgroup">

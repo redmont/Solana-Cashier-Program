@@ -76,6 +76,19 @@
     margin-bottom: 0.5rem;
   }
 
+  .points-slider-box {
+    position: relative;
+  }
+
+  .points-slider-clickarea {
+    position: absolute;
+    left: -0.5rem;
+    right: -0.5rem;
+    bottom: -0.5rem;
+    height: 1.5rem;
+    //width: 100%;
+  }
+
   .points-input-group {
     margin-top: 1rem;
     height: 2.5rem;

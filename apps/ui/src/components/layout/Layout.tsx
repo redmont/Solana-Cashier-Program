@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 
 import { JoinButton, MobileJoinButton } from '@/components/JoinButton';
 import { ChildContainerProps } from '@/types';
@@ -16,8 +17,10 @@ export const Layout = (props: ChildContainerProps) => {
   return (
     <div className="layout">
       <div className="logo-container">
-        <img className="logo-mobile" src="/logo-mobile.png" alt="Logo" />
-        <img className="logo" src="/logo.png" alt="Logo" />
+        <Link href="/">
+          <img className="logo-mobile" src="/logo-mobile.png" alt="Logo" />
+          <img className="logo" src="/logo.png" alt="Logo" />
+        </Link>
       </div>
 
       {isReady && (
