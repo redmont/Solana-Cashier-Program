@@ -2,6 +2,10 @@
 
 ## Prerequisites
 
+* [Docker](https://www.docker.com/)
+* [AWS CLI (v2)](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+* [NestJS CLI](https://docs.nestjs.com/cli/overview)
+
 ```sh
 pnpm i -g @nestjs/cli
 ```
@@ -165,4 +169,12 @@ curl -X PUT --location 'http://localhost:8080/admin/roster' \
     "scheduleType": "linear",
     "series": ["frogs-vs-dogs", "fightera-vs-fighterb", "fighterc-vs-fighterd"]
 }'
+```
+
+## GitHub Actions
+
+To test the GH actions locally, use [Act](https://nektosact.com/).
+
+```sh
+act pull_request --container-architecture linux/amd64 -s NPM_TOKEN=(your token)
 ```
