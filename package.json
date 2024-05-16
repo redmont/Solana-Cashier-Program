@@ -2,7 +2,7 @@
   "name": "brawlers",
   "private": true,
   "scripts": {
-    "build": "turbo build",
+    "build": "turbo build --cache-dir=.turbo",
     "start": "turbo start",
     "dev": "turbo dev --concurrency 15",
     "lint": "turbo lint",
