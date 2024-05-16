@@ -24,7 +24,7 @@ export function useMatchInfo() {
   const { address: walletAddress } = useEthWallet();
 
   return useMemo(() => {
-    const fighters = matchState.fighters.map((f) => f.ticker);
+    const fighters = matchState.fighters.map((f) => f.codeName);
 
     const result: MatchInfo = {
       ...matchState,
@@ -51,6 +51,8 @@ export function useMatchInfo() {
     Object.entries(result.bets).forEach(([fighter, info]) => {
       const fighterIndex = fighters.indexOf(fighter);
       const opponent = fighters[(fighterIndex + 1) % 2];
+
+      info.list.sort((a, b) => +b.amount - +a.amount);
 
       if (!info.stake) return '1.00';
 

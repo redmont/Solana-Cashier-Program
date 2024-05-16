@@ -1,10 +1,12 @@
 import { FC } from 'react';
-import { useAppState } from '@/hooks';
+import { useAppState, useEthWallet } from '@/hooks';
 import { truncateEthAddress } from '../../utils';
+import { classNames } from 'primereact/utils';
 
 export const BetListWidget: FC = () => {
   const { match } = useAppState();
   const { fighters = [] } = match ?? {};
+  const { address } = useEthWallet();
 
   const bets = fighters.map((f, index) => {
     return match?.bets[fighters[index]?.codeName];
@@ -29,7 +31,12 @@ export const BetListWidget: FC = () => {
           <div className="bet-list">
             <div className="column">
               {bets[0]?.list.map(({ amount, walletAddress }, index) => (
-                <div key={index} className="row">
+                <div
+                  key={index}
+                  className={classNames('row', {
+                    highlighted: walletAddress === address,
+                  })}
+                >
                   <span>{truncateEthAddress(walletAddress)}</span>
                   <span>{amount.toLocaleString()}</span>
                 </div>
@@ -38,7 +45,12 @@ export const BetListWidget: FC = () => {
 
             <div className="column">
               {bets[1]?.list.map(({ amount, walletAddress }, index) => (
-                <div key={index} className="row">
+                <div
+                  key={index}
+                  className={classNames('row', {
+                    highlighted: walletAddress === address,
+                  })}
+                >
                   <span>{truncateEthAddress(walletAddress)}</span>
                   <span>{amount.toLocaleString()}</span>
                 </div>
