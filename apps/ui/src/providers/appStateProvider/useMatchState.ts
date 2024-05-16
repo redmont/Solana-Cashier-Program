@@ -47,10 +47,24 @@ export function useMatchState() {
     const subscriptions = [
       subscribe(MatchUpdatedEvent.messageType, (message: MatchUpdatedEvent) => {
         console.log(MatchUpdatedEvent.messageType, message);
-        const { matchId, series, state, startTime, winner, timestamp } =
-          message;
+        const {
+          matchId,
+          series,
+          state,
+          startTime,
+          winner,
+          timestamp,
+          fighters,
+        } = message;
 
-        patchState(timestamp, { matchId, series, state, startTime, winner });
+        patchState(timestamp, {
+          matchId,
+          series,
+          state,
+          startTime,
+          winner,
+          fighters,
+        });
       }),
       subscribe(BetsUpdatedEvent.messageType, (message: BetsUpdatedEvent) => {
         console.log(BetsUpdatedEvent.messageType, message);
