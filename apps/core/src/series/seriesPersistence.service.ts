@@ -23,6 +23,8 @@ export class SeriesPersistenceService {
     codeName: string,
     displayName: string,
     betPlacementTime: number,
+    preMatchVideoPath: string,
+    preMatchDelay: number,
     fighters: {
       codeName: string;
       displayName: string;
@@ -35,14 +37,18 @@ export class SeriesPersistenceService {
       };
     }[],
     level: string,
+    fightType: string,
   ) {
     const data = {
       pk: 'series',
       sk: codeName,
       displayName,
       betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
       fighters,
       level,
+      fightType,
     };
 
     await this.seriesModel.create(data, {
@@ -57,6 +63,8 @@ export class SeriesPersistenceService {
     codeName: string,
     displayName: string,
     betPlacementTime: number,
+    preMatchVideoPath: string,
+    preMatchDelay: number,
     fighters: {
       codeName: string;
       displayName: string;
@@ -92,6 +100,8 @@ export class SeriesPersistenceService {
       {
         displayName,
         betPlacementTime,
+        preMatchVideoPath,
+        preMatchDelay,
         fighters,
         level,
       },

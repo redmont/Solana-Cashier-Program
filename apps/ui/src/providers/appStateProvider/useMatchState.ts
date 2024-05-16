@@ -17,6 +17,7 @@ export interface MatchState {
   matchId: string;
   series: string;
   state: string;
+  preMatchVideoUrl: string;
   startTime?: string;
   winner?: string;
 }
@@ -29,6 +30,7 @@ export function useMatchState() {
     matchId: '',
     series: '',
     state: '',
+    preMatchVideoUrl: '',
     bets: [],
   });
 
@@ -83,14 +85,23 @@ export function useMatchState() {
     if (!connected) return;
 
     send(new GetMatchStatusMessage()).then((matchStatus: unknown) => {
-      const { matchId, series, state, startTime, winner, bets, fighters } =
-        matchStatus as typeof GetMatchStatusMessage.responseType;
+      const {
+        matchId,
+        series,
+        state,
+        preMatchVideoUrl,
+        startTime,
+        winner,
+        bets,
+        fighters,
+      } = matchStatus as typeof GetMatchStatusMessage.responseType;
 
       setState(new Date(), {
         fighters,
         matchId,
         series,
         state,
+        preMatchVideoUrl,
         startTime,
         winner,
         bets,

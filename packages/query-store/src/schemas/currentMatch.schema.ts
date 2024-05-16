@@ -15,6 +15,10 @@ export const CurrentMatchSchema = new Schema({
     type: String,
     required: false,
   },
+  preMatchVideoPath: {
+    type: String,
+    required: false,
+  },
   startTime: {
     type: String,
     required: false,

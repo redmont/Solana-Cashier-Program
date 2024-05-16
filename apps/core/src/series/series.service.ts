@@ -16,6 +16,7 @@ import { PromiseQueue } from '../promiseQueue';
 import { ActivityStreamService } from '@/activityStream/activityStream.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Series } from './series.interface';
+import { FightType } from './seriesConfig.model';
 
 @Injectable()
 export class SeriesService {
@@ -105,8 +106,11 @@ export class SeriesService {
           return {
             requiredCapabilities: {},
             betPlacementTime: x.betPlacementTime,
+            preMatchDelay: x.preMatchDelay,
+            preMatchVideoPath: x.preMatchVideoPath,
             fighters: x.fighters,
             level: x.level,
+            fightType: x.fightType as FightType,
           };
         },
         setCurrentMatchId: (codeName, matchId) => {
@@ -165,6 +169,7 @@ export class SeriesService {
             context.matchId,
             fighters,
             state,
+            context.config.preMatchVideoPath,
             context.startTime,
           );
 
@@ -173,6 +178,7 @@ export class SeriesService {
             context.matchId,
             fighters,
             state,
+            context.config.preMatchVideoPath,
             context.startTime,
             context.winningFighter?.codeName,
           );
@@ -203,6 +209,8 @@ export class SeriesService {
     codeName: string,
     displayName: string,
     betPlacementTime: number,
+    preMatchVideoPath: string,
+    preMatchDelay: number,
     fighters: {
       codeName: string;
       displayName: string;
@@ -215,13 +223,17 @@ export class SeriesService {
       };
     }[],
     level: string,
+    fightType: string,
   ) {
     await this.seriesPersistenceService.create(
       codeName,
       displayName,
       betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
       fighters,
       level,
+      fightType,
     );
 
     this.initSeries(codeName, displayName);
@@ -231,6 +243,8 @@ export class SeriesService {
     codeName: string,
     displayName: string,
     betPlacementTime: number,
+    preMatchVideoPath: string,
+    preMatchDelay: number,
     fighters: {
       codeName: string;
       displayName: string;
@@ -248,6 +262,8 @@ export class SeriesService {
       codeName,
       displayName,
       betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
       fighters,
       level,
     );

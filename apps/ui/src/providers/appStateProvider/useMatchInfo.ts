@@ -14,6 +14,7 @@ export interface FighterBets {
 export type MatchInfo = Omit<MatchState, 'bets' | 'state'> & {
   bets: Record<string, FighterBets>;
   status: MatchStatus;
+  preMatchVideoUrl: string;
   matchId?: string;
   series?: string;
 };

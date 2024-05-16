@@ -7,6 +7,7 @@ import { SeriesService } from '@/series/series.service';
 import { Actor, createActor } from 'xstate';
 import { OnEvent } from '@nestjs/event-emitter';
 import { QueryStoreService } from 'query-store';
+import dayjs from '@/dayjs';
 
 @Injectable()
 export class RosterService {
@@ -57,11 +58,29 @@ export class RosterService {
     return rest;
   }
 
-  async updateRoster(scheduleType: string, series: string[]) {
-    await this.model.update(this.key, {
-      scheduleType,
-      series: series.map((codeName) => ({ codeName })),
-    });
+  async updateRoster(
+    scheduleType?: string,
+    schedule?: string[],
+    series?: string[],
+    timedSeries?: { codeName: string; startTime: string }[],
+  ) {
+    const update = {};
+    if (scheduleType) {
+      update['scheduleType'] = scheduleType;
+    }
+    if (schedule) {
+      update['schedule'] = schedule.map((codeName) => ({ codeName }));
+    }
+    if (series) {
+      update['series'] = series.map((codeName) => ({ codeName }));
+    }
+    if (timedSeries) {
+      update['timedSeries'] = timedSeries;
+    }
+
+    if (Object.keys(update).length > 0) {
+      await this.model.update(this.key, update);
+    }
 
     this.fsm.send({ type: 'run' });
   }
@@ -74,6 +93,7 @@ export class RosterService {
         scheduleType: 'linear',
         series: [],
         schedule: [],
+        timedSeries: [],
       });
 
       return null;
@@ -84,6 +104,17 @@ export class RosterService {
     }
 
     const scheduleLength = 5;
+
+    if (roster.timedSeries?.length > 0) {
+      // Order timed series by startTime, using linguistic comparison as the dates are in ISO 8601 format
+      roster.timedSeries.sort((a, b) => a.startTime.localeCompare(b.startTime));
+      const nextTimedSeries = roster.timedSeries[0];
+      if (dayjs(nextTimedSeries.startTime).diff(dayjs.utc(), 'seconds') <= 90) {
+        // This should be the next series to run
+        const next = roster.timedSeries.shift();
+        roster.schedule.unshift(next);
+      }
+    }
 
     if (roster.schedule.length < scheduleLength) {
       if (roster.scheduleType === 'linear') {

@@ -32,4 +32,16 @@ export const RosterSchema = new Schema({
       },
     ],
   },
+  timedSeries: {
+    type: Array,
+    schema: [
+      {
+        type: Object,
+        schema: {
+          codeName: { type: String, required: true },
+          startTime: { type: String, required: true },
+        },
+      },
+    ],
+  },
 });

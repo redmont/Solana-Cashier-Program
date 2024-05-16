@@ -46,6 +46,7 @@ export class QueryStoreService implements OnModuleInit {
         bets: [],
         matchId: '',
         seriesCodeName: '',
+        preMatchVideoPath: '',
       });
     }
   }
@@ -118,6 +119,7 @@ export class QueryStoreService implements OnModuleInit {
       imagePath: string;
     }[],
     state: string,
+    preMatchVideoPath: string,
     startTime?: string,
     winner?: string,
   ) {
@@ -130,6 +132,7 @@ export class QueryStoreService implements OnModuleInit {
         seriesCodeName,
         fighters,
         state,
+        preMatchVideoPath,
         matchId: matchId ?? undefined,
         startTime: startTime ?? undefined,
         winner: winner ?? undefined,

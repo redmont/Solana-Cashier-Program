@@ -14,6 +14,7 @@ export class MatchUpdatedEvent extends GatewayEvent {
       imageUrl: string;
     }[],
     public readonly state: string,
+    public readonly preMatchVideoUrl: string,
     public readonly startTime: string,
     public readonly winner: string,
   ) {

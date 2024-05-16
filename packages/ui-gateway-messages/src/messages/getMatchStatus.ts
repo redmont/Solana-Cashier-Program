@@ -12,6 +12,7 @@ export interface GetMatchStatusMessageResponse {
   }[];
   bets: any[];
   state: string;
+  preMatchVideoUrl: string;
   startTime?: string;
   winner?: string;
 }

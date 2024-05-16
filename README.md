@@ -73,7 +73,8 @@ curl --location 'http://localhost:8080/admin/series' \
             }
         }
     ],
-    "level": "level001"
+    "level": "level001",
+    "fightType": "MMA"
 }'
 ```
 
@@ -127,7 +128,8 @@ curl --location 'http://localhost:8080/admin/series' \
             }
         }
     ],
-    "level": "level001"
+    "level": "level001",
+    "fightType": "MMA"
 }'
 
 curl --location 'http://localhost:8080/admin/series' \
@@ -160,7 +162,8 @@ curl --location 'http://localhost:8080/admin/series' \
             }
         }
     ],
-    "level": "level001"
+    "level": "level001",
+    "fightType": "MMA"
 }'
 
 curl -X PUT --location 'http://localhost:8080/admin/roster' \

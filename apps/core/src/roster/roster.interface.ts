@@ -8,4 +8,8 @@ export interface Roster extends Key {
   schedule: {
     codeName: string;
   }[];
+  timedSeries: {
+    codeName: string;
+    startTime: string;
+  }[];
 }

@@ -20,6 +20,8 @@ export class SeriesConfigFighter {
   };
 }
 
+export type FightType = 'MMA' | 'Boxing';
+
 /**
  * Represents the configuration for a series.
  */
@@ -40,7 +42,22 @@ export class SeriesConfig {
   public betPlacementTime: number;
 
   /**
+   * The delay during which the pre-match video is played.
+   */
+  public preMatchDelay: number;
+
+  /**
+   * Pre-match video path
+   */
+  public preMatchVideoPath: string;
+
+  /**
    * The level used for the series.
    */
   public level: string;
+
+  /**
+   * The type of fight for the series.
+   */
+  public fightType: FightType;
 }

@@ -1,3 +1,4 @@
+import { FightType } from './fightType';
 import { ServerMessage } from './serverMessage';
 
 export class MatchSetup extends ServerMessage {
@@ -14,6 +15,7 @@ export class MatchSetup extends ServerMessage {
       displayName: string;
     }[],
     public readonly level: string,
+    public readonly fightType: FightType,
   ) {
     super('matchSetup');
   }
