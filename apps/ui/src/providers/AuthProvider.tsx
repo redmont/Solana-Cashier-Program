@@ -47,6 +47,10 @@ interface GetTokenResponse {
   };
 }
 
+export function getCurrentAuthToken() {
+  return localStorage?.getItem(AUTH_TOKEN_STORAGE_KEY);
+}
+
 export const AuthProvider: FC<PropsWithChildren> = (props) => {
   const { address: walletAddress, isReady: isWalletReady } = useEthWallet();
 
@@ -169,7 +173,7 @@ export const AuthProvider: FC<PropsWithChildren> = (props) => {
       return;
     }
 
-    const savedToken = localStorage?.getItem(AUTH_TOKEN_STORAGE_KEY);
+    const savedToken = getCurrentAuthToken();
     const isSavedTokenValid = verifyToken(savedToken ?? '');
 
     if (isSavedTokenValid) {

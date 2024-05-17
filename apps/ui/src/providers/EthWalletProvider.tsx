@@ -15,12 +15,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   DynamicContextProvider,
   DynamicUserProfile,
-  useDynamicContext,
 } from '@dynamic-labs/sdk-react-core';
 import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
 import { DynamicWagmiConnector } from '@dynamic-labs/wagmi-connector';
 
 import { ChildContainerProps } from '@/types';
+import { getCurrentAuthToken } from './AuthProvider';
 
 const queryClient = new QueryClient();
 
@@ -38,7 +38,7 @@ const EthWalletReadinessConext = createContext<{ isReady: boolean }>({
 
 const EthWalletReadinessProvider: FC<ChildContainerProps> = ({ children }) => {
   const account = useAccount();
-  const { isAuthenticated } = useDynamicContext();
+  const isAuthenticated = !!getCurrentAuthToken();
   const [isReady, setReady] = useState<boolean>(false);
 
   const { isConnecting, isConnected } = account;
@@ -72,7 +72,6 @@ const EthWalletReadinessProvider: FC<ChildContainerProps> = ({ children }) => {
     // then wait until they are reset
     if (phase.current === 0 && (isConnecting || isConnected)) {
       phase.current = 1;
-      console.log('[Eth]', 'Resetting state');
       return;
     }
 
