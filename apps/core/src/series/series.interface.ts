@@ -12,8 +12,8 @@ export interface Series extends Key {
     imagePath: string;
     model: {
       head: string;
-      torso: string;
-      legs: string;
+      torso?: string;
+      legs?: string;
     };
   }[];
   level: string;

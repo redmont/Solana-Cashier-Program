@@ -24,6 +24,7 @@ export const VideoStream: FC<VideoStreamProps> = ({ src }) => {
     <video
       src={streamUrl}
       autoPlay={true}
+      playsInline={true}
       muted={true}
       width="100%"
       height="100%"
