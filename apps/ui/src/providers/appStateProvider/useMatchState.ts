@@ -1,4 +1,4 @@
-import { Bet } from '@/types';
+import { Bet, Fighter } from '@/types';
 import { useEffect } from 'react';
 import { useSocket } from '../../providers/SocketProvider';
 
@@ -7,15 +7,17 @@ import {
   BetPlacedEvent,
   MatchUpdatedEvent,
   BetsUpdatedEvent,
-} from 'ui-gateway-messages';
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { useDeferredState } from '@/hooks/useDeferredState';
-import { matchSeries } from '@/config';
 
 export interface MatchState {
+  fighters: Fighter[];
   bets: Bet[];
   matchId: string;
+  series: string;
   state: string;
+  preMatchVideoUrl: string;
   startTime?: string;
   winner?: string;
 }
@@ -24,8 +26,11 @@ export function useMatchState() {
   const { send, subscribe, connected } = useSocket();
 
   const [state, patchState, setState] = useDeferredState<MatchState>({
+    fighters: [],
     matchId: '',
+    series: '',
     state: '',
+    preMatchVideoUrl: '',
     bets: [],
   });
 
@@ -38,15 +43,30 @@ export function useMatchState() {
         bets: [...state.bets, { amount, fighter, walletAddress }],
       });
     });
-  }, [state]);
+  }, [state, patchState, subscribe]);
 
   useEffect(() => {
     const subscriptions = [
       subscribe(MatchUpdatedEvent.messageType, (message: MatchUpdatedEvent) => {
         console.log(MatchUpdatedEvent.messageType, message);
-        const { matchId, state, startTime, winner, timestamp } = message;
+        const {
+          matchId,
+          series,
+          state,
+          startTime,
+          winner,
+          timestamp,
+          fighters,
+        } = message;
 
-        patchState(timestamp, { matchId, state, startTime, winner });
+        patchState(timestamp, {
+          matchId,
+          series,
+          state,
+          startTime,
+          winner,
+          fighters,
+        });
       }),
       subscribe(BetsUpdatedEvent.messageType, (message: BetsUpdatedEvent) => {
         console.log(BetsUpdatedEvent.messageType, message);
@@ -59,28 +79,35 @@ export function useMatchState() {
     return () => {
       subscriptions.forEach((unsubscribe) => unsubscribe());
     };
-  }, []);
+  }, [patchState, subscribe]);
 
   useEffect(() => {
     if (!connected) return;
 
-    send(new GetMatchStatusMessage(matchSeries)).then(
-      (matchStatus: unknown) => {
-        const { matchId, state, startTime, winner, bets } =
-          matchStatus as typeof GetMatchStatusMessage.responseType;
+    send(new GetMatchStatusMessage()).then((matchStatus: unknown) => {
+      const {
+        matchId,
+        series,
+        state,
+        preMatchVideoUrl,
+        startTime,
+        winner,
+        bets,
+        fighters,
+      } = matchStatus as typeof GetMatchStatusMessage.responseType;
 
-        console.log(GetMatchStatusMessage.messageType, matchStatus);
-
-        setState(new Date(), {
-          matchId,
-          state,
-          startTime,
-          winner,
-          bets,
-        });
-      },
-    );
-  }, [connected]);
+      setState(new Date(), {
+        fighters,
+        matchId,
+        series,
+        state,
+        preMatchVideoUrl,
+        startTime,
+        winner,
+        bets,
+      });
+    });
+  }, [connected, send, setState]);
 
   return state;
 }

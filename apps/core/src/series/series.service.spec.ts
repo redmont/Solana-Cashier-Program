@@ -1,4 +1,4 @@
-import { SeriesPersistenceService } from './series-persistence.service';
+import { SeriesPersistenceService } from './seriesPersistence.service';
 import { SeriesService } from './series.service';
 
 describe('SeriesService', () => {
@@ -53,6 +53,7 @@ describe('SeriesService', () => {
       null,
       null,
       null,
+      null,
     );
     seriesService.initSeries = jest.fn();
     seriesService.sendEvent = jest.fn();
@@ -100,6 +101,7 @@ describe('SeriesService', () => {
 
     const seriesService = new SeriesService(
       seriesPersistenceService,
+      null,
       null,
       null,
       null,

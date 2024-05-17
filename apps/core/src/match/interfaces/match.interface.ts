@@ -2,7 +2,16 @@ import { Key } from 'src/interfaces/key';
 
 export interface Match extends Key {
   seriesCodeName: string;
-  state?: string;
+  matchId: string;
   startTime: string;
-  context?: any;
+  fighters: {
+    displayName: string;
+    codeName: string;
+    ticker: string;
+    imagePath: string;
+    betCount: number;
+  }[];
+  winner: {
+    codeName: string;
+  };
 }

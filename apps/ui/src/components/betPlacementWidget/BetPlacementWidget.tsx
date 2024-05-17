@@ -1,14 +1,20 @@
-import { FC, useState, useCallback, useRef, useEffect } from 'react';
+import {
+  FC,
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  MouseEvent,
+} from 'react';
 import { classNames } from 'primereact/utils';
 import { Slider, SliderChangeEvent } from 'primereact/slider';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 import dayjs from 'dayjs';
 
-import { Fighter, MatchStatus } from '@/types';
-import { matchSeries } from '@/config';
+import { MatchStatus } from '@/types';
 import { useSocket, useAppState, usePostHog } from '@/hooks';
-import { PlaceBetMessage } from 'ui-gateway-messages';
+import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 export interface BetPlacementWidgetProps {
   compact?: boolean;
@@ -23,16 +29,32 @@ const matchStatusText: Record<MatchStatus, string> = {
 };
 
 export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
-  const { balance } = useAppState();
-  const [betPercent, setBetPercent] = useState(0);
+  const { balance, match } = useAppState();
+  const [error, setError] = useState('');
+  const [betPercent, setBetPercent] = useState(25);
   const [betPoints, setBetPoints] = useState(0);
-  const [fighter, setFighter] = useState<Fighter>('doge');
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState('00 : 00');
   const [matchTime, setMatchTime] = useState('00 : 00');
   const countdown = useRef<NodeJS.Timeout>();
-  const { match } = useAppState();
   const { send } = useSocket();
   const posthog = usePostHog();
+
+  const { fighters = [] } = match ?? {};
+  const selectedFighter = fighters[selectedIndex];
+  const winRate = match?.bets[selectedFighter?.codeName]?.winRate ?? 0;
+
+  useEffect(() => {
+    if (balance < betPoints) {
+      setError('Insufficient points balance');
+    } else {
+      setError('');
+    }
+  }, [balance, betPoints]);
+
+  useEffect(() => {
+    setBetPoints(Math.floor((balance * betPercent) / 100));
+  }, [balance, betPercent]);
 
   useEffect(() => {
     if (!match?.startTime) return;
@@ -77,13 +99,29 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
   );
 
   const placeBet = useCallback(async () => {
-    await send(new PlaceBetMessage(matchSeries, betPoints, fighter));
+    if (!match?.series || !selectedFighter?.codeName) {
+      return;
+    }
+
+    await send(
+      new PlaceBetMessage(match?.series, betPoints, selectedFighter.codeName),
+    );
 
     posthog?.capture('Stake Placed', {
-      fighter,
+      fighter: selectedFighter.codeName,
       stake: betPoints,
     });
-  }, [betPoints, fighter]);
+  }, [match?.series, betPoints, selectedFighter?.codeName]);
+
+  const handleClickAreaClick = useCallback((evt: MouseEvent) => {
+    const element = evt.target as Element;
+    const { left, width } = element.getBoundingClientRect();
+
+    const clickX = evt.clientX - left;
+    const pct = Math.round((clickX / width) * 100);
+
+    setBetPercent(pct);
+  }, []);
 
   return (
     <div
@@ -115,24 +153,24 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
             <div className="fighter-switch">
               <div
                 className={classNames('fighter-tile', {
-                  selected: fighter === 'doge',
+                  selected: selectedIndex === 0,
                 })}
-                onClick={() => setFighter('doge')}
+                onClick={() => setSelectedIndex(0)}
               >
-                <img src="/doge.svg" />
-                DOGE
+                <img src={fighters[0]?.imageUrl} />
+                {fighters[0]?.displayName}
               </div>
 
               <span>VS</span>
 
               <div
                 className={classNames('fighter-tile', {
-                  selected: fighter === 'pepe',
+                  selected: selectedIndex === 1,
                 })}
-                onClick={() => setFighter('pepe')}
+                onClick={() => setSelectedIndex(1)}
               >
-                PEPE
-                <img src="/pepe.svg" />
+                {fighters[1]?.displayName}
+                <img src={fighters[1]?.imageUrl} />
               </div>
             </div>
           </div>
@@ -140,11 +178,20 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
           <div className="points-selection">
             <div className="points-slider-box">
               <div className="points-slider-labels">
-                <span>0%</span>
+                <span>1%</span>
                 <span>100%</span>
               </div>
 
-              <Slider value={betPercent} onChange={handlePercentChange} />
+              <Slider
+                min={1}
+                value={betPercent}
+                onChange={handlePercentChange}
+              />
+
+              <div
+                className="points-slider-clickarea"
+                onClick={handleClickAreaClick}
+              ></div>
             </div>
 
             <div className="points-input-group p-inputgroup">
@@ -184,22 +231,30 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
 
                 <div className="bet-win-rewards flex justify-content-between text-white">
                   <span>Current win rate:</span>
-                  <span>{match?.bets[fighter].winRate}x</span>
+                  <span>{winRate}x</span>
                 </div>
               </div>
             </div>
 
             <div className="bet-confirmation">
-              <div className="text-xs text-600 mb-2">
-                Stakes are locked until the end of the fight.
-              </div>
+              {!error && (
+                <div className="text-sm text-600 mb-2">
+                  Stakes are locked until the end of the fight.
+                </div>
+              )}
+
+              {error && (
+                <div className="text-sm mb-2 text-red-500">{error}</div>
+              )}
 
               <Button
                 label="Confirm"
                 size="large"
                 className="w-full text-base"
                 disabled={
-                  betPoints === 0 || match?.status !== MatchStatus.BetsOpen
+                  !!error ||
+                  betPoints === 0 ||
+                  match?.status !== MatchStatus.BetsOpen
                 }
                 onClick={placeBet}
               />

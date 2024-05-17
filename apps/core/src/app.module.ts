@@ -1,17 +1,21 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DynamooseModule } from 'nestjs-dynamoose';
-import { GlobalClientsModule } from './global-clients-module';
+import { GlobalClientsModule } from './globalClientsModule';
 import { SeriesModule } from './series/series.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RedisCacheModule } from 'global-cache';
 import { QueryStoreModule } from 'query-store';
 import configuration from './configuration';
-import { GameServerModule } from './game-server/game-server.module';
+import { GameServerModule } from './gameServer/gameServer.module';
 import { UsersModule } from './users/users.module';
-import { GatewayManagerModule } from './gateway-manager/gateway-manager.module';
+import { GatewayManagerModule } from './gatewayManager/gatewayManager.module';
 import { AdminModule } from './admin/admin.module';
-import { ActivityStreamModule } from './activity-stream/activity-stream.module';
+import { ActivityStreamModule } from './activityStream/activityStream.module';
+import { RosterModule } from './roster/roster.module';
+import { SeriesService } from './series/series.service';
+import { RosterService } from './roster/roster.service';
+import { MediaLibraryModule } from './mediaLibrary/mediaLibrary.module';
 
 @Module({
   imports: [
@@ -43,6 +47,9 @@ import { ActivityStreamModule } from './activity-stream/activity-stream.module';
     QueryStoreModule.registerAsync({
       useFactory: (configService: ConfigService) => {
         return {
+          local:  configService.get<boolean>('isDynamoDbLocal')
+          ? 'http://localhost:8765'
+          : false,
           tableName: configService.get<string>('queryStoreTableName'),
           isDynamoDbLocal: configService.get<boolean>('isDynamoDbLocal'),
         };
@@ -55,14 +62,22 @@ import { ActivityStreamModule } from './activity-stream/activity-stream.module';
     GameServerModule,
     {
       global: true,
-      module: QueryStoreModule,
-    },
-    {
-      global: true,
       module: ActivityStreamModule,
     },
     UsersModule,
     AdminModule,
+    RosterModule,
+    MediaLibraryModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(
+    private readonly seriesService: SeriesService,
+    private readonly rosterService: RosterService,
+  ) {}
+
+  async onModuleInit() {
+    await this.seriesService.initialise();
+    await this.rosterService.initialise();
+  }
+}

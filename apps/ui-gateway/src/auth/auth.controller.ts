@@ -1,5 +1,5 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
-import { AuthService } from "./auth.service";
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { AuthService } from './auth.service';
 
 export class GetNonceDto {
   walletAddress: string;
@@ -11,15 +11,15 @@ export class GetTokenDto {
   signedMessage: string;
 }
 
-@Controller("auth")
+@Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @HttpCode(HttpStatus.OK)
-  @Post("get-nonce")
+  @Post('get-nonce')
   async getNonce(@Body() getNonceDto: GetNonceDto) {
     const message = await this.authService.getNonceMessage(
-      getNonceDto.walletAddress
+      getNonceDto.walletAddress,
     );
 
     return {
@@ -28,14 +28,14 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @Post("get-token")
+  @Post('get-token')
   async getToken(
-    @Body() { walletAddress, message, signedMessage }: GetTokenDto
+    @Body() { walletAddress, message, signedMessage }: GetTokenDto,
   ) {
     return await this.authService.getToken(
       walletAddress,
       message,
-      signedMessage
+      signedMessage,
     );
   }
 }

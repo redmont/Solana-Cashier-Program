@@ -1,14 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import dayjs from 'dayjs';
 import { useSocket } from '../../providers/SocketProvider';
 
 import {
   GetActivityStreamMessage,
   ActivityStreamEvent,
-} from 'ui-gateway-messages';
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { useDeferredState } from '@/hooks/useDeferredState';
-import { matchSeries } from '@/config';
 
 export interface ActivityStreamMessage {
   text: string;
@@ -19,8 +18,9 @@ export interface ActivityStreamData {
   messages: ActivityStreamMessage[];
 }
 
-export function useActivityStream(matchId?: string) {
+export function useActivityStream(series?: string, matchId?: string) {
   const { send, subscribe, connected } = useSocket();
+  const isReady = useRef<boolean>(false);
 
   const [state, patchState, setState] = useDeferredState<ActivityStreamData>({
     messages: [],
@@ -52,10 +52,9 @@ export function useActivityStream(matchId?: string) {
   }, [state]);
 
   useEffect(() => {
-    console.log('Get Activity Stream', connected, matchId);
-    if (!connected || !matchId) return;
+    if (!connected || !matchId || !series || isReady.current) return;
 
-    send(new GetActivityStreamMessage(matchSeries, matchId)).then(
+    send(new GetActivityStreamMessage(series, matchId)).then(
       (response: unknown) => {
         const { messages } =
           response as typeof GetActivityStreamMessage.responseType;
@@ -68,6 +67,8 @@ export function useActivityStream(matchId?: string) {
             timestamp: dayjs(m.timestamp).format('HH:mm:ss'),
           })),
         });
+
+        isReady.current = true;
       },
     );
   }, [connected, matchId]);

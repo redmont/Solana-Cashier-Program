@@ -1,0 +1,20 @@
+{
+  "name": "cashier-read-model",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "pnpm run build -w"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.3.7"
+  },
+  "dependencies": {
+    "dynamoose": "^4.0.1",
+    "nestjs-dynamoose": "^0.5.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

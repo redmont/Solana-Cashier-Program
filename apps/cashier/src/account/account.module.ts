@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { QueryModelBusService } from './query-model-bus.service';
-import { QueryModelBusAdapter } from './query-model-bus-adapter.service';
-import { ReadModelModule } from 'src/account/read-model/read-model.module';
+import { QueryModelBusService } from './queryModelBus.service';
+import { QueryModelBusAdapter } from './queryModelBusAdapter.service';
 import { AccountController } from './account.controller';
-import { EventStoreService } from './event-store.service';
+import { EventStoreService } from './eventStore.service';
 import { ConnectedEventStore } from '@castore/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ReadModelModule } from 'cashier-read-model';
 
 @Module({
   imports: [
@@ -25,7 +25,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         inject: [ConfigService],
       },
     ]),
-    ReadModelModule,
+    ReadModelModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          tableName: configService.get<string>('readModelTableName'),
+        };
+      },
+      inject: [ConfigService],
+    }),
   ],
   providers: [
     QueryModelBusService,

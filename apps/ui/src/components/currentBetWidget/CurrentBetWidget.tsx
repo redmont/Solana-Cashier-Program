@@ -3,6 +3,11 @@ import { useAppState } from '@/hooks';
 
 export const CurrentBetWidget: FC = () => {
   const { match } = useAppState();
+  const { fighters = [] } = match ?? {};
+
+  const bets = fighters.map((f, index) => {
+    return match?.bets[fighters[index]?.codeName];
+  });
 
   return (
     <div className="widget current-bet-widget">
@@ -13,18 +18,18 @@ export const CurrentBetWidget: FC = () => {
 
         <div className="fighter-bet">
           <div className="fighter-tile">
-            <img src="/doge.svg" />
-            DOGE
+            <img src={fighters[0]?.imageUrl} />
+            {fighters[0]?.displayName}
           </div>
 
           <div className="bet-purchase-price mt-3 flex justify-content-between text-white">
             <span>Total staked:</span>
-            <span>{match?.bets.doge.stake} points</span>
+            <span>{bets[0]?.stake ?? 0} points</span>
           </div>
 
           <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
             <span>Current win rate:</span>
-            <span>{match?.bets.doge.winRate}x</span>
+            <span>{bets[0]?.winRate ?? 0}x</span>
           </div>
         </div>
 
@@ -34,18 +39,18 @@ export const CurrentBetWidget: FC = () => {
 
         <div className="fighter-bet">
           <div className="fighter-tile">
-            <img src="/pepe.svg" />
-            PEPE
+            <img src={fighters[1]?.imageUrl} />
+            {fighters[1]?.displayName}
           </div>
 
           <div className="bet-purchase-price mt-3 flex justify-content-between text-white">
             <span>Total staked:</span>
-            <span>{match?.bets.pepe.stake} points</span>
+            <span>{bets[1]?.stake ?? 0} points</span>
           </div>
 
           <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
             <span>Current win rate:</span>
-            <span>{match?.bets.pepe.winRate}x</span>
+            <span>{bets[1]?.winRate ?? 0}x</span>
           </div>
         </div>
       </div>

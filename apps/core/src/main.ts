@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 import configuration from './configuration';
-import { GameServerWsAdapter } from './game-server/ws-adapter';
+import { GameServerWsAdapter } from './gameServer/wsAdapter';
 
 async function bootstrap() {
   const config = configuration();

@@ -5,6 +5,7 @@ import {
   BalanceUpdatedEvent,
   BetPlacedEvent,
   BetsUpdatedEvent,
+  MatchResultEvent,
   MatchUpdatedEvent,
 } from 'core-messages';
 import {
@@ -13,23 +14,36 @@ import {
   BalanceUpdatedEvent as BalanceUpdatedUiGatewayEvent,
   ActivityStreamEvent as ActivityStreamUiGatewayEvent,
   BetsUpdatedEvent as BetsUpdatedUiGatewayEvent,
-} from 'ui-gateway-messages';
+  MatchResultEvent as MatchResultUiGatewayEvent,
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
+import { Dayjs } from 'dayjs';
+import dayjs from '@/dayjs';
 import { AppGateway } from './app.gateway';
-import { DateTime } from 'luxon';
+import { ConfigService } from '@nestjs/config';
 
 @Controller()
 export class AppController {
-  private lastEventTimestamp: DateTime;
+  private readonly mediaUri: string;
+  private lastEventTimestamp: Dayjs;
 
-  constructor(private readonly gateway: AppGateway) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly gateway: AppGateway,
+  ) {
+    this.mediaUri = this.configService.get<string>('mediaUri');
+  }
+
+  getMediaUrl(path: string) {
+    return `${this.mediaUri}/${path}`;
+  }
 
   @EventPattern(BetPlacedEvent.messageType)
   onBetPlaced(@Payload() data: BetPlacedEvent) {
-    const { ts, seriesCodeName, walletAddress, amount, fighter } = data;
+    const { timestamp, seriesCodeName, walletAddress, amount, fighter } = data;
 
     this.gateway.publish(
       new BetPlacedUiGatewayEvent(
-        ts,
+        timestamp,
         seriesCodeName,
         walletAddress,
         amount,
@@ -40,10 +54,17 @@ export class AppController {
 
   @EventPattern(MatchUpdatedEvent.messageType)
   onMatchUpdated(@Payload() data: MatchUpdatedEvent) {
-    const { timestamp, seriesCodeName, matchId, state, startTime, winner } =
-      data;
+    const {
+      timestamp,
+      seriesCodeName,
+      matchId,
+      state,
+      startTime,
+      winner,
+      preMatchVideoPath,
+    } = data;
 
-    const ts = DateTime.fromISO(timestamp);
+    const ts = dayjs(timestamp);
 
     if (ts < this.lastEventTimestamp) {
       console.log('Discarding late event');
@@ -52,12 +73,22 @@ export class AppController {
 
     this.lastEventTimestamp = ts;
 
+    const fighters = data.fighters.map(({ imagePath, ...rest }) => ({
+      ...rest,
+      imageUrl: this.getMediaUrl(imagePath),
+    }));
+
+    const preMatchVideoUrl =
+      preMatchVideoPath?.length > 0 ? this.getMediaUrl(preMatchVideoPath) : '';
+
     this.gateway.publish(
       new MatchUpdatedUiGatewayEvent(
         timestamp,
         seriesCodeName,
         matchId,
+        fighters,
         state,
+        preMatchVideoUrl,
         startTime,
         winner,
       ),
@@ -90,6 +121,21 @@ export class AppController {
 
     this.gateway.publish(
       new BetsUpdatedUiGatewayEvent(timestamp, seriesCodeName, bets),
+    );
+  }
+
+  @EventPattern(MatchResultEvent.messageType)
+  onMatchResult(@Payload() data: MatchResultEvent) {
+    const { timestamp, matchId, betAmount, winAmount, fighter } = data;
+
+    this.gateway.publish(
+      new MatchResultUiGatewayEvent(
+        timestamp,
+        matchId,
+        betAmount,
+        winAmount,
+        fighter,
+      ),
     );
   }
 }

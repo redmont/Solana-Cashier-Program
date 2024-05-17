@@ -1,4 +1,9 @@
-import { Header, StreamableFile } from '@nestjs/common';
+import {
+  BadRequestException,
+  Header,
+  Put,
+  StreamableFile,
+} from '@nestjs/common';
 import {
   Body,
   Controller,
@@ -17,36 +22,110 @@ import {
   GetAllBalancesMessage,
   GetAllBalancesMessageResponse,
 } from 'cashier-messages';
-import { GameServerConfigService } from 'src/game-server-config/game-server-config.service';
+import { GameServerConfigService } from '@/gameServerConfig/gameServerConfig.service';
 import { SeriesService } from 'src/series/series.service';
 import { AdminService } from './admin.service';
-
-interface CreateGameServerConfigRequest {
-  codeName: string;
-  streamUrl: string;
-}
-
-interface UpdateGameServerConfigRequest {
-  streamUrl: string;
-}
+import { GameServerCapabilitiesService } from '@/gameServerCapabilities/gameServerCapabilities.service';
+import { RosterService } from '@/roster/roster.service';
+import {
+  UpdateSeriesRequest,
+  CreateSeriesRequest,
+  CreateGameServerConfigRequest,
+  UpdateGameServerConfigRequest,
+  UpdateRosterRequest,
+} from './models';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('admin')
 export class AdminController {
+  private readonly mediaUri: string;
+
   constructor(
-    @Inject('BROKER') private broker: ClientProxy,
+    private readonly configService: ConfigService,
     private readonly seriesService: SeriesService,
     private readonly gameServerConfigService: GameServerConfigService,
     private readonly adminService: AdminService,
-  ) {}
+    private readonly gameServerCapabilitiesService: GameServerCapabilitiesService,
+    private readonly rosterService: RosterService,
+    @Inject('BROKER') private broker: ClientProxy,
+  ) {
+    this.mediaUri = this.configService.get<string>('mediaUri');
+  }
+
+  getMediaUrl(path: string) {
+    return `${this.mediaUri}/${path}`;
+  }
 
   @Get('/series')
   async listSeries() {
     return { series: this.seriesService.listSeries() };
   }
 
+  @Get('/series/:codeName')
+  async getSeries(@Param('codeName') codeName: string) {
+    const series = await this.seriesService.getSeries(codeName);
+    if (!series) {
+      throw new BadRequestException('Series not found');
+    }
+
+    const fighters = series.fighters.map((fighter) => ({
+      ...fighter,
+      imageUrl: this.getMediaUrl(fighter.imagePath),
+    }));
+
+    return {
+      ...series,
+      fighters,
+    };
+  }
+
+  @Put('/series/:codeName')
+  updateSeries(
+    @Param('codeName') codeName: string,
+    @Body() body: UpdateSeriesRequest,
+  ) {
+    const {
+      displayName,
+      betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
+      fighters,
+      level,
+    } = body;
+    return this.seriesService.updateSeries(
+      codeName,
+      displayName,
+      betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
+      fighters,
+      level,
+    );
+  }
+
   @Post('/series')
-  async createSeries(@Body() body: { codeName: string; displayName: string }) {
-    await this.seriesService.createSeries(body.codeName, body.displayName);
+  async createSeries(@Body() body: CreateSeriesRequest) {
+    const {
+      codeName,
+      displayName,
+      betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
+      fighters,
+      level,
+      fightType,
+    } = body;
+
+    await this.seriesService.createSeries(
+      codeName,
+      displayName,
+      betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
+      fighters,
+      level,
+      fightType,
+    );
   }
 
   @Post('/series/run')
@@ -69,6 +148,13 @@ export class AdminController {
     @Param('id') id: string,
     @Body() body: UpdateGameServerConfigRequest,
   ) {}
+
+  @Get('/game-server-capabilities')
+  async getGameServerCapabilities() {
+    return {
+      capabilities: await this.gameServerCapabilitiesService.getCapabilities(),
+    };
+  }
 
   @Get('/points-balances')
   async getPointsBalance() {
@@ -103,5 +189,20 @@ export class AdminController {
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     return this.adminService.processPointsBalancesUpload(file);
+  }
+
+  @Get('/roster')
+  getRoster() {
+    return this.rosterService.getRoster();
+  }
+
+  @Patch('/roster')
+  updateRoster(@Body() body: UpdateRosterRequest) {
+    return this.rosterService.updateRoster(
+      body.scheduleType,
+      body.schedule,
+      body.series,
+      body.timedSeries,
+    );
   }
 }

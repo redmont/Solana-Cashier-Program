@@ -1,5 +1,4 @@
 import { Schema } from 'dynamoose';
-import { DateTime } from 'luxon';
 
 export const MatchSchema = new Schema({
   pk: {
@@ -10,17 +9,28 @@ export const MatchSchema = new Schema({
     type: String,
     rangeKey: true,
   },
-  seriesCodeName: {
-    type: String,
+  seriesCodeName: String,
+  matchId: String,
+  startTime: String,
+  fighters: {
+    type: Array,
+    schema: [
+      {
+        type: Object,
+        schema: {
+          displayName: String,
+          codeName: String,
+          ticker: String,
+          imagePath: String,
+          betCount: Number,
+        },
+      },
+    ],
   },
-  state: {
-    type: String,
-  },
-  startTime: {
-    type: String,
-    required: false,
-  },
-  context: {
+  winner: {
     type: Object,
+    schema: {
+      codeName: String,
+    },
   },
 });

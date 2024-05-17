@@ -1,31 +1,42 @@
 import { FC } from 'react';
-import { useAppState } from '@/hooks';
+import { useAppState, useEthWallet } from '@/hooks';
 import { truncateEthAddress } from '../../utils';
+import { classNames } from 'primereact/utils';
 
 export const BetListWidget: FC = () => {
   const { match } = useAppState();
-  const { doge, pepe } = match?.bets || {};
+  const { fighters = [] } = match ?? {};
+  const { address } = useEthWallet();
+
+  const bets = fighters.map((f, index) => {
+    return match?.bets[fighters[index]?.codeName];
+  });
 
   return (
     <div className="widget bet-list-widget">
       <div className="widget-body">
         <div className="header">
           <div className="column">
-            <div className="fighter-name">Doge</div>
-            <div className="bet-total">{doge?.total || 0} Points</div>
+            <div className="fighter-name">{fighters[0]?.displayName}</div>
+            <div className="bet-total">{bets[0]?.total || 0} Points</div>
           </div>
 
           <div className="column">
-            <div className="fighter-name">Pepe</div>
-            <div className="bet-total">{pepe?.total || 0} Points</div>
+            <div className="fighter-name">{fighters[1]?.displayName}</div>
+            <div className="bet-total">{bets[1]?.total || 0} Points</div>
           </div>
         </div>
 
         <div className="viewport">
           <div className="bet-list">
             <div className="column">
-              {doge?.list.map(({ amount, walletAddress }, index) => (
-                <div key={index} className="row">
+              {bets[0]?.list.map(({ amount, walletAddress }, index) => (
+                <div
+                  key={index}
+                  className={classNames('row', {
+                    highlighted: walletAddress === address,
+                  })}
+                >
                   <span>{truncateEthAddress(walletAddress)}</span>
                   <span>{amount.toLocaleString()}</span>
                 </div>
@@ -33,8 +44,13 @@ export const BetListWidget: FC = () => {
             </div>
 
             <div className="column">
-              {pepe?.list.map(({ amount, walletAddress }, index) => (
-                <div key={index} className="row">
+              {bets[1]?.list.map(({ amount, walletAddress }, index) => (
+                <div
+                  key={index}
+                  className={classNames('row', {
+                    highlighted: walletAddress === address,
+                  })}
+                >
                   <span>{truncateEthAddress(walletAddress)}</span>
                   <span>{amount.toLocaleString()}</span>
                 </div>

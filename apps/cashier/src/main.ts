@@ -12,6 +12,7 @@ async function bootstrap() {
     transport: Transport.NATS,
     options: {
       servers: [config.natsUri],
+      debug: true,
       waitOnFirstConnect: true,
     },
   });

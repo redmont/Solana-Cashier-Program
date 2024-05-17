@@ -7,7 +7,6 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  WsException,
 } from '@nestjs/websockets';
 import { ClientProxy } from '@nestjs/microservices';
 import { Server } from 'socket.io';
@@ -17,21 +16,26 @@ import {
   GetBalanceMessage as GetBalanceUiGatewayMessage,
   GetActivityStreamMessage as GetActivityStreamUiGatewayMessage,
   GetMatchStatusMessage,
+  GetLeaderboardMessage,
   GatewayEvent,
-} from 'ui-gateway-messages';
+  GetRosterMessage,
+  GetMatchHistoryMessage,
+  GetUserMatchHistoryMessage,
+  GetMatchHistoryMessageResponse,
+  GetUserMatchHistoryMessageResponse,
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
   GetBalanceMessage,
   GetBalanceMessageResponse,
   PlaceBetMessageResponse,
-  SubscribeToSeriesMessage,
-  SubscribeToSeriesResponse,
 } from 'core-messages';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { Socket } from './websocket/socket';
 import { QueryStoreService } from 'query-store';
-import { IJwtAuthService } from './jwt-auth/jwt-auth.interface';
+import { IJwtAuthService } from './jwtAuth/jwtAuth.interface';
 import { ConfigService } from '@nestjs/config';
+import { ReadModelService } from 'cashier-read-model';
 
 @WebSocketGateway({
   cors: {
@@ -42,6 +46,7 @@ export class AppGateway
   implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect
 {
   private readonly logger: Logger = new Logger(AppGateway.name);
+  private readonly mediaUri: string;
 
   @WebSocketServer()
   server: Server;
@@ -50,15 +55,22 @@ export class AppGateway
   private clientUserIdMap: Map<string, string> = new Map();
 
   constructor(
+    private readonly configService: ConfigService,
     @Inject('BROKER') private readonly broker: ClientProxy,
     private readonly query: QueryStoreService,
     @Inject('JWT_AUTH_SERVICE')
     private readonly jwtAuthService: IJwtAuthService,
-    private readonly configService: ConfigService,
-  ) {}
+    private readonly cashierReadModelService: ReadModelService,
+  ) {
+    this.mediaUri = this.configService.get<string>('mediaUri');
+  }
 
   onModuleInit() {
     this.instanceId = this.configService.get<string>('instanceId');
+  }
+
+  getMediaUrl(path: string) {
+    return `${this.mediaUri}/${path}`;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -104,21 +116,35 @@ export class AppGateway
   }
 
   @SubscribeMessage(GetMatchStatusMessage.messageType)
-  public async status(
-    @MessageBody() data: GetMatchStatusMessage,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const { series } = data;
+  public async getMatchStatus() {
+    const {
+      matchId,
+      seriesCodeName,
+      fighters,
+      state,
+      bets,
+      startTime,
+      winner,
+      preMatchVideoPath,
+    } = await this.query.getCurrentMatch();
 
-    await sendBrokerMessage<
-      SubscribeToSeriesMessage,
-      SubscribeToSeriesResponse
-    >(this.broker, new SubscribeToSeriesMessage(series, client.id));
+    const preMatchVideoUrl =
+      preMatchVideoPath?.length > 0 ? this.getMediaUrl(preMatchVideoPath) : '';
 
-    const { matchId, state, bets, startTime, winner } =
-      await this.query.getSeries(series);
-
-    return { matchId, state, bets, startTime, winner, success: true };
+    return {
+      matchId,
+      series: seriesCodeName,
+      fighters: fighters.map(({ imagePath, ...rest }) => ({
+        ...rest,
+        imageUrl: this.getMediaUrl(imagePath),
+      })),
+      state,
+      preMatchVideoUrl,
+      bets,
+      startTime,
+      winner,
+      success: true,
+    };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -133,8 +159,15 @@ export class AppGateway
     const userId = client.data.authorizedUser.sub;
     const walletAddress = client.data.authorizedUser.claims.walletAddress;
 
+    if (amount <= 0) {
+      return {
+        success: false,
+        error: { message: 'Amount must be greater than 0' },
+      };
+    }
+
     try {
-      const result = await sendBrokerMessage<
+      const { success, message } = await sendBrokerMessage<
         PlaceBetMessage,
         PlaceBetMessageResponse
       >(
@@ -142,7 +175,9 @@ export class AppGateway
         new PlaceBetMessage(series, userId, walletAddress, amount, fighter),
       );
 
-      return { ...result, success: true };
+      const error = message ? { message } : null;
+
+      return { success, error };
     } catch (e) {
       console.log('Place bet error', JSON.stringify(e));
       return { success: false, error: { message: e.message } };
@@ -180,6 +215,79 @@ export class AppGateway
         timestamp: item.sk,
         message: item.message,
       })),
+    };
+  }
+
+  @SubscribeMessage(GetLeaderboardMessage.messageType)
+  public async getLeaderboard(
+    @MessageBody() { pageSize, page, searchQuery }: GetLeaderboardMessage,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const userId = this.clientUserIdMap.get(client?.id);
+
+    const { totalCount, items, currentUserItem } =
+      await this.cashierReadModelService.getLeaderboard(
+        pageSize,
+        page,
+        userId,
+        searchQuery,
+      );
+
+    return {
+      success: true,
+      totalCount,
+      items,
+      currentUserItem,
+    };
+  }
+
+  @SubscribeMessage(GetRosterMessage.messageType)
+  public async getRoster() {
+    const { roster } = await this.query.getRoster();
+
+    return {
+      success: true,
+      roster: roster.map(({ codeName }) => ({ series: codeName })),
+    };
+  }
+
+  @SubscribeMessage(GetMatchHistoryMessage.messageType)
+  public async getMatchHistory(): Promise<GetMatchHistoryMessageResponse> {
+    const result = await this.query.getMatches();
+
+    const matches = result.map((match) => ({
+      ...match,
+      fighters: match.fighters.map((fighter) => ({
+        ...fighter,
+        imageUrl: this.getMediaUrl(fighter.imagePath),
+      })),
+    }));
+
+    return {
+      success: true,
+      matches,
+    };
+  }
+
+  @SubscribeMessage(GetUserMatchHistoryMessage.messageType)
+  public async getUserMatchHistory(
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetUserMatchHistoryMessageResponse> {
+    const userId = this.clientUserIdMap.get(client?.id);
+
+    const result = await this.query.getUserMatches(userId);
+
+    const matches = result.map((match) => ({
+      ...match,
+      fighters: match.fighters.map((fighter) => ({
+        ...fighter,
+        imageUrl: this.getMediaUrl(fighter.imagePath),
+      })),
+    }));
+
+    return {
+      success: true,
+      matches,
     };
   }
 

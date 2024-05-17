@@ -1,6 +1,6 @@
 import { Key } from './key.interface';
 
-export interface SeriesModel extends Key {
+export interface Series extends Key {
   matchId: string;
   state: string;
   startTime?: string;

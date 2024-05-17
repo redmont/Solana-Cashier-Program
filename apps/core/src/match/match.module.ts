@@ -1,13 +1,20 @@
 import { Module } from '@nestjs/common';
-import { GlobalClientsModule } from '../global-clients-module';
-import { MatchPersistenceService } from './match-persistence.service';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { ConfigService } from '@nestjs/config';
+import { GlobalClientsModule } from '../globalClientsModule';
+import { MatchPersistenceService } from './matchPersistence.service';
 import { MatchSchema } from './schemas/match.schema';
-import { GameServerModule } from 'src/game-server/game-server.module';
+import { GameServerModule } from '@/gameServer/gameServer.module';
 import { BetSchema } from './schemas/bet.schema';
-import { MatchManagementService } from './match-management.service';
-import { MatchBettingService } from './match-betting.service';
+import { MatchManagementService } from './matchManagement.service';
+import { MatchBettingService } from './matchBetting.service';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { MockMatchOutcomeService } from './matchOutcome/mockMatchOutcome.service';
+import { MatchOutcomeService } from './matchOutcome/matchOutcome.service';
+import { AbstractMatchOutcomeService } from './matchOutcome/abstractMatchOutcomeService';
+import { UserMatchResultSchema } from './schemas/userMatchResult.schema';
+import { GatewayManagerModule } from '@/gatewayManager/gatewayManager.module';
+import { UserMatchSchema } from './schemas/userMatch.schema';
 
 @Module({
   imports: [
@@ -18,6 +25,19 @@ import { MatchBettingService } from './match-betting.service';
         useFactory: (_, configService: ConfigService) => {
           return {
             schema: MatchSchema,
+            options: {
+              tableName: configService.get<string>('tableName'),
+              create: configService.get<boolean>('isDynamoDbLocal'),
+            },
+          };
+        },
+        inject: [ConfigService],
+      },
+      {
+        name: 'userMatch',
+        useFactory: (_, configService: ConfigService) => {
+          return {
+            schema: UserMatchSchema,
             options: {
               tableName: configService.get<string>('tableName'),
               create: configService.get<boolean>('isDynamoDbLocal'),
@@ -39,10 +59,50 @@ import { MatchBettingService } from './match-betting.service';
         },
         inject: [ConfigService],
       },
+      {
+        name: 'userMatchResult',
+        useFactory: (_, configService: ConfigService) => {
+          return {
+            schema: UserMatchResultSchema,
+            options: {
+              tableName: configService.get<string>('tableName'),
+              create: configService.get<boolean>('isDynamoDbLocal'),
+            },
+          };
+        },
+        inject: [ConfigService],
+      },
     ]),
     GameServerModule,
+    GatewayManagerModule,
   ],
   providers: [
+    {
+      provide: DynamoDBClient,
+      useFactory: (configService: ConfigService) => {
+        return new DynamoDBClient({
+          endpoint: configService.get<boolean>('isDynamoDbLocal')
+            ? 'http://localhost:8765'
+            : undefined,
+        });
+      },
+      inject: [ConfigService],
+    },
+    {
+      provide: AbstractMatchOutcomeService,
+      useFactory: (
+        configService: ConfigService,
+        dynamoDbClient: DynamoDBClient,
+      ) => {
+        const useMockMatchOutcomeService = configService.get<boolean>(
+          'useMockMatchOutcomeService',
+        );
+        return useMockMatchOutcomeService
+          ? new MockMatchOutcomeService(configService, dynamoDbClient)
+          : new MatchOutcomeService(configService, dynamoDbClient);
+      },
+      inject: [ConfigService, DynamoDBClient],
+    },
     MatchPersistenceService,
     MatchManagementService,
     MatchPersistenceService,

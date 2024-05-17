@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DynamooseModule } from 'nestjs-dynamoose';
-import { AppGateway } from './app.gateway';
 import { RedisCacheModule } from 'global-cache';
 import { QueryStoreModule } from 'query-store';
+import { ReadModelModule } from 'cashier-read-model';
+import { AppGateway } from './app.gateway';
 import { AuthModule } from './auth/auth.module';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { JwtAuthModule } from './jwt-auth/jwt-auth.module';
-import { GlobalClientsModule } from './global-clients-module';
+import { JwtAuthGuard } from './guards/jwtAuth.guard';
+import { JwtAuthModule } from './jwtAuth/jwtAuth.module';
+import { GlobalClientsModule } from './globalClientsModule';
 import configuration from './configuration';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
@@ -44,6 +45,15 @@ import { AppController } from './app.controller';
         return {
           tableName: configService.get<string>('queryStoreTableName'),
           isDynamoDbLocal: configService.get<boolean>('isDynamoDbLocal'),
+        };
+      },
+      inject: [ConfigService],
+    }),
+    ReadModelModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          tableName: configService.get<string>('cashierReadModelTableName'),
         };
       },
       inject: [ConfigService],

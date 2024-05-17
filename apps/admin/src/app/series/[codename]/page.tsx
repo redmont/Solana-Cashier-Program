@@ -1,49 +1,69 @@
 'use client';
 
-import { FieldTemplateProps, RJSFSchema } from '@rjsf/utils';
+import {
+  FieldTemplateProps,
+  ObjectFieldTemplateProps,
+  RJSFSchema,
+  RegistryWidgetsType,
+  WidgetProps,
+} from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import Form, { UiSchema } from '@rjsf/chakra-ui';
-import { Box, FormControl, HStack } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Card,
+  CardBody,
+  FormControl,
+  FormLabel,
+  HStack,
+  Heading,
+  Image,
+  useToast,
+} from '@chakra-ui/react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
+import axios from 'axios';
+import { baseUrl } from '@/config';
+import { MediaPickerModal } from '@/components/mediaLibrary/MediaPickerModal';
+import { useRouter } from 'next/navigation';
 
-const schema: RJSFSchema = {
-  title: 'Series',
-  type: 'object',
-  required: ['displayName'],
-  properties: {
-    displayName: { type: 'string', title: 'Display name' },
-    betPlacementTime: { type: 'number', title: 'Bet placement time' },
-    fighters: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          codeName: { type: 'string', title: 'Code name' },
-          displayName: { type: 'string', title: 'Display name' },
-          model: {
-            type: 'object',
-            properties: {
-              head: {
-                type: 'string',
-                title: 'Head',
-                enum: ['H_BrawlerA', 'H_PepeA', 'H_DogeA'],
-              },
-              torso: {
-                type: 'string',
-                title: 'Torso',
-                enum: ['T_BrawlerA', 'T_PepeA', 'T_DogeA'],
-              },
-              legs: {
-                type: 'string',
-                title: 'Legs',
-                enum: ['L_BrawlerA', 'L_PepeA', 'L_DogeA'],
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-};
+interface CreateSeriesRequest {
+  codeName: string;
+  displayName: string;
+  betPlacementTime: number;
+  preMatchVideoPath: string;
+  preMatchDelay: number;
+  fighters: {
+    codeName: string;
+    displayName: string;
+    imagePath: string;
+    model: {
+      head: string;
+      torso: string;
+      legs: string;
+    };
+  }[];
+  level: string;
+}
+
+interface UpdateSeriesRequest {
+  displayName: string;
+  betPlacementTime: number;
+  preMatchVideoPath: string;
+  preMatchDelay: number;
+  fighters: {
+    codeName: string;
+    displayName: string;
+    imagePath: string;
+    model: {
+      head: string;
+      torso: string;
+      legs: string;
+    };
+  }[];
+  level: string;
+}
 
 const SecondsFieldTemplate = ({
   id,
@@ -63,16 +83,205 @@ const SecondsFieldTemplate = ({
   );
 };
 
+const MediaPreviewWidget = ({ value }: WidgetProps) => {
+  if (!value) {
+    return null;
+  }
+
+  return (
+    <FormControl>
+      <FormLabel>Image</FormLabel>
+      <Box w={32}>
+        <Image src={value} />
+      </Box>
+    </FormControl>
+  );
+};
+
+const MediaSelectorWidget = ({
+  label,
+  required,
+  value,
+  onChange,
+}: WidgetProps) => {
+  return (
+    <FormControl isRequired={required}>
+      <MediaPickerModal
+        buttonLabel={value ? `Change ${label}` : `Select ${label}`}
+        onSelect={(path) => onChange(path)}
+      />
+    </FormControl>
+  );
+};
+
+const widgets: RegistryWidgetsType = {
+  mediaSelectorWidget: MediaSelectorWidget,
+};
+
 const uiSchema: UiSchema = {
   betPlacementTime: {
     'ui:FieldTemplate': SecondsFieldTemplate,
   },
+  preMatchVideoPath: {
+    'ui:widget': MediaSelectorWidget,
+  },
+  fighters: {
+    items: {
+      imageUrl: {
+        'ui:widget': MediaPreviewWidget,
+      },
+      imagePath: {
+        'ui:widget': MediaSelectorWidget,
+      },
+    },
+  },
 };
 
-const EditSeries = () => {
+const EditSeries = ({ params }: { params: { codename: string } }) => {
+  const router = useRouter();
+  const toast = useToast();
+  const [formData, setFormData] = useState(null);
+
+  const { data: gameServerCapabilities } = useQuery<{
+    capabilities: {
+      headModels: string[];
+      torsoModels: string[];
+      legModels: string[];
+      finishingMoves: string[];
+      levels: string[];
+    };
+  }>({
+    queryKey: ['game-server-capabilities'],
+  });
+
+  const { data } = useQuery<any>({
+    queryKey: [`series/${params.codename}`],
+  });
+
+  const createSeriesMutation = useMutation({
+    mutationFn: (data: CreateSeriesRequest) => {
+      return axios.post(`${baseUrl}/series`, data);
+    },
+  });
+
+  const updateSeriesMutation = useMutation({
+    mutationFn: (data: UpdateSeriesRequest) => {
+      return axios.put(`${baseUrl}/series/${params.codename}`, data);
+    },
+  });
+
+  const ObjectFieldTemplate = (props: ObjectFieldTemplateProps) => {
+    if (props.title === 'Fighter') {
+      return (
+        <Card>
+          <CardBody>
+            <Heading as="h6">{props.title}</Heading>
+            <Box mb={2}>{props.description}</Box>
+            {props.properties.map((element) => (
+              <Box className="property-wrapper">{element.content}</Box>
+            ))}
+          </CardBody>
+        </Card>
+      );
+    }
+
+    return (
+      <>
+        <Heading as="h6">{props.title}</Heading>
+        <Box mb={2}>{props.description}</Box>
+        {props.properties.map((element) => (
+          <Box className="property-wrapper">{element.content}</Box>
+        ))}
+      </>
+    );
+  };
+
+  const schema: RJSFSchema = useMemo(
+    () => ({
+      title: 'Series',
+      type: 'object',
+      required: ['displayName'],
+      properties: {
+        codeName: { type: 'string', title: 'Code name' },
+        displayName: { type: 'string', title: 'Display name' },
+        betPlacementTime: { type: 'number', title: 'Bet placement time' },
+        preMatchVideoPath: { type: 'string', title: 'Pre-match video' },
+        preMatchDelay: { type: 'number', title: 'Pre-match delay' },
+        fighters: {
+          type: 'array',
+          title: 'Fighters',
+          items: {
+            type: 'object',
+            title: 'Fighter',
+            properties: {
+              codeName: { type: 'string', title: 'Code name' },
+              displayName: { type: 'string', title: 'Display name' },
+              ticker: { type: 'string', title: 'Ticker' },
+              imageUrl: { type: 'string', title: '' },
+              imagePath: { type: 'string', title: 'Image' },
+              model: {
+                type: 'object',
+                title: 'Model',
+                properties: {
+                  head: {
+                    type: 'string',
+                    title: 'Head',
+                    enum: gameServerCapabilities?.capabilities.headModels,
+                  },
+                  torso: {
+                    type: 'string',
+                    title: 'Torso',
+                    enum: gameServerCapabilities?.capabilities.torsoModels,
+                  },
+                  legs: {
+                    type: 'string',
+                    title: 'Legs',
+                    enum: gameServerCapabilities?.capabilities.legModels,
+                  },
+                },
+              },
+            },
+          },
+        },
+        level: {
+          title: 'Level',
+          enum: gameServerCapabilities?.capabilities.levels,
+        },
+        fightType: {
+          title: 'Fight type',
+          enum: ['MMA', 'Boxing'],
+        },
+      },
+    }),
+    [gameServerCapabilities],
+  );
+
+  const onSubmit = ({ formData }: any) => {
+    if (params.codename === 'new') {
+      createSeriesMutation.mutateAsync(formData);
+      router.push('/series');
+    } else {
+      updateSeriesMutation.mutateAsync(formData);
+      toast({
+        title: 'Series updated',
+        status: 'success',
+        position: 'bottom-right',
+      });
+    }
+  };
+
   return (
     <Box>
-      <Form schema={schema} uiSchema={uiSchema} validator={validator} />
+      <Form
+        formData={data}
+        onChange={(e) => setFormData(e.formData)}
+        schema={schema}
+        uiSchema={uiSchema}
+        validator={validator}
+        widgets={widgets}
+        templates={{ ObjectFieldTemplate }}
+        onSubmit={onSubmit}
+      />
     </Box>
   );
 };
