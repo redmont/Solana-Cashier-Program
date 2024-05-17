@@ -21,6 +21,7 @@ import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
 import { DynamicWagmiConnector } from '@dynamic-labs/wagmi-connector';
 
 import { ChildContainerProps } from '@/types';
+import { dynamicWalletEnvironmentId } from '@/config';
 
 const queryClient = new QueryClient();
 
@@ -100,7 +101,7 @@ export const EthWalletProvider: FC<ChildContainerProps> = ({ children }) => {
   return (
     <DynamicContextProvider
       settings={{
-        environmentId: '21452bd4-902f-40be-9b8f-5bc817b00e0e',
+        environmentId: dynamicWalletEnvironmentId,
         walletConnectors: [EthereumWalletConnectors],
         initialAuthenticationMode: 'connect-only',
       }}
