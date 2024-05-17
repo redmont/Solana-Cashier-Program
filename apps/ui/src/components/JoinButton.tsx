@@ -5,6 +5,7 @@ import { classNames } from 'primereact/utils';
 import { Button } from 'primereact/button';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { truncateEthAddress } from '@/utils';
+import { useEthWallet } from '@/hooks';
 
 export interface EthConnectButtonProps {
   className?: string;
@@ -12,26 +13,22 @@ export interface EthConnectButtonProps {
 }
 
 export const JoinButton: FC<EthConnectButtonProps> = ({ ...props }) => {
-  const {
-    isAuthenticated,
-    primaryWallet,
-    setShowAuthFlow,
-    setShowDynamicUserProfile,
-  } = useDynamicContext();
+  const { setShowAuthFlow, setShowDynamicUserProfile } = useDynamicContext();
+  const { isConnected, address } = useEthWallet();
 
   // Seems like isAuthenticated is set straight after page load
   // but wallet address is not. Needs to be polished.
-  const walletAddress = truncateEthAddress(primaryWallet?.address ?? '');
+  const walletAddress = truncateEthAddress(address ?? '');
 
   const handleClick = useCallback(() => {
-    isAuthenticated ? setShowDynamicUserProfile(true) : setShowAuthFlow(true);
-  }, [isAuthenticated, setShowAuthFlow, setShowDynamicUserProfile]);
+    isConnected ? setShowDynamicUserProfile(true) : setShowAuthFlow(true);
+  }, [isConnected, setShowAuthFlow, setShowDynamicUserProfile]);
 
   return (
     <Button
       size={props.size}
       type="button"
-      label={isAuthenticated ? walletAddress : 'Join Now'}
+      label={isConnected ? walletAddress : 'Join Now'}
       className={classNames(props.className, 'font-normal', {
         'px-4 py-3': props.size === 'large',
         'px-4 py-2': !props.size,
@@ -42,12 +39,13 @@ export const JoinButton: FC<EthConnectButtonProps> = ({ ...props }) => {
 };
 
 export const MobileJoinButton: FC<EthConnectButtonProps> = (props) => {
-  const { isAuthenticated, setShowAuthFlow, setShowDynamicUserProfile } =
-    useDynamicContext();
+  const { isConnected } = useEthWallet();
+
+  const { setShowAuthFlow, setShowDynamicUserProfile } = useDynamicContext();
 
   const handleClick = useCallback(() => {
-    isAuthenticated ? setShowDynamicUserProfile(true) : setShowAuthFlow(true);
-  }, [isAuthenticated, setShowAuthFlow, setShowDynamicUserProfile]);
+    isConnected ? setShowDynamicUserProfile(true) : setShowAuthFlow(true);
+  }, [isConnected, setShowAuthFlow, setShowDynamicUserProfile]);
 
   return (
     <Button

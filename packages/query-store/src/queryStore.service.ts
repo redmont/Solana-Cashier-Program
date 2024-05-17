@@ -183,6 +183,24 @@ export class QueryStoreService implements OnModuleInit {
         },
       },
     );
+
+    await this.currentMatchModel.update(
+      {
+        pk: `currentMatch`,
+        sk: `currentMatch`,
+      },
+      {
+        $ADD: {
+          bets: [
+            {
+              walletAddress,
+              amount,
+              fighter,
+            },
+          ],
+        },
+      },
+    );
   }
 
   async setBets(seriesCodeName: string, bets: any[]) {
@@ -206,6 +224,7 @@ export class QueryStoreService implements OnModuleInit {
       {
         state: 'idle',
         winner: '',
+        bets: [],
       },
     );
   }

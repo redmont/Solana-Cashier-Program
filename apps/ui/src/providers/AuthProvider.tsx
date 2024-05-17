@@ -1,3 +1,5 @@
+'use client';
+
 import {
   FC,
   PropsWithChildren,
@@ -45,6 +47,10 @@ interface GetTokenResponse {
   error: {
     message: string;
   };
+}
+
+export function getCurrentAuthToken() {
+  return localStorage?.getItem(AUTH_TOKEN_STORAGE_KEY);
 }
 
 export const AuthProvider: FC<PropsWithChildren> = (props) => {
@@ -169,7 +175,7 @@ export const AuthProvider: FC<PropsWithChildren> = (props) => {
       return;
     }
 
-    const savedToken = localStorage?.getItem(AUTH_TOKEN_STORAGE_KEY);
+    const savedToken = getCurrentAuthToken();
     const isSavedTokenValid = verifyToken(savedToken ?? '');
 
     if (isSavedTokenValid) {

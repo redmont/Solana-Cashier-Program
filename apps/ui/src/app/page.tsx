@@ -45,17 +45,13 @@ export default function Home() {
           </>
         )}
 
-        {match?.status !== MatchStatus.Finished && <VideoStream />}
-
-        {match?.status === MatchStatus.Finished && (
-          <video
-            className="trailer-video"
-            autoPlay
-            muted
-            playsInline
-            src={match?.preMatchVideoUrl ?? trailerUrl}
-          />
-        )}
+        <VideoStream
+          src={
+            match?.status !== MatchStatus.Finished
+              ? undefined
+              : match?.preMatchVideoUrl ?? trailerUrl
+          }
+        />
 
         <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
       </div>
