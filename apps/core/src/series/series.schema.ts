@@ -27,8 +27,8 @@ export const SeriesSchema = new Schema({
             type: Object,
             schema: {
               head: { type: String, required: true },
-              torso: { type: String, required: true },
-              legs: { type: String, required: true },
+              torso: { type: String, required: false },
+              legs: { type: String, required: false },
             },
           },
         },
