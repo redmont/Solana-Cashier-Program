@@ -10,9 +10,9 @@ const MillicastStream = dynamic(
   },
 );
 
-export const VideoStream = () => {
+export const VideoStream = ({ src }: { src: string | undefined }) => {
   if (streamUrl.indexOf('millicast.com') > -1) {
-    return <MillicastStream />;
+    return <MillicastStream src={src} />;
   }
 
   return (
