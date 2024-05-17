@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { useAppState, useEthWallet } from '@/hooks';
 import { truncateEthAddress } from '../../utils';
 import { classNames } from 'primereact/utils';
+import { ScrollPanel } from 'primereact/scrollpanel';
 
 export const BetListWidget: FC = () => {
   const { match } = useAppState();
@@ -27,7 +28,7 @@ export const BetListWidget: FC = () => {
           </div>
         </div>
 
-        <div className="viewport">
+        <ScrollPanel className="viewport">
           <div className="bet-list">
             <div className="column">
               {bets[0]?.list.map(({ amount, walletAddress }, index) => (
@@ -57,7 +58,7 @@ export const BetListWidget: FC = () => {
               ))}
             </div>
           </div>
-        </div>
+        </ScrollPanel>
       </div>
     </div>
   );

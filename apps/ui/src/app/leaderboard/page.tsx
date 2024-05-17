@@ -138,7 +138,9 @@ const MobileRecord: FC<RecordProps> = (props) => (
       <div className="rank">{props.rank}</div>
       <div className="player">{truncateEthAddress(props.walletAddress)}</div>
       <div className="points-label">Points:</div>
-      <div className="points-value">{props.balance}</div>
+      <div className="points-value">
+        {Math.floor(+props.balance).toLocaleString()}
+      </div>
       <div className="winrate-label">Winrate:</div>
       <div className="winrate-value">96%</div>
     </div>
@@ -167,6 +169,6 @@ const TableRow: FC<RecordProps> = (props) => (
     <div className="wins">45</div>
     <div className="losses">2</div>
     <div className="winrate">96%</div>
-    <div className="points">{props.balance}</div>
+    <div className="points">{Math.floor(+props.balance).toLocaleString()}</div>
   </div>
 );
