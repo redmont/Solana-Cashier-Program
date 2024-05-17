@@ -154,6 +154,20 @@ const EditSeries = ({ params }: { params: { codename: string } }) => {
     queryKey: ['game-server-capabilities'],
   });
 
+  const torsoModels = useMemo(() => {
+    if (gameServerCapabilities?.capabilities?.torsoModels) {
+      return ['', ...gameServerCapabilities.capabilities.torsoModels];
+    }
+
+    return [''];
+  }, [gameServerCapabilities]);
+
+  const legModels = useMemo(() => {
+    if (gameServerCapabilities?.capabilities?.legModels) {
+      return ['', ...gameServerCapabilities.capabilities.legModels];
+    }
+  }, [gameServerCapabilities]);
+
   const { data } = useQuery<any>({
     queryKey: [`series/${params.codename}`],
   });
@@ -231,12 +245,12 @@ const EditSeries = ({ params }: { params: { codename: string } }) => {
                   torso: {
                     type: 'string',
                     title: 'Torso',
-                    enum: gameServerCapabilities?.capabilities.torsoModels,
+                    enum: torsoModels,
                   },
                   legs: {
                     type: 'string',
                     title: 'Legs',
-                    enum: gameServerCapabilities?.capabilities.legModels,
+                    enum: legModels,
                   },
                 },
               },

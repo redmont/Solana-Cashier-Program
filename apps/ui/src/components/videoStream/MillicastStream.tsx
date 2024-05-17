@@ -51,6 +51,7 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
       <video
         ref={videoRef}
         autoPlay={true}
+        playsInline={true}
         muted={muted}
         width="100%"
         height="100%"
