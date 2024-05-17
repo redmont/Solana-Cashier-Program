@@ -130,6 +130,7 @@ export class SeriesPersistenceService {
       imagePath: string;
     }[],
     state: any,
+    preMatchVideoPath: string,
     startTime?: string,
     winner?: string,
   ) {
@@ -138,6 +139,7 @@ export class SeriesPersistenceService {
       matchId,
       fighters,
       state,
+      preMatchVideoPath,
       startTime,
       winner,
     );
