@@ -53,7 +53,7 @@ export default function Home() {
             autoPlay
             muted
             playsInline
-            src={trailerUrl}
+            src={match?.preMatchVideoUrl ?? trailerUrl}
           />
         )}
 

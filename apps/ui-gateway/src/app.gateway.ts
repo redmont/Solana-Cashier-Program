@@ -125,7 +125,11 @@ export class AppGateway
       bets,
       startTime,
       winner,
+      preMatchVideoPath,
     } = await this.query.getCurrentMatch();
+
+    const preMatchVideoUrl =
+      preMatchVideoPath?.length > 0 ? this.getMediaUrl(preMatchVideoPath) : '';
 
     return {
       matchId,
@@ -135,6 +139,7 @@ export class AppGateway
         imageUrl: this.getMediaUrl(imagePath),
       })),
       state,
+      preMatchVideoUrl,
       bets,
       startTime,
       winner,
@@ -153,6 +158,13 @@ export class AppGateway
 
     const userId = client.data.authorizedUser.sub;
     const walletAddress = client.data.authorizedUser.claims.walletAddress;
+
+    if (amount <= 0) {
+      return {
+        success: false,
+        error: { message: 'Amount must be greater than 0' },
+      };
+    }
 
     try {
       const { success, message } = await sendBrokerMessage<

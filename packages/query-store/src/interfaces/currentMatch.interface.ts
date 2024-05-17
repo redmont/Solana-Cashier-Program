@@ -10,6 +10,7 @@ export interface CurrentMatch extends Key {
     imagePath: string;
   }[];
   state: string;
+  preMatchVideoPath: string;
   startTime?: string;
   winner?: string;
   bets: {

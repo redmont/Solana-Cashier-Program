@@ -54,8 +54,15 @@ export class AppController {
 
   @EventPattern(MatchUpdatedEvent.messageType)
   onMatchUpdated(@Payload() data: MatchUpdatedEvent) {
-    const { timestamp, seriesCodeName, matchId, state, startTime, winner } =
-      data;
+    const {
+      timestamp,
+      seriesCodeName,
+      matchId,
+      state,
+      startTime,
+      winner,
+      preMatchVideoPath,
+    } = data;
 
     const ts = dayjs(timestamp);
 
@@ -71,6 +78,9 @@ export class AppController {
       imageUrl: this.getMediaUrl(imagePath),
     }));
 
+    const preMatchVideoUrl =
+      preMatchVideoPath?.length > 0 ? this.getMediaUrl(preMatchVideoPath) : '';
+
     this.gateway.publish(
       new MatchUpdatedUiGatewayEvent(
         timestamp,
@@ -78,6 +88,7 @@ export class AppController {
         matchId,
         fighters,
         state,
+        preMatchVideoUrl,
         startTime,
         winner,
       ),

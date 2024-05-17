@@ -1,11 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Decimal, Pools, brawlersV2Preset } from '@bltzr-gg/croupier';
 import dayjs from '@/dayjs';
-import { SeriesConfig } from '../series/seriesConfig.model';
+import { FightType, SeriesConfig } from '../series/seriesConfig.model';
 import { MatchBettingService } from './matchBetting.service';
 import { AbstractMatchOutcomeService } from './matchOutcome/abstractMatchOutcomeService';
 import { ServerCapabilities } from '@/series/fsm/serverCapabilities';
 import { GameServerService } from '@/gameServer/gameServer.service';
+
+const parseFightType = (fightType: FightType) => {
+  switch (fightType) {
+    case 'MMA':
+      return 0;
+    case 'Boxing':
+      return 1;
+  }
+};
 
 const parseSeriesConfig = (config: SeriesConfig) => {
   return {
@@ -20,6 +29,7 @@ const parseSeriesConfig = (config: SeriesConfig) => {
       ticker: fighter.ticker,
     })),
     level: config.level,
+    fightType: parseFightType(config.fightType),
   };
 };
 

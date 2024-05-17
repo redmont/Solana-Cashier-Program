@@ -84,11 +84,20 @@ export class AdminController {
     @Param('codeName') codeName: string,
     @Body() body: UpdateSeriesRequest,
   ) {
-    const { displayName, betPlacementTime, fighters, level } = body;
+    const {
+      displayName,
+      betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
+      fighters,
+      level,
+    } = body;
     return this.seriesService.updateSeries(
       codeName,
       displayName,
       betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
       fighters,
       level,
     );
@@ -96,14 +105,26 @@ export class AdminController {
 
   @Post('/series')
   async createSeries(@Body() body: CreateSeriesRequest) {
-    const { codeName, displayName, betPlacementTime, fighters, level } = body;
+    const {
+      codeName,
+      displayName,
+      betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
+      fighters,
+      level,
+      fightType,
+    } = body;
 
     await this.seriesService.createSeries(
       codeName,
       displayName,
       betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
       fighters,
       level,
+      fightType,
     );
   }
 
@@ -175,8 +196,13 @@ export class AdminController {
     return this.rosterService.getRoster();
   }
 
-  @Put('/roster')
+  @Patch('/roster')
   updateRoster(@Body() body: UpdateRosterRequest) {
-    return this.rosterService.updateRoster(body.scheduleType, body.series);
+    return this.rosterService.updateRoster(
+      body.scheduleType,
+      body.schedule,
+      body.series,
+      body.timedSeries,
+    );
   }
 }

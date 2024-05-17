@@ -1,6 +1,8 @@
 export interface UpdateSeriesRequest {
   displayName: string;
   betPlacementTime: number;
+  preMatchVideoPath: string;
+  preMatchDelay: number;
   fighters: {
     codeName: string;
     displayName: string;
@@ -13,4 +15,5 @@ export interface UpdateSeriesRequest {
     };
   }[];
   level: string;
+  fightType: string;
 }

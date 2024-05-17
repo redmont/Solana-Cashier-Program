@@ -53,6 +53,7 @@ export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
       imagePath: string;
     }[],
     state: string,
+    preMatchVideoPath: string,
     startTime: string,
     winner: string,
   ) {
@@ -66,6 +67,7 @@ export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
         matchId,
         fighters,
         state,
+        preMatchVideoPath,
         startTime,
         winner,
       ),

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
   Box,
@@ -15,19 +15,14 @@ import {
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Scheduler } from '@/components/Scheduler';
 import axios from 'axios';
+import { UpdateRosterRequest } from '../models/updateRosterRequest';
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-interface UpdateRosterRequest {
-  series: string[];
-  scheduleType: string;
-}
-
 const Roster = () => {
   const [scheduleType, setScheduleType] = useState('');
-  const [newSchedule, setNewSchedule] = useState<string[]>([]);
 
-  const { isPending, error, data } = useQuery<{
+  const { data } = useQuery<{
     series: { id: string; displayName: string; state: string | object }[];
   }>({
     queryKey: ['series'],
@@ -39,19 +34,6 @@ const Roster = () => {
   }>({
     queryKey: ['roster'],
   });
-
-  const currentSchedule = useMemo(() => {
-    if (!rosterData) {
-      return [];
-    }
-
-    return rosterData.series.map(({ codeName }) => {
-      const s = data?.series.find((s) => s.id === codeName);
-      return s
-        ? { id: s.id, displayName: s.displayName }
-        : { id: codeName, displayName: codeName };
-    });
-  }, [data, rosterData]);
 
   const updateRosterMutation = useMutation({
     mutationFn: (data: UpdateRosterRequest) => {
@@ -65,22 +47,17 @@ const Roster = () => {
     }
   }, [rosterData]);
 
-  const handleNewSchedule = (newSchedule: string[]) => {
-    setNewSchedule(newSchedule);
-  };
-
   const handleSave = async () => {
     await updateRosterMutation.mutateAsync({
-      series: newSchedule,
       scheduleType,
     });
   };
 
   return (
-    <Stack gap="10" alignItems="flex-start">
+    <Stack gap="10" alignItems="flex-start" width="100%">
       <Box>
         <Heading as="h1">Roster</Heading>
-        <FormControl>
+        <FormControl mt="4">
           <FormLabel>Schedule type</FormLabel>
           <Stack>
             <RadioGroup
@@ -94,13 +71,11 @@ const Roster = () => {
             </RadioGroup>
           </Stack>
         </FormControl>
+        <FormControl mt="4">
+          <Button onClick={handleSave}>Save</Button>
+        </FormControl>
       </Box>
-      <Scheduler
-        series={data?.series ?? []}
-        schedule={currentSchedule}
-        onNewSchedule={handleNewSchedule}
-      />
-      <Button onClick={handleSave}>Save</Button>
+      <Scheduler series={data?.series ?? []} />
     </Stack>
   );
 };

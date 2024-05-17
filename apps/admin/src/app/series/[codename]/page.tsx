@@ -32,6 +32,8 @@ interface CreateSeriesRequest {
   codeName: string;
   displayName: string;
   betPlacementTime: number;
+  preMatchVideoPath: string;
+  preMatchDelay: number;
   fighters: {
     codeName: string;
     displayName: string;
@@ -48,6 +50,8 @@ interface CreateSeriesRequest {
 interface UpdateSeriesRequest {
   displayName: string;
   betPlacementTime: number;
+  preMatchVideoPath: string;
+  preMatchDelay: number;
   fighters: {
     codeName: string;
     displayName: string;
@@ -94,11 +98,16 @@ const MediaPreviewWidget = ({ value }: WidgetProps) => {
   );
 };
 
-const MediaSelectorWidget = ({ required, value, onChange }: WidgetProps) => {
+const MediaSelectorWidget = ({
+  label,
+  required,
+  value,
+  onChange,
+}: WidgetProps) => {
   return (
     <FormControl isRequired={required}>
       <MediaPickerModal
-        buttonLabel={value ? 'Change image' : 'Select image'}
+        buttonLabel={value ? `Change ${label}` : `Select ${label}`}
         onSelect={(path) => onChange(path)}
       />
     </FormControl>
@@ -112,6 +121,9 @@ const widgets: RegistryWidgetsType = {
 const uiSchema: UiSchema = {
   betPlacementTime: {
     'ui:FieldTemplate': SecondsFieldTemplate,
+  },
+  preMatchVideoPath: {
+    'ui:widget': MediaSelectorWidget,
   },
   fighters: {
     items: {
@@ -193,6 +205,8 @@ const EditSeries = ({ params }: { params: { codename: string } }) => {
         codeName: { type: 'string', title: 'Code name' },
         displayName: { type: 'string', title: 'Display name' },
         betPlacementTime: { type: 'number', title: 'Bet placement time' },
+        preMatchVideoPath: { type: 'string', title: 'Pre-match video' },
+        preMatchDelay: { type: 'number', title: 'Pre-match delay' },
         fighters: {
           type: 'array',
           title: 'Fighters',
@@ -232,6 +246,10 @@ const EditSeries = ({ params }: { params: { codename: string } }) => {
         level: {
           title: 'Level',
           enum: gameServerCapabilities?.capabilities.levels,
+        },
+        fightType: {
+          title: 'Fight type',
+          enum: ['MMA', 'Boxing'],
         },
       },
     }),

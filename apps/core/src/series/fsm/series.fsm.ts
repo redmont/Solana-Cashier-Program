@@ -29,6 +29,9 @@ export function createSeriesFSM(
       BETTING_OPEN_TIME: ({ context }) => {
         return context.config.betPlacementTime * 1000;
       },
+      PRE_MATCH_DELAY: ({ context }) => {
+        return context.config.preMatchDelay * 1000;
+      },
     },
   }).createMachine({
     id: 'series',
@@ -39,8 +42,11 @@ export function createSeriesFSM(
       config: {
         requiredCapabilities: {},
         betPlacementTime: 30,
+        preMatchVideoPath: '',
+        preMatchDelay: 0,
         fighters: [],
         level: '',
+        fightType: 'MMA',
       },
       matchId: null,
       serverId: null,
@@ -60,11 +66,16 @@ export function createSeriesFSM(
           src: 'getSeriesConfig',
           input: ({ context }) => context.codeName,
           onDone: {
-            target: 'runMatch',
+            target: 'preMatchDelay',
             actions: assign({
               config: ({ event }) => event.output,
             }),
           },
+        },
+      },
+      preMatchDelay: {
+        after: {
+          PRE_MATCH_DELAY: 'runMatch',
         },
       },
       runMatch: {

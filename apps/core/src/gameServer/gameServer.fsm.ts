@@ -4,6 +4,7 @@ import { MatchSetup } from './models/matchSetup';
 import { MatchOutcome } from './models/matchOutcome';
 import { ServerMessage } from './models/serverMessage';
 import { ServerCapabilities } from './models/serverCapabilities';
+import { FightType } from './models/fightType';
 
 export interface MatchParameters {
   startTime: string;
@@ -17,6 +18,7 @@ export interface MatchParameters {
     displayName: string;
   }[];
   level: string;
+  fightType: FightType;
 }
 
 type SendMatchSetupEvent = {
@@ -77,6 +79,7 @@ export const createGameServerFSM = (
             matchParameters.startTime,
             matchParameters.fighters,
             matchParameters.level,
+            matchParameters.fightType,
           ),
         });
       },

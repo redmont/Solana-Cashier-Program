@@ -81,6 +81,9 @@ importers:
       axios:
         specifier: ^1.6.8
         version: 1.6.8
+      dayjs:
+        specifier: ^1.11.10
+        version: 1.11.10
       framer-motion:
         specifier: ^11.0.23
         version: 11.0.23(@emotion/is-prop-valid@1.2.2)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)

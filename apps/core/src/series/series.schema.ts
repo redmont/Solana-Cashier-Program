@@ -11,6 +11,8 @@ export const SeriesSchema = new Schema({
   },
   displayName: String,
   betPlacementTime: Number,
+  preMatchVideoPath: String,
+  preMatchDelay: Number,
   fighters: {
     type: Array,
     schema: [
@@ -34,6 +36,7 @@ export const SeriesSchema = new Schema({
     ],
   },
   level: String,
+  fightType: String,
   state: String,
   context: Object,
 });

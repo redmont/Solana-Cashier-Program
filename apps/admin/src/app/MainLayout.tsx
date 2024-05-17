@@ -78,7 +78,7 @@ export const MainLayout = ({ children }: any) => {
           <DynamicWidget />
         </HStack>
       </Flex>
-      <HStack align="start" spacing={0}>
+      <HStack align="start" spacing={0} width="100%">
         <Aside
           listItems={menuItems}
           onClose={onClose}

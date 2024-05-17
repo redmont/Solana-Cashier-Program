@@ -15,6 +15,7 @@ export class MatchUpdatedEvent extends BrokerEvent {
       imagePath: string;
     }[],
     public readonly state: string,
+    public readonly preMatchVideoPath: string,
     public readonly startTime: string,
     public readonly winner: string,
   ) {

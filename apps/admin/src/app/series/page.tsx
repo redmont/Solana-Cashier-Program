@@ -35,6 +35,7 @@ const Series = () => {
     series: { id: string; displayName: string; state: string | object }[];
   }>({
     queryKey: ['series'],
+    refetchInterval: 1000,
   });
 
   return (
