@@ -44,7 +44,7 @@ export const Scheduler = ({
 
   const updateRosterMutation = useMutation({
     mutationFn: (data: UpdateRosterRequest) => {
-      return axios.put(`${baseUrl}/roster`, data);
+      return axios.patch(`${baseUrl}/roster`, data);
     },
   });
 
