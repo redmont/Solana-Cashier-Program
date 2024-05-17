@@ -1,0 +1,30 @@
+.video-stream-unmute-button {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.muted {
+    background-color: $shade900;
+    border: 0;
+  }
+
+  & > span {
+    position: relative;
+  }
+
+  .pi-times {
+    position: absolute;
+    right: 0.5rem;
+    font-size: 0.5rem;
+  }
+
+  .pi-volume-off {
+    position: absolute;
+    left: 0.5rem;
+  }
+}

@@ -1,6 +1,7 @@
 import { streamUrl } from '@/config';
 import { Director, View } from '@millicast/sdk';
 import { Button } from 'primereact/button';
+import { classNames } from 'primereact/utils';
 import { useEffect, useRef, useState } from 'react';
 
 const parseStreamUrl = () => {
@@ -54,11 +55,14 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
         width="100%"
         height="100%"
       />
+
       <Button
+        className={classNames('video-stream-unmute-button', { muted })}
+        rounded
         onClick={() => setMuted(!muted)}
-        style={{ position: 'absolute', left: '10px', bottom: '15px' }}
       >
-        {muted ? 'Unmute' : 'Mute'}
+        <i className={`pi ${muted ? 'pi-volume-off' : 'pi-volume-up'}`}></i>
+        {muted && <i className="pi pi-times"></i>}
       </Button>
     </>
   );
