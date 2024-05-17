@@ -40,7 +40,6 @@ const EthWalletReadinessConext = createContext<{ isReady: boolean }>({
 
 const EthWalletReadinessProvider: FC<ChildContainerProps> = ({ children }) => {
   const account = useAccount();
-  const isAuthenticated = !!getCurrentAuthToken();
   const [isReady, setReady] = useState<boolean>(false);
 
   const { isConnecting, isConnected } = account;
@@ -54,19 +53,16 @@ const EthWalletReadinessProvider: FC<ChildContainerProps> = ({ children }) => {
   // i.e. showing intermediate states before wallet connects
   // because it takes few loops to solicit final wallet connection state
   useEffect(() => {
+    const authToken = getCurrentAuthToken();
+
     // If not authenticated with Dynamic it is not connected
-    if (!isAuthenticated) {
+    if (!authToken) {
       setReady(true);
     }
 
     // If authenticated but no sign of previous connection
     // then wait until connection starts
-    if (
-      isAuthenticated &&
-      phase.current === 0 &&
-      !isConnecting &&
-      !isConnecting
-    ) {
+    if (authToken && phase.current === 0 && !isConnecting && !isConnecting) {
       phase.current = 1;
     }
 
@@ -88,7 +84,7 @@ const EthWalletReadinessProvider: FC<ChildContainerProps> = ({ children }) => {
     if (phase.current === 2 && !isConnecting) {
       setReady(true);
     }
-  }, [isAuthenticated, isConnected, isConnecting]);
+  }, [isConnected, isConnecting]);
 
   return (
     <EthWalletReadinessConext.Provider value={{ isReady: isReady ?? false }}>
