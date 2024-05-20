@@ -126,10 +126,14 @@ export class ReadModelService {
         };
       } else {
         if (userId) {
-          const userItem = response.find((x) => x.sk === `account#${userId}`);
-          if (userItem) {
+          const userItemIndex = response.findIndex(
+            (x) => x.sk === `account#${userId}`,
+          );
+          if (userItemIndex !== -1) {
+            const userItem = response[userItemIndex];
+            const userRank = rank + userItemIndex;
             currentUserItem = {
-              rank,
+              rank: userRank,
               walletAddress: userItem.primaryWalletAddress,
               balance: userItem.balance,
             };

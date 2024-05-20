@@ -81,7 +81,7 @@ curl --location 'http://localhost:8080/admin/series' \
 Update the roster:
 
 ```sh
-curl -X PUT --location 'http://localhost:8080/admin/roster' \
+curl -X PATCH --location 'http://localhost:8080/admin/roster' \
 --header 'Content-Type: application/json' \
 --data '{
     "scheduleType": "linear",

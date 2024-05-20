@@ -1,6 +1,7 @@
 import { streamUrl } from '@/config';
 import dynamic from 'next/dynamic';
 import { FC } from 'react';
+import { Stream as CloudFlareStream } from '@cloudflare/stream-react';
 
 // The Millicast SDK does not support SSR,
 // so we need to load it dynamically.
@@ -20,14 +21,21 @@ export const VideoStream: FC<VideoStreamProps> = ({ src }) => {
     return <MillicastStream src={src} />;
   }
 
-  return (
-    <video
-      src={streamUrl}
-      autoPlay={true}
-      playsInline={true}
-      muted={true}
-      width="100%"
-      height="100%"
-    />
-  );
+  if (/^[0-9a-f]{32}$/.test(streamUrl)) {
+    if (src) {
+      return (
+        <video
+          src={src}
+          autoPlay={true}
+          playsInline={true}
+          width="100%"
+          height="100%"
+        />
+      );
+    } else {
+      return <CloudFlareStream controls src={streamUrl} autoplay={true} />;
+    }
+  }
+
+  return null;
 };

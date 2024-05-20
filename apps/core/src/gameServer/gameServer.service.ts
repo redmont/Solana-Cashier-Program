@@ -1,31 +1,31 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { createActor } from 'xstate';
+import { Injectable, Logger } from '@nestjs/common';
+import { Actor, createActor } from 'xstate';
 import { MatchParameters, createGameServerFSM } from './gameServer.fsm';
-import { ClientProxy } from '@nestjs/microservices';
-import { sendBrokerMessage } from 'broker-comms';
 import {
   MatchCompletedMessage,
-  MatchCompletedMessageResponse,
   GameServerDisconnectedMessage,
-  GameServerDisconnectedMessageResponse,
 } from 'core-messages';
 import { ServerMessage } from './models/serverMessage';
 import { ServerCapabilities } from './models/serverCapabilities';
 import { GameServerConfigService } from '../gameServerConfig/gameServerConfig.service';
-import { GameServerCapabilities } from '@/gameServerCapabilities/gameServerCapabilities.interface';
 import { GameServerCapabilitiesService } from '@/gameServerCapabilities/gameServerCapabilities.service';
+import { GameServerMessageSenderService } from './gameServerMessageSender.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { MatchOutcome } from './models/matchOutcome';
 
 @Injectable()
 export class GameServerService {
   private logger = new Logger(GameServerService.name);
-  private gameServerFSMs: Map<string, any> = new Map();
+  private gameServerFSMs: Map<
+    string,
+    Actor<ReturnType<typeof createGameServerFSM>>
+  > = new Map();
 
   constructor(
     private eventEmitter: EventEmitter2,
-    @Inject('BROKER') private readonly broker: ClientProxy,
     private readonly gameServerConfigService: GameServerConfigService,
     private readonly gameServerCapabilitiesService: GameServerCapabilitiesService,
+    private readonly messageSender: GameServerMessageSenderService,
   ) {}
 
   async handleGameServerMessage(serverId: string, data: any) {
@@ -55,7 +55,7 @@ export class GameServerService {
             serverId,
             capabilities,
             (data: { serverId: string; payload: ServerMessage }) =>
-              this.eventEmitter.emit('sendMessageToServer', data),
+              this.messageSender.sendMessageToServer(data),
             this.logger,
           ),
         );
@@ -144,7 +144,7 @@ export class GameServerService {
     return null;
   }
 
-  setOutcome(
+  async setOutcome(
     serverId: string,
     matchId: string,
     outcome: {
@@ -159,6 +159,11 @@ export class GameServerService {
       return;
     }
 
-    fsm.send({ type: 'SEND_OUTCOME', params: { outcome } });
+    await this.messageSender.sendMessageToServer<MatchOutcome>({
+      serverId: serverId,
+      payload: new MatchOutcome(matchId, outcome),
+    });
+
+    fsm.send({ type: 'OUTCOME_SENT' });
   }
 }

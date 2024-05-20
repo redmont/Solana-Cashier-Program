@@ -65,6 +65,32 @@ interface UpdateSeriesRequest {
   level: string;
 }
 
+const ObjectFieldTemplate = (props: ObjectFieldTemplateProps) => {
+  if (props.title === 'Fighter') {
+    return (
+      <Card>
+        <CardBody>
+          <Heading as="h6">{props.title}</Heading>
+          <Box mb={2}>{props.description}</Box>
+          {props.properties.map((element) => (
+            <Box className="property-wrapper">{element.content}</Box>
+          ))}
+        </CardBody>
+      </Card>
+    );
+  }
+
+  return (
+    <>
+      <Heading as="h6">{props.title}</Heading>
+      <Box mb={2}>{props.description}</Box>
+      {props.properties.map((element) => (
+        <Box className="property-wrapper">{element.content}</Box>
+      ))}
+    </>
+  );
+};
+
 const SecondsFieldTemplate = ({
   id,
   label,
@@ -183,32 +209,6 @@ const EditSeries = ({ params }: { params: { codename: string } }) => {
       return axios.put(`${baseUrl}/series/${params.codename}`, data);
     },
   });
-
-  const ObjectFieldTemplate = (props: ObjectFieldTemplateProps) => {
-    if (props.title === 'Fighter') {
-      return (
-        <Card>
-          <CardBody>
-            <Heading as="h6">{props.title}</Heading>
-            <Box mb={2}>{props.description}</Box>
-            {props.properties.map((element) => (
-              <Box className="property-wrapper">{element.content}</Box>
-            ))}
-          </CardBody>
-        </Card>
-      );
-    }
-
-    return (
-      <>
-        <Heading as="h6">{props.title}</Heading>
-        <Box mb={2}>{props.description}</Box>
-        {props.properties.map((element) => (
-          <Box className="property-wrapper">{element.content}</Box>
-        ))}
-      </>
-    );
-  };
 
   const schema: RJSFSchema = useMemo(
     () => ({

@@ -40,7 +40,7 @@ if [ $(docker ps -a -f name=$DYNAMODB_CONTAINER_NAME --format "{{.Names}}") = $D
     fi
 else
     echo "Creating and starting new $DYNAMODB_CONTAINER_NAME..."
-    docker run --name $DYNAMODB_CONTAINER_NAME -p 8765:8765 amazon/dynamodb-local -jar DynamoDBLocal.jar -port 8765 -inMemory -sharedDb &
+    docker run --name $DYNAMODB_CONTAINER_NAME -p 8765:8765 amazon/dynamodb-local -jar DynamoDBLocal.jar -port 8765 -sharedDb &
 fi
 
 # run Redis

@@ -56,5 +56,10 @@ ws.on('message', function incoming(data) {
       console.log("Sending 'match finished' payload");
       ws.send(JSON.stringify(matchFinishedPayload));
     }, 20_000);
+
+    setTimeout(() => {
+      console.log("Sending 'ready' payload");
+      ws.send(JSON.stringify(readyPayload));
+    }, 25_000);
   }
 });
