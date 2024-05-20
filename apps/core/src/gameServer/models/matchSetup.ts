@@ -9,8 +9,8 @@ export class MatchSetup extends ServerMessage {
       id: number;
       model: {
         head: string;
-        torso: string;
-        legs: string;
+        torso?: string;
+        legs?: string;
       };
       displayName: string;
     }[],

@@ -15,8 +15,8 @@ export class SeriesConfigFighter {
   public imagePath: string;
   public model: {
     head: string;
-    torso: string;
-    legs: string;
+    torso?: string;
+    legs?: string;
   };
 }
 

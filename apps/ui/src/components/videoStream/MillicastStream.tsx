@@ -30,16 +30,18 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
       videoRef.current!.src = src;
       videoRef.current!.loop = true;
     } else {
-      const millicastView = new View(streamName, tokenGenerator);
-      millicastView.on('track', (event) => {
-        videoRef.current!.srcObject = event.streams[0];
-        videoRef.current!.loop = false;
-      });
+      const millicastView = new View(
+        streamName,
+        tokenGenerator,
+        videoRef.current!,
+        true,
+      );
 
       const connect = async () => {
         try {
           await millicastView.connect();
         } catch (e) {
+          console.log('Failed to connect', e);
           await millicastView.reconnect();
         }
       };
