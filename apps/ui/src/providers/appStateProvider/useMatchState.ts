@@ -7,6 +7,7 @@ import {
   BetPlacedEvent,
   MatchUpdatedEvent,
   BetsUpdatedEvent,
+  MatchResultEvent,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { useDeferredState } from '@/hooks/useDeferredState';

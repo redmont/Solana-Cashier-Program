@@ -13,16 +13,9 @@ import { BetPlacementWidget } from '@/components/betPlacementWidget';
 import { CurrentBetWidget } from '@/components/currentBetWidget';
 import { BetListWidget } from '@/components/betListWidget';
 import { ActivityStreamWidget } from '@/components/activityStreamWidget';
-<<<<<<< HEAD
 import { ConnectWalletWidget } from '@/components/connectWalletWidget';
 import { MatchResultWidget } from '@/components/matchResultWidget';
-=======
-import { TwitchChat } from 'react-twitch-embed';
-import { trailerUrl } from '@/config';
-import { ConnectWalletWidget } from '@/components/connectWalletWidget';
-import { MatchStatus } from '@/types';
 import { VideoStream } from '@/components/videoStream';
->>>>>>> develop
 
 export default function Home() {
   const { isReady, isConnected } = useEthWallet();

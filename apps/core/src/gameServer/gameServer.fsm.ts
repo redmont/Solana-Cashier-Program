@@ -1,7 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { setup, assign, assertEvent } from 'xstate';
 import { MatchSetup } from './models/matchSetup';
-import { MatchOutcome } from './models/matchOutcome';
 import { ServerMessage } from './models/serverMessage';
 import { ServerCapabilities } from './models/serverCapabilities';
 import { FightType } from './models/fightType';
@@ -12,8 +11,8 @@ export interface MatchParameters {
     id: number;
     model: {
       head: string;
-      torso: string;
-      legs: string;
+      torso?: string;
+      legs?: string;
     };
     displayName: string;
   }[];
@@ -29,15 +28,8 @@ type SendMatchSetupEvent = {
   };
 };
 
-type SendOutcomeEvent = {
-  type: 'SEND_OUTCOME';
-  params: {
-    outcome: {
-      id: number;
-      health: number;
-      finishingMove: string;
-    }[];
-  };
+type OutcomeSentEvent = {
+  type: 'OUTCOME_SENT';
 };
 
 type ReadyEvent = {
@@ -51,28 +43,28 @@ type MatchCompletionEvent = {
 export const createGameServerFSM = (
   serverId: string,
   capabilities: ServerCapabilities,
-  eventEmitter: <T extends ServerMessage>(data: {
+  sendMessage: <T extends ServerMessage>(data: {
     serverId: string;
     payload: T;
-  }) => void,
+  }) => Promise<void>,
   logger: Logger,
 ) => {
   return setup({
     types: {} as {
       events:
         | SendMatchSetupEvent
-        | SendOutcomeEvent
+        | OutcomeSentEvent
         | ReadyEvent
         | MatchCompletionEvent;
     },
     actions: {
-      sendMatchDetails: ({ context, event }) => {
+      sendMatchDetails: async ({ context, event }) => {
         assertEvent(event, 'SEND_MATCH_SETUP');
         const { matchId, matchParameters } = event.params;
 
         logger.verbose("Sending 'matchSetup' message to game server", event);
 
-        eventEmitter<MatchSetup>({
+        await sendMessage<MatchSetup>({
           serverId: context.serverId,
           payload: new MatchSetup(
             matchId,
@@ -81,13 +73,6 @@ export const createGameServerFSM = (
             matchParameters.level,
             matchParameters.fightType,
           ),
-        });
-      },
-      sendOutcomeToServer: ({ context, event }) => {
-        assertEvent(event, 'SEND_OUTCOME');
-        eventEmitter<MatchOutcome>({
-          serverId: context.serverId,
-          payload: new MatchOutcome(context.matchId, event.params.outcome),
         });
       },
     },
@@ -112,18 +97,22 @@ export const createGameServerFSM = (
       },
       waitingToStart: {
         on: {
-          SEND_OUTCOME: {
-            actions: 'sendOutcomeToServer',
+          OUTCOME_SENT: {
             target: 'matchInProgress',
           },
         },
       },
       matchInProgress: {
         on: {
-          MATCH_COMPLETED: 'ready',
+          MATCH_COMPLETED: 'ready', // Temporary, until 'ready' is properly sent by the game server
           READY: 'ready',
         },
       },
+      // waitingForReady: {
+      //   on: {
+      //     READY: 'ready',
+      //   },
+      // },
     },
   });
 };

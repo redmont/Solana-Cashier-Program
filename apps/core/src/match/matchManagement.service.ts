@@ -108,7 +108,6 @@ export class MatchManagementService {
     );
 
     const matchParameters = parseSeriesConfig(seriesConfig);
-    const healthValues = [0.1, 0.2, 0.3];
 
     const doubleKOs = finishingMoves.filter((x) => x.startsWith('KDA_'));
     const doubleKOmove =
@@ -122,8 +121,8 @@ export class MatchManagementService {
       const win = winner === symbol;
 
       if (win) {
-        // pick a random health value
-        health = healthValues[Math.floor(Math.random() * healthValues.length)];
+        // Health is a random, 1 decimal place number, between 0.1 and 0.5 (inclusive)
+        health = Math.floor(Math.random() * 5 + 1) / 10;
       }
 
       return health;
@@ -149,7 +148,7 @@ export class MatchManagementService {
       };
     });
 
-    this.gameServerService.setOutcome(serverId, matchId, outcome);
+    await this.gameServerService.setOutcome(serverId, matchId, outcome);
 
     // Winning fighter is the one with positive health, otherwise null (draw)
     const winningFighter = outcome.find((fighter) => fighter.health > 0);
