@@ -18,21 +18,24 @@ interface VideoStreamProps {
 
 export const VideoStream: FC<VideoStreamProps> = ({ src }) => {
   if (streamUrl.indexOf('millicast.com') > -1) {
-    return <MillicastStream src={streamUrl} />;
+    return <MillicastStream src={src} />;
   }
 
   if (/^[0-9a-f]{32}$/.test(streamUrl)) {
-    return <CloudFlareStream controls src={streamUrl} autoplay={true} />;
+    if (src) {
+      return (
+        <video
+          src={src}
+          autoPlay={true}
+          playsInline={true}
+          width="100%"
+          height="100%"
+        />
+      );
+    } else {
+      return <CloudFlareStream controls src={streamUrl} autoplay={true} />;
+    }
   }
 
-  return (
-    <video
-      src={streamUrl}
-      autoPlay={true}
-      playsInline={true}
-      muted={true}
-      width="100%"
-      height="100%"
-    />
-  );
+  return null;
 };

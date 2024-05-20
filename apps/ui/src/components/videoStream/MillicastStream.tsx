@@ -28,8 +28,8 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
     if (src) {
       videoRef.current!.srcObject = null;
       videoRef.current!.src = src;
-      videoRef.current!.loop = true;
     } else {
+      videoRef.current!.src = '';
       const millicastView = new View(
         streamName,
         tokenGenerator,
