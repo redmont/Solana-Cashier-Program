@@ -4,8 +4,10 @@ import { Key } from '@/interfaces/key';
 import { createRosterFSM } from './roster.fsm';
 import { Roster } from './roster.interface';
 import { SeriesService } from '@/series/series.service';
-import { createActor } from 'xstate';
+import { Actor, createActor } from 'xstate';
 import { OnEvent } from '@nestjs/event-emitter';
+import { QueryStoreService } from 'query-store';
+import dayjs from '@/dayjs';
 
 @Injectable()
 export class RosterService {
@@ -15,11 +17,12 @@ export class RosterService {
     pk: 'roster',
     sk: 'roster',
   };
-  fsm: any;
+  fsm: Actor<ReturnType<typeof createRosterFSM>>;
 
   constructor(
     @InjectModel('roster') private readonly model: Model<Roster, Key>,
     private readonly seriesService: SeriesService,
+    private readonly queryStore: QueryStoreService,
   ) {}
 
   async initialise() {
@@ -43,7 +46,7 @@ export class RosterService {
     this.fsm.send({ type: 'run' });
   }
 
-  async getRoster() {
+  async getRoster(): Promise<Omit<Roster, 'pk' | 'sk'> | null> {
     const roster = await this.model.get(this.key);
 
     if (!roster) {
@@ -55,11 +58,29 @@ export class RosterService {
     return rest;
   }
 
-  async updateRoster(scheduleType: string, series: string[]) {
-    await this.model.update(this.key, {
-      scheduleType,
-      series: series.map((codeName) => ({ codeName })),
-    });
+  async updateRoster(
+    scheduleType?: string,
+    schedule?: string[],
+    series?: string[],
+    timedSeries?: { codeName: string; startTime: string }[],
+  ) {
+    const update = {};
+    if (scheduleType) {
+      update['scheduleType'] = scheduleType;
+    }
+    if (schedule) {
+      update['schedule'] = schedule.map((codeName) => ({ codeName }));
+    }
+    if (series) {
+      update['series'] = series.map((codeName) => ({ codeName }));
+    }
+    if (timedSeries) {
+      update['timedSeries'] = timedSeries;
+    }
+
+    if (Object.keys(update).length > 0) {
+      await this.model.update(this.key, update);
+    }
 
     this.fsm.send({ type: 'run' });
   }
@@ -71,7 +92,8 @@ export class RosterService {
         ...this.key,
         scheduleType: 'linear',
         series: [],
-        nextSeriesIndex: 0,
+        schedule: [],
+        timedSeries: [],
       });
 
       return null;
@@ -81,25 +103,62 @@ export class RosterService {
       return null;
     }
 
-    let nextSeriesCodename = null;
+    const scheduleLength = 5;
 
-    if (roster.series.length > roster.nextSeriesIndex) {
-      nextSeriesCodename = roster.series[roster.nextSeriesIndex].codeName;
-
-      if (roster.scheduleType === 'linear') {
-        if (roster.nextSeriesIndex === roster.series.length - 1) {
-          roster.nextSeriesIndex = 0;
-        } else {
-          roster.nextSeriesIndex += 1;
-        }
-      } else if (roster.scheduleType === 'random') {
-        const randomIndex = Math.floor(Math.random() * roster.series.length);
-        roster.nextSeriesIndex = randomIndex;
+    if (roster.timedSeries?.length > 0) {
+      // Order timed series by startTime, using linguistic comparison as the dates are in ISO 8601 format
+      roster.timedSeries.sort((a, b) => a.startTime.localeCompare(b.startTime));
+      const nextTimedSeries = roster.timedSeries[0];
+      if (dayjs(nextTimedSeries.startTime).diff(dayjs.utc(), 'seconds') <= 90) {
+        // This should be the next series to run
+        const next = roster.timedSeries.shift();
+        roster.schedule.unshift(next);
       }
-      await this.model.update(roster);
     }
 
-    return nextSeriesCodename;
+    if (roster.schedule.length < scheduleLength) {
+      if (roster.scheduleType === 'linear') {
+        if (roster.schedule.length === 0) {
+          // Populate the schedule with scheduleLength series, repeated if needed
+          for (let i = 0; i < scheduleLength; i++) {
+            const seriesIndex = i % roster.series.length;
+            roster.schedule.push(roster.series[seriesIndex]);
+          }
+        } else {
+          // Get last series in the schedule
+          const lastSeries = roster.schedule[roster.schedule.length - 1];
+
+          // Get the index of the last series in the roster
+          const lastSeriesIndex = roster.series.findIndex(
+            (series) => series.codeName === lastSeries.codeName,
+          );
+
+          // Populate up to scheduleLength series in the schedule,
+          // starting from the next series in the roster
+          const numberOfSeries = scheduleLength - roster.schedule.length;
+          for (let i = 1; i <= numberOfSeries; i++) {
+            const nextSeriesIndex =
+              (lastSeriesIndex + i) % roster.series.length;
+            roster.schedule.push(roster.series[nextSeriesIndex]);
+          }
+        }
+      }
+
+      if (roster.scheduleType === 'random') {
+        const numberOfSeries = scheduleLength - roster.schedule.length;
+        for (let i = 1; i <= numberOfSeries; i++) {
+          const randomIndex = Math.floor(Math.random() * roster.series.length);
+          roster.schedule.push(roster.series[randomIndex]);
+        }
+      }
+    }
+
+    const nextSeries = roster.schedule.shift();
+    await this.model.update(roster);
+
+    await this.queryStore.updateRoster(roster.schedule);
+
+    return nextSeries.codeName;
   }
 
   async runSeries(codeName: string) {
@@ -113,12 +172,8 @@ export class RosterService {
       return;
     }
 
-    const series = roster.series.find((series) => series.codeName === codeName);
-    if (!series) {
-      return;
-    }
+    roster.schedule.unshift({ codeName });
 
-    roster.nextSeriesIndex = roster.series.indexOf(series);
     await this.model.update(roster);
   }
 

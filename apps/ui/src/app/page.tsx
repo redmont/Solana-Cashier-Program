@@ -13,40 +13,54 @@ import { BetPlacementWidget } from '@/components/betPlacementWidget';
 import { CurrentBetWidget } from '@/components/currentBetWidget';
 import { BetListWidget } from '@/components/betListWidget';
 import { ActivityStreamWidget } from '@/components/activityStreamWidget';
+<<<<<<< HEAD
 import { ConnectWalletWidget } from '@/components/connectWalletWidget';
 import { MatchResultWidget } from '@/components/matchResultWidget';
+=======
+import { TwitchChat } from 'react-twitch-embed';
+import { trailerUrl } from '@/config';
+import { ConnectWalletWidget } from '@/components/connectWalletWidget';
+import { MatchStatus } from '@/types';
+import { VideoStream } from '@/components/videoStream';
+>>>>>>> develop
 
 export default function Home() {
   const { isReady, isConnected } = useEthWallet();
 
   const { match } = useAppState();
+  const { fighters = [] } = match ?? {};
 
-  const isBetPlaced =
-    !!match && match.bets.doge.stake + match.bets.pepe.stake > 0;
+  const isBetPlaced = !!(
+    match &&
+    match?.fighters.reduce((result, { codeName }) => {
+      return result + (match.bets[codeName]?.stake ?? 0);
+    }, 0)
+  );
 
   const isMatchFinished = true; // match?.status === MatchStatus.Finished;
 
   return (
     <main className="main-page">
       <div className="stream-container">
-        {!isMatchFinished && (
-          <iframe
-            src={streamUrl}
-            allowFullScreen
-            width="100%"
-            height="100%"
-          ></iframe>
+        {match?.status === MatchStatus.InProgress && (
+          <>
+            <div className="fighter-image">
+              <img src={fighters[0]?.imageUrl} />
+            </div>
+
+            <div className="fighter-image">
+              <img src={fighters[1]?.imageUrl} />
+            </div>
+          </>
         )}
 
-        {isMatchFinished && (
-          <video
-            className="trailer-video"
-            autoPlay
-            muted
-            playsInline
-            src={trailerUrl}
-          />
-        )}
+        <VideoStream
+          src={
+            match?.status !== MatchStatus.Finished
+              ? undefined
+              : match?.preMatchVideoUrl ?? trailerUrl
+          }
+        />
 
         <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
       </div>

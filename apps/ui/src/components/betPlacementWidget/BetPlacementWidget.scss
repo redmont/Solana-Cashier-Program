@@ -53,6 +53,8 @@
     gap: 1rem;
     flex-grow: 1;
     cursor: pointer;
+    text-transform: uppercase;
+    height: 2.5rem;
 
     &:last-child {
       justify-content: flex-end;
@@ -62,12 +64,28 @@
       border-color: $primary500;
       background-color: rgba(11, 209, 138, 0.1);
     }
+
+    img {
+      height: 100%;
+    }
   }
 
   .points-slider-labels {
     display: flex;
     justify-content: space-between;
     margin-bottom: 0.5rem;
+  }
+
+  .points-slider-box {
+    position: relative;
+  }
+
+  .points-slider-clickarea {
+    position: absolute;
+    left: -0.5rem;
+    right: -0.5rem;
+    bottom: -0.5rem;
+    height: 1.5rem;
   }
 
   .points-input-group {

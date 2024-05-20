@@ -2,11 +2,12 @@
   "name": "brawlers",
   "private": true,
   "scripts": {
-    "build": "turbo build",
+    "build": "turbo build --cache-dir=.turbo",
     "start": "turbo start",
-    "dev": "turbo dev",
+    "dev": "turbo dev --concurrency 15",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "publish-packages": "turbo run build && changeset version && changeset publish"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
@@ -15,8 +16,11 @@
     "turbo": "latest",
     "ws": "^8.16.0"
   },
-  "packageManager": "pnpm@9.1.0",
+  "packageManager": "pnpm@9.1.1",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@changesets/cli": "^2.27.1"
   }
 }

@@ -1,6 +1,11 @@
 import { Message } from './message';
 
-export class PlaceBetMessage extends Message<{ success: boolean }> {
+export interface PlaceBetMessageResponse {
+  success: boolean;
+  message: string;
+}
+
+export class PlaceBetMessage extends Message<PlaceBetMessageResponse> {
   static messageType = 'placeBet';
   constructor(
     public readonly series: string,

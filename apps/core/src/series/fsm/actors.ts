@@ -1,9 +1,9 @@
 import { fromPromise } from 'xstate';
 import { v4 as uuid } from 'uuid';
 import dayjs from '@/dayjs';
-import { FSMDependencies } from './fsm-dependencies';
-import { SeriesConfig } from '../series-config.model';
-import { SeriesContext } from './series-context';
+import { FSMDependencies } from './fsmDependencies';
+import { SeriesConfig } from '../seriesConfig.model';
+import { SeriesContext } from './seriesContext';
 
 export const getActors = ({
   logger,
@@ -92,10 +92,21 @@ export const getActors = ({
         codeName: string;
       };
       config: SeriesConfig;
+      startTime: string;
     }
-  >(async ({ input: { codeName, matchId, winningFighter, config } }) => {
-    await distributeWinnings(codeName, matchId, winningFighter, config);
-  }),
+  >(
+    async ({
+      input: { codeName, matchId, winningFighter, config, startTime },
+    }) => {
+      await distributeWinnings(
+        codeName,
+        matchId,
+        winningFighter,
+        config,
+        startTime,
+      );
+    },
+  ),
   resetBets: fromPromise<void, string>(async ({ input }) => {
     await resetBets(input);
   }),

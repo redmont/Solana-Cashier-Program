@@ -7,14 +7,15 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RedisCacheModule } from 'global-cache';
 import { QueryStoreModule } from 'query-store';
 import configuration from './configuration';
-import { GameServerModule } from './game-server/game-server.module';
+import { GameServerModule } from './gameServer/gameServer.module';
 import { UsersModule } from './users/users.module';
-import { GatewayManagerModule } from './gateway-manager/gateway-manager.module';
+import { GatewayManagerModule } from './gatewayManager/gatewayManager.module';
 import { AdminModule } from './admin/admin.module';
-import { ActivityStreamModule } from './activity-stream/activity-stream.module';
+import { ActivityStreamModule } from './activityStream/activityStream.module';
 import { RosterModule } from './roster/roster.module';
 import { SeriesService } from './series/series.service';
 import { RosterService } from './roster/roster.service';
+import { MediaLibraryModule } from './mediaLibrary/mediaLibrary.module';
 
 @Module({
   imports: [
@@ -46,6 +47,9 @@ import { RosterService } from './roster/roster.service';
     QueryStoreModule.registerAsync({
       useFactory: (configService: ConfigService) => {
         return {
+          local:  configService.get<boolean>('isDynamoDbLocal')
+          ? 'http://localhost:8765'
+          : false,
           tableName: configService.get<string>('queryStoreTableName'),
           isDynamoDbLocal: configService.get<boolean>('isDynamoDbLocal'),
         };
@@ -58,15 +62,12 @@ import { RosterService } from './roster/roster.service';
     GameServerModule,
     {
       global: true,
-      module: QueryStoreModule,
-    },
-    {
-      global: true,
       module: ActivityStreamModule,
     },
     UsersModule,
     AdminModule,
     RosterModule,
+    MediaLibraryModule,
   ],
 })
 export class AppModule implements OnModuleInit {

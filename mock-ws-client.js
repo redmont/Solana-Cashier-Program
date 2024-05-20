@@ -43,7 +43,7 @@ ws.on('open', function open() {
 ws.on('message', function incoming(data) {
   const msg = JSON.parse(data);
 
-  console.log('Got message', msg);
+  console.log('Got message', data.toString());
 
   if (msg.type !== 'ok') {
     const { messageId } = msg;
@@ -55,6 +55,6 @@ ws.on('message', function incoming(data) {
     setTimeout(() => {
       console.log("Sending 'match finished' payload");
       ws.send(JSON.stringify(matchFinishedPayload));
-    }, 30_000);
+    }, 20_000);
   }
 });

@@ -1,11 +1,18 @@
 import { Message } from './message';
 
-interface GetMatchStatusMessageResponse {
+export interface GetMatchStatusMessageResponse {
   success: boolean;
   matchId: string;
   series: string;
+  fighters: {
+    displayName: string;
+    codeName: string;
+    ticker: string;
+    imageUrl: string;
+  }[];
   bets: any[];
   state: string;
+  preMatchVideoUrl: string;
   startTime?: string;
   winner?: string;
 }

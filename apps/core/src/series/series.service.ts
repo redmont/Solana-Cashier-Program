@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Actor, createActor } from 'xstate';
 import { ClientProxy } from '@nestjs/microservices';
 import { sendBrokerMessage } from 'broker-comms';
@@ -6,15 +6,17 @@ import { DebitMessage, DebitMessageResponse } from 'cashier-messages';
 import { QueryStoreService } from 'query-store';
 import dayjs from '@/dayjs';
 import { createSeriesFSM, SeriesEvent } from './fsm/series.fsm';
-import { SeriesPersistenceService } from './series-persistence.service';
+import { SeriesPersistenceService } from './seriesPersistence.service';
 import { MatchManagementService } from '../match/matchManagement.service';
 import { MatchPersistenceService } from '../match/matchPersistence.service';
 
 import { MatchBettingService } from '../match/matchBetting.service';
-import { GatewayManagerService } from '../gateway-manager/gateway-manager.service';
+import { GatewayManagerService } from '../gatewayManager/gatewayManager.service';
 import { PromiseQueue } from '../promiseQueue';
-import { ActivityStreamService } from '@/activity-stream/activity-stream.service';
+import { ActivityStreamService } from '@/activityStream/activityStream.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Series } from './series.interface';
+import { FightType } from './seriesConfig.model';
 
 @Injectable()
 export class SeriesService {
@@ -104,8 +106,11 @@ export class SeriesService {
           return {
             requiredCapabilities: {},
             betPlacementTime: x.betPlacementTime,
+            preMatchDelay: x.preMatchDelay,
+            preMatchVideoPath: x.preMatchVideoPath,
             fighters: x.fighters,
             level: x.level,
+            fightType: x.fightType as FightType,
           };
         },
         setCurrentMatchId: (codeName, matchId) => {
@@ -128,12 +133,19 @@ export class SeriesService {
             samplingStartTime,
           );
         },
-        distributeWinnings: async (codeName, matchId, fighter, config) => {
+        distributeWinnings: async (
+          codeName,
+          matchId,
+          fighter,
+          config,
+          startTime,
+        ) => {
           await this.matchBettingService.distributeWinnings(
             codeName,
             matchId,
             fighter,
             config,
+            startTime,
           );
         },
         resetBets: async (codeName) => {
@@ -143,25 +155,30 @@ export class SeriesService {
           this.gatewayManagerService.handleBetsUpdated(codeName, []);
         },
         onStateChange: async (state, context) => {
+          const fighters = context.config.fighters.map(
+            ({ codeName, displayName, ticker, imagePath }) => ({
+              codeName,
+              displayName,
+              ticker,
+              imagePath,
+            }),
+          );
+
           await this.seriesPersistenceService.savePublicState(
             codeName,
             context.matchId,
-            context.config.fighters.map(
-              ({ codeName, displayName, ticker, thumbnailUrl }) => ({
-                codeName,
-                displayName,
-                ticker,
-                thumbnailUrl,
-              }),
-            ),
+            fighters,
             state,
+            context.config.preMatchVideoPath,
             context.startTime,
           );
 
           this.gatewayManagerService.handleMatchUpdated(
             codeName,
             context.matchId,
+            fighters,
             state,
+            context.config.preMatchVideoPath,
             context.startTime,
             context.winningFighter?.codeName,
           );
@@ -192,11 +209,47 @@ export class SeriesService {
     codeName: string,
     displayName: string,
     betPlacementTime: number,
+    preMatchVideoPath: string,
+    preMatchDelay: number,
     fighters: {
       codeName: string;
       displayName: string;
       ticker: string;
-      thumbnailUrl: string;
+      imagePath: string;
+      model: {
+        head: string;
+        torso: string;
+        legs: string;
+      };
+    }[],
+    level: string,
+    fightType: string,
+  ) {
+    await this.seriesPersistenceService.create(
+      codeName,
+      displayName,
+      betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
+      fighters,
+      level,
+      fightType,
+    );
+
+    this.initSeries(codeName, displayName);
+  }
+
+  async updateSeries(
+    codeName: string,
+    displayName: string,
+    betPlacementTime: number,
+    preMatchVideoPath: string,
+    preMatchDelay: number,
+    fighters: {
+      codeName: string;
+      displayName: string;
+      ticker: string;
+      imagePath: string;
       model: {
         head: string;
         torso: string;
@@ -205,15 +258,29 @@ export class SeriesService {
     }[],
     level: string,
   ) {
-    await this.seriesPersistenceService.create(
+    await this.seriesPersistenceService.update(
       codeName,
       displayName,
       betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
       fighters,
       level,
     );
+  }
 
-    this.initSeries(codeName, displayName);
+  async getSeries(
+    codeName: string,
+  ): Promise<Omit<Series, 'sk'> & { codeName: string }> {
+    const series = await this.seriesPersistenceService.getOne(codeName);
+
+    if (!series) {
+      return null;
+    }
+
+    const { sk, ...rest } = series;
+
+    return { ...rest, codeName: sk };
   }
 
   sendEvent(codeName: string, event: SeriesEvent) {
@@ -238,28 +305,13 @@ export class SeriesService {
     return series;
   }
 
-  getSeries(codeName: string) {
-    const fsmInstance = this.fsmInstances.get(codeName);
-    if (!fsmInstance) {
-      throw new Error(`Series with codeName ${codeName} does not exist`);
-    }
-
-    const snapshot = fsmInstance.fsm.getSnapshot();
-    const { matchId } = snapshot.context;
-
-    return {
-      seriesId: codeName,
-      matchId,
-    };
-  }
-
   async placeBet(
     codeName: string,
     userId: string,
     walletAddress: string,
     amount: number,
     fighter: string,
-  ) {
+  ): Promise<{ success: boolean; message?: string }> {
     const fsmInstance = this.fsmInstances.get(codeName);
     if (!fsmInstance) {
       throw new Error(`Series with code name '${codeName}' does not exist`);
@@ -267,19 +319,21 @@ export class SeriesService {
 
     const currentState = fsmInstance.fsm.getSnapshot();
 
-    if (
+    const bettingOpenState =
       typeof currentState.value === 'object' &&
-      !currentState.value.runMatch.bettingOpen
-    ) {
-      throw new Error(
-        `Series with code name '${codeName}' is not in a state to place bets`,
-      );
+      currentState.value.runMatch.bettingOpen;
+
+    if (!bettingOpenState) {
+      return { success: false, message: 'Betting is not open' };
     }
 
     const { matchId, config } = currentState.context;
 
     if (!config.fighters.find((x) => x.codeName === fighter)) {
-      throw new Error(`Fighter '${fighter}' is not in the match`);
+      return {
+        success: false,
+        message: `Fighter '${fighter}' is not in the match`,
+      };
     }
 
     const debitResult = await sendBrokerMessage<
@@ -287,7 +341,10 @@ export class SeriesService {
       DebitMessageResponse
     >(this.broker, new DebitMessage(userId, amount));
     if (!debitResult.success) {
-      throw new Error('Failed to debit user');
+      return {
+        success: false,
+        message: 'Failed to debit user',
+      };
     }
 
     await this.matchPersistenceService.createBet(
@@ -325,7 +382,7 @@ export class SeriesService {
       userId,
     );
 
-    return true;
+    return { success: true };
   }
 
   async matchCompleted(matchId: string) {
@@ -337,17 +394,25 @@ export class SeriesService {
       }
     });
 
+    if (!codeName) {
+      this.logger.warn(
+        `Match '${matchId}' completed, but no associated series found. Not doing anything.`,
+      );
+      return;
+    }
+
     const fsmInstance = this.fsmInstances.get(codeName);
     if (!fsmInstance) {
-      throw new Error(`Series with codeName ${codeName} does not exist`);
+      this.logger.warn(
+        `Match '${matchId}' of series '${codeName}' completed, but series FSM not found. Not doing anything.`,
+      );
+      return;
     }
 
     fsmInstance.fsm.send({ type: 'RUN_MATCH.FINISH_MATCH' });
-
-    return { success: true };
   }
 
-  async gameServerDisconnected(matchId: string) {
-    this.matchCompleted(matchId);
+  gameServerDisconnected(matchId: string) {
+    return this.matchCompleted(matchId);
   }
 }

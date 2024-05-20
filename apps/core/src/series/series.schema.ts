@@ -11,6 +11,8 @@ export const SeriesSchema = new Schema({
   },
   displayName: String,
   betPlacementTime: Number,
+  preMatchVideoPath: String,
+  preMatchDelay: Number,
   fighters: {
     type: Array,
     schema: [
@@ -20,13 +22,13 @@ export const SeriesSchema = new Schema({
           codeName: { type: String, required: true },
           displayName: { type: String, required: true },
           ticker: { type: String, required: true },
-          thumbnailUrl: { type: String, required: true },
+          imagePath: { type: String, required: true },
           model: {
             type: Object,
             schema: {
               head: { type: String, required: true },
-              torso: { type: String, required: true },
-              legs: { type: String, required: true },
+              torso: { type: String, required: false },
+              legs: { type: String, required: false },
             },
           },
         },
@@ -34,6 +36,7 @@ export const SeriesSchema = new Schema({
     ],
   },
   level: String,
+  fightType: String,
   state: String,
   context: Object,
 });

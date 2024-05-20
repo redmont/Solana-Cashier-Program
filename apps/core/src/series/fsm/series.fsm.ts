@@ -1,8 +1,8 @@
 import { setup, assign } from 'xstate';
 import dayjs from '@/dayjs';
 import { getActors } from './actors';
-import { FSMDependencies } from './fsm-dependencies';
-import { SeriesContext } from './series-context';
+import { FSMDependencies } from './fsmDependencies';
+import { SeriesContext } from './seriesContext';
 
 export type SeriesEvent =
   | 'RUN'
@@ -29,6 +29,9 @@ export function createSeriesFSM(
       BETTING_OPEN_TIME: ({ context }) => {
         return context.config.betPlacementTime * 1000;
       },
+      PRE_MATCH_DELAY: ({ context }) => {
+        return context.config.preMatchDelay * 1000;
+      },
     },
   }).createMachine({
     id: 'series',
@@ -39,8 +42,11 @@ export function createSeriesFSM(
       config: {
         requiredCapabilities: {},
         betPlacementTime: 30,
+        preMatchVideoPath: '',
+        preMatchDelay: 0,
         fighters: [],
         level: '',
+        fightType: 'MMA',
       },
       matchId: null,
       serverId: null,
@@ -60,11 +66,16 @@ export function createSeriesFSM(
           src: 'getSeriesConfig',
           input: ({ context }) => context.codeName,
           onDone: {
-            target: 'runMatch',
+            target: 'preMatchDelay',
             actions: assign({
               config: ({ event }) => event.output,
             }),
           },
+        },
+      },
+      preMatchDelay: {
+        after: {
+          PRE_MATCH_DELAY: 'runMatch',
         },
       },
       runMatch: {
@@ -252,12 +263,19 @@ export function createSeriesFSM(
                 invoke: {
                   src: 'distributeWinnings',
                   input: ({
-                    context: { codeName, matchId, winningFighter, config },
+                    context: {
+                      codeName,
+                      matchId,
+                      winningFighter,
+                      config,
+                      startTime,
+                    },
                   }) => ({
                     codeName,
                     matchId,
                     winningFighter,
                     config,
+                    startTime,
                   }),
                   onDone: 'done',
                 },

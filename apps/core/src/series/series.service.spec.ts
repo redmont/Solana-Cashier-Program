@@ -1,4 +1,4 @@
-import { SeriesPersistenceService } from './series-persistence.service';
+import { SeriesPersistenceService } from './seriesPersistence.service';
 import { SeriesService } from './series.service';
 
 describe('SeriesService', () => {

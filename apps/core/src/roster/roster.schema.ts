@@ -21,5 +21,27 @@ export const RosterSchema = new Schema({
       },
     ],
   },
-  nextSeriesIndex: Number,
+  schedule: {
+    type: Array,
+    schema: [
+      {
+        type: Object,
+        schema: {
+          codeName: { type: String, required: true },
+        },
+      },
+    ],
+  },
+  timedSeries: {
+    type: Array,
+    schema: [
+      {
+        type: Object,
+        schema: {
+          codeName: { type: String, required: true },
+          startTime: { type: String, required: true },
+        },
+      },
+    ],
+  },
 });

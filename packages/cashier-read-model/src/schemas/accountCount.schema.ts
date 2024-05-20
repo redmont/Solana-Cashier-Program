@@ -1,6 +1,6 @@
 import { Schema } from 'dynamoose';
 
-export const AccountCountSchema = new Schema({
+const AccountCountSchema = new Schema({
   pk: {
     type: String,
     hashKey: true,
@@ -11,3 +11,5 @@ export const AccountCountSchema = new Schema({
   },
   count: Number,
 });
+
+export { AccountCountSchema };

@@ -1,5 +1,6 @@
 {
   "name": "global-cache",
+  "private": true,
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc"

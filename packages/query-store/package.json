@@ -1,17 +1,21 @@
 {
   "name": "query-store",
-  "main": "dist/index.js",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc"
-  },
-  "peerDependencies": {
-    "@nestjs/common": "^10.3.7"
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "pnpm run build -- --watch"
   },
   "dependencies": {
-    "dynamoose": "^4.0.0",
+    "@nestjs/common": "^10.3.7",
+    "dynamoose": "^4.0.1",
     "nestjs-dynamoose": "^0.5.8"
   },
   "devDependencies": {
+    "@types/node": "^20.12.12",
+    "tsup": "^8.0.2",
     "typescript": "^5.4.5"
   }
 }

@@ -5,5 +5,11 @@ export interface Roster extends Key {
   series: {
     codeName: string;
   }[];
-  nextSeriesIndex: number;
+  schedule: {
+    codeName: string;
+  }[];
+  timedSeries: {
+    codeName: string;
+    startTime: string;
+  }[];
 }

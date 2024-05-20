@@ -3,9 +3,21 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ChakraProvider } from '@chakra-ui/react';
 import axios, { ResponseType } from 'axios';
+import { DynamicWagmiConnector } from '@dynamic-labs/wagmi-connector';
+import { createConfig, WagmiProvider } from 'wagmi';
+import { http } from 'viem';
+import { mainnet } from 'viem/chains';
 import theme from '@/theme';
+import { baseUrl } from '@/config';
+import DynamicWrapper from '@/components/DynamicWrapper';
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+const config = createConfig({
+  chains: [mainnet],
+  multiInjectedProviderDiscovery: false,
+  transports: {
+    [mainnet.id]: http(),
+  },
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,8 +42,14 @@ const queryClient = new QueryClient({
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ChakraProvider theme={theme}>{children}</ChakraProvider>
-    </QueryClientProvider>
+    <DynamicWrapper>
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>
+          <DynamicWagmiConnector>
+            <ChakraProvider theme={theme}>{children}</ChakraProvider>
+          </DynamicWagmiConnector>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </DynamicWrapper>
   );
 }

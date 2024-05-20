@@ -10,4 +10,6 @@ export default () => ({
   gameServerWsPort: parseInt(process.env.GAME_SERVER_WS_PORT, 10),
   priceDataTableName: process.env.PRICE_DATA_TABLE_NAME,
   useMockMatchOutcomeService: process.env.USE_MOCK_MATCH_OUTCOME_SERVICE,
+  mediaLibraryBucketName: process.env.MEDIA_LIBRARY_BUCKET_NAME,
+  mediaUri: process.env.MEDIA_URI,
 });

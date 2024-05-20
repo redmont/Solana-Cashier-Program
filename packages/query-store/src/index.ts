@@ -1,2 +1,2 @@
-export { QueryStoreModule } from './query-store.module';
-export { QueryStoreService } from './query-store.service';
+export { QueryStoreModule } from './queryStore.module';
+export { QueryStoreService } from './queryStore.service';

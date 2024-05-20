@@ -1,3 +1,5 @@
+'use client';
+
 import {
   FC,
   PropsWithChildren,
@@ -13,8 +15,7 @@ import { jwtDecode } from 'jwt-decode';
 
 import { serverUrl } from '@/config';
 import { ManualPromise } from '@/utils';
-
-import { useEthWallet } from './EthWalletProvider';
+import { useEthWallet } from '@/hooks';
 
 const AUTH_TOKEN_STORAGE_KEY = 'authToken';
 
@@ -48,8 +49,12 @@ interface GetTokenResponse {
   };
 }
 
+export function getCurrentAuthToken() {
+  return localStorage?.getItem(AUTH_TOKEN_STORAGE_KEY);
+}
+
 export const AuthProvider: FC<PropsWithChildren> = (props) => {
-  const { address: ethAddress, isReady: isEthWalletReady } = useEthWallet();
+  const { address: walletAddress, isReady: isWalletReady } = useEthWallet();
 
   const { signMessageAsync } = useSignMessage();
   const [authToken, setAuthToken] = useState<string | null>(null);
@@ -59,9 +64,9 @@ export const AuthProvider: FC<PropsWithChildren> = (props) => {
 
     return {
       setAuthReady: (token: string | null) => promise.resolve(token),
-      waitAuthReady: () => (ethAddress ? promise : Promise.resolve(null)),
+      waitAuthReady: () => (walletAddress ? promise : Promise.resolve(null)),
     };
-  }, [ethAddress]);
+  }, [walletAddress]);
 
   const verifyToken = useCallback((token: string) => {
     if (!token) return false;
@@ -98,7 +103,7 @@ export const AuthProvider: FC<PropsWithChildren> = (props) => {
 
       try {
         signedMessage = await signMessageAsync({ message });
-      } catch {
+      } catch (err) {
         return null;
       }
 
@@ -137,8 +142,8 @@ export const AuthProvider: FC<PropsWithChildren> = (props) => {
       promise = new ManualPromise<string | null>();
 
       try {
-        if (ethAddress) {
-          token = await getToken(ethAddress);
+        if (walletAddress) {
+          token = await getToken(walletAddress);
         } else return null;
 
         if (token === null) {
@@ -149,11 +154,13 @@ export const AuthProvider: FC<PropsWithChildren> = (props) => {
         localStorage?.setItem(AUTH_TOKEN_STORAGE_KEY, token);
 
         return promise.resolve(token);
-      } catch {}
+      } catch (err) {
+        console.error(err);
+      }
 
       return promise.resolve(null);
     };
-  }, [ethAddress, getToken]);
+  }, [walletAddress, getToken]);
 
   const signOut = useCallback(() => {
     localStorage?.removeItem(AUTH_TOKEN_STORAGE_KEY);
@@ -161,14 +168,14 @@ export const AuthProvider: FC<PropsWithChildren> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (isEthWalletReady && !ethAddress) {
+    if (isWalletReady && !walletAddress) {
       signOut();
       setAuthReady(null);
 
       return;
     }
 
-    const savedToken = localStorage?.getItem(AUTH_TOKEN_STORAGE_KEY);
+    const savedToken = getCurrentAuthToken();
     const isSavedTokenValid = verifyToken(savedToken ?? '');
 
     if (isSavedTokenValid) {
@@ -192,8 +199,8 @@ export const AuthProvider: FC<PropsWithChildren> = (props) => {
       })
       .catch((err) => console.error(err));
   }, [
-    ethAddress,
-    isEthWalletReady,
+    walletAddress,
+    isWalletReady,
     authenticate,
     verifyToken,
     signOut,

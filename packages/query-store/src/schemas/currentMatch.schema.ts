@@ -15,6 +15,10 @@ export const CurrentMatchSchema = new Schema({
     type: String,
     required: false,
   },
+  preMatchVideoPath: {
+    type: String,
+    required: false,
+  },
   startTime: {
     type: String,
     required: false,
@@ -32,7 +36,7 @@ export const CurrentMatchSchema = new Schema({
           codeName: { type: String, required: true },
           displayName: { type: String, required: true },
           ticker: { type: String, required: true },
-          thumbnailUrl: { type: String, required: true },
+          imagePath: { type: String, required: true },
         },
       },
     ],

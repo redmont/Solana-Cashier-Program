@@ -4,16 +4,17 @@ import { ConfigService } from '@nestjs/config';
 import { GlobalClientsModule } from '../globalClientsModule';
 import { MatchPersistenceService } from './matchPersistence.service';
 import { MatchSchema } from './schemas/match.schema';
-import { GameServerModule } from 'src/game-server/game-server.module';
+import { GameServerModule } from '@/gameServer/gameServer.module';
 import { BetSchema } from './schemas/bet.schema';
 import { MatchManagementService } from './matchManagement.service';
 import { MatchBettingService } from './matchBetting.service';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { MockMatchOutcomeService } from './match-outcome/mock-match-outcome.service';
-import { MatchOutcomeService } from './match-outcome/match-outcome.service';
-import { AbstractMatchOutcomeService } from './match-outcome/abstract-match-outcome-service';
+import { MockMatchOutcomeService } from './matchOutcome/mockMatchOutcome.service';
+import { MatchOutcomeService } from './matchOutcome/matchOutcome.service';
+import { AbstractMatchOutcomeService } from './matchOutcome/abstractMatchOutcomeService';
 import { UserMatchResultSchema } from './schemas/userMatchResult.schema';
-import { GatewayManagerModule } from '@/gateway-manager/gateway-manager.module';
+import { GatewayManagerModule } from '@/gatewayManager/gatewayManager.module';
+import { UserMatchSchema } from './schemas/userMatch.schema';
 
 @Module({
   imports: [
@@ -24,6 +25,19 @@ import { GatewayManagerModule } from '@/gateway-manager/gateway-manager.module';
         useFactory: (_, configService: ConfigService) => {
           return {
             schema: MatchSchema,
+            options: {
+              tableName: configService.get<string>('tableName'),
+              create: configService.get<boolean>('isDynamoDbLocal'),
+            },
+          };
+        },
+        inject: [ConfigService],
+      },
+      {
+        name: 'userMatch',
+        useFactory: (_, configService: ConfigService) => {
+          return {
+            schema: UserMatchSchema,
             options: {
               tableName: configService.get<string>('tableName'),
               create: configService.get<boolean>('isDynamoDbLocal'),

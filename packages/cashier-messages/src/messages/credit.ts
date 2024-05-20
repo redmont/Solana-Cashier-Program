@@ -1,5 +1,5 @@
-import { BrokerMessage, BaseResponse } from "broker-comms";
-import { prefix } from "../constants";
+import { BrokerMessage, BaseResponse } from 'broker-comms';
+import { prefix } from '../constants';
 
 export type CreditMessageResponse = BaseResponse;
 
@@ -9,7 +9,7 @@ export class CreditMessage extends BrokerMessage<{
   static messageType = `${prefix}.credit`;
   constructor(
     public readonly accountId: string,
-    public readonly amount: number
+    public readonly amount: number,
   ) {
     super();
   }

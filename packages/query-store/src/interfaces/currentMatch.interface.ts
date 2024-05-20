@@ -1,15 +1,16 @@
 import { Key } from './key.interface';
 
-export interface CurrentMatchModel extends Key {
+export interface CurrentMatch extends Key {
   matchId: string;
   seriesCodeName: string;
   fighters: {
     codeName: string;
     displayName: string;
     ticker: string;
-    thumbnailUrl: string;
+    imagePath: string;
   }[];
   state: string;
+  preMatchVideoPath: string;
   startTime?: string;
   winner?: string;
   bets: {
