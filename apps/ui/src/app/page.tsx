@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 
@@ -19,6 +20,7 @@ import { VideoStream } from '@/components/videoStream';
 
 export default function Home() {
   const { isReady, isConnected } = useEthWallet();
+  const [isResultVisible, setResultVisible] = useState(false);
 
   const { match } = useAppState();
   const { fighters = [] } = match ?? {};
@@ -30,7 +32,11 @@ export default function Home() {
     }, 0)
   );
 
-  const isMatchFinished = true; // match?.status === MatchStatus.Finished;
+  useEffect(() => {
+    if (match?.status === MatchStatus.Finished && isBetPlaced) {
+      setResultVisible(true);
+    }
+  }, [match?.status, isBetPlaced]);
 
   return (
     <main className="main-page">
@@ -62,13 +68,15 @@ export default function Home() {
 
       {isReady && !isConnected && <ConnectWalletWidget />}
 
-      {isReady && isConnected && isMatchFinished && <MatchResultWidget />}
+      {isReady && isConnected && isResultVisible && (
+        <MatchResultWidget onDismiss={() => setResultVisible(false)} />
+      )}
 
-      {isReady && isConnected && !isMatchFinished && (
+      {isReady && isConnected && !isResultVisible && (
         <BetPlacementWidget compact={isBetPlaced} />
       )}
 
-      {isReady && isConnected && !isMatchFinished && isBetPlaced && (
+      {isReady && isConnected && !isResultVisible && isBetPlaced && (
         <CurrentBetWidget />
       )}
 

@@ -1,18 +1,33 @@
 import { useAppState } from '@/hooks';
-import { useMatchInfo } from '@/providers/appStateProvider/useMatchInfo';
-import { Fighter } from '@/types';
 import { Button } from 'primereact/button';
 import { classNames } from 'primereact/utils';
-import { FC } from 'react';
+import { FC, useCallback } from 'react';
 
-export const MatchResultWidget: FC = () => {
+export interface MatchResultWidgetProps {
+  onDismiss?: () => void;
+}
+
+export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
+  onDismiss,
+}) => {
   const { match } = useAppState();
-  const { winner, winAmount, bets } = match || {};
+  const { winner, winAmount, fighters } = match || {};
   const isWin = winAmount && +winAmount > 0;
+  const winnerIndex = fighters?.findIndex((f) => f.codeName === winner);
+
+  // Temporarily disabled
+  // const share = useCallback(() => {
+  //   window.open(
+  //     `https://twitter.com/intent/tweet?text=${encodeURI('Hello World')}`,
+  //     '__blank',
+  //   );
+  // }, []);
 
   return (
     <div
-      className={classNames('widget match-result-widget', `winner-${winner}`)}
+      className={classNames('widget match-result-widget', {
+        'winner-fighter-2': winnerIndex === 1,
+      })}
     >
       <div className="widget-body framed">
         <div className="widget-header">
@@ -21,29 +36,33 @@ export const MatchResultWidget: FC = () => {
 
         <div className="widget-content">
           <div className="fighter-image-box">
-            <img className="fighter-image doge-image" src="/doge.svg" />
-            <img className="fighter-image pepe-image" src="/pepe.svg" />
+            <img
+              className="fighter-image fighter-image-1"
+              src={fighters?.[0]?.imageUrl}
+            />
+            <img
+              className="fighter-image fighter-image-2"
+              src={fighters?.[1]?.imageUrl}
+            />
           </div>
 
           <div className="result-info">
             <div className="result-title">{winner} Wins!</div>
 
-            <div className="win-amount">{isWin ? `+${winAmount}` : 0}</div>
-
-            {/* <div className="bet-info">
-              <div className="bet-info-label">Staked amount:</div>
-              <div className="bet-info-value">0 points</div>
-            </div>
-
-            <div className="bet-info">
-              <div className="bet-info-label">Win rate:</div>
-              <div className="bet-info-value">1.20x</div>
-            </div> */}
+            <div className="win-amount">{`+${isWin ? winAmount : 0}`}</div>
 
             <div className="widget-actions">
+              {/* <Button
+                className="p-button-secondary p-button-outlined"
+                label="Share"
+                icon="pi pi-twitter"
+                onClick={share}
+              /> */}
+
               <Button
                 className="p-button-secondary p-button-outlined"
                 label="Next Fight"
+                onClick={onDismiss}
               />
             </div>
           </div>

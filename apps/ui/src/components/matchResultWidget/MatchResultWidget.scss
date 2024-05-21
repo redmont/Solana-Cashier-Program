@@ -1,5 +1,5 @@
 .match-result-widget {
-  &.winner-doge {
+  &.winner-fighter-2 {
     .fighter-image-box {
       background: rgba(240, 172, 93, 0.1);
     }
@@ -15,11 +15,11 @@
       }
     }
 
-    .doge-image {
+    .fighter-image-2 {
       display: block;
     }
 
-    .pepe-image {
+    .fighter-image-1 {
       display: none;
     }
   }
@@ -42,7 +42,7 @@
     height: 6rem;
   }
 
-  .doge-image {
+  .fighter-image-2 {
     display: none;
   }
 
@@ -92,10 +92,14 @@
     button {
       height: 2.5rem;
       font-size: 1rem;
-      padding: 0 2rem;
+      padding: 0 1rem;
       border: 1px solid #4cdc88;
       color: #4cdc88;
       width: 100%;
+    }
+
+    .p-button-label {
+      padding: 0 1rem;
     }
   }
 
@@ -124,6 +128,9 @@
     }
 
     .widget-actions {
+      display: flex;
+      gap: 1rem;
+
       button {
         width: auto;
       }
