@@ -1,0 +1,139 @@
+.match-result-widget {
+  &.winner-fighter-2 {
+    .fighter-image-box {
+      background: rgba(240, 172, 93, 0.1);
+    }
+
+    .win-amount {
+      color: #f0ac5d;
+    }
+
+    .widget-actions {
+      button {
+        border-color: #f0ac5d;
+        color: #f0ac5d;
+      }
+    }
+
+    .fighter-image-2 {
+      display: block;
+    }
+
+    .fighter-image-1 {
+      display: none;
+    }
+  }
+
+  .widget-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 1rem;
+  }
+
+  .fighter-image-box {
+    padding: 0.5rem;
+    background: rgba(76, 220, 136, 0.1);
+  }
+
+  .fighter-image {
+    width: 6rem;
+    height: 6rem;
+  }
+
+  .fighter-image-2 {
+    display: none;
+  }
+
+  .result-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    font-size: 0.875rem;
+    gap: 0.5rem;
+  }
+
+  .result-title {
+    font-size: 1rem;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .win-amount {
+    font-size: 2.5rem;
+    color: #4cdc88;
+    padding: 0.5rem 0;
+
+    &::after {
+      font-size: 0.875rem;
+      font-weight: bold;
+      content: ' points';
+      vertical-align: top;
+      line-height: 2.5rem;
+      margin-left: 0.5rem;
+      text-transform: uppercase;
+    }
+  }
+
+  // .bet-info {
+  //   display: flex;
+  //   flex-direction: row;
+  //   justify-content: space-between;
+  //   gap: 1rem;
+  //   width: 13rem;
+  // }
+
+  .widget-actions {
+    margin-top: 1rem;
+    width: 100%;
+
+    button {
+      height: 2.5rem;
+      font-size: 1rem;
+      padding: 0 1rem;
+      border: 1px solid #4cdc88;
+      color: #4cdc88;
+      width: 100%;
+    }
+
+    .p-button-label {
+      padding: 0 1rem;
+    }
+  }
+
+  @media screen and (min-width: 48rem) {
+    .widget-body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .widget-content {
+      flex-direction: row;
+      width: auto;
+      gap: 2rem;
+    }
+
+    .fighter-image {
+      width: 10rem;
+      height: 10rem;
+    }
+
+    .result-info {
+      width: auto;
+      align-items: flex-start;
+    }
+
+    .widget-actions {
+      display: flex;
+      gap: 1rem;
+
+      button {
+        width: auto;
+      }
+    }
+  }
+}

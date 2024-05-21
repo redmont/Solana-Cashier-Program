@@ -7,6 +7,7 @@ import {
   BetPlacedEvent,
   MatchUpdatedEvent,
   BetsUpdatedEvent,
+  MatchResultEvent,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { useDeferredState } from '@/hooks/useDeferredState';
@@ -20,6 +21,7 @@ export interface MatchState {
   preMatchVideoUrl: string;
   startTime?: string;
   winner?: string;
+  winAmount?: string;
 }
 
 export function useMatchState() {
@@ -73,6 +75,12 @@ export function useMatchState() {
         const { bets, timestamp } = message;
 
         patchState(timestamp || new Date(), { bets });
+      }),
+      subscribe(MatchResultEvent.messageType, (message: MatchResultEvent) => {
+        console.log(MatchResultEvent.messageType, message);
+        const { winAmount, timestamp } = message;
+
+        patchState(timestamp, { winAmount });
       }),
     ];
 

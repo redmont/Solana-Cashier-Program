@@ -108,6 +108,11 @@
     }
   }
 
+  .match-result-widget {
+    grid-column: 1 / 3;
+    grid-row: 3;
+  }
+
   .connect-wallet-widget {
     grid-column: 1 / 3;
     grid-row: 3;
@@ -140,6 +145,7 @@
   .stream-chat-widget {
     grid-column: 3;
     grid-row: 2;
+    min-height: 0;
     height: auto;
     min-height: 0;
   }
@@ -160,6 +166,11 @@
     &.compact {
       grid-column: 3;
     }
+  }
+
+  .match-result-widget {
+    grid-column: 2 / 4;
+    grid-row: 3;
   }
 
   .connect-wallet-widget {
