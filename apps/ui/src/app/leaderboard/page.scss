@@ -1,10 +1,129 @@
 .leaderboard-page {
   align-items: center;
   padding: 0 0.75rem;
+  width: 100vw;
 
   // Temporary
   max-width: 48rem;
   margin: 0 auto;
+}
+
+.tournament-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100vw;
+  padding: 1rem 0 0 0;
+  gap: 1rem;
+}
+
+.tournament-name {
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+.tournament-countdown {
+  display: flex;
+  gap: 0.5rem;
+
+  & > span {
+    display: inline-block;
+    line-height: 2rem;
+    background: #00265e;
+    color: white;
+    padding: 0 0.5rem;
+    border-radius: 3px;
+  }
+}
+
+.prize-carousel {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  width: 100%;
+  overflow-x: auto;
+  padding: 1rem 0;
+  scroll-snap-type: x mandatory;
+
+  &.loading {
+    display: flex;
+    overflow-x: hidden;
+    height: 0;
+
+    .prize-tile {
+      opacity: 0;
+    }
+  }
+}
+
+.prize-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  width: 16rem;
+  flex-shrink: 0;
+  gap: 1rem;
+  border-radius: 4px;
+  opacity: 0.8;
+  scroll-snap-align: center;
+
+  &.prize-1 {
+    background:
+      linear-gradient(
+        106deg,
+        rgba(0, 116, 154, 0.5) 0%,
+        rgba(0, 98, 112, 0.5) 100%
+      ),
+      center / contain url('/prize-bg.png');
+  }
+
+  &.prize-2 {
+    background:
+      linear-gradient(
+        105deg,
+        rgba(55, 51, 92, 0.8) 5.91%,
+        rgba(33, 29, 76, 0.8) 85.27%
+      ),
+      center / contain url('/prize-bg.png');
+  }
+
+  &.prize-3 {
+    background:
+      linear-gradient(
+        106deg,
+        rgba(24, 47, 60, 0.8) 1.37%,
+        rgba(1, 27, 41, 0.8) 100%
+      ),
+      center / contain url('/prize-bg.png');
+  }
+
+  &.large {
+    padding: 1.25rem;
+
+    .prize-icon {
+      width: 4rem;
+      height: 4rem;
+    }
+  }
+}
+
+.prize-icon {
+  width: 3rem;
+  height: 3rem;
+}
+
+.prize-value {
+  font-size: 1.5rem;
+  color: white;
+}
+
+.prize-description {
+  font-size: 0.75rem;
+  color: #fefefe;
+  font-weight: 400;
+  text-align: center;
 }
 
 .leaderboard {

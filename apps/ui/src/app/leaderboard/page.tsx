@@ -1,10 +1,18 @@
 'use client';
 
-import { ChangeEvent, FC, useCallback, useEffect, useState } from 'react';
+import {
+  ChangeEvent,
+  FC,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import { Button } from 'primereact/button';
 import { ScrollPanel } from 'primereact/scrollpanel';
+import { ProgressSpinner } from 'primereact/progressspinner';
 import {
   GetLeaderboardMessage,
   GetLeaderboardMessageResponse,
@@ -25,6 +33,7 @@ export default function Leaderboard() {
   const [records, setRecords] = useState<RecordProps[]>([]);
   const [currentRecord, setCurrentRecord] = useState<RecordProps | null>(null);
   const { send, connected } = useSocket();
+  const [isReady, setReady] = useState(false);
 
   const getData = useCallback(
     async (query: string) => {
@@ -63,8 +72,56 @@ export default function Leaderboard() {
     setSearchQuery('');
   }, [getData]);
 
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => setReady(true));
+
+  useEffect(() => {
+    const el = carouselRef.current;
+
+    if (!el) return;
+
+    const { width } = el.getBoundingClientRect();
+
+    el.scrollLeft = (el.scrollWidth - width) / 2;
+  }, []);
+
   return (
     <main className="leaderboard-page">
+      <div className="tournament-info">
+        <div className="tournament-name">Tournament name</div>
+        <div className="tournament-countdown">
+          <span>5d</span>
+          <span>16h</span>
+          <span>22m</span>
+          <span>12s</span>
+        </div>
+      </div>
+
+      <div
+        className={classNames('prize-carousel', { loading: !isReady })}
+        ref={carouselRef}
+      >
+        <PrizeTile
+          place="2"
+          value="$100"
+          description="$100 in USDC will be deposited into the winner's wallet."
+        />
+
+        <PrizeTile
+          large
+          place="1"
+          value="$150"
+          description="$150 in USDC will be deposited into the winner's wallet."
+        />
+
+        <PrizeTile
+          place="3"
+          value="$50"
+          description="$50 in USDC will be deposited into the winner's wallet."
+        />
+      </div>
+
       <div className="leaderboard">
         <div className="header">
           <h1>Leaderboard</h1>
@@ -172,3 +229,26 @@ const TableRow: FC<RecordProps> = (props) => (
     <div className="points">{Math.floor(+props.balance).toLocaleString()}</div>
   </div>
 );
+
+interface PrizeTileProps {
+  place: '1' | '2' | '3';
+  value?: string;
+  description?: string;
+  large?: boolean;
+}
+
+const PrizeTile: FC<PrizeTileProps> = (props) => {
+  return (
+    <div
+      className={classNames('prize-tile', `prize-${props.place}`, {
+        large: props.large,
+      })}
+    >
+      <div className="prize-icon">
+        <img src={`/prize-${props.place}.svg`} />
+      </div>
+      <div className="prize-value">{props.value}</div>
+      <div className="prize-description">{props.description}</div>
+    </div>
+  );
+};
