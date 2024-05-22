@@ -62,7 +62,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
 
     setBetPoints(Math.floor(balance * 0.25));
 
-    isReady.current = true;
+    isReady.current = balance > 0;
   }, [balance]);
 
   useEffect(() => {
