@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 import { JoinButton, MobileJoinButton } from '@/components/JoinButton';
@@ -11,8 +11,12 @@ import { usePostHog } from '@/hooks/usePostHog';
 export const Layout = (props: ChildContainerProps) => {
   usePostHog();
 
+  const [isReady, setReady] = useState(false);
+
   const { balance } = useAppState();
-  const { isReady } = useEthWallet();
+  const { isConnected } = useEthWallet();
+
+  useEffect(() => setReady(true), []);
 
   return (
     <div className="layout">
@@ -23,16 +27,16 @@ export const Layout = (props: ChildContainerProps) => {
         </Link>
       </div>
 
-      {isReady && (
-        <div className="topbar-tools">
+      <div className="topbar-tools">
+        {isReady && isConnected && (
           <div className="topbar-balance">
             <span>Points: {Math.floor(balance)}</span>
           </div>
+        )}
 
-          <JoinButton className="p-button-secondary p-button-outlined hidden md:block" />
-          <MobileJoinButton className="md:hidden" />
-        </div>
-      )}
+        <JoinButton className="p-button-secondary p-button-outlined hidden md:block" />
+        <MobileJoinButton className="md:hidden" />
+      </div>
 
       {props.children}
     </div>
