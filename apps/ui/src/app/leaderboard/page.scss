@@ -1,8 +1,6 @@
 .leaderboard-page {
   align-items: center;
   padding: 1rem 0.75rem 0;
-
-  // Temporary
   max-width: 36rem;
   width: 100vw;
 }
@@ -198,10 +196,12 @@
     padding: 0.5rem;
     display: grid;
     align-items: center;
-    grid-template-columns: 3rem 6rem auto;
-    // grid-template-rows: repeat(3, 2rem);
-    grid-template-rows: repeat(2, 2rem);
+    grid-template-columns: 3rem 8rem auto;
+    grid-template-rows: repeat(3, 2rem);
     column-gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: normal;
+    color: #fefefe;
 
     .rank {
       grid-column: 1 / 2;
@@ -216,57 +216,26 @@
       grid-row: 1;
     }
 
-    .points-label {
+    .wins-label {
       grid-column: 2;
       grid-row: 2;
+      font-weight: bold;
+    }
+
+    .wins-value {
+      grid-column: 3;
+      grid-row: 2;
+    }
+
+    .points-label {
+      grid-column: 2;
+      grid-row: 3;
+      font-weight: bold;
     }
 
     .points-value {
       grid-column: 3;
-      grid-row: 2;
-    }
-
-    .winrate-label {
-      grid-column: 2;
       grid-row: 3;
-
-      display: none; // Hide temporarily
-    }
-
-    .winrate-value {
-      grid-column: 3;
-      grid-row: 3;
-
-      display: none; // Hide temporarily
-    }
-  }
-
-  .mobile-record-footer {
-    //display: flex;
-    display: none; // Hide temporarily
-
-    .stat {
-      flex-grow: 1;
-      width: 50%;
-      display: flex;
-      justify-content: space-between;
-      padding: 0.5rem 1rem;
-
-      &:first-child {
-        border-bottom-left-radius: $borderRadius;
-      }
-
-      &:last-child {
-        border-bottom-right-radius: $borderRadius;
-      }
-
-      &.wins {
-        background-color: #173026;
-      }
-
-      &.losses {
-        background-color: #180f11;
-      }
     }
   }
 
@@ -284,39 +253,16 @@
     .player {
       width: 10rem;
       text-align: left;
-      flex-grow: 1;
-    }
-
-    .wins,
-    .losses {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      display: none; // Hide temporarily
-    }
-
-    .wins {
-      width: 6rem;
-      background-color: #173026;
-      height: 100%;
-    }
-
-    .losses {
-      width: 6rem;
-      background-color: #180f11;
-      height: 100%;
-    }
-
-    .winrate {
-      width: 8rem;
-
-      display: none; // Hide temporarily
     }
 
     .points {
       width: 8rem;
       text-align: left;
+      flex-grow: 1;
+    }
+
+    .wins {
+      width: 8rem;
     }
   }
 
@@ -367,7 +313,7 @@
     }
 
     .mobile-record-body {
-      grid-template-columns: 4rem 6rem auto;
+      grid-template-columns: 4rem 8rem auto;
 
       .rank {
         font-size: 1.25rem;

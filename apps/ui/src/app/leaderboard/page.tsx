@@ -160,10 +160,8 @@ export default function Leaderboard() {
               <div className="table-header">
                 <div className="rank">Rank</div>
                 <div className="player">Player</div>
-                <div className="wins">Wins</div>
-                <div className="losses">Losses</div>
-                <div className="winrate">Win Rate</div>
                 <div className="points">Points</div>
+                <div className="wins">Wins</div>
               </div>
 
               <div className="table-body">
@@ -194,23 +192,11 @@ const MobileRecord: FC<RecordProps> = (props) => (
     <div className="mobile-record-body">
       <div className="rank">{props.rank}</div>
       <div className="player">{truncateEthAddress(props.walletAddress)}</div>
-      <div className="points-label">Points:</div>
+      <div className="wins-label">Points Wins:</div>
+      <div className="wins-value">{Math.floor(5000).toLocaleString()}</div>
+      <div className="points-label">Points Balance:</div>
       <div className="points-value">
         {Math.floor(+props.balance).toLocaleString()}
-      </div>
-      <div className="winrate-label">Winrate:</div>
-      <div className="winrate-value">96%</div>
-    </div>
-
-    <div className="mobile-record-footer">
-      <div className="stat wins">
-        <span className="stat-label">Wins:</span>
-        <span className="stat-value">45</span>
-      </div>
-
-      <div className="stat losses">
-        <span className="stat-label">Losses:</span>
-        <span className="stat-value">2</span>
       </div>
     </div>
   </div>
@@ -223,10 +209,8 @@ const TableRow: FC<RecordProps> = (props) => (
   >
     <div className="rank">{props.rank}</div>
     <div className="player">{truncateEthAddress(props.walletAddress)}</div>
-    <div className="wins">45</div>
-    <div className="losses">2</div>
-    <div className="winrate">96%</div>
     <div className="points">{Math.floor(+props.balance).toLocaleString()}</div>
+    <div className="wins">{Math.floor(5000).toLocaleString()}</div>
   </div>
 );
 
