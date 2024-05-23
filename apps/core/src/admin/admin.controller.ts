@@ -35,6 +35,9 @@ import {
   UpdateRosterRequest,
 } from './models';
 import { ConfigService } from '@nestjs/config';
+import { TournamentService } from '@/tournament/tournament.service';
+import { CreateTournamentRequest } from './models/createTournamentRequest';
+import { UpdateTournamentRequest } from './models/updateTournamentRequest';
 
 @Controller('admin')
 export class AdminController {
@@ -47,6 +50,7 @@ export class AdminController {
     private readonly adminService: AdminService,
     private readonly gameServerCapabilitiesService: GameServerCapabilitiesService,
     private readonly rosterService: RosterService,
+    private readonly tournamentService: TournamentService,
     @Inject('BROKER') private broker: ClientProxy,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
@@ -79,30 +83,6 @@ export class AdminController {
     };
   }
 
-  @Put('/series/:codeName')
-  updateSeries(
-    @Param('codeName') codeName: string,
-    @Body() body: UpdateSeriesRequest,
-  ) {
-    const {
-      displayName,
-      betPlacementTime,
-      preMatchVideoPath,
-      preMatchDelay,
-      fighters,
-      level,
-    } = body;
-    return this.seriesService.updateSeries(
-      codeName,
-      displayName,
-      betPlacementTime,
-      preMatchVideoPath,
-      preMatchDelay,
-      fighters,
-      level,
-    );
-  }
-
   @Post('/series')
   async createSeries(@Body() body: CreateSeriesRequest) {
     const {
@@ -125,6 +105,30 @@ export class AdminController {
       fighters,
       level,
       fightType,
+    );
+  }
+
+  @Put('/series/:codeName')
+  updateSeries(
+    @Param('codeName') codeName: string,
+    @Body() body: UpdateSeriesRequest,
+  ) {
+    const {
+      displayName,
+      betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
+      fighters,
+      level,
+    } = body;
+    return this.seriesService.updateSeries(
+      codeName,
+      displayName,
+      betPlacementTime,
+      preMatchVideoPath,
+      preMatchDelay,
+      fighters,
+      level,
     );
   }
 
@@ -204,5 +208,36 @@ export class AdminController {
       body.series,
       body.timedSeries,
     );
+  }
+
+  @Get('/tournaments')
+  async listTournaments() {
+    return { tournaments: await this.tournamentService.getTournaments() };
+  }
+
+  @Post('/tournaments')
+  createTournament(@Body() body: CreateTournamentRequest) {
+    return this.tournamentService.createTournament(body);
+  }
+
+  @Get('/tournaments/:codeName')
+  async getTournament(@Param('codeName') codeName: string) {
+    return this.tournamentService.getTournament(codeName);
+  }
+
+  @Put('/tournaments/:codeName')
+  updateTournament(
+    @Param('codeName') codeName: string,
+    @Body() body: UpdateTournamentRequest,
+  ) {
+    const { displayName, description, startDate, endDate, prizes } = body;
+    return this.tournamentService.updateTournament({
+      codeName,
+      displayName,
+      description,
+      startDate,
+      endDate,
+      prizes,
+    });
   }
 }

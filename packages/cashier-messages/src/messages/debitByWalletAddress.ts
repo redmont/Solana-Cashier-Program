@@ -8,6 +8,7 @@ export class DebitByWalletAddressMessage extends BrokerMessage<DebitByWalletAddr
   constructor(
     public readonly walletAddress: string,
     public readonly amount: number,
+    public readonly reason: string,
   ) {
     super();
   }

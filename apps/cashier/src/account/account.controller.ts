@@ -43,6 +43,7 @@ export class AccountController {
       {
         accountId: data.accountId,
         amount: 1000,
+        reason: 'INITIAL_FREE_POINTS',
       },
       [this.eventStore],
       {},
@@ -62,12 +63,13 @@ export class AccountController {
   }
 
   @MessagePattern(DebitMessage.messageType)
-  async handleDebit(@Payload() data: DebitMessage) {
+  async handleDebit(@Payload() { accountId, amount, reason }: DebitMessage) {
     try {
       await debitAccountCommand(this.eventStore).handler(
         {
-          accountId: data.accountId,
-          amount: data.amount,
+          accountId,
+          amount,
+          reason,
         },
         [this.eventStore],
         {},
@@ -85,12 +87,13 @@ export class AccountController {
   }
 
   @MessagePattern(CreditMessage.messageType)
-  async handleCredit(@Payload() data: CreditMessage) {
+  async handleCredit(@Payload() { accountId, amount, reason }: CreditMessage) {
     try {
       await creditAccountCommand(this.eventStore).handler(
         {
-          accountId: data.accountId,
-          amount: data.amount,
+          accountId,
+          amount,
+          reason,
         },
         [this.eventStore],
         {},
@@ -105,11 +108,10 @@ export class AccountController {
 
   @MessagePattern(DebitByWalletAddressMessage.messageType)
   async handleDebitByWalletAddress(
-    @Payload() data: DebitByWalletAddressMessage,
+    @Payload() { walletAddress, amount, reason }: DebitByWalletAddressMessage,
   ) {
-    const accounts = await this.readModelService.getAccountByWalletAddress(
-      data.walletAddress,
-    );
+    const accounts =
+      await this.readModelService.getAccountByWalletAddress(walletAddress);
     if (accounts.length === 0) {
       return { success: false, error: 'Account not found' };
     }
@@ -120,7 +122,8 @@ export class AccountController {
       await debitAccountCommand(this.eventStore).handler(
         {
           accountId,
-          amount: data.amount,
+          amount,
+          reason,
         },
         [this.eventStore],
         {},
@@ -155,6 +158,7 @@ export class AccountController {
         {
           accountId,
           amount: data.amount,
+          reason: data.reason,
         },
         [this.eventStore],
         {},

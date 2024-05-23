@@ -12,6 +12,7 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { AiOutlineClose } from 'react-icons/ai';
 
 type ListItem = {
@@ -31,6 +32,8 @@ type AsideProps = {
 };
 
 export const Aside = ({ listItems, onClose, isOpen, ...rest }: AsideProps) => {
+  const path = usePathname();
+
   return (
     <Box
       as="aside"
@@ -60,7 +63,12 @@ export const Aside = ({ listItems, onClose, isOpen, ...rest }: AsideProps) => {
       <Box>
         <List spacing={0} p="0.5">
           {listItems.map((item) => (
-            <ListElement icon={item.icon} text={item.text} path={item.path} />
+            <ListElement
+              currentPath={path}
+              icon={item.icon}
+              text={item.text}
+              path={item.path}
+            />
           ))}
         </List>
       </Box>
@@ -68,7 +76,12 @@ export const Aside = ({ listItems, onClose, isOpen, ...rest }: AsideProps) => {
   );
 };
 
-const ListElement = ({ icon, text, path }: ListItem) => {
+const ListElement = ({
+  currentPath,
+  icon,
+  text,
+  path,
+}: ListItem & { currentPath: string }) => {
   return (
     <Link href={path}>
       <ListItem
@@ -77,7 +90,8 @@ const ListElement = ({ icon, text, path }: ListItem) => {
         h="10"
         pl="2.5"
         cursor="pointer"
-        _hover={{ bg: useColorModeValue('gray.50', 'gray.700') }}
+        bg={currentPath === path ? 'gray.700' : 'transparent'}
+        _hover={{ bg: useColorModeValue('gray.50', 'gray.100') }}
         rounded="md"
       >
         <ListIcon boxSize={5} as={icon} />

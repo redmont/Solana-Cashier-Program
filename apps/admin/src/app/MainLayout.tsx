@@ -12,6 +12,7 @@ import {
 import { BiMenu } from 'react-icons/bi';
 import { Aside } from '@/components/Aside';
 import {
+  AiOutlineCrown,
   AiOutlineDollarCircle,
   AiOutlineFileImage,
   AiOutlineHome,
@@ -25,7 +26,8 @@ import { useSession } from 'next-auth/react';
 
 const menuItems = [
   { text: 'Dashboard', icon: AiOutlineHome, path: '/' },
-  { text: 'Series', icon: AiOutlineTrophy, path: '/series' },
+  { text: 'Tournaments', icon: AiOutlineTrophy, path: '/tournaments' },
+  { text: 'Series', icon: AiOutlineCrown, path: '/series' },
   { text: 'Roster', icon: AiOutlineOrderedList, path: '/roster' },
   { text: 'Points', icon: AiOutlineDollarCircle, path: '/points' },
   {

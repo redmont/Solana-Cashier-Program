@@ -104,15 +104,15 @@ export const createGameServerFSM = (
       },
       matchInProgress: {
         on: {
-          MATCH_COMPLETED: 'ready', // Temporary, until 'ready' is properly sent by the game server
+          MATCH_COMPLETED: 'waitingForReady',
           READY: 'ready',
         },
       },
-      // waitingForReady: {
-      //   on: {
-      //     READY: 'ready',
-      //   },
-      // },
+      waitingForReady: {
+        on: {
+          READY: 'ready',
+        },
+      },
     },
   });
 };

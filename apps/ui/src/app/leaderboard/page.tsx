@@ -6,8 +6,8 @@ import { classNames } from 'primereact/utils';
 import { Button } from 'primereact/button';
 import { ScrollPanel } from 'primereact/scrollpanel';
 import {
-  GetLeaderboardMessage,
-  GetLeaderboardMessageResponse,
+  GetTournamentMessage,
+  GetTournamentMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { useSocket } from '@/hooks';
 import { truncateEthAddress } from '@/utils';
@@ -30,10 +30,10 @@ export default function Leaderboard() {
     async (query: string) => {
       if (!connected) return;
 
-      const resp = await send(new GetLeaderboardMessage(100, 1, query));
+      const resp = await send(new GetTournamentMessage(100, 1, query));
 
       const { items, currentUserItem = null } =
-        resp as GetLeaderboardMessageResponse;
+        resp as GetTournamentMessageResponse;
 
       setRecords(items.slice(0, 100));
       setCurrentRecord(currentUserItem);

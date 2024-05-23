@@ -23,6 +23,9 @@ import {
   GetUserMatchHistoryMessage,
   GetMatchHistoryMessageResponse,
   GetUserMatchHistoryMessageResponse,
+  GetLeaderboardMessageResponse,
+  GetTournamentMessage,
+  GetTournamentMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
@@ -36,6 +39,7 @@ import { QueryStoreService } from 'query-store';
 import { IJwtAuthService } from './jwtAuth/jwtAuth.interface';
 import { ConfigService } from '@nestjs/config';
 import { ReadModelService } from 'cashier-read-model';
+import dayjs from './dayjs';
 
 @WebSocketGateway({
   cors: {
@@ -288,6 +292,41 @@ export class AppGateway
     return {
       success: true,
       matches,
+    };
+  }
+
+  @SubscribeMessage(GetTournamentMessage.messageType)
+  public async getTournament(
+    @MessageBody() { pageSize, page, searchQuery }: GetTournamentMessage,
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetTournamentMessageResponse> {
+    const userId = this.clientUserIdMap.get(client?.id);
+
+    const now = dayjs.utc().toISOString();
+
+    const {
+      displayName,
+      description,
+      prizes,
+      totalCount,
+      items,
+      currentUserItem,
+    } = await this.query.getCurrentTournamentLeaderboard(
+      now,
+      pageSize,
+      page,
+      userId,
+      searchQuery,
+    );
+
+    return {
+      success: true,
+      displayName,
+      description,
+      prizes,
+      totalCount,
+      items,
+      currentUserItem,
     };
   }
 
