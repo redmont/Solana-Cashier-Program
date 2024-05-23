@@ -209,6 +209,39 @@
       font-size: 1.25rem;
       font-weight: bold;
       justify-self: center;
+
+      &-1,
+      &-2,
+      &-3 {
+        display: none;
+      }
+    }
+
+    .rank-image {
+      display: none;
+      grid-column: 1 / 2;
+      grid-row: 1;
+      width: 1.5rem;
+      height: 1.5rem;
+      justify-self: center;
+
+      &-1,
+      &-2,
+      &-3 {
+        display: inline-block;
+      }
+
+      &-1 {
+        background: center / contain no-repeat url('/prize-1.svg');
+      }
+
+      &-2 {
+        background: center / contain no-repeat url('/prize-2.svg');
+      }
+
+      &-3 {
+        background: center / contain no-repeat url('/prize-3.svg');
+      }
     }
 
     .player {
@@ -248,6 +281,39 @@
     .rank {
       width: 5rem;
       font-weight: bold;
+
+      .rank-image {
+        display: none;
+      }
+
+      &-1,
+      &-2,
+      &-3 {
+        .rank-image {
+          display: inline-block;
+        }
+
+        .rank-value {
+          display: none;
+        }
+      }
+    }
+
+    .rank-image {
+      width: 1.5rem;
+      height: 1.5rem;
+
+      &-1 {
+        background: center / contain no-repeat url('/prize-1.svg');
+      }
+
+      &-2 {
+        background: center / contain no-repeat url('/prize-2.svg');
+      }
+
+      &-3 {
+        background: center / contain no-repeat url('/prize-3.svg');
+      }
     }
 
     .player {
@@ -364,11 +430,5 @@
 
   .leaderboard {
     max-width: 75rem;
-
-    .table {
-      .winrate {
-        width: 20rem;
-      }
-    }
   }
 }

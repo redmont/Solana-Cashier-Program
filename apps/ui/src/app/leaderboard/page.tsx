@@ -190,7 +190,8 @@ const MobileRecord: FC<RecordProps> = (props) => (
     })}
   >
     <div className="mobile-record-body">
-      <div className="rank">{props.rank}</div>
+      <div className={`rank rank-${props.rank}`}>{props.rank}</div>
+      <div className={`rank-image rank-image-${props.rank}`}></div>
       <div className="player">{truncateEthAddress(props.walletAddress)}</div>
       <div className="wins-label">Points Wins:</div>
       <div className="wins-value">{Math.floor(5000).toLocaleString()}</div>
@@ -207,7 +208,10 @@ const TableRow: FC<RecordProps> = (props) => (
     className={classNames('table-row', { highlighted: props.highlighted })}
     key={props.walletAddress}
   >
-    <div className="rank">{props.rank}</div>
+    <div className={`rank rank-${props.rank}`}>
+      <span className={`rank-image rank-image-${props.rank}`}></span>
+      <span className="rank-value">{props.rank}</span>
+    </div>
     <div className="player">{truncateEthAddress(props.walletAddress)}</div>
     <div className="points">{Math.floor(+props.balance).toLocaleString()}</div>
     <div className="wins">{Math.floor(5000).toLocaleString()}</div>
