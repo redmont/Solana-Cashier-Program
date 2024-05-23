@@ -18,7 +18,7 @@ import { MatchStatus } from '@/types';
 import { VideoStream } from '@/components/videoStream';
 
 export default function Home() {
-  const { isReady, isConnected } = useEthWallet();
+  const { isConnected } = useEthWallet();
 
   const { match } = useAppState();
   const { fighters = [] } = match ?? {};
@@ -58,11 +58,11 @@ export default function Home() {
 
       <BetListWidget />
 
-      {isReady && !isConnected && <ConnectWalletWidget />}
+      {!isConnected && <ConnectWalletWidget />}
 
-      {isReady && isConnected && <BetPlacementWidget compact={isBetPlaced} />}
+      {isConnected && <BetPlacementWidget compact={isBetPlaced} />}
 
-      {isReady && isConnected && isBetPlaced && <CurrentBetWidget />}
+      {isConnected && isBetPlaced && <CurrentBetWidget />}
 
       <ActivityStreamWidget />
 

@@ -13,7 +13,7 @@ import { Socket, io } from 'socket.io-client';
 import { Message, GatewayEvent } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { serverUrl } from '@/config';
-import { useAuth } from './AuthProvider';
+import { useEthWallet } from '@/hooks';
 
 export const socket: Socket = io(serverUrl, {
   transports: ['websocket'],
@@ -40,14 +40,12 @@ const SocketContext = createContext<SocketContextValue>({
 
 export const SocketProvider: FC<PropsWithChildren> = ({ children }) => {
   const [connected, setConnected] = useState<boolean>(false);
-  const { authToken, isAuthenticated } = useAuth();
+  const { authToken } = useEthWallet();
 
   useEffect(() => {
-    if (!isAuthenticated) return;
-
-    socket.auth = { token: authToken };
+    socket.auth = { token: authToken ?? null };
     socket.disconnect().connect();
-  }, [isAuthenticated, authToken]);
+  }, [authToken]);
 
   useEffect(() => {
     if (socket.connected) {
