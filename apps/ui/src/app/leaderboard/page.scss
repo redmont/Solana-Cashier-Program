@@ -1,20 +1,19 @@
 .leaderboard-page {
   align-items: center;
-  padding: 0 0.75rem;
-  width: 100vw;
+  padding: 1rem 0.75rem 0;
 
   // Temporary
-  max-width: 48rem;
-  margin: 0 auto;
+  max-width: 36rem;
+  width: 100vw;
 }
 
 .tournament-info {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100vw;
-  padding: 1rem 0 0 0;
+  width: 100%;
   gap: 1rem;
+  grid-row: 1 / 2;
 }
 
 .tournament-name {
@@ -37,6 +36,8 @@
 }
 
 .prize-carousel {
+  grid-row: 2 / 3;
+
   position: relative;
   display: flex;
   align-items: flex-end;
@@ -45,6 +46,8 @@
   overflow-x: auto;
   padding: 1rem 0;
   scroll-snap-type: x mandatory;
+  scroll-snap-stop: always;
+  flex-shrink: 0;
 
   &.loading {
     display: flex;
@@ -127,6 +130,8 @@
 }
 
 .leaderboard {
+  grid-row: 3/5;
+
   width: 100%;
   background-color: #0e0e10;
   padding: 1rem;
@@ -348,6 +353,14 @@
 }
 
 @media screen and (min-width: 36rem) {
+  .tournament-info {
+    flex-direction: row;
+  }
+
+  .prize-tile {
+    flex: 1 1 33.33%;
+  }
+
   .leaderboard {
     .mobile-record {
       font-size: 1rem;
@@ -365,7 +378,10 @@
 
 @media screen and (min-width: 48rem) {
   .leaderboard-page {
+    display: grid;
+    grid-template-rows: 2rem auto 1fr 1px;
     padding-bottom: 1rem;
+    max-width: 48rem;
   }
 
   .leaderboard {
@@ -396,6 +412,10 @@
 }
 
 @media screen and (min-width: 75rem) {
+  .leaderboard-page {
+    justify-self: center;
+  }
+
   .leaderboard {
     max-width: 75rem;
 
