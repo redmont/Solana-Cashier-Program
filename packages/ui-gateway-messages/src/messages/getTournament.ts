@@ -9,6 +9,8 @@ export interface TournamentLeaderboardItem {
 export interface GetTournamentMessageResponse extends Message {
   displayName: string;
   description: string;
+  startDate: string;
+  endDate: string;
   prizes: {
     title: string;
     description: string;
