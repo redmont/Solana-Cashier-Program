@@ -5,6 +5,7 @@ import { GameServerConfigModule } from '@/gameServerConfig/gameServerConfig.modu
 import { AdminService } from './admin.service';
 import { GameServerCapabilitiesModule } from '@/gameServerCapabilities/gameServerCapabilities.module';
 import { RosterModule } from '@/roster/roster.module';
+import { TournamentModule } from '@/tournament/tournament.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { RosterModule } from '@/roster/roster.module';
     GameServerConfigModule,
     GameServerCapabilitiesModule,
     RosterModule,
+    TournamentModule,
   ],
   providers: [AdminService],
   controllers: [AdminController],

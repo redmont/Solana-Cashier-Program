@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Decimal, Pools, brawlersV2Preset } from '@bltzr-gg/croupier';
+import { Decimal, Pools } from '@bltzr-gg/croupier';
 import dayjs from '@/dayjs';
 import { FightType, SeriesConfig } from '../series/seriesConfig.model';
 import { MatchBettingService } from './matchBetting.service';
@@ -19,8 +19,9 @@ const parseFightType = (fightType: FightType) => {
 const parseSeriesConfig = (config: SeriesConfig) => {
   return {
     startTime: dayjs
-      .utc() // todo - how correct is this? should we be using the current time?
+      .utc()
       .add(config.betPlacementTime, 'seconds')
+      .add(10, 'seconds') // 10 seconds for oracle sampling
       .toISOString(),
     fighters: config.fighters.map((fighter, i) => ({
       id: i,

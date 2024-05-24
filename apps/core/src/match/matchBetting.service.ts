@@ -96,7 +96,10 @@ export class MatchBettingService {
       const amount = winsPerUser[userId];
 
       // Send credit message to cashier
-      await sendBrokerMessage(this.broker, new CreditMessage(userId, amount));
+      await sendBrokerMessage(
+        this.broker,
+        new CreditMessage(userId, amount, 'WIN'),
+      );
 
       await this.activityStreamService.track(
         seriesCodeName,

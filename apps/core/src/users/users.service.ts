@@ -8,6 +8,8 @@ import { sendBrokerMessage } from 'broker-comms';
 import {
   CreateAccountMessage,
   CreateAccountMessageResponse,
+  EnsureAccountExistsMessage,
+  EnsureAccountExistsMessageResponse,
 } from 'cashier-messages';
 
 export class UserCreatedEvent {
@@ -69,10 +71,10 @@ export class UsersService {
 
     await this.userWalletModel.create(wallet);
 
-    await sendBrokerMessage<CreateAccountMessage, CreateAccountMessageResponse>(
-      this.broker,
-      new CreateAccountMessage(id, walletAddress),
-    );
+    await sendBrokerMessage<
+      EnsureAccountExistsMessage,
+      EnsureAccountExistsMessageResponse
+    >(this.broker, new EnsureAccountExistsMessage(id, walletAddress));
 
     // Todo - delete user if account creation fails
 

@@ -2,10 +2,8 @@ import { Socket as DefaultSocket } from 'socket.io';
 
 export class SocketData {
   authorizedUser?: {
-    sub: string;
-    claims: {
-      walletAddress: string;
-    };
+    userId: string;
+    walletAddress: string;
   };
 }
 

@@ -1,7 +1,10 @@
 import { EventStore } from '@castore/core';
 import { Command, tuple } from '@castore/core';
 
-type Input = { accountId: string; primaryWalletAddress: string };
+type Input = {
+  accountId: string;
+  primaryWalletAddress: string;
+};
 type Output = { accountId: string };
 type Context = {};
 

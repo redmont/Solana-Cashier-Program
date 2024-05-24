@@ -32,7 +32,7 @@ export class AdminService {
         try {
           await sendBrokerMessage<CreditMessage, CreditMessageResponse>(
             this.broker,
-            new CreditMessage(item.walletAddress, item.amount),
+            new CreditMessage(item.walletAddress, item.amount, 'IMPORT'),
           );
           credits++;
         } catch (e) {
@@ -47,7 +47,11 @@ export class AdminService {
         try {
           await sendBrokerMessage<DebitMessage, DebitMessageResponse>(
             this.broker,
-            new DebitMessage(item.walletAddress, Math.abs(item.amount)),
+            new DebitMessage(
+              item.walletAddress,
+              Math.abs(item.amount),
+              'IMPORT',
+            ),
           );
           debits++;
         } catch (e) {

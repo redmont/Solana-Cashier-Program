@@ -7,3 +7,4 @@ export * from './getLeaderboard';
 export * from './getRoster';
 export * from './getMatchHistory';
 export * from './getUserMatchHistory';
+export * from './getTournament';

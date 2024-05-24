@@ -10,6 +10,7 @@ export class CreditMessage extends BrokerMessage<{
   constructor(
     public readonly accountId: string,
     public readonly amount: number,
+    public readonly reason: string,
   ) {
     super();
   }

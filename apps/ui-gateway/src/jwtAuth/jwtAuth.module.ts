@@ -14,7 +14,7 @@ import { JwtAuthGuard } from '../guards/jwtAuth.guard';
           'USE_TEST_AUTH_SERVICE',
         );
         return useTestAuthService
-          ? new TestJwtAuthService()
+          ? new TestJwtAuthService(configService)
           : new KmsJwtAuthService();
       },
       inject: [ConfigService],
