@@ -32,6 +32,8 @@ import {
   GetBalanceMessage,
   GetBalanceMessageResponse,
   PlaceBetMessageResponse,
+  EnsureUserIdMessage,
+  EnsureUserIdMessageReturnType,
 } from 'core-messages';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { Socket } from './websocket/socket';
@@ -78,30 +80,44 @@ export class AppGateway
   }
 
   @UseGuards(JwtAuthGuard)
-  handleConnection(client: Socket, ...args: any[]) {
+  async handleConnection(client: Socket, ...args: any[]) {
     const token = client.handshake.auth?.token;
     if (token) {
-      const tokenValid = this.jwtAuthService
-        .verify(token)
-        .then((decodedToken) => {
-          client.data.authorizedUser = decodedToken;
-          return true;
-        })
-        .catch((error) => {});
+      try {
+        const decodedToken = await this.jwtAuthService.verify(token);
 
-      if (tokenValid) {
-        const decodedToken = this.jwtAuthService.decode(token);
+        if (
+          decodedToken.verified_credentials &&
+          decodedToken.verified_credentials.length > 0
+        ) {
+          const { address } = decodedToken.verified_credentials[0];
 
-        const userId = decodedToken.sub;
+          const { userId } = await sendBrokerMessage<
+            EnsureUserIdMessage,
+            EnsureUserIdMessageReturnType
+          >(this.broker, new EnsureUserIdMessage(address));
 
-        this.clientUserIdMap.set(client.id, userId);
+          client.data.authorizedUser = {
+            userId,
+            walletAddress: address,
+          };
+        } else {
+          client.data.authorizedUser = {
+            userId: decodedToken.sub,
+            walletAddress: decodedToken.claims.walletAddress,
+          };
+        }
+
+        this.clientUserIdMap.set(client.id, client.data.authorizedUser.userId);
 
         this.broker.emit('gateway.userConnected', {
-          userId,
+          userId: client.data.authorizedUser.userId,
           instanceId: this.instanceId,
         });
 
-        client.join(`user-${userId}`);
+        client.join(`user-${client.data.authorizedUser.userId}`);
+      } catch (error) {
+        console.log('Error verifying token', error);
       }
     }
   }
@@ -160,8 +176,7 @@ export class AppGateway
   ) {
     const { series, amount, fighter } = data;
 
-    const userId = client.data.authorizedUser.sub;
-    const walletAddress = client.data.authorizedUser.claims.walletAddress;
+    const { userId, walletAddress } = client.data.authorizedUser;
 
     if (amount <= 0) {
       return {
@@ -191,11 +206,11 @@ export class AppGateway
   @UseGuards(JwtAuthGuard)
   @SubscribeMessage(GetBalanceUiGatewayMessage.messageType)
   public async getBalance(@ConnectedSocket() client: Socket) {
-    const accountId = client.data.authorizedUser.sub;
+    const { userId } = client.data.authorizedUser;
     const result = await sendBrokerMessage<
       GetBalanceMessage,
       GetBalanceMessageResponse
-    >(this.broker, new GetBalanceMessage(accountId));
+    >(this.broker, new GetBalanceMessage(userId));
 
     return { ...result, success: true };
   }

@@ -22,7 +22,7 @@ export class TournamentController {
         timestamp: data.timestamp,
         tournament: currentTournamentCodeName,
         userId: data.userId,
-        primaryWalletAddress: data.userId,
+        primaryWalletAddress: data.primaryWalletAddress,
         winAmount: parseInt(data.amount),
         balance: data.balance,
       });

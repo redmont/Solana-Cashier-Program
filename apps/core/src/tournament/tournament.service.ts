@@ -89,7 +89,7 @@ export class TournamentService {
       primaryWalletAddress,
       // We get the winAmount from the update response,
       // as it will have the final amount
-      winAmount: item.winAmount,
+      tournamentEntryWinAmount: item.winAmount,
       balance,
     });
   }

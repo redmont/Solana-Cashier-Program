@@ -488,13 +488,13 @@ export class QueryStoreService implements OnModuleInit {
     tournament,
     userId,
     primaryWalletAddress,
-    winAmount,
+    tournamentEntryWinAmount,
     balance,
   }: {
     tournament: string;
     userId: string;
     primaryWalletAddress: string;
-    winAmount: number;
+    tournamentEntryWinAmount: number;
     balance: string;
   }) {
     await this.tournamentEntryModel.create(
@@ -502,7 +502,7 @@ export class QueryStoreService implements OnModuleInit {
         pk: `tournamentEntry#${tournament}`,
         sk: userId,
         primaryWalletAddress,
-        winAmount,
+        tournamentEntryWinAmount,
         balance,
       },
       {
@@ -565,7 +565,7 @@ export class QueryStoreService implements OnModuleInit {
         .query({
           pk: `tournamentEntry#${codeName}`,
         })
-        .using('pkWinAmount')
+        .using('pkTournamentEntryWinAmount')
         .limit(pageSize)
         .sort(SortOrder.descending);
       if (lastKey) {
@@ -596,10 +596,15 @@ export class QueryStoreService implements OnModuleInit {
           prizes,
           endDate,
           items: matches.map(
-            ({ rank, primaryWalletAddress, winAmount, balance }) => ({
+            ({
+              rank,
+              primaryWalletAddress,
+              tournamentEntryWinAmount,
+              balance,
+            }) => ({
               rank,
               walletAddress: primaryWalletAddress,
-              winAmount: winAmount.toString(),
+              winAmount: tournamentEntryWinAmount.toString(),
               balance,
             }),
           ),
@@ -634,7 +639,7 @@ export class QueryStoreService implements OnModuleInit {
               rank: rank++,
               walletAddress: item.primaryWalletAddress,
               balance: item.balance,
-              winAmount: item.winAmount.toString(),
+              winAmount: item.tournamentEntryWinAmount.toString(),
             })),
           };
         } else {

@@ -61,6 +61,7 @@ export class QueryModelBusAdapter implements MessageChannelAdapter {
           {
             timestamp: message.event.timestamp,
             userId: accountId,
+            primaryWalletAddress: primaryWalletAddress,
             amount: payload.amount,
             balance: balance.toString(),
             reason: payload.reason,

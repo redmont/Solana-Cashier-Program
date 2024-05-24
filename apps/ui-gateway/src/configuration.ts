@@ -19,4 +19,5 @@ export default () => ({
   cashierReadModelTableName: process.env.CASHIER_READ_MODEL_TABLE_NAME,
   isDynamoDbLocal: process.env.IS_DDB_LOCAL === 'true',
   mediaUri: process.env.MEDIA_URI,
+  dynamicPublicKey: process.env.DYNAMIC_PUBLIC_KEY,
 });

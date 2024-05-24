@@ -5,10 +5,15 @@ export const TournamentEntrySchema = new Schema({
     type: String,
     hashKey: true,
     index: {
-      name: 'pkWinAmount',
-      rangeKey: 'winAmount',
+      name: 'pkTournamentEntryWinAmount',
+      rangeKey: 'tournamentEntryWinAmount',
       type: 'global',
-      project: ['sk', 'primaryWalletAddress', 'winAmount', 'balance'],
+      project: [
+        'sk',
+        'primaryWalletAddress',
+        'tournamentEntryWinAmount',
+        'balance',
+      ],
     },
   },
   sk: {
@@ -16,6 +21,6 @@ export const TournamentEntrySchema = new Schema({
     rangeKey: true,
   },
   primaryWalletAddress: String,
-  winAmount: Number,
+  tournamentEntryWinAmount: Number,
   balance: String,
 });

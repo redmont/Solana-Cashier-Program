@@ -7,6 +7,7 @@ export class AccountCreditedEvent extends BrokerEvent {
   constructor(
     public readonly timestamp: string,
     public readonly userId: string,
+    public readonly primaryWalletAddress: string,
     public readonly amount: string,
     public readonly balance: string,
     public readonly reason: string,
