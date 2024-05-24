@@ -322,6 +322,8 @@ export class AppGateway
     const {
       displayName,
       description,
+      startDate,
+      endDate,
       prizes,
       totalCount,
       items,
@@ -338,6 +340,8 @@ export class AppGateway
       success: true,
       displayName,
       description,
+      startDate,
+      endDate,
       prizes,
       totalCount,
       items,

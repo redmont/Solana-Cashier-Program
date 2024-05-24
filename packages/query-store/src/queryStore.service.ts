@@ -38,7 +38,10 @@ export class QueryStoreService implements OnModuleInit {
   ) {}
 
   private async getCurrentTournament(date: string): Promise<
-    Pick<Tournament, 'displayName' | 'description' | 'endDate' | 'prizes'> & {
+    Pick<
+      Tournament,
+      'displayName' | 'description' | 'startDate' | 'endDate' | 'prizes'
+    > & {
       codeName: string;
     }
   > {
@@ -56,12 +59,14 @@ export class QueryStoreService implements OnModuleInit {
       return null;
     }
 
-    const { sk, displayName, description, endDate, prizes } = tournaments[0];
+    const { sk, displayName, description, startDate, endDate, prizes } =
+      tournaments[0];
 
     return {
       codeName: sk,
       displayName,
       description,
+      startDate,
       endDate,
       prizes,
     };
@@ -525,6 +530,7 @@ export class QueryStoreService implements OnModuleInit {
       title: string;
       description: string;
     }[];
+    startDate: string;
     endDate: string;
     items: {
       rank: number;
@@ -547,13 +553,15 @@ export class QueryStoreService implements OnModuleInit {
         displayName: null,
         description: null,
         prizes: [],
+        startDate: null,
         endDate: null,
         totalCount: 0,
         items: [],
       };
     }
 
-    const { codeName, displayName, description, prizes, endDate } = tournament;
+    const { codeName, displayName, description, prizes, startDate, endDate } =
+      tournament;
 
     let currentPage = 1;
     let rank = 1;
@@ -594,6 +602,7 @@ export class QueryStoreService implements OnModuleInit {
           displayName,
           description,
           prizes,
+          startDate,
           endDate,
           items: matches.map(
             ({
@@ -632,6 +641,7 @@ export class QueryStoreService implements OnModuleInit {
             displayName,
             description,
             prizes,
+            startDate,
             endDate,
             totalCount,
             currentUserItem,
@@ -652,6 +662,7 @@ export class QueryStoreService implements OnModuleInit {
       displayName,
       description,
       prizes,
+      startDate,
       endDate,
       totalCount: 0,
       items: [],
