@@ -1,16 +1,9 @@
 'use client';
 
-import React, {
-  FC,
-  useState,
-  useEffect,
-  createContext,
-  useContext,
-  useRef,
-} from 'react';
+import React, { FC } from 'react';
 import { http } from 'viem';
 import { createConfig, WagmiProvider, useAccount } from 'wagmi';
-import { mainnet } from 'wagmi/chains';
+import { mainnet, sepolia } from 'wagmi/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   DynamicContextProvider,
@@ -26,10 +19,11 @@ import { dynamicWalletEnvironmentId } from '@/config';
 const queryClient = new QueryClient();
 
 export const wagmiConfig = createConfig({
-  chains: [mainnet],
+  chains: [mainnet, sepolia],
   multiInjectedProviderDiscovery: false,
   transports: {
     [mainnet.id]: http(),
+    [sepolia.id]: http(),
   },
 });
 

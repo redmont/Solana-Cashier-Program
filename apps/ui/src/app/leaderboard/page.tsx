@@ -1,6 +1,14 @@
 'use client';
 
-import { ChangeEvent, FC, useCallback, useEffect, useState } from 'react';
+import {
+  ChangeEvent,
+  FC,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import dayjs, { Dayjs } from 'dayjs';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import { Button } from 'primereact/button';
@@ -20,11 +28,21 @@ interface RecordProps {
 }
 
 export default function Leaderboard() {
+  const coundownTimer = useRef<NodeJS.Timeout>();
   const [searchQuery, setSearchQuery] = useState('');
   const [isFiltered, setFiltered] = useState(false);
   const [records, setRecords] = useState<RecordProps[]>([]);
   const [currentRecord, setCurrentRecord] = useState<RecordProps | null>(null);
   const { send, connected } = useSocket();
+  const [isReady, setReady] = useState(false);
+  const [tournamentName, setTournamentName] = useState('');
+
+  const [prizes, setPrizes] = useState<GetTournamentMessageResponse['prizes']>(
+    [],
+  );
+
+  const [countdownTarget, setCountdownTarget] = useState<number>(0);
+  const [countdownValue, setCountdownValue] = useState<number>(0);
 
   const getData = useCallback(
     async (query: string) => {
@@ -32,14 +50,46 @@ export default function Leaderboard() {
 
       const resp = await send(new GetTournamentMessage(100, 1, query));
 
-      const { items, currentUserItem = null } =
-        resp as GetTournamentMessageResponse;
+      const {
+        displayName,
+        items,
+        currentUserItem = null,
+        prizes = [],
+        endDate,
+      } = resp as GetTournamentMessageResponse;
 
+      if (endDate) {
+        setCountdownTarget(dayjs(endDate).valueOf());
+      }
+
+      setTournamentName(displayName);
       setRecords(items.slice(0, 100));
       setCurrentRecord(currentUserItem);
+      setPrizes(prizes);
     },
     [connected, send],
   );
+
+  useEffect(() => {
+    let timer = coundownTimer.current;
+
+    if (timer) return;
+
+    timer = coundownTimer.current = setInterval(() => {
+      let timeLeft = countdownTarget
+        ? dayjs(countdownTarget).diff().valueOf()
+        : 0;
+
+      if (timeLeft < 0) timeLeft = 0;
+
+      setCountdownValue(Math.floor(timeLeft / 1000));
+    }, 1000);
+
+    return () => {
+      timer && clearInterval(timer);
+      coundownTimer.current = undefined;
+    };
+  }, [countdownTarget]);
 
   useEffect(() => {
     getData('');
@@ -63,8 +113,64 @@ export default function Leaderboard() {
     setSearchQuery('');
   }, [getData]);
 
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => setReady(true));
+
+  useEffect(() => {
+    const el = carouselRef.current;
+
+    if (!el) return;
+
+    const { width } = el.getBoundingClientRect();
+
+    el.scrollLeft = (el.scrollWidth - width) / 2;
+  }, []);
+
+  const countdownSeconds = countdownValue % 60;
+  const countdownMinutes = Math.floor(countdownValue / 60) % 60;
+  const countdownHours = Math.floor(countdownValue / 60 / 60) % 24;
+  const countdownDays = Math.floor(countdownValue / 60 / 60 / 24);
+
   return (
     <main className="leaderboard-page">
+      <div className="tournament-info">
+        <div className="tournament-name">{tournamentName}</div>
+
+        {countdownValue > 0 && (
+          <div className="tournament-countdown">
+            <span>{countdownDays}d</span>
+            <span>{countdownHours}h</span>
+            <span>{countdownMinutes}m</span>
+            <span>{countdownSeconds}s</span>
+          </div>
+        )}
+      </div>
+
+      <div
+        className={classNames('prize-carousel', { loading: !isReady })}
+        ref={carouselRef}
+      >
+        <PrizeTile
+          place="2"
+          value={prizes[1]?.title}
+          description={prizes[1]?.description}
+        />
+
+        <PrizeTile
+          large
+          place="1"
+          value={prizes[0]?.title}
+          description={prizes[0]?.description}
+        />
+
+        <PrizeTile
+          place="3"
+          value={prizes[2]?.title}
+          description={prizes[2]?.description}
+        />
+      </div>
+
       <div className="leaderboard">
         <div className="header">
           <h1>Leaderboard</h1>
@@ -103,10 +209,8 @@ export default function Leaderboard() {
               <div className="table-header">
                 <div className="rank">Rank</div>
                 <div className="player">Player</div>
-                <div className="wins">Wins</div>
-                <div className="losses">Losses</div>
-                <div className="winrate">Win Rate</div>
                 <div className="points">Points</div>
+                <div className="wins">Wins</div>
               </div>
 
               <div className="table-body">
@@ -135,25 +239,14 @@ const MobileRecord: FC<RecordProps> = (props) => (
     })}
   >
     <div className="mobile-record-body">
-      <div className="rank">{props.rank}</div>
+      <div className={`rank rank-${props.rank}`}>{props.rank}</div>
+      <div className={`rank-image rank-image-${props.rank}`}></div>
       <div className="player">{truncateEthAddress(props.walletAddress)}</div>
-      <div className="points-label">Points:</div>
+      <div className="wins-label">Points Wins:</div>
+      <div className="wins-value">{Math.floor(5000).toLocaleString()}</div>
+      <div className="points-label">Points Balance:</div>
       <div className="points-value">
         {Math.floor(+props.balance).toLocaleString()}
-      </div>
-      <div className="winrate-label">Winrate:</div>
-      <div className="winrate-value">96%</div>
-    </div>
-
-    <div className="mobile-record-footer">
-      <div className="stat wins">
-        <span className="stat-label">Wins:</span>
-        <span className="stat-value">45</span>
-      </div>
-
-      <div className="stat losses">
-        <span className="stat-label">Losses:</span>
-        <span className="stat-value">2</span>
       </div>
     </div>
   </div>
@@ -164,11 +257,35 @@ const TableRow: FC<RecordProps> = (props) => (
     className={classNames('table-row', { highlighted: props.highlighted })}
     key={props.walletAddress}
   >
-    <div className="rank">{props.rank}</div>
+    <div className={`rank rank-${props.rank}`}>
+      <span className={`rank-image rank-image-${props.rank}`}></span>
+      <span className="rank-value">{props.rank}</span>
+    </div>
     <div className="player">{truncateEthAddress(props.walletAddress)}</div>
-    <div className="wins">45</div>
-    <div className="losses">2</div>
-    <div className="winrate">96%</div>
     <div className="points">{Math.floor(+props.balance).toLocaleString()}</div>
+    <div className="wins">{Math.floor(5000).toLocaleString()}</div>
   </div>
 );
+
+interface PrizeTileProps {
+  place: '1' | '2' | '3';
+  value?: string;
+  description?: string;
+  large?: boolean;
+}
+
+const PrizeTile: FC<PrizeTileProps> = (props) => {
+  return (
+    <div
+      className={classNames('prize-tile', `prize-${props.place}`, {
+        large: props.large,
+      })}
+    >
+      <div className="prize-icon">
+        <img src={`/prize-${props.place}.svg`} />
+      </div>
+      <div className="prize-value">{props.value}</div>
+      <div className="prize-description">{props.description}</div>
+    </div>
+  );
+};
