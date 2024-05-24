@@ -8,11 +8,11 @@ import {
   useRef,
   useState,
 } from 'react';
+import dayjs, { Dayjs } from 'dayjs';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import { Button } from 'primereact/button';
 import { ScrollPanel } from 'primereact/scrollpanel';
-import { ProgressSpinner } from 'primereact/progressspinner';
 import {
   GetTournamentMessage,
   GetTournamentMessageResponse,
@@ -28,12 +28,21 @@ interface RecordProps {
 }
 
 export default function Leaderboard() {
+  const coundownTimer = useRef<NodeJS.Timeout>();
   const [searchQuery, setSearchQuery] = useState('');
   const [isFiltered, setFiltered] = useState(false);
   const [records, setRecords] = useState<RecordProps[]>([]);
   const [currentRecord, setCurrentRecord] = useState<RecordProps | null>(null);
   const { send, connected } = useSocket();
   const [isReady, setReady] = useState(false);
+  const [tournamentName, setTournamentName] = useState('');
+
+  const [prizes, setPrizes] = useState<GetTournamentMessageResponse['prizes']>(
+    [],
+  );
+
+  const [countdownTarget, setCountdownTarget] = useState<number>(0);
+  const [countdownValue, setCountdownValue] = useState<number>(0);
 
   const getData = useCallback(
     async (query: string) => {
@@ -41,14 +50,46 @@ export default function Leaderboard() {
 
       const resp = await send(new GetTournamentMessage(100, 1, query));
 
-      const { items, currentUserItem = null } =
-        resp as GetTournamentMessageResponse;
+      const {
+        displayName,
+        items,
+        currentUserItem = null,
+        prizes = [],
+        endDate,
+      } = resp as GetTournamentMessageResponse;
 
+      if (endDate) {
+        setCountdownTarget(dayjs(endDate).valueOf());
+      }
+
+      setTournamentName(displayName);
       setRecords(items.slice(0, 100));
       setCurrentRecord(currentUserItem);
+      setPrizes(prizes);
     },
     [connected, send],
   );
+
+  useEffect(() => {
+    let timer = coundownTimer.current;
+
+    if (timer) return;
+
+    timer = coundownTimer.current = setInterval(() => {
+      let timeLeft = countdownTarget
+        ? dayjs(countdownTarget).diff().valueOf()
+        : 0;
+
+      if (timeLeft < 0) timeLeft = 0;
+
+      setCountdownValue(Math.floor(timeLeft / 1000));
+    }, 1000);
+
+    return () => {
+      timer && clearInterval(timer);
+      coundownTimer.current = undefined;
+    };
+  }, [countdownTarget]);
 
   useEffect(() => {
     getData('');
@@ -86,16 +127,24 @@ export default function Leaderboard() {
     el.scrollLeft = (el.scrollWidth - width) / 2;
   }, []);
 
+  const countdownSeconds = countdownValue % 60;
+  const countdownMinutes = Math.floor(countdownValue / 60) % 60;
+  const countdownHours = Math.floor(countdownValue / 60 / 60) % 24;
+  const countdownDays = Math.floor(countdownValue / 60 / 60 / 24);
+
   return (
     <main className="leaderboard-page">
       <div className="tournament-info">
-        <div className="tournament-name">Tournament name</div>
-        <div className="tournament-countdown">
-          <span>5d</span>
-          <span>16h</span>
-          <span>22m</span>
-          <span>12s</span>
-        </div>
+        <div className="tournament-name">{tournamentName}</div>
+
+        {countdownValue > 0 && (
+          <div className="tournament-countdown">
+            <span>{countdownDays}d</span>
+            <span>{countdownHours}h</span>
+            <span>{countdownMinutes}m</span>
+            <span>{countdownSeconds}s</span>
+          </div>
+        )}
       </div>
 
       <div
@@ -104,21 +153,21 @@ export default function Leaderboard() {
       >
         <PrizeTile
           place="2"
-          value="$100"
-          description="$100 in USDC will be deposited into the winner's wallet."
+          value={prizes[1]?.title}
+          description={prizes[1]?.description}
         />
 
         <PrizeTile
           large
           place="1"
-          value="$150"
-          description="$150 in USDC will be deposited into the winner's wallet."
+          value={prizes[0]?.title}
+          description={prizes[0]?.description}
         />
 
         <PrizeTile
           place="3"
-          value="$50"
-          description="$50 in USDC will be deposited into the winner's wallet."
+          value={prizes[2]?.title}
+          description={prizes[2]?.description}
         />
       </div>
 
