@@ -71,7 +71,7 @@ export function useActivityStream(series?: string, matchId?: string) {
         isReady.current = true;
       },
     );
-  }, [connected, matchId]);
+  }, [connected, series, matchId]);
 
   return state;
 }

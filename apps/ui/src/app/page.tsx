@@ -1,20 +1,21 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 
 dayjs.extend(duration);
 
+import { TwitchChat } from 'react-twitch-embed';
+import { MatchStatus } from '@/types';
+import { twitchChannel, streamUrl, trailerUrl } from '@/config';
 import { useEthWallet, useAppState } from '@/hooks';
 import { BetPlacementWidget } from '@/components/betPlacementWidget';
 import { CurrentBetWidget } from '@/components/currentBetWidget';
-import { twitchChannel } from '@/config';
 import { BetListWidget } from '@/components/betListWidget';
 import { ActivityStreamWidget } from '@/components/activityStreamWidget';
-import { TwitchChat } from 'react-twitch-embed';
-import { trailerUrl } from '@/config';
 import { ConnectWalletWidget } from '@/components/connectWalletWidget';
-import { MatchStatus } from '@/types';
+import { MatchResultWidget } from '@/components/matchResultWidget';
 import { VideoStream } from '@/components/videoStream';
 
 export default function Home() {
@@ -29,6 +30,12 @@ export default function Home() {
       return result + (match.bets[codeName]?.stake ?? 0);
     }, 0)
   );
+
+  useEffect(() => {
+    if (match?.status === MatchStatus.Finished && isBetPlaced) {
+      setResultVisible(true);
+    }
+  }, [match?.status, isBetPlaced]);
 
   return (
     <main className="main-page">
