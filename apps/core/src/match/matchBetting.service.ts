@@ -117,13 +117,11 @@ export class MatchBettingService {
         .filter((x) => x.userId === userId)
         .reduce((acc, bet) => acc + bet.amount, 0);
 
-      const netWinAmount = Math.floor(amount - betAmount);
-
       const timestamp =
         await this.matchPersistenceService.createUserMatchResult(
           matchId,
           userId,
-          netWinAmount,
+          Math.floor(amount),
         );
 
       this.gatewayManagerService.emitToClient(
@@ -133,7 +131,7 @@ export class MatchBettingService {
           timestamp,
           matchId,
           betAmount.toString(),
-          netWinAmount.toString(),
+          Math.floor(amount).toString(),
           winningFighter.codeName,
         ),
       );
@@ -142,7 +140,7 @@ export class MatchBettingService {
       await this.matchPersistenceService.recordUserMatchHistory({
         userId,
         betAmount: betAmount.toString(),
-        winAmount: netWinAmount.toString(),
+        winAmount: Math.floor(amount).toString(),
         seriesCodeName,
         matchId,
         startTime,
@@ -173,7 +171,7 @@ export class MatchBettingService {
         await this.matchPersistenceService.createUserMatchResult(
           matchId,
           loserUserId,
-          -betAmount,
+          0,
         );
 
       this.gatewayManagerService.emitToClient(
