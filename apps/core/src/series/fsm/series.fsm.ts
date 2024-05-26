@@ -152,8 +152,7 @@ export function createSeriesFSM(
               setStartTime: {
                 invoke: {
                   src: 'setStartTime',
-                  input: ({ context: { config } }) =>
-                    config.betPlacementTime + 10,
+                  input: ({ context: { config } }) => config.betPlacementTime,
                   onDone: {
                     target: 'onStateChange',
                     actions: assign({

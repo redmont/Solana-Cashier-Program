@@ -1,6 +1,6 @@
 import { Command, EventStore, tuple } from '@castore/core';
 
-type Input = { accountId: string; amount: number };
+type Input = { accountId: string; amount: number; reason: string };
 type Output = { accountId: string };
 type Context = {};
 
@@ -13,7 +13,7 @@ export const creditAccountCommand = (eventStore: EventStore) =>
       [eventStore],
       {}: Context,
     ): Promise<Output> => {
-      const { accountId, amount } = commandInput;
+      const { accountId, amount, reason } = commandInput;
 
       const { aggregate: accountAggregate } =
         await eventStore.getAggregate(accountId);
@@ -29,7 +29,7 @@ export const creditAccountCommand = (eventStore: EventStore) =>
           aggregateId: accountId,
           version: accountVersion + 1,
           type: 'ACCOUNT_CREDITED',
-          payload: { accountId, amount },
+          payload: { accountId, amount, reason },
         },
         {
           prevAggregate: accountAggregate,

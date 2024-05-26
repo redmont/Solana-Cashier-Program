@@ -6,7 +6,11 @@ import {
 } from '@castore/core';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { BalanceUpdatedEvent } from 'cashier-messages';
+import {
+  AccountCreditedEvent,
+  AccountDebitedEvent,
+  BalanceUpdatedEvent,
+} from 'cashier-messages';
 import { ReadModelService } from 'cashier-read-model';
 import { AccountAggregate } from 'src/account/aggregates';
 import { AccountEventDetails } from 'src/account/reducers/accountsReducer';
@@ -35,6 +39,35 @@ export class QueryModelBusAdapter implements MessageChannelAdapter {
       );
     } else {
       await this.readModelService.updateAccountBalance(accountId, balance);
+
+      const payload = message.event.payload as any;
+
+      if (message.event.type === 'ACCOUNT_DEBITED') {
+        this.broker.emit<any, AccountDebitedEvent>(
+          AccountDebitedEvent.messageType,
+          {
+            timestamp: message.event.timestamp,
+            userId: accountId,
+            amount: payload.amount,
+            balance: balance.toString(),
+            reason: payload.reason,
+          },
+        );
+      }
+
+      if (message.event.type === 'ACCOUNT_CREDITED') {
+        this.broker.emit<any, AccountCreditedEvent>(
+          AccountCreditedEvent.messageType,
+          {
+            timestamp: message.event.timestamp,
+            userId: accountId,
+            primaryWalletAddress: primaryWalletAddress,
+            amount: payload.amount,
+            balance: balance.toString(),
+            reason: payload.reason,
+          },
+        );
+      }
     }
 
     this.broker.emit(BalanceUpdatedEvent.messageType, {

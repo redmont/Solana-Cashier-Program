@@ -89,6 +89,33 @@ curl -X PATCH --location 'http://localhost:8080/admin/roster' \
 }'
 ```
 
+Create a 7 day tournament:
+
+```sh
+curl --location 'http://localhost:8080/admin/tournaments' \
+--header 'Content-Type: application/json' \
+--data '{
+  "codeName": "chicken-dinner",
+  "displayName": "Chicken dinner",
+  "startDate": "'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'",
+  "endDate": "'"$(date -d "+7 days" -u +"%Y-%m-%dT%H:%M:%SZ")"'",
+  "prizes": [
+    {
+      "title": "$300",
+      "description": "Winner!"
+    },
+    {
+      "title": "$200",
+      "description": "Runner-up!"
+    },
+    {
+      "title": "$100",
+      "description": "Third place!"
+    }
+  ]
+}'
+```
+
 ### Run the mock server
 
 ```sh

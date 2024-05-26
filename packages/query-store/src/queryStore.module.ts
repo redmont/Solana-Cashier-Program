@@ -15,6 +15,8 @@ import { CurrentMatchSchema } from './schemas/currentMatch.schema';
 import { UserMatchResultSchema } from './schemas/userMatchResult.schema';
 import { RosterSchema } from './schemas/roster.schema';
 import { UserMatchSchema } from './schemas/userMatch.schema';
+import { TournamentSchema } from './schemas/tournament.schema';
+import { TournamentEntrySchema } from './schemas/tournamentEntry.schema';
 
 interface QueryStoreOptions {
   local?: string | boolean;
@@ -132,6 +134,34 @@ export class QueryStoreModule {
         useFactory: async (_: any, options: QueryStoreOptions) => {
           return {
             schema: RosterSchema,
+            options: {
+              tableName: options.tableName,
+              create: options.isDynamoDbLocal,
+            },
+          };
+        },
+        inject: ['QUERY_STORE_OPTIONS'],
+      },
+      {
+        name: 'tournament',
+        imports: options.imports || [],
+        useFactory: async (_: any, options: QueryStoreOptions) => {
+          return {
+            schema: TournamentSchema,
+            options: {
+              tableName: options.tableName,
+              create: options.isDynamoDbLocal,
+            },
+          };
+        },
+        inject: ['QUERY_STORE_OPTIONS'],
+      },
+      {
+        name: 'tournamentEntry',
+        imports: options.imports || [],
+        useFactory: async (_: any, options: QueryStoreOptions) => {
+          return {
+            schema: TournamentEntrySchema,
             options: {
               tableName: options.tableName,
               create: options.isDynamoDbLocal,

@@ -31,12 +31,14 @@ const matchStatusText: Record<MatchStatus, string> = {
 export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
   const { balance, match } = useAppState();
   const [error, setError] = useState('');
+  const [isDirty, setDirty] = useState(false);
   const [betPercent, setBetPercent] = useState(25);
   const [betPoints, setBetPoints] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState('00 : 00');
   const [matchTime, setMatchTime] = useState('00 : 00');
   const countdown = useRef<NodeJS.Timeout>();
+  const isReady = useRef(false);
   const { send } = useSocket();
   const posthog = usePostHog();
 
@@ -46,14 +48,21 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
 
   useEffect(() => {
     if (balance < betPoints) {
-      setError('Insufficient points balance');
+      if (isDirty) setError('Insufficient points balance');
+      else setBetPoints(Math.floor(balance));
     } else {
       setError('');
     }
-  }, [balance, betPoints]);
+
+    setBetPercent(balance ? Math.floor((betPoints / balance) * 100) : 0);
+  }, [balance, betPoints, isDirty]);
 
   useEffect(() => {
-    setBetPoints(Math.floor((balance * betPercent) / 100));
+    if (isReady.current) return;
+
+    setBetPoints(Math.floor(balance * 0.25));
+
+    isReady.current = balance > 0;
   }, [balance]);
 
   useEffect(() => {
@@ -78,11 +87,8 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
 
   const handlePointsChange = useCallback(
     (evt: InputNumberChangeEvent) => {
-      const points = evt?.value || 0;
-      const percent = balance ? Math.floor((points / balance) * 100) : 0;
-
-      setBetPoints(points);
-      setBetPercent(percent);
+      setBetPoints(evt?.value || 0);
+      setDirty(true);
     },
     [balance],
   );
@@ -94,6 +100,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
 
       setBetPercent(percent);
       setBetPoints(points);
+      setDirty(true);
     },
     [balance],
   );
@@ -102,6 +109,8 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
     if (!match?.series || !selectedFighter?.codeName) {
       return;
     }
+
+    setDirty(false);
 
     await send(
       new PlaceBetMessage(match?.series, betPoints, selectedFighter.codeName),

@@ -5,3 +5,4 @@ export * from './getBalance';
 export * from './getAllBalances';
 export * from './creditByWalletAddress';
 export * from './debitByWalletAddress';
+export * from './ensureAccountExists';

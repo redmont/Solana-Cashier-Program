@@ -8,6 +8,7 @@ export class DebitMessage extends BrokerMessage<DebitMessageResponse> {
   constructor(
     public readonly accountId: string,
     public readonly amount: number,
+    public readonly reason: string,
   ) {
     super();
   }

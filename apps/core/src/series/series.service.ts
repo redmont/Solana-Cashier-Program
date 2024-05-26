@@ -339,7 +339,7 @@ export class SeriesService {
     const debitResult = await sendBrokerMessage<
       DebitMessage,
       DebitMessageResponse
-    >(this.broker, new DebitMessage(userId, amount));
+    >(this.broker, new DebitMessage(userId, amount, 'BET'));
     if (!debitResult.success) {
       return {
         success: false,

@@ -10,6 +10,9 @@ import { Roster } from './interfaces/roster.interface';
 import { UserMatch } from './interfaces/userMatch.interface';
 import { GetMatchResult } from './models/getMatchResult';
 import { GetUserMatchResult } from './models/getUserMatchResult';
+import { Tournament } from './interfaces/tournament.interface';
+import { TournamentEntry } from './interfaces/tournamentEntry.interface';
+import { SortOrder } from 'dynamoose/dist/General';
 
 @Injectable()
 export class QueryStoreService implements OnModuleInit {
@@ -28,7 +31,46 @@ export class QueryStoreService implements OnModuleInit {
     private readonly userMatchResultModel: Model<UserMatchResult, Key>,
     @InjectModel('roster')
     private readonly rosterModel: Model<Roster, Key>,
+    @InjectModel('tournament')
+    private readonly tournamentModel: Model<Tournament, Key>,
+    @InjectModel('tournamentEntry')
+    private readonly tournamentEntryModel: Model<TournamentEntry, Key>,
   ) {}
+
+  private async getCurrentTournament(date: string): Promise<
+    Pick<
+      Tournament,
+      'displayName' | 'description' | 'startDate' | 'endDate' | 'prizes'
+    > & {
+      codeName: string;
+    }
+  > {
+    const tournaments = await this.tournamentModel
+      .query({
+        pk: 'tournament',
+        startDate: { le: date },
+      })
+      .using('pkStartDate')
+      .where('endDate')
+      .ge(date)
+      .exec();
+
+    if (tournaments.length === 0) {
+      return null;
+    }
+
+    const { sk, displayName, description, startDate, endDate, prizes } =
+      tournaments[0];
+
+    return {
+      codeName: sk,
+      displayName,
+      description,
+      startDate,
+      endDate,
+      prizes,
+    };
+  }
 
   async onModuleInit() {
     // Ensure there is a current match item
@@ -383,5 +425,247 @@ export class QueryStoreService implements OnModuleInit {
       .exec();
 
     return matches.map(({ pk, sk, userId, ...rest }) => rest);
+  }
+
+  async createTournament({
+    codeName,
+    displayName,
+    description,
+    startDate,
+    endDate,
+    prizes,
+  }: {
+    codeName: string;
+    displayName: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+    prizes: {
+      title: string;
+      description: string;
+    }[];
+  }) {
+    await this.tournamentModel.create({
+      pk: 'tournament',
+      sk: codeName,
+      displayName,
+      description,
+      startDate,
+      endDate,
+      prizes,
+    });
+  }
+
+  async updateTournament({
+    codeName,
+    displayName,
+    description,
+    startDate,
+    endDate,
+    prizes,
+  }: {
+    codeName: string;
+    displayName: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+    prizes: {
+      title: string;
+      description: string;
+    }[];
+  }) {
+    await this.tournamentModel.update(
+      {
+        pk: 'tournament',
+        sk: codeName,
+      },
+      {
+        displayName,
+        description,
+        startDate,
+        endDate,
+        prizes,
+      },
+    );
+  }
+
+  async updateTournamentEntry({
+    tournament,
+    userId,
+    primaryWalletAddress,
+    tournamentEntryWinAmount,
+    balance,
+  }: {
+    tournament: string;
+    userId: string;
+    primaryWalletAddress: string;
+    tournamentEntryWinAmount: number;
+    balance: string;
+  }) {
+    await this.tournamentEntryModel.create(
+      {
+        pk: `tournamentEntry#${tournament}`,
+        sk: userId,
+        primaryWalletAddress,
+        tournamentEntryWinAmount,
+        balance,
+      },
+      {
+        overwrite: true,
+        return: 'item',
+      },
+    );
+  }
+
+  async getCurrentTournamentLeaderboard(
+    date: string,
+    pageSize: number = 50,
+    pageNumber: number = 1,
+    userId: string = null,
+    searchQuery: string = null,
+  ): Promise<{
+    displayName: string;
+    description: string;
+    prizes: {
+      title: string;
+      description: string;
+    }[];
+    startDate: string;
+    endDate: string;
+    items: {
+      rank: number;
+      walletAddress: string;
+      winAmount: string;
+      balance: string;
+    }[];
+    totalCount?: number;
+    currentUserItem?: {
+      rank: number;
+      walletAddress: string;
+      winAmount: string;
+      balance: string;
+    };
+  }> {
+    const tournament = await this.getCurrentTournament(date);
+
+    if (!tournament) {
+      return {
+        displayName: null,
+        description: null,
+        prizes: [],
+        startDate: null,
+        endDate: null,
+        totalCount: 0,
+        items: [],
+      };
+    }
+
+    const { codeName, displayName, description, prizes, startDate, endDate } =
+      tournament;
+
+    let currentPage = 1;
+    let rank = 1;
+    let lastKey;
+    let currentUserItem;
+
+    do {
+      const query = this.tournamentEntryModel
+        .query({
+          pk: `tournamentEntry#${codeName}`,
+        })
+        .using('pkTournamentEntryWinAmount')
+        .limit(pageSize)
+        .sort(SortOrder.descending);
+      if (lastKey) {
+        query.startAt(lastKey);
+      }
+
+      const response = await query.exec();
+      lastKey = response.lastKey;
+      currentPage += 1;
+
+      if (searchQuery) {
+        const matches: (TournamentEntry & { rank: number })[] = [];
+        for (const item of response) {
+          if (
+            item.primaryWalletAddress
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase())
+          ) {
+            matches.push({ ...item, rank });
+          }
+
+          rank++;
+        }
+
+        return {
+          displayName,
+          description,
+          prizes,
+          startDate,
+          endDate,
+          items: matches.map(
+            ({
+              rank,
+              primaryWalletAddress,
+              tournamentEntryWinAmount,
+              balance,
+            }) => ({
+              rank,
+              walletAddress: primaryWalletAddress,
+              winAmount: tournamentEntryWinAmount.toString(),
+              balance,
+            }),
+          ),
+        };
+      } else {
+        if (userId) {
+          const userItemIndex = response.findIndex(
+            (x) => x.sk === `account#${userId}`,
+          );
+          if (userItemIndex !== -1) {
+            const userItem = response[userItemIndex];
+            const userRank = rank + userItemIndex;
+            currentUserItem = {
+              rank: userRank,
+              walletAddress: userItem.primaryWalletAddress,
+              balance: userItem.balance,
+            };
+          }
+        }
+
+        if (currentPage > pageNumber) {
+          const totalCount = 0; // todo
+
+          return {
+            displayName,
+            description,
+            prizes,
+            startDate,
+            endDate,
+            totalCount,
+            currentUserItem,
+            items: response.map((item) => ({
+              rank: rank++,
+              walletAddress: item.primaryWalletAddress,
+              balance: item.balance,
+              winAmount: item.tournamentEntryWinAmount.toString(),
+            })),
+          };
+        } else {
+          rank += response.length;
+        }
+      }
+    } while (lastKey);
+
+    return {
+      displayName,
+      description,
+      prizes,
+      startDate,
+      endDate,
+      totalCount: 0,
+      items: [],
+    };
   }
 }

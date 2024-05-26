@@ -10,6 +10,7 @@ export class CreditByWalletAddressMessage extends BrokerMessage<{
   constructor(
     public readonly walletAddress: string,
     public readonly amount: number,
+    public readonly reason: string,
   ) {
     super();
   }
