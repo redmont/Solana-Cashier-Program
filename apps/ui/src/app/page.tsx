@@ -20,6 +20,7 @@ import { VideoStream } from '@/components/videoStream';
 
 export default function Home() {
   const { isConnected } = useEthWallet();
+  const [isResultVisible, setResultVisible] = useState(false);
 
   const { match } = useAppState();
   const { fighters = [] } = match ?? {};
@@ -67,9 +68,15 @@ export default function Home() {
 
       {!isConnected && <ConnectWalletWidget />}
 
-      {isConnected && <BetPlacementWidget compact={isBetPlaced} />}
+      {isConnected && isResultVisible && (
+        <MatchResultWidget onDismiss={() => setResultVisible(false)} />
+      )}
 
-      {isConnected && isBetPlaced && <CurrentBetWidget />}
+      {isConnected && !isResultVisible && (
+        <BetPlacementWidget compact={isBetPlaced} />
+      )}
+
+      {isConnected && !isResultVisible && isBetPlaced && <CurrentBetWidget />}
 
       <ActivityStreamWidget />
 
