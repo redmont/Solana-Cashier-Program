@@ -51,16 +51,20 @@ export class QueryStoreService implements OnModuleInit {
         startDate: { le: date },
       })
       .using('pkStartDate')
-      .where('endDate')
-      .ge(date)
       .exec();
 
     if (tournaments.length === 0) {
       return null;
     }
 
+    // We need the tournament that has the latest start date.
+    // We'll use lexical sort, as the dates are in ISO8601 format.
+    const sortedTournaments = tournaments.sort((a, b) =>
+      b.sk.localeCompare(a.sk),
+    );
+
     const { sk, displayName, description, startDate, endDate, prizes } =
-      tournaments[0];
+      sortedTournaments[0];
 
     return {
       codeName: sk,
