@@ -11,13 +11,18 @@ provider "aws" {
   region = local.aws_region
 }
 
+provider "aws" {
+  region = "us-east-1"
+  alias  = "us_east_1"
+}
+
 module "vpc" {
   source                 = "terraform-aws-modules/vpc/aws"
   name                   = "${local.prefix}-vpc-${var.environment}"
   cidr                   = local.vpc_cidr
   azs                    = ["${local.aws_region}a", "${local.aws_region}b", "${local.aws_region}c"]
-  private_subnets        = ["10.1.0.0/24", "10.1.1.0/24", "10.1.2.0/24"]
-  public_subnets         = ["10.1.100.0/24", "10.1.101.0/24", "10.1.102.0/24"]
+  private_subnets        = local.private_subnets
+  public_subnets         = local.public_subnets
   enable_nat_gateway     = true
   single_nat_gateway     = false
   one_nat_gateway_per_az = true
@@ -51,7 +56,16 @@ module "ecs" {
   cashier_read_model_table_arn  = aws_dynamodb_table.cashier_read_model_table.arn
   cashier_events_table_name     = aws_dynamodb_table.cashier_events_table.name
   cashier_events_table_arn      = aws_dynamodb_table.cashier_events_table.arn
+  oracle_indexer_table_name     = "brawl-oracle-indexer-dev"
+  oracle_indexer_table_arn      = "arn:aws:dynamodb:ap-southeast-1:875278257729:table/brawl-oracle-indexer-dev"
 
   service_discovery_namespace_id  = aws_service_discovery_private_dns_namespace.discovery_namespace.id
   service_discovery_namespace_arn = aws_service_discovery_private_dns_namespace.discovery_namespace.arn
+
+  media_library_bucket_arn  = aws_s3_bucket.public_assets_bucket.arn
+  media_library_bucket_name = aws_s3_bucket.public_assets_bucket.bucket
+
+  public_assets_hostname = var.public_assets_hostname
+
+  dynamic_public_key = var.dynamic_public_key
 }

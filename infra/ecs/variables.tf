@@ -73,6 +73,16 @@ variable "query_store_table_arn" {
   type        = string
 }
 
+variable "oracle_indexer_table_name" {
+  description = "Oracle indexer table name"
+  type        = string
+}
+
+variable "oracle_indexer_table_arn" {
+  description = "Oracle indexer table ARN"
+  type        = string
+}
+
 variable "cashier_read_model_table_name" {
   description = "Cashier read model table name"
   type        = string
@@ -100,5 +110,25 @@ variable "service_discovery_namespace_id" {
 
 variable "service_discovery_namespace_arn" {
   description = "Service discovery namespace ARN"
+  type        = string
+}
+
+variable "media_library_bucket_arn" {
+  description = "Media library bucket ARN"
+  type        = string
+}
+
+variable "media_library_bucket_name" {
+  description = "Media library bucket name"
+  type        = string
+}
+
+variable "public_assets_hostname" {
+  description = "Public assets hostname"
+  type        = string
+}
+
+variable "dynamic_public_key" {
+  description = "Dynamic.xyz public key"
   type        = string
 }

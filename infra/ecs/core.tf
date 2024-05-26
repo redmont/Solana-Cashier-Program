@@ -37,7 +37,15 @@ resource "aws_iam_policy" "core_policy" {
           "dynamodb:Scan",
           "dynamodb:UpdateItem"
         ],
-        Resource = [var.core_table_arn, var.query_store_table_arn]
+        Resource = [var.core_table_arn, "${var.core_table_arn}/index/*", var.query_store_table_arn, "${var.query_store_table_arn}/index/*", var.oracle_indexer_table_arn, "${var.oracle_indexer_table_arn}/index/*"]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject"
+        ],
+        Resource = [var.media_library_bucket_arn, "${var.media_library_bucket_arn}/*"]
       }
     ]
   })
@@ -46,6 +54,12 @@ resource "aws_iam_policy" "core_policy" {
 resource "aws_iam_role_policy_attachment" "core_policy" {
   role       = aws_iam_role.core_task_role.name
   policy_arn = aws_iam_policy.core_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "dev_dynamodb_policy" {
+  count      = var.environment == "prod" ? 1 : 0
+  role       = aws_iam_role.core_task_role.name
+  policy_arn = "arn:aws:iam::767397714894:policy/DynamoDB-FullAccess-Policy-in-DevAccount"
 }
 
 locals {
@@ -86,6 +100,15 @@ locals {
       },
       {
         name = "GAME_SERVER_WS_PORT", value = "8080"
+      },
+      {
+        name = "PRICE_DATA_TABLE_NAME", value = var.oracle_indexer_table_arn #value = var.oracle_indexer_table_name
+      },
+      {
+        name = "MEDIA_LIBRARY_BUCKET_NAME", value = var.media_library_bucket_name
+      },
+      {
+        name = "MEDIA_URI", value = "https://${var.public_assets_hostname}"
       }
     ]
   }
@@ -157,45 +180,8 @@ resource "aws_ecs_task_definition" "core_task_definition" {
         command     = var.environment == "local" ? local.core_local_container_overrides.command : null,
         mountPoints = var.environment == "local" ? local.core_local_container_overrides.mountPoints : null,
         volumes     = var.environment == "local" ? local.core_local_container_overrides.volumes : null,
-        dependsOn = [
-          {
-            containerName = "nats"
-            condition     = "START"
-          }
-        ]
       }
     ),
-    {
-      name   = "nats"
-      image  = "nats:2.10.14-alpine"
-      cpu    = 256
-      memory = 512
-      portMappings = [
-        {
-          containerPort = 4222
-          protocol      = "tcp"
-          name          = "nats-client"
-        },
-        {
-          containerPort = 6222
-          protocol      = "tcp"
-          name          = "nats-monitor"
-        },
-        {
-          containerPort = 8222
-          protocol      = "tcp"
-          name          = "nats-cluster"
-        },
-      ]
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.log_group.name
-          "awslogs-region"        = "ap-southeast-1"
-          "awslogs-stream-prefix" = "nats"
-        }
-      }
-    }
   ])
 
   dynamic "volume" {
@@ -239,28 +225,5 @@ resource "aws_ecs_service" "core_service" {
         port = 8080
       }
     }
-
-    service {
-      discovery_name = "nats"
-      port_name      = "nats-client"
-      client_alias {
-        port = 4222
-      }
-    }
   }
-
-  # service_registries {
-  #   registry_arn = aws_service_discovery_service.ui_gateway_service.arn
-  # }
 }
-
-# resource "aws_service_discovery_service" "core_service" {
-#   name = "core"
-#   dns_config {
-#     namespace_id = var.service_discovery_namespace_id
-#     dns_records {
-#       ttl  = 10
-#       type = "A"
-#     }
-#   }
-# }

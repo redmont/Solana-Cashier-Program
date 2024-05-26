@@ -37,7 +37,7 @@ resource "aws_iam_policy" "ui_gateway_policy" {
           "dynamodb:Scan",
           "dynamodb:UpdateItem"
         ],
-        Resource = [var.ui_gateway_table_arn, var.query_store_table_arn]
+        Resource = [var.ui_gateway_table_arn, "${var.ui_gateway_table_arn}/index/*", var.query_store_table_arn, "${var.query_store_table_arn}/index/*", var.cashier_read_model_table_arn, "${var.cashier_read_model_table_arn}/index/*"]
       }
     ]
   })
@@ -86,6 +86,15 @@ locals {
       },
       {
         name = "USE_TEST_AUTH_SERVICE", value = "true"
+      },
+      {
+        name = "CASHIER_READ_MODEL_TABLE_NAME", value = var.cashier_read_model_table_name
+      },
+      {
+        name = "MEDIA_URI", value = "https://${var.public_assets_hostname}"
+      },
+      {
+        name = "DYNAMIC_PUBLIC_KEY", value = var.dynamic_public_key
       }
     ]
   }
