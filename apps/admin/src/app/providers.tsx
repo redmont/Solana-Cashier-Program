@@ -12,7 +12,7 @@ import { baseUrl } from '@/config';
 import DynamicWrapper from '@/components/DynamicWrapper';
 
 const config = createConfig({
-  chains: [mainnet],
+  chains: [mainnet, sepolia],
   multiInjectedProviderDiscovery: false,
   transports: {
     [mainnet.id]: http(),
