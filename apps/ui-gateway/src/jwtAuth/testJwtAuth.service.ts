@@ -19,7 +19,7 @@ export class TestJwtAuthService implements IJwtAuthService {
   async verify(token: string): Promise<any> {
     const decodedToken = jwt.decode(token) as jwt.JwtPayload;
 
-    if (decodedToken.iss.indexOf('dynamicauth') > -1) {
+    if (decodedToken.iss && decodedToken.iss.indexOf('dynamicauth') > -1) {
       return jwt.verify(token, this.dynamicPublicKey, {
         algorithms: ['RS256'],
       });
