@@ -8,8 +8,8 @@ dayjs.extend(duration);
 
 import { TwitchChat } from 'react-twitch-embed';
 import { MatchStatus } from '@/types';
-import { twitchChannel, streamUrl, trailerUrl } from '@/config';
-import { useEthWallet, useAppState } from '@/hooks';
+import { twitchChannel, trailerUrl } from '@/config';
+import { useEthWallet, useAppState, MatchInfo } from '@/hooks';
 import { BetPlacementWidget } from '@/components/betPlacementWidget';
 import { CurrentBetWidget } from '@/components/currentBetWidget';
 import { BetListWidget } from '@/components/betListWidget';
@@ -20,7 +20,7 @@ import { VideoStream } from '@/components/videoStream';
 
 export default function Home() {
   const { isConnected } = useEthWallet();
-  const [isResultVisible, setResultVisible] = useState(false);
+  const [matchResult, setMatchResult] = useState<MatchInfo | null>(null);
 
   const { match } = useAppState();
   const { fighters = [] } = match ?? {};
@@ -33,10 +33,15 @@ export default function Home() {
   );
 
   useEffect(() => {
-    if (match?.status === MatchStatus.Finished && isBetPlaced) {
-      setResultVisible(true);
+    if (
+      // Match result is present
+      (!matchResult && match?.status === MatchStatus.Finished && isBetPlaced) ||
+      // Win amount is updated
+      (match && matchResult && matchResult?.winAmount !== match?.winAmount)
+    ) {
+      setMatchResult(match);
     }
-  }, [match?.status, isBetPlaced]);
+  }, [matchResult, match?.winAmount, match?.status, isBetPlaced]);
 
   return (
     <main className="main-page">
@@ -68,15 +73,18 @@ export default function Home() {
 
       {!isConnected && <ConnectWalletWidget />}
 
-      {isConnected && isResultVisible && (
-        <MatchResultWidget onDismiss={() => setResultVisible(false)} />
+      {isConnected && matchResult && (
+        <MatchResultWidget
+          result={matchResult}
+          onDismiss={() => setMatchResult(null)}
+        />
       )}
 
-      {isConnected && !isResultVisible && (
+      {isConnected && !matchResult && (
         <BetPlacementWidget compact={isBetPlaced} />
       )}
 
-      {isConnected && !isResultVisible && isBetPlaced && <CurrentBetWidget />}
+      {isConnected && !matchResult && isBetPlaced && <CurrentBetWidget />}
 
       <ActivityStreamWidget />
 
