@@ -4,6 +4,7 @@ export interface TournamentLeaderboardItem {
   rank: number;
   walletAddress: string;
   balance: string;
+  winAmount: string;
 }
 
 export interface GetTournamentMessageResponse extends Message {

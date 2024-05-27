@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import { Button } from 'primereact/button';
@@ -25,6 +25,7 @@ interface RecordProps {
   balance: string;
   rank: number;
   highlighted?: boolean;
+  winAmount?: string;
 }
 
 export default function Leaderboard() {
@@ -137,14 +138,12 @@ export default function Leaderboard() {
       <div className="tournament-info">
         <div className="tournament-name">{tournamentName}</div>
 
-        {countdownValue > 0 && (
-          <div className="tournament-countdown">
-            <span>{countdownDays}d</span>
-            <span>{countdownHours}h</span>
-            <span>{countdownMinutes}m</span>
-            <span>{countdownSeconds}s</span>
-          </div>
-        )}
+        <div className="tournament-countdown">
+          <span>{countdownDays}d</span>
+          <span>{countdownHours}h</span>
+          <span>{countdownMinutes}m</span>
+          <span>{countdownSeconds}s</span>
+        </div>
       </div>
 
       <div
@@ -209,8 +208,8 @@ export default function Leaderboard() {
               <div className="table-header">
                 <div className="rank">Rank</div>
                 <div className="player">Player</div>
-                <div className="points">Points</div>
-                <div className="wins">Wins</div>
+                <div className="points">Credit Balance</div>
+                <div className="wins">Credits Won</div>
               </div>
 
               <div className="table-body">
@@ -242,9 +241,9 @@ const MobileRecord: FC<RecordProps> = (props) => (
       <div className={`rank rank-${props.rank}`}>{props.rank}</div>
       <div className={`rank-image rank-image-${props.rank}`}></div>
       <div className="player">{truncateEthAddress(props.walletAddress)}</div>
-      <div className="wins-label">Points Wins:</div>
-      <div className="wins-value">{Math.floor(5000).toLocaleString()}</div>
-      <div className="points-label">Points Balance:</div>
+      <div className="wins-label">Credits Won:</div>
+      <div className="wins-value">{props.winAmount}</div>
+      <div className="points-label">Credit Balance:</div>
       <div className="points-value">
         {Math.floor(+props.balance).toLocaleString()}
       </div>
@@ -263,7 +262,7 @@ const TableRow: FC<RecordProps> = (props) => (
     </div>
     <div className="player">{truncateEthAddress(props.walletAddress)}</div>
     <div className="points">{Math.floor(+props.balance).toLocaleString()}</div>
-    <div className="wins">{Math.floor(5000).toLocaleString()}</div>
+    <div className="wins">{props.winAmount}</div>
   </div>
 );
 
