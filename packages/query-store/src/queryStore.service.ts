@@ -57,14 +57,8 @@ export class QueryStoreService implements OnModuleInit {
       return null;
     }
 
-    // We need the tournament that has the latest start date.
-    // We'll use lexical sort, as the dates are in ISO8601 format.
-    const sortedTournaments = tournaments.sort((a, b) =>
-      b.sk.localeCompare(a.sk),
-    );
-
     const { sk, displayName, description, startDate, endDate, prizes } =
-      sortedTournaments[0];
+      tournaments[tournaments.length - 1];
 
     return {
       codeName: sk,
