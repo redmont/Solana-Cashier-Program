@@ -138,14 +138,12 @@ export default function Leaderboard() {
       <div className="tournament-info">
         <div className="tournament-name">{tournamentName}</div>
 
-        {countdownValue > 0 && (
-          <div className="tournament-countdown">
-            <span>{countdownDays}d</span>
-            <span>{countdownHours}h</span>
-            <span>{countdownMinutes}m</span>
-            <span>{countdownSeconds}s</span>
-          </div>
-        )}
+        <div className="tournament-countdown">
+          <span>{countdownDays}d</span>
+          <span>{countdownHours}h</span>
+          <span>{countdownMinutes}m</span>
+          <span>{countdownSeconds}s</span>
+        </div>
       </div>
 
       <div
