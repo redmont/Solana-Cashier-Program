@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import { Button } from 'primereact/button';
@@ -25,6 +25,7 @@ interface RecordProps {
   balance: string;
   rank: number;
   highlighted?: boolean;
+  winAmount?: string;
 }
 
 export default function Leaderboard() {
@@ -243,7 +244,7 @@ const MobileRecord: FC<RecordProps> = (props) => (
       <div className={`rank-image rank-image-${props.rank}`}></div>
       <div className="player">{truncateEthAddress(props.walletAddress)}</div>
       <div className="wins-label">Points Wins:</div>
-      <div className="wins-value">{Math.floor(5000).toLocaleString()}</div>
+      <div className="wins-value">{props.winAmount}</div>
       <div className="points-label">Points Balance:</div>
       <div className="points-value">
         {Math.floor(+props.balance).toLocaleString()}
@@ -263,7 +264,7 @@ const TableRow: FC<RecordProps> = (props) => (
     </div>
     <div className="player">{truncateEthAddress(props.walletAddress)}</div>
     <div className="points">{Math.floor(+props.balance).toLocaleString()}</div>
-    <div className="wins">{Math.floor(5000).toLocaleString()}</div>
+    <div className="wins">{props.winAmount}</div>
   </div>
 );
 
