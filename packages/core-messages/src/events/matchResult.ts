@@ -6,6 +6,7 @@ export class MatchResultEvent extends BrokerEvent {
 
   constructor(
     public readonly timestamp: string,
+    public readonly userId: string,
     public readonly matchId: string,
     public readonly betAmount: string,
     public readonly winAmount: string,
