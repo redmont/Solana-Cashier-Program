@@ -31,9 +31,11 @@ export class GameServerGateway implements OnGatewayDisconnect {
   handleDisconnect(client: any) {
     const serverId = this.getServerIdFromSocket(client);
 
-    this.logger.debug(`Server ${serverId} disconnected`);
-    this.serverIdToSocket.delete(serverId);
-    this.gameServerService.handleServerDisconnect(serverId);
+    if (serverId) {
+      this.logger.debug(`Server ${serverId} disconnected`);
+      this.serverIdToSocket.delete(serverId);
+      this.gameServerService.handleServerDisconnect(serverId);
+    }
   }
 
   private getServerIdFromSocket(socket: WebSocket) {
@@ -69,6 +71,13 @@ export class GameServerGateway implements OnGatewayDisconnect {
     // Send message acknowledgement
     if (data.messageId && data?.type && dataType !== 'ok') {
       client.send(JSON.stringify({ type: 'ok', messageId: data.messageId }));
+    }
+
+    if (data.type === 'reconnect') {
+      // Server has reconnected, we need to update the socket
+      if (this.serverIdToSocket.get(data.serverId) !== client) {
+        this.serverIdToSocket.set(data.serverId, client);
+      }
     }
 
     if (data.type === 'ready') {
@@ -111,17 +120,20 @@ export class GameServerGateway implements OnGatewayDisconnect {
       return new Promise((resolve, reject) => {
         this.pendingMessages.set(messageId, { resolve, reject });
 
-        setTimeout(() => {
-          if (this.pendingMessages.has(messageId)) {
-            this.pendingMessages.delete(messageId);
-            if (attempt < 3) {
-              this.logger.warn(`Attempt ${attempt + 1} failed, retrying...`);
-              resolve(attemptSendMessage(attempt + 1));
-            } else {
-              reject('Timeout after 3 retries');
+        setTimeout(
+          () => {
+            if (this.pendingMessages.has(messageId)) {
+              this.pendingMessages.delete(messageId);
+              if (attempt < 8) {
+                this.logger.warn(`Attempt ${attempt + 1} failed, retrying...`);
+                resolve(attemptSendMessage(attempt + 1));
+              } else {
+                reject('Timeout after 10 retries');
+              }
             }
-          }
-        }, 5_000);
+          },
+          1.5 ** attempt * 1000,
+        );
 
         server.send(message);
       });

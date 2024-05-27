@@ -23,7 +23,6 @@ import {
   GetUserMatchHistoryMessage,
   GetMatchHistoryMessageResponse,
   GetUserMatchHistoryMessageResponse,
-  GetLeaderboardMessageResponse,
   GetTournamentMessage,
   GetTournamentMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
@@ -83,6 +82,7 @@ export class AppGateway
   async handleConnection(client: Socket, ...args: any[]) {
     const token = client.handshake.auth?.token;
     if (token) {
+      // Token is optional, and is only provided by authenticated users
       try {
         const decodedToken = await this.jwtAuthService.verify(token);
 
@@ -90,6 +90,7 @@ export class AppGateway
           decodedToken.verified_credentials &&
           decodedToken.verified_credentials.length > 0
         ) {
+          // Token from dynamic.xyz
           const { address } = decodedToken.verified_credentials[0];
 
           const { userId } = await sendBrokerMessage<
@@ -102,6 +103,7 @@ export class AppGateway
             walletAddress: address,
           };
         } else {
+          // Token from our own auth service
           client.data.authorizedUser = {
             userId: decodedToken.sub,
             walletAddress: decodedToken.claims.walletAddress,
@@ -117,6 +119,7 @@ export class AppGateway
 
         client.join(`user-${client.data.authorizedUser.userId}`);
       } catch (error) {
+        // Token is invalid (authentication failed)
         console.log('Error verifying token', error);
       }
     }

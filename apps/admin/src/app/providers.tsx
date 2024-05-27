@@ -6,16 +6,17 @@ import axios, { ResponseType } from 'axios';
 import { DynamicWagmiConnector } from '@dynamic-labs/wagmi-connector';
 import { createConfig, WagmiProvider } from 'wagmi';
 import { http } from 'viem';
-import { mainnet } from 'viem/chains';
+import { mainnet, sepolia } from 'viem/chains';
 import theme from '@/theme';
 import { baseUrl } from '@/config';
 import DynamicWrapper from '@/components/DynamicWrapper';
 
 const config = createConfig({
-  chains: [mainnet],
+  chains: [mainnet, sepolia],
   multiInjectedProviderDiscovery: false,
   transports: {
     [mainnet.id]: http(),
+    [sepolia.id]: http(),
   },
 });
 
