@@ -21,8 +21,6 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
 
     if (!widget) return;
 
-    console.log('Generating');
-
     try {
       const dataUrl = await toPng(widget, { cacheBust: true });
 
