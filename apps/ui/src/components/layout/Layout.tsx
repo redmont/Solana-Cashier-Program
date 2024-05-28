@@ -30,7 +30,7 @@ export const Layout = (props: ChildContainerProps) => {
       <div className="topbar-tools">
         {isReady && isConnected && (
           <div className="topbar-balance">
-            <span>Points: {Math.floor(balance)}</span>
+            <span>Credits: {Math.floor(balance)}</span>
           </div>
         )}
 
