@@ -3,6 +3,8 @@ import { createContext, FC, PropsWithChildren, useContext } from 'react';
 import { useMatchInfo, MatchInfo } from './useMatchInfo';
 import { useBalanceState } from './useBalanceState';
 
+export type { MatchInfo };
+
 export interface AppStateContextValue {
   balance: number;
   match?: MatchInfo | null;
