@@ -1,4 +1,4 @@
-import { streamUrl } from '@/config';
+import { streamToken, streamUrl } from '@/config';
 import { Director, View } from '@millicast/sdk';
 import { Button } from 'primereact/button';
 import { classNames } from 'primereact/utils';
@@ -22,6 +22,7 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
     Director.getSubscriber({
       streamName: streamName,
       streamAccountId: accountId,
+      subscriberToken: streamToken?.length > 0 ? streamToken : undefined,
     });
 
   useEffect(() => {
