@@ -1,30 +1,41 @@
-import { useAppState } from '@/hooks';
+import { MatchInfo } from '@/hooks';
 import { Button } from 'primereact/button';
 import { classNames } from 'primereact/utils';
 import { FC, useCallback } from 'react';
+import { toPng } from 'html-to-image';
 
 export interface MatchResultWidgetProps {
+  result: MatchInfo;
   onDismiss?: () => void;
 }
 
 export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
+  result,
   onDismiss,
 }) => {
-  const { match } = useAppState();
-  const { winner, winAmount, fighters } = match || {};
+  const { winner, fighters, winAmount } = result ?? {};
   const isWin = winAmount && +winAmount > 0;
   const winnerIndex = fighters?.findIndex((f) => f.codeName === winner);
 
-  // Temporarily disabled
-  // const share = useCallback(() => {
-  //   window.open(
-  //     `https://twitter.com/intent/tweet?text=${encodeURI('Hello World')}`,
-  //     '__blank',
-  //   );
-  // }, []);
+  const share = useCallback(async () => {
+    const widget = document.getElementById('match-result-widget');
+
+    if (!widget) return;
+
+    try {
+      const dataUrl = await toPng(widget, { cacheBust: true });
+
+      downloadPng(dataUrl);
+
+      window.open(`https://twitter.com/intent/tweet`, '__blank');
+    } catch {
+      // TODO: show error notification
+    }
+  }, []);
 
   return (
     <div
+      id="match-result-widget"
       className={classNames('widget match-result-widget', {
         'winner-fighter-2': winnerIndex === 1,
       })}
@@ -52,12 +63,12 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
             <div className="win-amount">{`+${isWin ? winAmount : 0}`}</div>
 
             <div className="widget-actions">
-              {/* <Button
+              <Button
                 className="p-button-secondary p-button-outlined"
                 label="Share"
                 icon="pi pi-twitter"
                 onClick={share}
-              /> */}
+              />
 
               <Button
                 className="p-button-secondary p-button-outlined"
@@ -71,3 +82,12 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
     </div>
   );
 };
+
+function downloadPng(dataUrl: string) {
+  const link = document.createElement('a');
+
+  link.download = 'brawlers-win.png';
+  link.href = dataUrl;
+  link.pathname = 'assets/png/' + link.download;
+  link.click();
+}
