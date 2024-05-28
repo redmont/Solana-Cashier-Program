@@ -1,17 +1,18 @@
-import { useAppState } from '@/hooks';
+import { MatchInfo, useAppState } from '@/hooks';
 import { Button } from 'primereact/button';
 import { classNames } from 'primereact/utils';
-import { FC, useCallback } from 'react';
+import { FC, useCallback, useEffect } from 'react';
 
 export interface MatchResultWidgetProps {
+  result: MatchInfo;
   onDismiss?: () => void;
 }
 
 export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
+  result,
   onDismiss,
 }) => {
-  const { match } = useAppState();
-  const { winner, winAmount, fighters } = match || {};
+  const { winner, fighters, winAmount } = result ?? {};
   const isWin = winAmount && +winAmount > 0;
   const winnerIndex = fighters?.findIndex((f) => f.codeName === winner);
 
