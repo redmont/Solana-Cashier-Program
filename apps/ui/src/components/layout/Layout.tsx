@@ -20,22 +20,43 @@ export const Layout = (props: ChildContainerProps) => {
 
   return (
     <div className="layout">
-      <div className="logo-container">
-        <Link href="/">
-          <img className="logo-mobile" src="/logo-mobile.png" alt="Logo" />
-          <img className="logo" src="/logo.png" alt="Logo" />
-        </Link>
-      </div>
+      <div className="topbar">
+        <div className="logo-container">
+          <Link href="/">
+            <img className="logo-mobile" src="/logo-mobile.png" alt="Logo" />
+            <img className="logo" src="/logo.png" alt="Logo" />
+          </Link>
+        </div>
 
-      <div className="topbar-tools">
-        {isReady && isConnected && (
-          <div className="topbar-balance">
-            <span>Points: {Math.floor(balance)}</span>
+        <div className="topnav">
+          <div>
+            <Link className="nav-link" href="/leaderboard">
+              <i className="pi pi-trophy"></i>
+              Leaderboard
+            </Link>
           </div>
-        )}
+        </div>
 
-        <JoinButton className="p-button-secondary p-button-outlined hidden md:block" />
-        <MobileJoinButton className="md:hidden" />
+        <div className="topbar-tools">
+          {isReady && isConnected && (
+            <>
+              <div className="balance-mobile md:hidden">
+                {Math.floor(balance)} CR
+              </div>
+
+              <div className="balance-desktop md:block">
+                Credits: {Math.floor(balance)}
+              </div>
+            </>
+          )}
+
+          <Link href="/leaderboard" className="p-button-link md:hidden">
+            <i className="pi pi-trophy"></i>
+          </Link>
+
+          <JoinButton className="p-button-secondary p-button-outlined hidden md:block" />
+          <MobileJoinButton className="md:hidden" />
+        </div>
       </div>
 
       {props.children}
