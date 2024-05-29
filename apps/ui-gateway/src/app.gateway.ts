@@ -25,6 +25,8 @@ import {
   GetUserMatchHistoryMessageResponse,
   GetTournamentMessage,
   GetTournamentMessageResponse,
+  GetStreamTokenMessage,
+  GetStreamTokenMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
@@ -41,6 +43,7 @@ import { IJwtAuthService } from './jwtAuth/jwtAuth.interface';
 import { ConfigService } from '@nestjs/config';
 import { ReadModelService } from 'cashier-read-model';
 import dayjs from './dayjs';
+import { StreamTokenService } from './streamToken/streamToken.service';
 
 @WebSocketGateway({
   cors: {
@@ -66,6 +69,7 @@ export class AppGateway
     @Inject('JWT_AUTH_SERVICE')
     private readonly jwtAuthService: IJwtAuthService,
     private readonly cashierReadModelService: ReadModelService,
+    private readonly streamTokenService: StreamTokenService,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
   }
@@ -349,6 +353,27 @@ export class AppGateway
       totalCount,
       items,
       currentUserItem,
+    };
+  }
+
+  @SubscribeMessage(GetStreamTokenMessage.messageType)
+  public async getStreamToken(
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetStreamTokenMessageResponse> {
+    const userId = this.clientUserIdMap.get(client?.id);
+
+    if (!userId) {
+      return {
+        success: false,
+        token: null,
+      };
+    }
+
+    const token = await this.streamTokenService.getToken(userId);
+
+    return {
+      success: true,
+      token,
     };
   }
 

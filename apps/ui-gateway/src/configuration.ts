@@ -20,4 +20,5 @@ export default () => ({
   isDynamoDbLocal: process.env.IS_DDB_LOCAL === 'true',
   mediaUri: process.env.MEDIA_URI,
   dynamicPublicKey: process.env.DYNAMIC_PUBLIC_KEY,
+  millicastApiSecret: process.env.MILLICAST_API_SECRET,
 });

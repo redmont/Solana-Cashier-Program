@@ -12,6 +12,7 @@ import { GlobalClientsModule } from './globalClientsModule';
 import configuration from './configuration';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
+import { StreamTokensModule } from './streamToken/streamToken.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { AppController } from './app.controller';
     GlobalClientsModule,
     AuthModule,
     JwtAuthModule,
+    StreamTokensModule,
   ],
   providers: [AppService, AppGateway, JwtAuthGuard],
   controllers: [AppController],

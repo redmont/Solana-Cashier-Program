@@ -68,4 +68,6 @@ module "ecs" {
   public_assets_hostname = var.public_assets_hostname
 
   dynamic_public_key = var.dynamic_public_key
+
+  millicast_api_secret = var.millicast_api_secret
 }

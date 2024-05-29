@@ -17,3 +17,8 @@ variable "dynamic_public_key" {
   description = "Dynamic.xyz public key"
   type        = string
 }
+
+variable "millicast_api_secret" {
+  description = "Millicast API secret"
+  type        = string
+}
