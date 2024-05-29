@@ -18,18 +18,6 @@ interface VideoStreamProps {
 }
 
 export const VideoStream: FC<VideoStreamProps> = ({ src }) => {
-  if (src) {
-    return (
-      <video
-        src={src}
-        autoPlay={true}
-        playsInline={true}
-        width="100%"
-        height="100%"
-      />
-    );
-  }
-
   if (youTubeStreamId?.length > 0) {
     return <YouTubeEmbed videoid={youTubeStreamId} />;
   }
@@ -39,7 +27,19 @@ export const VideoStream: FC<VideoStreamProps> = ({ src }) => {
   }
 
   if (/^[0-9a-f]{32}$/.test(streamUrl)) {
-    return <CloudFlareStream controls src={streamUrl} autoplay={true} />;
+    if (src) {
+      return (
+        <video
+          src={src}
+          autoPlay={true}
+          playsInline={true}
+          width="100%"
+          height="100%"
+        />
+      );
+    } else {
+      return <CloudFlareStream controls src={streamUrl} autoplay={true} />;
+    }
   }
 
   return null;
