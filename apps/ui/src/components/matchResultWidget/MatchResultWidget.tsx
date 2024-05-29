@@ -1,7 +1,7 @@
 import { MatchInfo } from '@/hooks';
 import { Button } from 'primereact/button';
 import { classNames } from 'primereact/utils';
-import { FC, useCallback } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { toPng } from 'html-to-image';
 
 export interface MatchResultWidgetProps {
@@ -16,21 +16,52 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
   const { winner, fighters, winAmount } = result ?? {};
   const isWin = winAmount && +winAmount > 0;
   const winnerIndex = fighters?.findIndex((f) => f.codeName === winner);
+  const [isSavingPng, setSavingPng] = useState(false);
+  const [isPngSaved, setPngSaved] = useState(false);
 
-  const share = useCallback(async () => {
+  const generateImage = useCallback(async () => {
     const widget = document.getElementById('match-result-widget');
 
-    if (!widget) return;
+    if (!widget) {
+      return setSavingPng(false);
+    }
 
     try {
       const dataUrl = await toPng(widget, { cacheBust: true });
 
       downloadPng(dataUrl);
 
-      window.open(`https://twitter.com/intent/tweet`, '__blank');
+      setPngSaved(true);
     } catch {
       // TODO: show error notification
+    } finally {
+      setSavingPng(false);
     }
+  }, []);
+
+  const dismiss = useCallback(() => {
+    setPngSaved(false);
+
+    onDismiss && onDismiss();
+  }, [onDismiss]);
+
+  useEffect(() => {
+    if (!isSavingPng) return;
+
+    generateImage();
+  }, [isSavingPng, generateImage]);
+
+  const share = useCallback(async () => {
+    const text = encodeURI(
+      `Another epic battle in @Brawl3rs! 🥊 Join the fight to win tournament prizes at www.frogsvdogs.ai.`,
+    );
+
+    const hashtags = ['LFB'].join(',');
+
+    window.open(
+      `https://twitter.com/intent/tweet?text=${text}&hashtags=${hashtags}`,
+      '__blank',
+    );
   }, []);
 
   return (
@@ -44,6 +75,10 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
         <div className="widget-header">
           <div className="widget-label">Match Finished</div>
         </div>
+
+        {isSavingPng && (
+          <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
+        )}
 
         <div className="widget-content">
           <div className="fighter-image-box">
@@ -62,20 +97,32 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
 
             <div className="win-amount">{`+${isWin ? winAmount : 0}`}</div>
 
-            <div className="widget-actions">
-              <Button
-                className="p-button-secondary p-button-outlined"
-                label="Share"
-                icon="pi pi-twitter"
-                onClick={share}
-              />
+            {!isSavingPng && (
+              <div className="widget-actions">
+                {!isPngSaved && (
+                  <Button
+                    className="p-button-secondary p-button-outlined"
+                    label="Get Result Image"
+                    onClick={() => setSavingPng(true)}
+                  />
+                )}
 
-              <Button
-                className="p-button-secondary p-button-outlined"
-                label="Next Fight"
-                onClick={onDismiss}
-              />
-            </div>
+                {isPngSaved && (
+                  <Button
+                    className="p-button-secondary p-button-outlined"
+                    label="Share"
+                    icon="pi pi-twitter"
+                    onClick={share}
+                  />
+                )}
+
+                <Button
+                  className="p-button-secondary p-button-outlined"
+                  label="Next Fight"
+                  onClick={dismiss}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -86,7 +133,7 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
 function downloadPng(dataUrl: string) {
   const link = document.createElement('a');
 
-  link.download = 'brawlers-win.png';
+  link.download = 'brawlers-match-result.png';
   link.href = dataUrl;
   link.pathname = 'assets/png/' + link.download;
   link.click();
