@@ -1,4 +1,6 @@
 .match-result-widget {
+  position: relative;
+
   &.winner-fighter-2 {
     .fighter-image-box {
       background: rgba(240, 172, 93, 0.1);
@@ -30,6 +32,14 @@
     align-items: center;
     width: 100%;
     gap: 1rem;
+  }
+
+  .qrcode {
+    right: 1rem;
+    top: 1rem;
+    width: 5rem;
+    height: auto;
+    position: absolute;
   }
 
   .fighter-image-box {
