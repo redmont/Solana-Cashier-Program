@@ -129,6 +129,7 @@ export class MatchBettingService {
         MatchResultEvent.messageType,
         new MatchResultEvent(
           timestamp,
+          userId,
           matchId,
           betAmount.toString(),
           Math.floor(amount).toString(),
@@ -179,6 +180,7 @@ export class MatchBettingService {
         MatchResultEvent.messageType,
         new MatchResultEvent(
           timestamp,
+          loserUserId,
           matchId,
           betAmount.toString(),
           '0',

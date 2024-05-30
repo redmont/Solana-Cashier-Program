@@ -126,9 +126,10 @@ export class AppController {
 
   @EventPattern(MatchResultEvent.messageType)
   onMatchResult(@Payload() data: MatchResultEvent) {
-    const { timestamp, matchId, betAmount, winAmount, fighter } = data;
+    const { userId, timestamp, matchId, betAmount, winAmount, fighter } = data;
 
-    this.gateway.publish(
+    this.gateway.publishToUser(
+      userId,
       new MatchResultUiGatewayEvent(
         timestamp,
         matchId,
