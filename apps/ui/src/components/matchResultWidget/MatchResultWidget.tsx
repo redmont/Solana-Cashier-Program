@@ -99,7 +99,7 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
 
             {!isSavingPng && (
               <div className="widget-actions">
-                {!isPngSaved && (
+                {/* {!isPngSaved && (
                   <Button
                     className="p-button-secondary p-button-outlined"
                     label="Get Result Image"
@@ -114,7 +114,7 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
                     icon="pi pi-twitter"
                     onClick={share}
                   />
-                )}
+                )} */}
 
                 <Button
                   className="p-button-secondary p-button-outlined"
