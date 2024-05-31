@@ -14,4 +14,7 @@ export const postHogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY || '';
 
 export const postHogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST;
 
-export const dynamicWalletEnvironmentId = process.env.NEXT_PUBLIC_DYNAMIC_WALLET_ENVIRONMENT_ID || '';
+export const dynamicWalletEnvironmentId =
+  process.env.NEXT_PUBLIC_DYNAMIC_WALLET_ENVIRONMENT_ID || '';
+
+export const youTubeStreamId = process.env.NEXT_PUBLIC_YOUTUBE_STREAM_ID || '';

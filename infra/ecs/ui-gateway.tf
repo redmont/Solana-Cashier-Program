@@ -95,6 +95,9 @@ locals {
       },
       {
         name = "DYNAMIC_PUBLIC_KEY", value = var.dynamic_public_key
+      },
+      {
+        name = "MILLICAST_API_SECRET", value = var.millicast_api_secret
       }
     ]
   }

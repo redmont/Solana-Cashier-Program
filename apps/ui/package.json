@@ -15,6 +15,7 @@
     "@dynamic-labs/sdk-react-core": "^2.0.6",
     "@dynamic-labs/wagmi-connector": "^2.0.6",
     "@millicast/sdk": "^0.1.44",
+    "@next/third-parties": "^14.2.3",
     "@repo/eslint-config": "workspace:*",
     "@tanstack/react-query": "^5.28.14",
     "@types/ws": "^8.5.10",
