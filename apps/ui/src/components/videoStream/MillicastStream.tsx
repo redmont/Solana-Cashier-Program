@@ -40,7 +40,7 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
     if (connected) {
       getToken();
     }
-  }, [src, connected]);
+  }, [connected]);
 
   const tokenGenerator = useCallback(
     () =>
