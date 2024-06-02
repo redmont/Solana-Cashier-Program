@@ -1,6 +1,6 @@
 import { Schema } from 'dynamoose';
 
-export const NonceSchema = new Schema({
+export const StreamTokenSchema = new Schema({
   // streamToken#userId
   pk: {
     type: String,
