@@ -109,6 +109,9 @@ locals {
       },
       {
         name = "MEDIA_URI", value = "https://${var.public_assets_hostname}"
+      },
+      {
+        name = "USE_MOCK_GAME_SERVER", value = var.environment == "dev" ? "true" : "false"
       }
     ]
   }
