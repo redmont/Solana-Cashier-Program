@@ -136,6 +136,19 @@ export const Slider: FC<SliderProps> = ({
     [max, min, updateValue],
   );
 
+  const handleMarkTouchStart = useCallback(
+    (evt: React.TouchEvent) => {
+      const { x, width: markWidth } = (
+        evt.target as Element
+      ).getBoundingClientRect();
+
+      isDraggingRef.current = true;
+
+      updateValue(x + markWidth / 2);
+    },
+    [max, min, updateValue],
+  );
+
   return (
     <div ref={rootRef} className="slider">
       <div
@@ -162,6 +175,7 @@ export const Slider: FC<SliderProps> = ({
             <div
               className="slider-mark-clickarea"
               onMouseDown={handleMarkMousedown}
+              onTouchStart={handleMarkTouchStart}
             ></div>
           </div>
         </div>
