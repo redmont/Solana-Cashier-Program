@@ -91,17 +91,23 @@ export const Slider: FC<SliderProps> = ({
     [updateValue],
   );
 
-  const handleMouseMove = useCallback((evt: MouseEvent) => {
-    if (!isDraggingRef.current) return;
+  const handleMouseMove = useCallback(
+    (evt: MouseEvent) => {
+      if (!isDraggingRef.current) return;
 
-    updateValue(evt.clientX);
-  }, []);
+      updateValue(evt.clientX);
+    },
+    [updateValue],
+  );
 
-  const handleTouchMove = useCallback((evt: TouchEvent) => {
-    if (!isDraggingRef.current) return;
+  const handleTouchMove = useCallback(
+    (evt: TouchEvent) => {
+      if (!isDraggingRef.current) return;
 
-    updateValue(evt.touches[0].clientX);
-  }, []);
+      updateValue(evt.touches[0].clientX);
+    },
+    [updateValue],
+  );
 
   useEffect(() => {
     const clearDragging = () => {
