@@ -111,13 +111,13 @@ export const Slider: FC<SliderProps> = ({
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('touchmove', handleTouchMove);
     document.addEventListener('mouseup', clearDragging);
-    document.addEventListener('touchup', clearDragging);
+    document.addEventListener('touchend', clearDragging);
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('mouseup', clearDragging);
-      document.removeEventListener('touchup', clearDragging);
+      document.removeEventListener('touchend', clearDragging);
     };
   }, [handleMouseMove, handleTouchMove]);
 
