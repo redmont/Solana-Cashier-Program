@@ -95,8 +95,11 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
 
   const handlePercentChange = useCallback(
     (percent: number) => {
+      console.log('Balance:', balance);
+      console.log(`${percent}%`);
       const points = Math.floor((balance * percent) / 100);
 
+      console.log('Points:', points);
       setBetPercent(percent);
       setBetPoints(points);
       setDirty(true);
