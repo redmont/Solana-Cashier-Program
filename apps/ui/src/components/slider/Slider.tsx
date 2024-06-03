@@ -127,7 +127,11 @@ export const Slider: FC<SliderProps> = ({
         evt.target as Element
       ).getBoundingClientRect();
 
+      isDraggingRef.current = true;
+
       updateValue(x + markWidth / 2);
+
+      evt.preventDefault();
     },
     [max, min, updateValue],
   );
