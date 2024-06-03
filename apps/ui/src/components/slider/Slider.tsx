@@ -1,12 +1,5 @@
 import { classNames } from 'primereact/utils';
-import React, {
-  FC,
-  useCallback,
-  useMemo,
-  useRef,
-  useEffect,
-  useState,
-} from 'react';
+import React, { FC, useCallback, useMemo, useRef, useEffect } from 'react';
 
 export interface SliderProps {
   min?: number;
@@ -139,7 +132,7 @@ export const Slider: FC<SliderProps> = ({
 
       evt.preventDefault();
     },
-    [max, min, updateValue],
+    [max, min],
   );
 
   const handleMarkTouchStart = useCallback(
