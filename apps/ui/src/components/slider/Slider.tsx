@@ -1,3 +1,4 @@
+import { classNames } from 'primereact/utils';
 import React, {
   FC,
   useCallback,
@@ -12,14 +13,14 @@ export interface SliderProps {
   max?: number;
   value?: number;
   marks?: number[];
-  onValueChange?: (value: number) => void;
+  onChange?: (value: number) => void;
 }
 
 export const Slider: FC<SliderProps> = ({
   min = 0,
   max = 100,
   marks = [],
-  onValueChange,
+  onChange,
   ...props
 }) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -35,11 +36,16 @@ export const Slider: FC<SliderProps> = ({
     return val;
   }, [props.value]);
 
-  const position = useMemo(() => {
-    if (max === min) return 0;
+  const calcPosition = useCallback(
+    (value: number) => {
+      if (max === min) return 0;
 
-    return (value / (max - min)) * 100;
-  }, [value]);
+      return ((value - min) / (max - min)) * 100;
+    },
+    [max, min],
+  );
+
+  const position = useMemo(() => calcPosition(value), [value, calcPosition]);
 
   const updateValue = useCallback(
     (mouseX: number) => {
@@ -53,11 +59,11 @@ export const Slider: FC<SliderProps> = ({
       if (x < 0) x = 0;
       if (x > width) x = width;
 
-      const value = Math.round(((max - min) * x) / width + min);
+      const value = Math.round((x / width) * (max - min) + min);
 
-      onValueChange?.(value);
+      onChange?.(value);
     },
-    [min, max, onValueChange],
+    [min, max, onChange],
   );
 
   const handleMouseDown = useCallback(
@@ -115,6 +121,17 @@ export const Slider: FC<SliderProps> = ({
     };
   }, [handleMouseMove, handleTouchMove]);
 
+  const handleMarkMousedown = useCallback(
+    (evt: React.MouseEvent) => {
+      const { x, width: markWidth } = (
+        evt.target as Element
+      ).getBoundingClientRect();
+
+      updateValue(x + markWidth / 2);
+    },
+    [max, min, updateValue],
+  );
+
   return (
     <div ref={rootRef} className="slider">
       <div
@@ -129,8 +146,29 @@ export const Slider: FC<SliderProps> = ({
         style={{ width: `${position}%` }}
       ></div>
 
+      {marks.map((mark) => (
+        <div
+          key={mark}
+          className={classNames('slider-mark', {
+            reached: value >= mark,
+          })}
+          style={{ left: `${calcPosition(mark)}%` }}
+        >
+          <div className="slider-mark-point">
+            <div
+              className="slider-mark-clickarea"
+              onMouseDown={handleMarkMousedown}
+            ></div>
+          </div>
+        </div>
+      ))}
+
       <div className="slider-cursor" style={{ left: `${position}%` }}>
-        <div className="slider-handle" onMouseDown={handleMouseDown}>
+        <div
+          className="slider-handle"
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
+        >
           <div className="slider-handle-clickarea"></div>
         </div>
       </div>

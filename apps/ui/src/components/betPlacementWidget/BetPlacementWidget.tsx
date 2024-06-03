@@ -7,12 +7,12 @@ import {
   MouseEvent,
 } from 'react';
 import { classNames } from 'primereact/utils';
-import { Slider, SliderChangeEvent } from 'primereact/slider';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 import dayjs from 'dayjs';
 
 import { MatchStatus } from '@/types';
+import { Slider } from '../slider';
 import { useSocket, useAppState, usePostHog } from '@/hooks';
 import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
@@ -94,8 +94,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
   );
 
   const handlePercentChange = useCallback(
-    (evt: SliderChangeEvent) => {
-      const percent = evt.value as number;
+    (percent: number) => {
       const points = Math.floor((balance * percent) / 100);
 
       setBetPercent(percent);
@@ -121,16 +120,6 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
       stake: betPoints,
     });
   }, [match?.series, betPoints, selectedFighter?.codeName]);
-
-  const handleClickAreaClick = useCallback((evt: MouseEvent) => {
-    const element = evt.target as Element;
-    const { left, width } = element.getBoundingClientRect();
-
-    const clickX = evt.clientX - left;
-    const pct = Math.round((clickX / width) * 100);
-
-    setBetPercent(pct);
-  }, []);
 
   return (
     <div
@@ -192,15 +181,11 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
               </div>
 
               <Slider
-                min={1}
                 value={betPercent}
                 onChange={handlePercentChange}
+                min={1}
+                marks={[25, 50, 75]}
               />
-
-              <div
-                className="points-slider-clickarea"
-                onClick={handleClickAreaClick}
-              ></div>
             </div>
 
             <div className="points-input-group p-inputgroup">
