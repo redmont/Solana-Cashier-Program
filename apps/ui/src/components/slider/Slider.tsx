@@ -27,7 +27,7 @@ export const Slider: FC<SliderProps> = ({
     if (val > max) return max;
 
     return val;
-  }, [props.value]);
+  }, [props.value, min, max]);
 
   const calcPosition = useCallback(
     (value: number) => {
@@ -98,6 +98,8 @@ export const Slider: FC<SliderProps> = ({
       if (!isDraggingRef.current) return;
 
       updateValue(evt.touches[0].clientX);
+
+      evt.preventDefault();
     },
     [updateValue],
   );
@@ -108,7 +110,7 @@ export const Slider: FC<SliderProps> = ({
     };
 
     document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('mouseup', clearDragging);
     document.addEventListener('touchend', clearDragging);
 
@@ -132,7 +134,7 @@ export const Slider: FC<SliderProps> = ({
 
       evt.preventDefault();
     },
-    [max, min],
+    [updateValue],
   );
 
   const handleMarkTouchStart = useCallback(
@@ -145,7 +147,7 @@ export const Slider: FC<SliderProps> = ({
 
       updateValue(x + markWidth / 2);
     },
-    [max, min, updateValue],
+    [updateValue],
   );
 
   return (
