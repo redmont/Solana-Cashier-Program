@@ -40,7 +40,7 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
     if (connected) {
       getToken();
     }
-  }, [src, connected]);
+  }, [src, connected, send]);
 
   const tokenGenerator = useCallback(
     () =>
@@ -49,7 +49,7 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
         streamAccountId: accountId,
         subscriberToken: streamToken,
       }),
-    [streamToken],
+    [streamToken, streamName, accountId],
   );
 
   useEffect(() => {
@@ -82,7 +82,7 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
         millicastView?.stop();
       };
     }
-  }, [src, tokenGenerator, streamToken]);
+  }, [src, tokenGenerator, streamToken, streamName]);
 
   return (
     <>
