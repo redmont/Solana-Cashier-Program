@@ -2,8 +2,7 @@ import { streamUrl, youTubeStreamId } from '@/config';
 import dynamic from 'next/dynamic';
 import { FC } from 'react';
 import { Stream as CloudFlareStream } from '@cloudflare/stream-react';
-import { YouTubeEmbed } from '@next/third-parties/google';
-
+import { YouTubeStream } from './YoutubeStream';
 // The Millicast SDK does not support SSR,
 // so we need to load it dynamically.
 const MillicastStream = dynamic(
@@ -19,7 +18,7 @@ interface VideoStreamProps {
 
 export const VideoStream: FC<VideoStreamProps> = ({ src }) => {
   if (youTubeStreamId?.length > 0) {
-    return <YouTubeEmbed videoid={youTubeStreamId} />;
+    return <YouTubeStream streamId={youTubeStreamId} />;
   }
 
   if (streamUrl.indexOf('millicast.com') > -1) {
