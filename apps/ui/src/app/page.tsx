@@ -41,7 +41,7 @@ export default function Home() {
     ) {
       setMatchResult(match);
     }
-  }, [matchResult, match?.winAmount, match?.status, isBetPlaced]);
+  }, [matchResult, match, match?.winAmount, match?.status, isBetPlaced]);
 
   return (
     <main className="main-page">
