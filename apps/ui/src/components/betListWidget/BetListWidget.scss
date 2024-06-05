@@ -14,7 +14,10 @@
     .column {
       text-align: center;
       background: $shade500;
-      padding: 1rem 2rem;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .fighter-name {
