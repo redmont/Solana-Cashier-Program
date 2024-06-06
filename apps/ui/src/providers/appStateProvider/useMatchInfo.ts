@@ -20,6 +20,14 @@ export type MatchInfo = Omit<MatchState, 'bets' | 'state'> & {
   series?: string;
 };
 
+const initBetsInfo = (stake = 0, total = 0) => ({
+  list: [],
+  total,
+  stake,
+  winRate: '1.00',
+  projectWinRate: () => '1.00',
+});
+
 export function useMatchInfo() {
   const { bets, state, ...matchState } = useMatchState();
 
@@ -32,20 +40,8 @@ export function useMatchInfo() {
       ...matchState,
       status: state as MatchStatus,
       bets: {
-        [fighters[0]]: {
-          list: [],
-          total: 0,
-          stake: 0,
-          winRate: '1.00',
-          projectWinRate: () => '1.00',
-        },
-        [fighters[1]]: {
-          list: [],
-          total: 0,
-          stake: 0,
-          winRate: '1.00',
-          projectWinRate: () => '1.00',
-        },
+        [fighters[0]]: initBetsInfo(),
+        [fighters[1]]: initBetsInfo(),
       },
     };
 
@@ -67,15 +63,17 @@ export function useMatchInfo() {
       const fighterIndex = fighters.indexOf(fighter);
       const opponent = fighters[(fighterIndex + 1) % 2];
 
-      if (!info.stake) return 1;
-
+      const stake = info.stake + addon;
       const totalBet = info.total + addon;
+
+      if (!stake) return 1;
+
       const opTotalBet = result.bets[opponent].total;
 
-      const rate = totalBet ? (info.stake + addon) / totalBet : 0;
-      const win = opTotalBet * rate + info.stake;
+      const rate = totalBet ? stake / totalBet : 0;
+      const win = opTotalBet * rate + stake;
 
-      return win / info.stake;
+      return win / stake;
     };
 
     Object.entries(result.bets).forEach(([fighter, info]) => {
