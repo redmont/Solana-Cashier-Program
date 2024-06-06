@@ -1,8 +1,7 @@
 import createPlayer from 'youtube-player';
-import { Button } from 'primereact/button';
-import { classNames } from 'primereact/utils';
 import { useEffect, useState, useRef } from 'react';
 import { YouTubePlayer } from 'youtube-player/dist/types';
+import { SoundToggle } from './SoundToggle';
 
 export interface YouTubeStreamProps {
   streamId: string;
@@ -51,14 +50,7 @@ export const YouTubeStream: React.FC<YouTubeStreamProps> = ({ streamId }) => {
     <div className="youtube-stream-container">
       <div id="youtube-stream"></div>
 
-      <Button
-        className={classNames('video-stream-unmute-button', { muted: isMuted })}
-        rounded
-        onClick={() => setMuted(!isMuted)}
-      >
-        <i className={`pi ${isMuted ? 'pi-volume-off' : 'pi-volume-up'}`}></i>
-        {isMuted && <i className="pi pi-times"></i>}
-      </Button>
+      <SoundToggle muted={isMuted} onChange={setMuted} />
     </div>
   );
 };

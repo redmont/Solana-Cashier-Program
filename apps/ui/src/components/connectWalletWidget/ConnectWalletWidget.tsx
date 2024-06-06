@@ -1,9 +1,7 @@
-import { FC, useState } from 'react';
+import { FC } from 'react';
 import { JoinButton } from '@/components/JoinButton';
-import { Slider } from '@/components/slider';
 
 export const ConnectWalletWidget: FC = () => {
-  const [val, setVal] = useState(25);
   return (
     <div className="widget connect-wallet-widget">
       <div className="widget-body framed">
