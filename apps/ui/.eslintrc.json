@@ -4,5 +4,8 @@
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "project": true
+  },
+  "rules": {
+    "@next/next/no-img-element": "off"
   }
 }

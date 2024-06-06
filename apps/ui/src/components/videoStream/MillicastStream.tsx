@@ -4,7 +4,7 @@ import {
   GetStreamTokenMessage,
   GetStreamTokenMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
-import { Director, View } from '@millicast/sdk';
+import { Director, View as MillicastView } from '@millicast/sdk';
 import { Button } from 'primereact/button';
 import { classNames } from 'primereact/utils';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -58,19 +58,27 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
       videoRef.current!.src = src;
     } else {
       videoRef.current!.src = '';
-      const millicastView = new View(
+
+      // Just to check that we are within the same effect context
+      const seed = Math.floor(Math.random() * 1000);
+
+      let isOn = true;
+
+      const millicastView = new MillicastView(
         streamName,
         tokenGenerator,
         videoRef.current!,
-        true,
       );
 
       const connect = async () => {
+        if (!isOn) return;
+
         try {
           await millicastView.connect();
+          console.log(`[${seed}] Connected`);
         } catch (e) {
-          console.log('Failed to connect', e);
-          await millicastView.reconnect();
+          console.log(`[${seed}] Failed to connect`, e);
+          setTimeout(connect, 1000);
         }
       };
 
@@ -79,6 +87,7 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
       }
 
       return () => {
+        isOn = false;
         millicastView?.stop();
       };
     }

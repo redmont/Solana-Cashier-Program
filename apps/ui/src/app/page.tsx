@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 
 dayjs.extend(duration);
 
@@ -21,6 +22,7 @@ import { VideoStream } from '@/components/videoStream';
 export default function Home() {
   const { isConnected } = useEthWallet();
   const [matchResult, setMatchResult] = useState<MatchInfo | null>(null);
+  const { setShowAuthFlow, setShowDynamicUserProfile } = useDynamicContext();
 
   const { match } = useAppState();
   const { fighters = [] } = match ?? {};
@@ -43,6 +45,10 @@ export default function Home() {
     }
   }, [matchResult, match, match?.winAmount, match?.status, isBetPlaced]);
 
+  const handleJoinClick = useCallback(() => {
+    isConnected ? setShowDynamicUserProfile(true) : setShowAuthFlow(true);
+  }, [isConnected, setShowAuthFlow, setShowDynamicUserProfile]);
+
   return (
     <main className="main-page">
       <div className="stream-container">
@@ -58,15 +64,27 @@ export default function Home() {
           </>
         )}
 
-        <VideoStream
-          src={
-            match?.status !== MatchStatus.Finished
-              ? undefined
-              : match?.preMatchVideoUrl ?? trailerUrl
-          }
-        />
+        {!isConnected && (
+          <img
+            className="join-banner"
+            src="/join-banner.jpg"
+            onClick={handleJoinClick}
+          />
+        )}
 
-        <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
+        {isConnected && (
+          <>
+            <VideoStream
+              src={
+                match?.status !== MatchStatus.Finished
+                  ? undefined
+                  : match?.preMatchVideoUrl ?? trailerUrl
+              }
+            />
+
+            <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
+          </>
+        )}
       </div>
 
       <BetListWidget />
