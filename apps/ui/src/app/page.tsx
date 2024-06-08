@@ -17,8 +17,10 @@ import { ActivityStreamWidget } from '@/components/activityStreamWidget';
 import { ConnectWalletWidget } from '@/components/connectWalletWidget';
 import { MatchResultWidget } from '@/components/matchResultWidget';
 import { MatchStreamWidget } from '@/components/matchStreamWidget';
+import { WelcomeDialog } from '@/components/welcomeDialog';
 
 export default function Home() {
+  const [welcomeVisible, setWelcomeVisible] = useState(false);
   const { isConnected } = useEthWallet();
   const [matchResult, setMatchResult] = useState<MatchInfo | null>(null);
 
@@ -30,6 +32,8 @@ export default function Home() {
       return result + (match.bets[codeName]?.stake ?? 0);
     }, 0)
   );
+
+  useEffect(() => setWelcomeVisible(true), []);
 
   useEffect(() => {
     if (
@@ -47,6 +51,13 @@ export default function Home() {
       <MatchStreamWidget />
 
       <BetListWidget />
+
+      {!isConnected && (
+        <WelcomeDialog
+          visible={welcomeVisible}
+          onHide={() => setWelcomeVisible(false)}
+        />
+      )}
 
       {!isConnected && <ConnectWalletWidget />}
 
