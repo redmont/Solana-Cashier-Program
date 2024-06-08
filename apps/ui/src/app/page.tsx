@@ -17,7 +17,10 @@ import { ActivityStreamWidget } from '@/components/activityStreamWidget';
 import { ConnectWalletWidget } from '@/components/connectWalletWidget';
 import { MatchResultWidget } from '@/components/matchResultWidget';
 import { MatchStreamWidget } from '@/components/matchStreamWidget';
-import { WelcomeDialog } from '@/components/welcomeDialog';
+import {
+  TutorialDialog,
+  shouldShowTutorial,
+} from '@/components/tutorialDialog';
 
 export default function Home() {
   const [welcomeVisible, setWelcomeVisible] = useState(false);
@@ -33,7 +36,9 @@ export default function Home() {
     }, 0)
   );
 
-  useEffect(() => setWelcomeVisible(true), []);
+  useEffect(() => {
+    setWelcomeVisible(shouldShowTutorial());
+  }, [isConnected]);
 
   useEffect(() => {
     if (
@@ -53,7 +58,7 @@ export default function Home() {
       <BetListWidget />
 
       {!isConnected && (
-        <WelcomeDialog
+        <TutorialDialog
           visible={welcomeVisible}
           onHide={() => setWelcomeVisible(false)}
         />
