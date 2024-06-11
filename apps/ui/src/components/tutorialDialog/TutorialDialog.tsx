@@ -12,7 +12,7 @@ export interface TutorialDialogProps {
 const slides: TutorialSlideProps[] = [
   {
     id: 'intro-slide',
-    image: '/welcome.png',
+    image: '/tutorial/welcome.png',
     text: (
       <>
         Be the first to brawl your way to glory.
@@ -23,13 +23,13 @@ const slides: TutorialSlideProps[] = [
   {
     id: 'connect-slide',
     title: 'Join the Fight',
-    image: '/connect.png',
+    image: '/tutorial/connect.png',
     text: 'Get 1,000 free credits to start Brawling! Login using your email, google, or web3 wallet.',
   },
   {
     id: 'brawlers-slide',
     title: 'Choose your Brawler(s)',
-    image: '/brawlers.png',
+    image: '/tutorial/brawlers.png',
     text: (
       <>
         Select the Brawler you think will win! <br />
@@ -40,7 +40,7 @@ const slides: TutorialSlideProps[] = [
   {
     id: 'stakes-slide',
     title: 'Place your Stake(s)',
-    image: '/stakes.png',
+    image: '/tutorial/stakes.png',
     text: (
       <>
         Decide how many credits to stake on your chosen fighter.
@@ -52,7 +52,7 @@ const slides: TutorialSlideProps[] = [
   {
     id: 'win-slide',
     title: 'Watch and win big!',
-    image: '/win.png',
+    image: '/tutorial/win.png',
     text: (
       <>
         Winning stakes share the total pool of credits from their losing
@@ -65,7 +65,7 @@ const slides: TutorialSlideProps[] = [
   {
     id: 'leaderboard-slide',
     title: 'Climb the Leaderboard',
-    image: '/leaderboard.png',
+    image: '/tutorial/leaderboard.png',
     text: (
       <>
         Compete in the latest tournament to win real crypto prizes.
@@ -77,7 +77,7 @@ const slides: TutorialSlideProps[] = [
   {
     id: 'community-slide',
     title: 'Shape the BRAWL3Rs future',
-    image: '/community.png',
+    image: '/tutorial/community.png',
     text: (
       <>
         Join our community on Discord to share your feedback and shape our
