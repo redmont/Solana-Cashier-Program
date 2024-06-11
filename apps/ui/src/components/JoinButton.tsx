@@ -28,7 +28,7 @@ export const JoinButton: FC<EthConnectButtonProps> = ({ ...props }) => {
     <Button
       size={props.size}
       type="button"
-      label={isConnected ? walletAddress : 'Join Now'}
+      label={isConnected ? walletAddress : 'Join the Fight'}
       className={classNames(props.className, 'font-normal', {
         'px-4 py-3': props.size === 'large',
         'px-4 py-2': !props.size,
