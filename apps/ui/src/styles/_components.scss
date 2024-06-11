@@ -2,6 +2,7 @@
 @import 'components/button';
 @import 'components/widget';
 
+@import '@/components/slider/Slider.scss';
 @import '@/components/layout/Layout.scss';
 @import '@/components/betListWidget/BetListWidget.scss';
 @import '@/components/activityStreamWidget/ActivityStreamWidget.scss';
@@ -9,4 +10,4 @@
 @import '@/components/connectWalletWidget/ConnectWalletWidget.scss';
 @import '@/components/currentBetWidget/CurrentBetWidget.scss';
 @import '@/components/matchResultWidget/MatchResultWidget.scss';
-@import '@/components/videoStream/VideoStream.scss';
+@import '@/components/matchStreamWidget/MatchStreamWidget.scss';

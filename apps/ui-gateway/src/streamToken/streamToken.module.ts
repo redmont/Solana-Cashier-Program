@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { StreamTokenService } from './streamToken.service';
 import { ConfigService } from '@nestjs/config';
-import { NonceSchema } from './streamToken.schema';
+import { StreamTokenSchema } from './streamToken.schema';
 import { DynamooseModule } from 'nestjs-dynamoose';
 
 @Module({
@@ -11,7 +11,7 @@ import { DynamooseModule } from 'nestjs-dynamoose';
         name: 'streamToken',
         useFactory: (_, configService: ConfigService) => {
           return {
-            schema: NonceSchema,
+            schema: StreamTokenSchema,
             options: {
               tableName: configService.get<string>('tableName'),
             },

@@ -1,17 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Actor, createActor } from 'xstate';
-import { MatchParameters, createGameServerFSM } from './gameServer.fsm';
+import { v4 as uuid } from 'uuid';
 import {
   MatchCompletedMessage,
   GameServerDisconnectedMessage,
 } from 'core-messages';
+import { MatchParameters, createGameServerFSM } from './gameServer.fsm';
 import { ServerMessage } from './models/serverMessage';
 import { ServerCapabilities } from './models/serverCapabilities';
+import { MatchOutcome } from './models/matchOutcome';
 import { GameServerConfigService } from '../gameServerConfig/gameServerConfig.service';
 import { GameServerCapabilitiesService } from '@/gameServerCapabilities/gameServerCapabilities.service';
-import { GameServerMessageSenderService } from './gameServerMessageSender.service';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { MatchOutcome } from './models/matchOutcome';
+import { GameServerGateway } from './gameServerGateway';
 
 @Injectable()
 export class GameServerService {
@@ -20,16 +21,74 @@ export class GameServerService {
     string,
     Actor<ReturnType<typeof createGameServerFSM>>
   > = new Map();
+  private pendingMessages = new Map<string, Map<string, any>>();
 
   constructor(
     private eventEmitter: EventEmitter2,
     private readonly gameServerConfigService: GameServerConfigService,
     private readonly gameServerCapabilitiesService: GameServerCapabilitiesService,
-    private readonly messageSender: GameServerMessageSenderService,
+    private readonly gameServerGateway: GameServerGateway,
   ) {}
 
+  private async sendMessage(serverId: string, payload: any) {
+    const messageId = uuid();
+    const message = { serverId, payload: { messageId, ...payload } };
+
+    const attemptSendMessage = (attempt: number): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        if (!this.pendingMessages.has(serverId)) {
+          this.pendingMessages.set(serverId, new Map());
+        }
+        this.pendingMessages.get(serverId).set(messageId, { resolve, reject });
+
+        setTimeout(
+          () => {
+            if (
+              this.pendingMessages.has(serverId) &&
+              this.pendingMessages.get(serverId).has(messageId)
+            ) {
+              this.pendingMessages.get(serverId).delete(messageId);
+              if (attempt < 8) {
+                this.logger.warn(`Attempt ${attempt + 1} failed, retrying...`);
+                resolve(attemptSendMessage(attempt + 1));
+              } else {
+                reject('Timeout after 10 retries');
+              }
+            }
+          },
+          1.5 ** attempt * 1000,
+        );
+
+        this.gameServerGateway.sendMessageToServer(message);
+      });
+    };
+
+    return attemptSendMessage(0);
+  }
+
   async handleGameServerMessage(serverId: string, data: any) {
-    this.logger.verbose(`Received message from game server`, data);
+    this.logger.verbose(`Received message from game server`, serverId, data);
+
+    // Handle message acknowledgement
+    if (data.type === 'ok') {
+      const { messageId } = data;
+
+      const serverPendingMessages = this.pendingMessages.get(serverId);
+
+      const pending = serverPendingMessages.get(messageId);
+      if (pending) {
+        pending.resolve();
+        serverPendingMessages.delete(messageId);
+      }
+    }
+
+    // Send message acknowledgement
+    if (data.messageId && data.type !== 'ok') {
+      this.gameServerGateway.sendMessageToServer({
+        serverId,
+        payload: { type: 'ok', messageId: data.messageId },
+      });
+    }
 
     if (data.type === 'ready') {
       const {
@@ -55,7 +114,7 @@ export class GameServerService {
             serverId,
             capabilities,
             (data: { serverId: string; payload: ServerMessage }) =>
-              this.messageSender.sendMessageToServer(data),
+              this.sendMessage(data.serverId, data.payload),
             this.logger,
           ),
         );
@@ -125,10 +184,6 @@ export class GameServerService {
           return null;
         }
 
-        this.logger.verbose(`Sending 'matchSetup' message to game server`, {
-          matchId,
-          matchParameters,
-        });
         fsm.send({
           type: 'SEND_MATCH_SETUP',
           params: { matchId, matchParameters },
@@ -159,10 +214,7 @@ export class GameServerService {
       return;
     }
 
-    await this.messageSender.sendMessageToServer<MatchOutcome>({
-      serverId: serverId,
-      payload: new MatchOutcome(matchId, outcome),
-    });
+    await this.sendMessage(serverId, new MatchOutcome(matchId, outcome));
 
     fsm.send({ type: 'OUTCOME_SENT' });
   }

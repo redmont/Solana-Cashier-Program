@@ -1,18 +1,11 @@
-import {
-  FC,
-  useState,
-  useCallback,
-  useRef,
-  useEffect,
-  MouseEvent,
-} from 'react';
+import { FC, useState, useCallback, useRef, useEffect } from 'react';
 import { classNames } from 'primereact/utils';
-import { Slider, SliderChangeEvent } from 'primereact/slider';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 import dayjs from 'dayjs';
 
 import { MatchStatus } from '@/types';
+import { Slider } from '../slider';
 import { useSocket, useAppState, usePostHog } from '@/hooks';
 import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
@@ -44,7 +37,11 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
 
   const { fighters = [] } = match ?? {};
   const selectedFighter = fighters[selectedIndex];
-  const winRate = match?.bets[selectedFighter?.codeName]?.winRate ?? 0;
+  const { stake = 0, projectWinRate } =
+    match?.bets[selectedFighter?.codeName] ?? {};
+
+  const totalStake = stake + betPoints;
+  const winRate = projectWinRate?.(betPoints);
 
   useEffect(() => {
     if (balance < betPoints) {
@@ -71,7 +68,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
     countdown.current = setInterval(() => {
       const startTime = dayjs(match.startTime);
       let millisLeft = startTime.diff();
-      let millisSince = dayjs().diff(startTime);
+      const millisSince = dayjs().diff(startTime);
 
       if (millisLeft < 0) millisLeft = 0;
 
@@ -85,17 +82,13 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
     return () => clearInterval(countdown.current);
   }, [match?.startTime]);
 
-  const handlePointsChange = useCallback(
-    (evt: InputNumberChangeEvent) => {
-      setBetPoints(evt?.value || 0);
-      setDirty(true);
-    },
-    [balance],
-  );
+  const handlePointsChange = useCallback((evt: InputNumberChangeEvent) => {
+    setBetPoints(evt?.value || 0);
+    setDirty(true);
+  }, []);
 
   const handlePercentChange = useCallback(
-    (evt: SliderChangeEvent) => {
-      const percent = evt.value as number;
+    (percent: number) => {
       const points = Math.floor((balance * percent) / 100);
 
       setBetPercent(percent);
@@ -120,17 +113,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
       fighter: selectedFighter.codeName,
       stake: betPoints,
     });
-  }, [match?.series, betPoints, selectedFighter?.codeName]);
-
-  const handleClickAreaClick = useCallback((evt: MouseEvent) => {
-    const element = evt.target as Element;
-    const { left, width } = element.getBoundingClientRect();
-
-    const clickX = evt.clientX - left;
-    const pct = Math.round((clickX / width) * 100);
-
-    setBetPercent(pct);
-  }, []);
+  }, [match?.series, betPoints, selectedFighter?.codeName, posthog, send]);
 
   return (
     <div
@@ -192,15 +175,11 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
               </div>
 
               <Slider
-                min={1}
                 value={betPercent}
                 onChange={handlePercentChange}
+                min={1}
+                marks={[25, 50, 75]}
               />
-
-              <div
-                className="points-slider-clickarea"
-                onClick={handleClickAreaClick}
-              ></div>
             </div>
 
             <div className="points-input-group p-inputgroup">
@@ -235,7 +214,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
               <div className="bet-preview-items">
                 <div className="bet-purchase-price flex justify-content-between text-white">
                   <span>Stake amount:</span>
-                  <span>{betPoints} points</span>
+                  <span>{totalStake} points</span>
                 </div>
 
                 <div className="bet-win-rewards flex justify-content-between text-white">

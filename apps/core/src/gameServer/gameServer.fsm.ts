@@ -62,8 +62,6 @@ export const createGameServerFSM = (
         assertEvent(event, 'SEND_MATCH_SETUP');
         const { matchId, matchParameters } = event.params;
 
-        logger.verbose("Sending 'matchSetup' message to game server", event);
-
         await sendMessage<MatchSetup>({
           serverId: context.serverId,
           payload: new MatchSetup(

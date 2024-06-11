@@ -5,9 +5,8 @@ import {
   GetStreamTokenMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { Director, View as MillicastView } from '@millicast/sdk';
-import { Button } from 'primereact/button';
-import { classNames } from 'primereact/utils';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { SoundToggle } from './SoundToggle';
 
 const parseStreamUrl = () => {
   const url = new URL(streamUrl);
@@ -19,7 +18,7 @@ const parseStreamUrl = () => {
 
 const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [muted, setMuted] = useState(true);
+  const [isMuted, setMuted] = useState(true);
   const { connected, send } = useSocket();
   const [streamToken, setStreamToken] = useState<string | undefined>();
   const [millicastView, setMillicastView] = useState<MillicastView | undefined>(
@@ -46,7 +45,7 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
       // then we need to get a fresh token.
       getToken();
     }
-  }, [connected, src]);
+  }, [src, connected, send]);
 
   // We need a new token generator
   // whenever the stream token changes.
@@ -57,7 +56,7 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
         streamAccountId: accountId,
         subscriberToken: streamToken,
       }),
-    [streamToken],
+    [streamToken, streamName, accountId],
   );
 
   // Ensure we stop the previous MillicastView.
@@ -121,19 +120,12 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
         ref={videoRef}
         autoPlay={true}
         playsInline={true}
-        muted={muted}
+        muted={isMuted}
         width="100%"
         height="100%"
       />
 
-      <Button
-        className={classNames('video-stream-unmute-button', { muted })}
-        rounded
-        onClick={() => setMuted(!muted)}
-      >
-        <i className={`pi ${muted ? 'pi-volume-off' : 'pi-volume-up'}`}></i>
-        {muted && <i className="pi pi-times"></i>}
-      </Button>
+      <SoundToggle muted={isMuted} onChange={setMuted} />
     </>
   );
 };

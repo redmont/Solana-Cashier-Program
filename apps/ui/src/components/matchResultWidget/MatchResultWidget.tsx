@@ -27,7 +27,7 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
     }
 
     try {
-      const dataUrl = await toPng(widget, { cacheBust: true });
+      const dataUrl = await toPng(widget);
 
       downloadPng(dataUrl);
 

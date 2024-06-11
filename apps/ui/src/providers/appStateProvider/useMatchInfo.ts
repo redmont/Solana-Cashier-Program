@@ -9,6 +9,7 @@ export interface FighterBets {
   total: number;
   stake: number;
   winRate: string;
+  projectWinRate: (stakeAddon: number) => string;
 }
 
 export type MatchInfo = Omit<MatchState, 'bets' | 'state'> & {
@@ -18,6 +19,14 @@ export type MatchInfo = Omit<MatchState, 'bets' | 'state'> & {
   matchId?: string;
   series?: string;
 };
+
+const initBetsInfo = (stake = 0, total = 0) => ({
+  list: [],
+  total,
+  stake,
+  winRate: '1.00',
+  projectWinRate: () => '1.00',
+});
 
 export function useMatchInfo() {
   const { bets, state, ...matchState } = useMatchState();
@@ -31,8 +40,8 @@ export function useMatchInfo() {
       ...matchState,
       status: state as MatchStatus,
       bets: {
-        [fighters[0]]: { list: [], total: 0, stake: 0, winRate: '1.00' },
-        [fighters[1]]: { list: [], total: 0, stake: 0, winRate: '1.00' },
+        [fighters[0]]: initBetsInfo(),
+        [fighters[1]]: initBetsInfo(),
       },
     };
 
@@ -49,20 +58,31 @@ export function useMatchInfo() {
       }
     });
 
-    Object.entries(result.bets).forEach(([fighter, info]) => {
+    const calcWinRate = (fighter: string, addon: number = 0) => {
+      const info = result.bets[fighter];
       const fighterIndex = fighters.indexOf(fighter);
       const opponent = fighters[(fighterIndex + 1) % 2];
 
-      info.list.sort((a, b) => +b.amount - +a.amount);
+      const stake = info.stake + addon;
+      const totalBet = info.total + addon;
 
-      if (!info.stake) return '1.00';
+      if (!stake) return 1;
 
       const opTotalBet = result.bets[opponent].total;
 
-      const rate = info.total ? info.stake / info.total : 0;
-      const win = opTotalBet * rate + info.stake;
+      const rate = totalBet ? stake / totalBet : 0;
+      const win = opTotalBet * rate + stake;
 
-      result.bets[fighter].winRate = (win / info.stake).toFixed(2);
+      return win / stake;
+    };
+
+    Object.entries(result.bets).forEach(([fighter, info]) => {
+      info.list.sort((a, b) => +b.amount - +a.amount);
+
+      info.winRate = calcWinRate(fighter).toFixed(2);
+
+      info.projectWinRate = (stakeAddon: number) =>
+        calcWinRate(fighter, stakeAddon).toFixed(2);
     });
 
     return result;
