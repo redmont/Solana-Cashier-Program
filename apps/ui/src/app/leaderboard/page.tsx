@@ -208,7 +208,7 @@ export default function Leaderboard() {
               <div className="table-header">
                 <div className="rank">Rank</div>
                 <div className="player">Player</div>
-                <div className="points">Credit Balance</div>
+                <div className="credits">Credit Balance</div>
                 <div className="wins">Credits Won</div>
               </div>
 
@@ -243,8 +243,8 @@ const MobileRecord: FC<RecordProps> = (props) => (
       <div className="player">{truncateEthAddress(props.walletAddress)}</div>
       <div className="wins-label">Credits Won:</div>
       <div className="wins-value">{props.winAmount}</div>
-      <div className="points-label">Credit Balance:</div>
-      <div className="points-value">
+      <div className="credits-label">Credit Balance:</div>
+      <div className="credits-value">
         {Math.floor(+props.balance).toLocaleString()}
       </div>
     </div>
@@ -261,7 +261,7 @@ const TableRow: FC<RecordProps> = (props) => (
       <span className="rank-value">{props.rank}</span>
     </div>
     <div className="player">{truncateEthAddress(props.walletAddress)}</div>
-    <div className="points">{Math.floor(+props.balance).toLocaleString()}</div>
+    <div className="credits">{Math.floor(+props.balance).toLocaleString()}</div>
     <div className="wins">{props.winAmount}</div>
   </div>
 );

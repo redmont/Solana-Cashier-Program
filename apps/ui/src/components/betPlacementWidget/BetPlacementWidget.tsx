@@ -26,7 +26,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
   const [error, setError] = useState('');
   const [isDirty, setDirty] = useState(false);
   const [betPercent, setBetPercent] = useState(25);
-  const [betPoints, setBetPoints] = useState(0);
+  const [betCredits, setBetCredits] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState('00 : 00');
   const [matchTime, setMatchTime] = useState('00 : 00');
@@ -40,24 +40,24 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
   const { stake = 0, projectWinRate } =
     match?.bets[selectedFighter?.codeName] ?? {};
 
-  const totalStake = stake + betPoints;
-  const winRate = projectWinRate?.(betPoints);
+  const totalStake = stake + betCredits;
+  const winRate = projectWinRate?.(betCredits);
 
   useEffect(() => {
-    if (balance < betPoints) {
-      if (isDirty) setError('Insufficient points balance');
-      else setBetPoints(Math.floor(balance));
+    if (balance < betCredits) {
+      if (isDirty) setError('Insufficient credits balance');
+      else setBetCredits(Math.floor(balance));
     } else {
       setError('');
     }
 
-    setBetPercent(balance ? Math.floor((betPoints / balance) * 100) : 0);
-  }, [balance, betPoints, isDirty]);
+    setBetPercent(balance ? Math.floor((betCredits / balance) * 100) : 0);
+  }, [balance, betCredits, isDirty]);
 
   useEffect(() => {
     if (isReady.current) return;
 
-    setBetPoints(Math.floor(balance * 0.25));
+    setBetCredits(Math.floor(balance * 0.25));
 
     isReady.current = balance > 0;
   }, [balance]);
@@ -82,17 +82,17 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
     return () => clearInterval(countdown.current);
   }, [match?.startTime]);
 
-  const handlePointsChange = useCallback((evt: InputNumberChangeEvent) => {
-    setBetPoints(evt?.value || 0);
+  const handleCreditsChange = useCallback((evt: InputNumberChangeEvent) => {
+    setBetCredits(evt?.value || 0);
     setDirty(true);
   }, []);
 
   const handlePercentChange = useCallback(
     (percent: number) => {
-      const points = Math.floor((balance * percent) / 100);
+      const credits = Math.floor((balance * percent) / 100);
 
       setBetPercent(percent);
-      setBetPoints(points);
+      setBetCredits(credits);
       setDirty(true);
     },
     [balance],
@@ -106,14 +106,14 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
     setDirty(false);
 
     await send(
-      new PlaceBetMessage(match?.series, betPoints, selectedFighter.codeName),
+      new PlaceBetMessage(match?.series, betCredits, selectedFighter.codeName),
     );
 
     posthog?.capture('Stake Placed', {
       fighter: selectedFighter.codeName,
-      stake: betPoints,
+      stake: betCredits,
     });
-  }, [match?.series, betPoints, selectedFighter?.codeName, posthog, send]);
+  }, [match?.series, betCredits, selectedFighter?.codeName, posthog, send]);
 
   return (
     <div
@@ -167,9 +167,9 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
             </div>
           </div>
 
-          <div className="points-selection">
-            <div className="points-slider-box">
-              <div className="points-slider-labels">
+          <div className="credits-selection">
+            <div className="credits-slider-box">
+              <div className="credits-slider-labels">
                 <span>1%</span>
                 <span>100%</span>
               </div>
@@ -182,14 +182,14 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
               />
             </div>
 
-            <div className="points-input-group p-inputgroup">
+            <div className="credits-input-group p-inputgroup">
               <InputNumber
-                className="points-input"
-                value={betPoints}
-                onChange={handlePointsChange}
+                className="credits-input"
+                value={betCredits}
+                onChange={handleCreditsChange}
               />
 
-              <span className="p-inputgroup-addon points-label">Points</span>
+              <span className="p-inputgroup-addon credits-label">Credits</span>
             </div>
 
             {props.compact && (
@@ -198,7 +198,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
                 size="large"
                 className="w-full mt-3 confirm-button-compact"
                 disabled={
-                  betPoints === 0 || match?.status !== MatchStatus.BetsOpen
+                  betCredits === 0 || match?.status !== MatchStatus.BetsOpen
                 }
                 onClick={placeBet}
               />
@@ -214,7 +214,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
               <div className="bet-preview-items">
                 <div className="bet-purchase-price flex justify-content-between text-white">
                   <span>Stake amount:</span>
-                  <span>{totalStake} points</span>
+                  <span>{totalStake} credits</span>
                 </div>
 
                 <div className="bet-win-rewards flex justify-content-between text-white">
@@ -241,7 +241,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = (props) => {
                 className="w-full text-base"
                 disabled={
                   !!error ||
-                  betPoints === 0 ||
+                  betCredits === 0 ||
                   match?.status !== MatchStatus.BetsOpen
                 }
                 onClick={placeBet}
