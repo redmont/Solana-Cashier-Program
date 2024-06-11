@@ -58,7 +58,7 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
     const text = encodeURIComponent(
       `🥊 ${fighters.at(winnerIndex)?.displayName} conquers ${fighters.at(loserIndex)?.displayName} in @BRAWL3RS!\
       \n🪙 Banked +${winAmount} Brawl3r credits and shot up the leaderboard.\
-      \n🏆 Eyeing those tournament prizes. Who’s next?`,
+      \n🏆 Eyeing those tournament prizes. Who’s next??`,
     );
 
     const hashtags = ['LFB'].join(',');
