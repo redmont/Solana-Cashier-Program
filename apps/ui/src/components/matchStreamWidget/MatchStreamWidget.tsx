@@ -42,7 +42,7 @@ export const MatchStreamWidget: FC = () => {
 
   const matchStreamUrl = isMatchFinished
     ? match?.preMatchVideoUrl ?? trailerUrl
-    : streamUrl;
+    : undefined;
 
   const handleBannerClick = useCallback(() => {
     isConnected ? setShowDynamicUserProfile(true) : setShowAuthFlow(true);
