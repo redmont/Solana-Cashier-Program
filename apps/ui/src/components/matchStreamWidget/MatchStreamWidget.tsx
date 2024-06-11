@@ -75,7 +75,7 @@ export const MatchStreamWidget: FC = () => {
       )}
 
       {isConnected && streamSource === 'millicast' && (
-        <MillicastStream src={streamUrl} />
+        <MillicastStream src={matchStreamUrl} />
       )}
 
       {isConnected && streamSource === 'cloudflare' && (
