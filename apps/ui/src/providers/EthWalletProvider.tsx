@@ -49,10 +49,11 @@ export const EthWalletProvider: FC<ChildContainerProps> = ({ children }) => {
 
 export function useEthWallet() {
   const account = useAccount();
-  const { authToken } = useDynamicContext();
+  const { authToken, isAuthenticated } = useDynamicContext();
 
   return {
     ...account,
     authToken,
+    isAuthenticated,
   };
 }

@@ -1,12 +1,29 @@
 import { FC } from 'react';
 import { useAppState } from '@/hooks';
 
-export const CurrentBetWidget: FC = () => {
+export interface CurrentBetWidgetProps {
+  currentBet: number;
+  currentFighter: number;
+}
+
+export const CurrentBetWidget: FC<CurrentBetWidgetProps> = ({
+  currentFighter,
+  currentBet,
+}) => {
   const { match } = useAppState();
   const { fighters = [] } = match ?? {};
 
   const bets = fighters.map((f, index) => {
-    return match?.bets[fighters[index]?.codeName];
+    const bet = match?.bets[fighters[index]?.codeName];
+    const stake = bet?.stake ?? 0;
+
+    const isOpponent = index !== currentFighter;
+
+    return {
+      ...bet,
+      stake: isOpponent ? stake : stake + currentBet,
+      winRate: bet?.projectWinRate(currentBet, isOpponent),
+    };
   });
 
   return (
