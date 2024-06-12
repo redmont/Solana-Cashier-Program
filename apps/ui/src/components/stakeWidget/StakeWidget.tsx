@@ -1,12 +1,12 @@
 import { FC } from 'react';
 import { useAppState } from '@/hooks';
 
-export interface CurrentBetWidgetProps {
+export interface StakeWidgetProps {
   currentBet: number;
   currentFighter: number;
 }
 
-export const CurrentBetWidget: FC<CurrentBetWidgetProps> = ({
+export const StakeWidget: FC<StakeWidgetProps> = ({
   currentFighter,
   currentBet,
 }) => {

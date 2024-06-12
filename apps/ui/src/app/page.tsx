@@ -11,7 +11,7 @@ import { MatchStatus } from '@/types';
 import { twitchChannel } from '@/config';
 import { useAppState, MatchInfo } from '@/hooks';
 import { BetPlacementWidget } from '@/components/betPlacementWidget';
-import { CurrentBetWidget } from '@/components/currentBetWidget';
+import { StakeWidget } from '@/components/stakeWidget';
 import { BetListWidget } from '@/components/betListWidget';
 import { ActivityStreamWidget } from '@/components/activityStreamWidget';
 import { MatchResultWidget } from '@/components/matchResultWidget';
@@ -65,10 +65,7 @@ export default function Home() {
       )}
 
       {!matchResult && (
-        <CurrentBetWidget
-          currentBet={currentBet}
-          currentFighter={currentFighter}
-        />
+        <StakeWidget currentBet={currentBet} currentFighter={currentFighter} />
       )}
 
       <ActivityStreamWidget />
