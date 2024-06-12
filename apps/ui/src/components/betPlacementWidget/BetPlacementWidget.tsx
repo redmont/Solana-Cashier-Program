@@ -1,8 +1,9 @@
-import { FC, useState, useCallback, useRef, useEffect } from 'react';
+import { FC, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { classNames } from 'primereact/utils';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 import dayjs from 'dayjs';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 
 import { MatchStatus } from '@/types';
 import { Slider } from '../slider';
@@ -29,11 +30,13 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
   onFighterChange,
   ...props
 }) => {
-  const { isAuthenticated } = useEthWallet();
+  const { isConnected, isAuthenticated } = useEthWallet();
+  const { setShowAuthFlow } = useDynamicContext();
   const { isBalanceReady, balance, match } = useAppState();
   const { fighters = [] } = match ?? {};
   const [error, setError] = useState('');
   const [isDirty, setDirty] = useState(false);
+  const [isLoading, setLoading] = useState(true);
   const [betPercent, setBetPercent] = useState(25);
   const [timeLeft, setTimeLeft] = useState('00 : 00');
   const [matchTime, setMatchTime] = useState('00 : 00');
@@ -59,6 +62,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
     if (props.betAmount > 0 || (isAuthenticated && !isBalanceReady)) return;
 
     onBetChange(Math.floor(balance * 0.25));
+    setLoading(false);
 
     // We only need to track isBalanceReady
     // to apply this once balance is fetched from server
@@ -117,16 +121,33 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
     }
 
     setDirty(false);
+    setLoading(true);
 
     await send(
       new PlaceBetMessage(match?.series, betAmount, selectedFighter.codeName),
     );
+
+    setLoading(false);
 
     posthog?.capture('Stake Placed', {
       fighter: selectedFighter.codeName,
       stake: betAmount,
     });
   }, [match?.series, betAmount, selectedFighter?.codeName, posthog, send]);
+
+  const join = useCallback(() => setShowAuthFlow(true), [setShowAuthFlow]);
+
+  const actionTitle = useMemo(() => {
+    if (isLoading && (!isAuthenticated || !isBalanceReady)) {
+      return 'Loading';
+    }
+
+    if (!isAuthenticated) {
+      return 'Join the Fight';
+    }
+
+    return isLoading ? 'Processing' : 'Confirm';
+  }, [isLoading, isAuthenticated, isBalanceReady]);
 
   return (
     <div className="widget bet-placement-widget">
@@ -210,15 +231,17 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
             {error && <div className="text-sm mt-2 text-red-500">{error}</div>}
 
             <Button
-              label="Confirm"
+              loading={isLoading}
+              label={actionTitle}
               size="large"
-              className="w-full mt-3 confirm-button-compact"
+              className="button-place w-full mt-3 confirm-button-compact"
               disabled={
+                isLoading ||
                 !!error ||
                 betAmount === 0 ||
                 match?.status !== MatchStatus.BetsOpen
               }
-              onClick={placeBet}
+              onClick={isConnected ? placeBet : join}
             />
           </div>
         </div>

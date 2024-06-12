@@ -82,4 +82,12 @@
   .points-label {
     padding: 0 0.75rem;
   }
+
+  .button-place {
+    justify-content: center;
+
+    .p-button-label {
+      flex-grow: 0;
+    }
+  }
 }
