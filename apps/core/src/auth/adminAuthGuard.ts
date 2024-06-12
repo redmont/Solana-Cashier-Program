@@ -9,13 +9,19 @@ import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AdminAuthGuard implements CanActivate {
+  private readonly bypassAdminAuth: boolean;
   private readonly dynamicPublicKey: string;
 
   constructor(private readonly configService: ConfigService) {
+    this.bypassAdminAuth = this.configService.get<boolean>('bypassAdminAuth');
     this.dynamicPublicKey = this.configService.get<string>('dynamicPublicKey');
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    if (this.bypassAdminAuth) {
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest();
 
     const token = this.extractTokenFromHeader(request);

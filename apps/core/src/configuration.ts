@@ -14,4 +14,5 @@ export default () => ({
   mediaLibraryBucketName: process.env.MEDIA_LIBRARY_BUCKET_NAME,
   mediaUri: process.env.MEDIA_URI,
   dynamicPublicKey: process.env.DYNAMIC_PUBLIC_KEY,
+  bypassAdminAuth: process.env.BYPASS_ADMIN_AUTH,
 });
