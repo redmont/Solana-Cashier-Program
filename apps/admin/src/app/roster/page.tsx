@@ -16,10 +16,12 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Scheduler } from '@/components/Scheduler';
 import axios from 'axios';
 import { UpdateRosterRequest } from '../models/updateRosterRequest';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
 const Roster = () => {
+  const { authToken } = useDynamicContext();
   const [scheduleType, setScheduleType] = useState('');
 
   const { data } = useQuery<{
@@ -37,7 +39,11 @@ const Roster = () => {
 
   const updateRosterMutation = useMutation({
     mutationFn: (data: UpdateRosterRequest) => {
-      return axios.put(`${baseUrl}/roster`, data);
+      return axios.put(`${baseUrl}/roster`, data, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
     },
   });
 
