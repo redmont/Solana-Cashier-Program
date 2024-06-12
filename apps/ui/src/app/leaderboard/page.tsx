@@ -209,7 +209,7 @@ export default function Leaderboard() {
                 <div className="rank">Rank</div>
                 <div className="player">Player</div>
                 <div className="points">Credit Balance</div>
-                <div className="wins">Credits Won</div>
+                <div className="wins">Winnings</div>
               </div>
 
               <div className="table-body">
@@ -241,7 +241,7 @@ const MobileRecord: FC<RecordProps> = (props) => (
       <div className={`rank rank-${props.rank}`}>{props.rank}</div>
       <div className={`rank-image rank-image-${props.rank}`}></div>
       <div className="player">{truncateEthAddress(props.walletAddress)}</div>
-      <div className="wins-label">Credits Won:</div>
+      <div className="wins-label">Winnings:</div>
       <div className="wins-value">{props.winAmount}</div>
       <div className="points-label">Credit Balance:</div>
       <div className="points-value">
