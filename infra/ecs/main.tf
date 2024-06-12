@@ -52,5 +52,6 @@ resource "aws_iam_role_policy_attachment" "ecs_tasks_execution_role" {
 }
 
 resource "aws_cloudwatch_log_group" "log_group" {
-  name = "${var.prefix}-${var.environment}"
+  name              = "${var.prefix}-${var.environment}"
+  retention_in_days = 30
 }

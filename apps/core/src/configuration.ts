@@ -13,4 +13,5 @@ export default () => ({
   useMockGameServer: process.env.USE_MOCK_GAME_SERVER === 'true',
   mediaLibraryBucketName: process.env.MEDIA_LIBRARY_BUCKET_NAME,
   mediaUri: process.env.MEDIA_URI,
+  dynamicPublicKey: process.env.DYNAMIC_PUBLIC_KEY,
 });

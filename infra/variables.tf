@@ -22,3 +22,28 @@ variable "millicast_api_secret" {
   description = "Millicast API secret"
   type        = string
 }
+
+variable "millicast_stream_name" {
+  description = "Millicast stream name"
+  type        = string
+}
+
+variable "millicast_parent_subscribe_token" {
+  description = "Millicast parent subscribe token"
+  type        = string
+}
+
+variable "millicast_parent_subscribe_token_id" {
+  description = "Millicast parent subscribe token ID"
+  type        = string
+}
+
+variable "millicast_allowed_origins" {
+  description = "Millicast allowed origins"
+  type        = string
+}
+
+variable "public_assets_cors_origins" {
+  description = "CORS origins for public assets"
+  type        = list(string)
+}

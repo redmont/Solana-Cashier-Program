@@ -6,9 +6,11 @@ import { AdminService } from './admin.service';
 import { GameServerCapabilitiesModule } from '@/gameServerCapabilities/gameServerCapabilities.module';
 import { RosterModule } from '@/roster/roster.module';
 import { TournamentModule } from '@/tournament/tournament.module';
+import { AuthModule } from '@/auth/auth.module';
 
 @Module({
   imports: [
+    AuthModule,
     SeriesModule,
     GameServerConfigModule,
     GameServerCapabilitiesModule,

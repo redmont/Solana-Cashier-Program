@@ -5,10 +5,12 @@ import {
   Post,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaLibraryService } from './mediaLibrary.service';
+import { AdminAuthGuard } from '@/auth/adminAuthGuard';
 
 interface CreateFolderRequest {
   name: string;
@@ -19,6 +21,7 @@ interface CreateFolderRequest {
 export class MediaLibraryController {
   constructor(private readonly service: MediaLibraryService) {}
 
+  @UseGuards(AdminAuthGuard)
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
@@ -30,6 +33,7 @@ export class MediaLibraryController {
     return {};
   }
 
+  @UseGuards(AdminAuthGuard)
   @Get('files')
   async getFiles(@Query('path') path?: string) {
     const files = await this.service.getFiles(path);
@@ -41,6 +45,7 @@ export class MediaLibraryController {
     }));
   }
 
+  @UseGuards(AdminAuthGuard)
   @Post('folder')
   async createFolder(@Body() { name, path }: CreateFolderRequest) {
     await this.service.createFolder(name, path);
