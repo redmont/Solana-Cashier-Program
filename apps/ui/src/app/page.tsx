@@ -16,8 +16,13 @@ import { BetListWidget } from '@/components/betListWidget';
 import { ActivityStreamWidget } from '@/components/activityStreamWidget';
 import { MatchResultWidget } from '@/components/matchResultWidget';
 import { MatchStreamWidget } from '@/components/matchStreamWidget';
+import {
+  TutorialDialog,
+  shouldShowTutorial,
+} from '@/components/tutorialDialog';
 
 export default function Home() {
+  const [welcomeVisible, setWelcomeVisible] = useState(false);
   const [matchResult, setMatchResult] = useState<MatchInfo | null>(null);
   const [currentFighter, setCurrentFighter] = useState(0);
   const [currentBet, setCurrentBet] = useState<number>(0);
@@ -30,6 +35,10 @@ export default function Home() {
       return result + (match.bets[codeName]?.stake ?? 0);
     }, 0)
   );
+
+  useEffect(() => {
+    setWelcomeVisible(shouldShowTutorial());
+  }, []);
 
   useEffect(() => {
     if (
@@ -47,6 +56,11 @@ export default function Home() {
       <MatchStreamWidget />
 
       <BetListWidget />
+
+      <TutorialDialog
+        visible={welcomeVisible}
+        onHide={() => setWelcomeVisible(false)}
+      />
 
       {matchResult && (
         <MatchResultWidget

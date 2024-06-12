@@ -69,5 +69,9 @@ module "ecs" {
 
   dynamic_public_key = var.dynamic_public_key
 
-  millicast_api_secret = var.millicast_api_secret
+  millicast_api_secret                = var.millicast_api_secret
+  millicast_stream_name               = var.millicast_stream_name
+  millicast_parent_subscribe_token    = var.millicast_parent_subscribe_token
+  millicast_parent_subscribe_token_id = var.millicast_parent_subscribe_token_id
+  millicast_allowed_origins           = var.millicast_allowed_origins
 }

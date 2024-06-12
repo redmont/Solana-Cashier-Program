@@ -15,6 +15,7 @@ import { AbstractMatchOutcomeService } from './matchOutcome/abstractMatchOutcome
 import { UserMatchResultSchema } from './schemas/userMatchResult.schema';
 import { GatewayManagerModule } from '@/gatewayManager/gatewayManager.module';
 import { UserMatchSchema } from './schemas/userMatch.schema';
+import { TournamentModule } from '@/tournament/tournament.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { UserMatchSchema } from './schemas/userMatch.schema';
     ]),
     GameServerModule,
     GatewayManagerModule,
+    TournamentModule,
   ],
   providers: [
     {

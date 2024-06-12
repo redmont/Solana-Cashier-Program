@@ -9,6 +9,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { baseUrl } from '@/config';
 import axios from 'axios';
 import { useToast } from '@chakra-ui/react';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 
 interface CreateTournamentRequest {
   codeName: string;
@@ -74,6 +75,7 @@ const uiSchema: UiSchema = {
 const EditTournamentPage = ({ params }: { params: { codename: string } }) => {
   const router = useRouter();
   const toast = useToast();
+  const { authToken } = useDynamicContext();
   const [formData, setFormData] = useState(null);
 
   const { data } = useQuery<any>({
@@ -82,13 +84,21 @@ const EditTournamentPage = ({ params }: { params: { codename: string } }) => {
 
   const createTournamentMutation = useMutation({
     mutationFn: (data: CreateTournamentRequest) => {
-      return axios.post(`${baseUrl}/tournaments`, data);
+      return axios.post(`${baseUrl}/tournaments`, data, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
     },
   });
 
   const updateTournamentMutation = useMutation({
     mutationFn: (data: UpdateTournamentRequest) => {
-      return axios.put(`${baseUrl}/series/${params.codename}`, data);
+      return axios.put(`${baseUrl}/series/${params.codename}`, data, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
     },
   });
 

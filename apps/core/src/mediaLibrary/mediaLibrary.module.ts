@@ -6,9 +6,11 @@ import { MediaLibraryService } from './mediaLibrary.service';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { ConfigService } from '@nestjs/config';
 import { MediaSchema } from './media.schema';
+import { AuthModule } from '@/auth/auth.module';
 
 @Module({
   imports: [
+    AuthModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../', 'media'),
       serveRoot: '/media',

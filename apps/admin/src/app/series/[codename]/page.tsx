@@ -26,6 +26,7 @@ import axios from 'axios';
 import { baseUrl } from '@/config';
 import { MediaPickerModal } from '@/components/mediaLibrary/MediaPickerModal';
 import { useRouter } from 'next/navigation';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 
 interface CreateSeriesRequest {
   codeName: string;
@@ -165,6 +166,7 @@ const uiSchema: UiSchema = {
 const EditSeries = ({ params }: { params: { codename: string } }) => {
   const router = useRouter();
   const toast = useToast();
+  const { authToken } = useDynamicContext();
   const [formData, setFormData] = useState(null);
 
   const { data: gameServerCapabilities } = useQuery<{
@@ -199,13 +201,21 @@ const EditSeries = ({ params }: { params: { codename: string } }) => {
 
   const createSeriesMutation = useMutation({
     mutationFn: (data: CreateSeriesRequest) => {
-      return axios.post(`${baseUrl}/series`, data);
+      return axios.post(`${baseUrl}/series`, data, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
     },
   });
 
   const updateSeriesMutation = useMutation({
     mutationFn: (data: UpdateSeriesRequest) => {
-      return axios.put(`${baseUrl}/series/${params.codename}`, data);
+      return axios.put(`${baseUrl}/series/${params.codename}`, data, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
     },
   });
 
