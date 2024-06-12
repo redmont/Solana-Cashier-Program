@@ -7,21 +7,39 @@ export const ActivityStreamWidget: FC = () => {
   const { messages } = useActivityStream(match?.series, match?.matchId);
   const lastMessageRef = useRef<HTMLDivElement>(null);
   const chatViewportRef = useRef<HTMLDivElement>(null);
-  const prevScrollHeight = useRef<number>(0);
+  const prevChatViewportRef = useRef<{
+    scrollTop: number;
+    scrollHeight: number;
+    clientHeight: number;
+  }>({
+    scrollTop: 0,
+    scrollHeight: 0,
+    clientHeight: 0,
+  });
 
   const handleScroll = () => {
-    console.log('trigger scroll');
     if (chatViewportRef.current && lastMessageRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = chatViewportRef.current;
+      const {
+        scrollTop: prevScrollTop,
+        scrollHeight: prevScrollHeight,
+        clientHeight: prevClientHeight,
+      } = prevChatViewportRef.current;
       const scrollDiff =
-        prevScrollHeight.current === 0
-          ? 0
-          : scrollHeight - prevScrollHeight.current;
-      if (scrollHeight - (scrollTop + clientHeight) <= 2 * scrollDiff) {
+        prevScrollHeight === 0 ? 0 : scrollHeight - prevScrollHeight;
+      if (
+        scrollHeight - (scrollTop + Math.max(clientHeight, prevClientHeight)) <=
+        2 * scrollDiff
+      ) {
+        // checking previous clientHeight to handle scroll after resize
         // scroll if previous message was visible in previous state
-        lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' });
+        lastMessageRef.current.scrollIntoView({ behavior: 'smooth' });
       }
-      prevScrollHeight.current = scrollHeight;
+      prevChatViewportRef.current = {
+        scrollTop,
+        scrollHeight,
+        clientHeight,
+      };
     }
   };
 
