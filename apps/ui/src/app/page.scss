@@ -48,21 +48,17 @@
 }
 
 .activity-stream-widget {
+  height: 24rem;
   min-height: 16rem;
-}
-
-.stream-chat-widget {
-  min-height: 30rem;
 }
 
 @media screen and (min-width: 48rem) {
   .main-page {
     display: grid;
-    grid-template-rows: auto auto auto auto;
+    grid-template-rows: repeat(4, auto);
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     grid-auto-flow: row;
-    padding-bottom: 1rem;
   }
 
   .widget {
@@ -76,7 +72,7 @@
 
   .match-stream-widget {
     grid-column: 1 / 3;
-    grid-row: 1;
+    grid-row: 1 / 2;
     height: 28rem;
 
     .fighter-image {
@@ -103,15 +99,16 @@
     grid-row: 3;
   }
 
-  .connect-wallet-widget {
+  .activity-stream-widget {
     grid-column: 1 / 3;
-    grid-row: 3;
+    grid-row: 4 / 5;
+    max-height: 24rem;
   }
 }
 
 @media screen and (min-width: 75rem) {
   .main-page {
-    grid-template-rows: 10rem 17.75rem 1fr 1px;
+    grid-template-rows: 27.75rem 1fr 1px;
     grid-template-columns: repeat(2, 25rem) auto;
     gap: 1rem;
   }
@@ -130,19 +127,12 @@
     grid-row: 1;
     padding: 0;
     min-height: 0;
-  }
-
-  .stream-chat-widget {
-    grid-column: 3;
-    grid-row: 2;
-    min-height: 0;
-    height: auto;
-    min-height: 0;
+    max-height: none;
   }
 
   .bet-list-widget {
     grid-column: 1;
-    grid-row: 3 / 5;
+    grid-row: 2 / 4;
 
     .viewport {
       display: block;
@@ -151,29 +141,24 @@
 
   .bet-placement-widget {
     grid-column: 2 / 3;
-    grid-row: 3 / 5;
+    grid-row: 2 / 4;
   }
 
   .match-result-widget {
     grid-column: 2 / 4;
-    grid-row: 3;
+    grid-row: 2 / 4;
   }
 
-  .connect-wallet-widget {
-    grid-column: 2 / 4;
-    grid-row: 3 / 5;
-  }
-
-  .current-bet-widget {
+  .stake-widget {
     grid-column: 3 / 4;
-    grid-row: 3 / 5;
+    grid-row: 2 / 4;
   }
 }
 
 @media screen and (min-width: 92rem) {
   .main-page {
-    grid-template-rows: 20rem 7rem 1fr;
-    grid-template-columns: auto repeat(2, 23.5rem) auto;
+    grid-template-rows: 27rem 1fr;
+    grid-template-columns: 1fr repeat(2, 23.5rem) 1fr;
     gap: 1rem;
   }
 
@@ -192,36 +177,27 @@
 
   .bet-list-widget {
     grid-column: 1;
-    grid-row: 1 / 4;
+    grid-row: 1 / 3;
     padding: 0;
   }
 
   .activity-stream-widget {
     grid-column: 4;
-    grid-row: 1;
-  }
-
-  .stream-chat-widget {
-    grid-column: 4;
-    grid-row: 2 / 4;
+    grid-row: 1 / 3;
   }
 
   .bet-placement-widget {
     grid-column: 2 / 3;
-    grid-row: 3 / 4;
-
-    &.compact {
-      grid-column: 3;
-    }
+    grid-row: 2 / 3;
   }
 
-  .current-bet-widget {
+  .stake-widget {
     grid-column: 3 / 4;
-    grid-row: 3 / 4;
+    grid-row: 2 / 3;
   }
 
-  .connect-wallet-widget {
+  .match-result-widget {
     grid-column: 2 / 4;
-    grid-row: 3 / 4;
+    grid-row: 2 / 3;
   }
 }

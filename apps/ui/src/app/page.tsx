@@ -6,9 +6,7 @@ import duration from 'dayjs/plugin/duration';
 
 dayjs.extend(duration);
 
-import { TwitchChat } from 'react-twitch-embed';
 import { MatchStatus } from '@/types';
-import { twitchChannel } from '@/config';
 import { useAppState, MatchInfo } from '@/hooks';
 import { BetPlacementWidget } from '@/components/betPlacementWidget';
 import { StakeWidget } from '@/components/stakeWidget';
@@ -83,10 +81,6 @@ export default function Home() {
       )}
 
       <ActivityStreamWidget />
-
-      <div className="widget stream-chat-widget">
-        <TwitchChat channel={twitchChannel} width="100%" height="100%" />
-      </div>
     </main>
   );
 }

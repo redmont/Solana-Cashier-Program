@@ -22,12 +22,12 @@ export const StakeWidget: FC<StakeWidgetProps> = ({
     return {
       ...bet,
       stake: isOpponent ? stake : stake + currentBet,
-      winRate: bet?.projectWinRate(currentBet, isOpponent),
+      projectedWinRate: bet?.projectWinRate(currentBet, isOpponent),
     };
   });
 
   return (
-    <div className="widget current-bet-widget">
+    <div className="widget stake-widget">
       <div className="widget-body framed">
         <div className="widget-header">
           <div className="widget-label">My Stake</div>
@@ -47,6 +47,11 @@ export const StakeWidget: FC<StakeWidgetProps> = ({
           <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
             <span>Current win rate:</span>
             <span>{bets[0]?.winRate ?? 0}x</span>
+          </div>
+
+          <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
+            <span>Projected win rate:</span>
+            <span>{bets[0]?.projectedWinRate ?? 0}x</span>
           </div>
         </div>
 
@@ -68,6 +73,11 @@ export const StakeWidget: FC<StakeWidgetProps> = ({
           <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
             <span>Current win rate:</span>
             <span>{bets[1]?.winRate ?? 0}x</span>
+          </div>
+
+          <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
+            <span>Projected win rate:</span>
+            <span>{bets[1]?.projectedWinRate ?? 0}x</span>
           </div>
         </div>
       </div>

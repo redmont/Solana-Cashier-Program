@@ -8,11 +8,9 @@ export const ActivityStreamWidget: FC = () => {
   const lastMessageRef = useRef<HTMLDivElement>(null);
   const chatViewportRef = useRef<HTMLDivElement>(null);
   const prevChatViewportRef = useRef<{
-    scrollTop: number;
     scrollHeight: number;
     clientHeight: number;
   }>({
-    scrollTop: 0,
     scrollHeight: 0,
     clientHeight: 0,
   });
@@ -20,13 +18,13 @@ export const ActivityStreamWidget: FC = () => {
   const handleScroll = () => {
     if (chatViewportRef.current && lastMessageRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = chatViewportRef.current;
-      const {
-        scrollTop: prevScrollTop,
-        scrollHeight: prevScrollHeight,
-        clientHeight: prevClientHeight,
-      } = prevChatViewportRef.current;
+
+      const { scrollHeight: prevScrollHeight, clientHeight: prevClientHeight } =
+        prevChatViewportRef.current;
+
       const scrollDiff =
         prevScrollHeight === 0 ? 0 : scrollHeight - prevScrollHeight;
+
       if (
         scrollHeight - (scrollTop + Math.max(clientHeight, prevClientHeight)) <=
         2 * scrollDiff
@@ -35,8 +33,8 @@ export const ActivityStreamWidget: FC = () => {
         // scroll if previous message was visible in previous state
         lastMessageRef.current.scrollIntoView({ behavior: 'smooth' });
       }
+
       prevChatViewportRef.current = {
-        scrollTop,
         scrollHeight,
         clientHeight,
       };

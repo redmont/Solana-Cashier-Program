@@ -87,7 +87,7 @@ $topbar-height: 5rem;
 }
 
 main {
-  height: calc(100vh - $topbar-height);
+  padding-bottom: 1rem;
 }
 
 @media screen and (min-width: 48rem) {
@@ -119,6 +119,10 @@ main {
   .layout {
     max-width: 75rem;
     padding: 0 1rem;
+  }
+
+  main {
+    height: calc(100vh - $topbar-height);
   }
 }
 

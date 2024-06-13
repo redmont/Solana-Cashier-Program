@@ -116,7 +116,7 @@ export default function Leaderboard() {
 
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => setReady(true));
+  useEffect(() => setReady(true), []);
 
   useEffect(() => {
     const el = carouselRef.current;
