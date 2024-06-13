@@ -59,10 +59,13 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
   }, [balance, betAmount, isDirty, onBetChange]);
 
   useEffect(() => {
+    if (!isAuthenticated || isBalanceReady) {
+      setLoading(false);
+    }
+
     if (props.betAmount > 0 || (isAuthenticated && !isBalanceReady)) return;
 
     onBetChange(Math.floor(balance * 0.25));
-    setLoading(false);
 
     // We only need to track isBalanceReady
     // to apply this once balance is fetched from server
