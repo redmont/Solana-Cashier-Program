@@ -209,7 +209,7 @@ export default function Leaderboard() {
                 <div className="rank">Rank</div>
                 <div className="player">Player</div>
                 <div className="credits">Credit Balance</div>
-                <div className="wins">Credits Won</div>
+                <div className="wins">Winnings</div>
               </div>
 
               <div className="table-body">
