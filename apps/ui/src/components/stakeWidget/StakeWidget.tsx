@@ -41,7 +41,7 @@ export const StakeWidget: FC<StakeWidgetProps> = ({
 
           <div className="bet-purchase-price mt-3 flex justify-content-between text-white">
             <span>Total staked:</span>
-            <span>{bets[0]?.stake ?? 0} points</span>
+            <span>{bets[0]?.stake ?? 0} credits</span>
           </div>
 
           <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
@@ -62,7 +62,7 @@ export const StakeWidget: FC<StakeWidgetProps> = ({
 
           <div className="bet-purchase-price mt-3 flex justify-content-between text-white">
             <span>Total staked:</span>
-            <span>{bets[1]?.stake ?? 0} points</span>
+            <span>{bets[1]?.stake ?? 0} credits</span>
           </div>
 
           <div className="bet-win-rewards mt-2 flex justify-content-between text-white">

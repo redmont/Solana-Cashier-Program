@@ -1,31 +1,43 @@
 import { streamUrl } from '@/config';
-import { useSocket } from '@/hooks';
+import { useAppState, useSocket } from '@/hooks';
 import {
   GetStreamTokenMessage,
   GetStreamTokenMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { Director, View as MillicastView } from '@millicast/sdk';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SoundToggle } from './SoundToggle';
+import { MatchStatus } from '@/types';
 
 const parseStreamUrl = () => {
-  const url = new URL(streamUrl);
-  const streamName = url.searchParams.get('streamId');
+  try {
+    const url = new URL(streamUrl);
+    const streamName = url.searchParams.get('streamId');
 
-  const [accountId, stream] = streamName!.split('/');
-  return { accountId, streamName: stream };
+    const [accountId, stream] = streamName!.split('/');
+    return { accountId, streamName: stream };
+  } catch (e) {
+    console.error('Failed to parse stream URL', e);
+    return { accountId: '', streamName: '' };
+  }
 };
 
-const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
+const MillicastStream: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isMuted, setMuted] = useState(true);
   const { connected, send } = useSocket();
+  const { match } = useAppState();
   const [streamToken, setStreamToken] = useState<string | undefined>();
   const [millicastView, setMillicastView] = useState<MillicastView | undefined>(
     undefined,
   );
 
   const { accountId, streamName } = parseStreamUrl();
+
+  const showStream = useMemo(
+    () => match?.status !== MatchStatus.PendingStart,
+    [match?.status],
+  );
 
   useEffect(() => {
     const getToken = async () => {
@@ -39,13 +51,13 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
       }
     };
 
-    if (connected && !src) {
+    if (connected && showStream) {
       // If we are connected to the WebSocket,
-      // and we don't have a src override,
+      // and we are supposed to show the stream,
       // then we need to get a fresh token.
       getToken();
     }
-  }, [src, connected, send]);
+  }, [showStream, connected, send]);
 
   // We need a new token generator
   // whenever the stream token changes.
@@ -64,7 +76,10 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
     setMillicastView((prevMillicastView) => {
       prevMillicastView?.stop();
 
-      return new MillicastView(streamName, tokenGenerator, videoRef.current!);
+      if (streamName) {
+        return new MillicastView(streamName, tokenGenerator, videoRef.current!);
+      }
+      return undefined;
     });
 
     return () => {
@@ -73,14 +88,11 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
   }, [tokenGenerator]);
 
   useEffect(() => {
-    if (src) {
+    if (!showStream) {
       videoRef.current!.srcObject = null;
-      videoRef.current!.src = src;
 
       millicastView?.stop();
     } else {
-      videoRef.current!.src = '';
-
       // Just to check that we are within the same effect context
       const seed = Math.floor(Math.random() * 1000);
 
@@ -112,7 +124,7 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
         millicastView?.stop();
       };
     }
-  }, [src, millicastView]);
+  }, [showStream, millicastView]);
 
   return (
     <>

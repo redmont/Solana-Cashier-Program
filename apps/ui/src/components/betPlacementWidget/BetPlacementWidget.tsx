@@ -13,7 +13,7 @@ import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
 const matchStatusText: Record<MatchStatus, string> = {
   [MatchStatus.Unknown]: 'Unknown',
   [MatchStatus.BetsOpen]: 'Pool is open',
-  [MatchStatus.PendingStart]: 'Pool is closed',
+  [MatchStatus.PendingStart]: 'Match starting soon',
   [MatchStatus.InProgress]: 'Match in progress',
   [MatchStatus.Finished]: 'Match is finished',
 };
@@ -49,7 +49,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
 
   useEffect(() => {
     if (balance < betAmount) {
-      if (isDirty) setError('Insufficient points balance');
+      if (isDirty) setError('Insufficient credits balance');
       else onBetChange(Math.floor(balance));
     } else {
       setError('');
@@ -197,9 +197,9 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
             </div>
           </div>
 
-          <div className="points-selection">
-            <div className="points-slider-box">
-              <div className="points-slider-labels">
+          <div className="credits-selection">
+            <div className="credits-slider-box">
+              <div className="credits-slider-labels">
                 <span>1%</span>
                 <span>100%</span>
               </div>
@@ -212,14 +212,14 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
               />
             </div>
 
-            <div className="points-input-group p-inputgroup">
+            <div className="credits-input-group p-inputgroup">
               <InputNumber
-                className="points-input"
+                className="credits-input"
                 value={betAmount}
                 onChange={handleBetAmountChange}
               />
 
-              <span className="p-inputgroup-addon points-label">Credits</span>
+              <span className="p-inputgroup-addon credits-label">Credits</span>
             </div>
 
             {!error && (
