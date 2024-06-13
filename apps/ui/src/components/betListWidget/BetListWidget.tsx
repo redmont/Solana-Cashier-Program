@@ -19,12 +19,12 @@ export const BetListWidget: FC = () => {
         <div className="header">
           <div className="column">
             <div className="fighter-name">{fighters[0]?.displayName}</div>
-            <div className="bet-total">{bets[0]?.total || 0} Points</div>
+            <div className="bet-total">{bets[0]?.total || 0} Credits</div>
           </div>
 
           <div className="column">
             <div className="fighter-name">{fighters[1]?.displayName}</div>
-            <div className="bet-total">{bets[1]?.total || 0} Points</div>
+            <div className="bet-total">{bets[1]?.total || 0} Credits</div>
           </div>
         </div>
 

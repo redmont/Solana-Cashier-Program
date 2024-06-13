@@ -261,13 +261,13 @@
       grid-row: 2;
     }
 
-    .points-label {
+    .credits-label {
       grid-column: 2;
       grid-row: 3;
       font-weight: bold;
     }
 
-    .points-value {
+    .credits-value {
       grid-column: 3;
       grid-row: 3;
     }
@@ -322,7 +322,7 @@
       text-align: left;
     }
 
-    .points {
+    .credits {
       width: 8rem;
       text-align: left;
       flex-grow: 1;
