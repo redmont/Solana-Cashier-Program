@@ -75,15 +75,24 @@ const MillicastStream: React.FC = () => {
   useEffect(() => {
     setMillicastView((prevMillicastView) => {
       prevMillicastView?.stop();
+      prevMillicastView?.signaling?.close();
+      prevMillicastView?.webRTCPeer?.closeRTCPeer();
 
       if (streamName) {
-        return new MillicastView(streamName, tokenGenerator, videoRef.current!);
+        return new MillicastView(
+          streamName,
+          tokenGenerator,
+          videoRef.current!,
+          false,
+        );
       }
       return undefined;
     });
 
     return () => {
       millicastView?.stop();
+      millicastView?.signaling?.close();
+      millicastView?.webRTCPeer?.closeRTCPeer();
     };
   }, [tokenGenerator]);
 
@@ -92,6 +101,8 @@ const MillicastStream: React.FC = () => {
       videoRef.current!.srcObject = null;
 
       millicastView?.stop();
+      millicastView?.signaling?.close();
+      millicastView?.webRTCPeer?.closeRTCPeer();
     } else {
       // Just to check that we are within the same effect context
       const seed = Math.floor(Math.random() * 1000);
@@ -122,6 +133,8 @@ const MillicastStream: React.FC = () => {
         isOn = false;
         clearTimeout(timeout);
         millicastView?.stop();
+        millicastView?.signaling?.close();
+        millicastView?.webRTCPeer?.closeRTCPeer();
       };
     }
   }, [showStream, millicastView]);
