@@ -16,7 +16,7 @@ export interface BetPlacementWidgetProps {
 const matchStatusText: Record<MatchStatus, string> = {
   [MatchStatus.Unknown]: 'Unknown',
   [MatchStatus.BetsOpen]: 'Pool is open',
-  [MatchStatus.PendingStart]: 'Pool is closed',
+  [MatchStatus.PendingStart]: 'Match starting soon',
   [MatchStatus.InProgress]: 'Match in progress',
   [MatchStatus.Finished]: 'Match is finished',
 };

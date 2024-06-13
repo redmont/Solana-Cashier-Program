@@ -38,12 +38,6 @@ export const MatchStreamWidget: FC = () => {
     streamSource = 'cloudflare';
   }
 
-  const isMatchFinished = match?.status === MatchStatus.Finished;
-
-  const matchStreamUrl = isMatchFinished
-    ? match?.preMatchVideoUrl ?? trailerUrl
-    : undefined;
-
   const handleBannerClick = useCallback(() => {
     isConnected ? setShowDynamicUserProfile(true) : setShowAuthFlow(true);
   }, [isConnected, setShowAuthFlow, setShowDynamicUserProfile]);
@@ -75,7 +69,7 @@ export const MatchStreamWidget: FC = () => {
       )}
 
       {isConnected && streamSource === 'millicast' && (
-        <MillicastStream src={matchStreamUrl} />
+        <MillicastStream />
       )}
 
       {isConnected && streamSource === 'cloudflare' && (
@@ -84,7 +78,7 @@ export const MatchStreamWidget: FC = () => {
 
       {isConnected && streamSource === 'static' && (
         <video
-          src={matchStreamUrl}
+          src={streamUrl}
           autoPlay={true}
           playsInline={true}
           width="100%"
