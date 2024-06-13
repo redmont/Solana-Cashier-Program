@@ -4,11 +4,9 @@
     gap: 2rem;
   }
 
-  &.compact {
-    .input-section {
-      width: 100%;
-      padding: 0;
-    }
+  .input-section {
+    width: 100%;
+    padding: 0;
   }
 
   .spacer {
@@ -85,9 +83,11 @@
     padding: 0 0.75rem;
   }
 
-  .bet-preview-items {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  .button-place {
+    justify-content: center;
+
+    .p-button-label {
+      flex-grow: 0;
+    }
   }
 }

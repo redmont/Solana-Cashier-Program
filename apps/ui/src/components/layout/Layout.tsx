@@ -13,7 +13,7 @@ export const Layout = (props: ChildContainerProps) => {
 
   const [isReady, setReady] = useState(false);
 
-  const { balance } = useAppState();
+  const { balance, isBalanceReady } = useAppState();
   const { isConnected } = useEthWallet();
 
   useEffect(() => setReady(true), []);
@@ -38,7 +38,7 @@ export const Layout = (props: ChildContainerProps) => {
         </div>
 
         <div className="topbar-tools">
-          {isReady && isConnected && (
+          {isReady && isConnected && isBalanceReady && (
             <>
               <div className="balance-mobile md:hidden">
                 {Math.floor(balance)} CR

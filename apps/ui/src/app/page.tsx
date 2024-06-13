@@ -9,12 +9,11 @@ dayjs.extend(duration);
 import { TwitchChat } from 'react-twitch-embed';
 import { MatchStatus } from '@/types';
 import { twitchChannel } from '@/config';
-import { useEthWallet, useAppState, MatchInfo } from '@/hooks';
+import { useAppState, MatchInfo } from '@/hooks';
 import { BetPlacementWidget } from '@/components/betPlacementWidget';
-import { CurrentBetWidget } from '@/components/currentBetWidget';
+import { StakeWidget } from '@/components/stakeWidget';
 import { BetListWidget } from '@/components/betListWidget';
 import { ActivityStreamWidget } from '@/components/activityStreamWidget';
-import { ConnectWalletWidget } from '@/components/connectWalletWidget';
 import { MatchResultWidget } from '@/components/matchResultWidget';
 import { MatchStreamWidget } from '@/components/matchStreamWidget';
 import {
@@ -24,8 +23,9 @@ import {
 
 export default function Home() {
   const [welcomeVisible, setWelcomeVisible] = useState(false);
-  const { isConnected } = useEthWallet();
   const [matchResult, setMatchResult] = useState<MatchInfo | null>(null);
+  const [currentFighter, setCurrentFighter] = useState(0);
+  const [currentBet, setCurrentBet] = useState<number>(0);
 
   const { match } = useAppState();
 
@@ -38,7 +38,7 @@ export default function Home() {
 
   useEffect(() => {
     setWelcomeVisible(shouldShowTutorial());
-  }, [isConnected]);
+  }, []);
 
   useEffect(() => {
     if (
@@ -57,27 +57,30 @@ export default function Home() {
 
       <BetListWidget />
 
-      {!isConnected && (
-        <TutorialDialog
-          visible={welcomeVisible}
-          onHide={() => setWelcomeVisible(false)}
-        />
-      )}
+      <TutorialDialog
+        visible={welcomeVisible}
+        onHide={() => setWelcomeVisible(false)}
+      />
 
-      {!isConnected && <ConnectWalletWidget />}
-
-      {isConnected && matchResult && (
+      {matchResult && (
         <MatchResultWidget
           result={matchResult}
           onDismiss={() => setMatchResult(null)}
         />
       )}
 
-      {isConnected && !matchResult && (
-        <BetPlacementWidget compact={isBetPlaced} />
+      {!matchResult && (
+        <BetPlacementWidget
+          fighter={currentFighter}
+          betAmount={currentBet}
+          onBetChange={setCurrentBet}
+          onFighterChange={setCurrentFighter}
+        />
       )}
 
-      {isConnected && !matchResult && isBetPlaced && <CurrentBetWidget />}
+      {!matchResult && (
+        <StakeWidget currentBet={currentBet} currentFighter={currentFighter} />
+      )}
 
       <ActivityStreamWidget />
 
