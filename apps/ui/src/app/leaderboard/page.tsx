@@ -241,7 +241,7 @@ const MobileRecord: FC<RecordProps> = (props) => (
       <div className={`rank rank-${props.rank}`}>{props.rank}</div>
       <div className={`rank-image rank-image-${props.rank}`}></div>
       <div className="player">{truncateEthAddress(props.walletAddress)}</div>
-      <div className="wins-label">Credits Won:</div>
+      <div className="wins-label">Winnings:</div>
       <div className="wins-value">{props.winAmount}</div>
       <div className="credits-label">Credit Balance:</div>
       <div className="credits-value">

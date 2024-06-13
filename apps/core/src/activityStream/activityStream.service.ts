@@ -25,9 +25,9 @@ export class ActivityStreamService {
   private generateMessage(activity: Activity, data: any) {
     switch (activity) {
       case 'betPlaced':
-        return `Stake confirmed: ${data.amount} ${pluralise(data.amount, 'point', 'points')} on ${pascalCase(data.fighter)}!`;
+        return `Stake confirmed: ${data.amount} ${pluralise(data.amount, 'credit', 'credits')} on ${pascalCase(data.fighter)}.`;
       case 'win': {
-        return `${data.winningFighter} wins! You won ${data.amount} ${pluralise(data.amount, 'point', 'points')}!`;
+        return `${data.winningFighter} wins! You won ${data.amount} ${pluralise(data.amount, 'credit', 'credits')}! Check the leaderboard to see your latest rank.`;
       }
       case 'loss': {
         if (data.winningFighter) {

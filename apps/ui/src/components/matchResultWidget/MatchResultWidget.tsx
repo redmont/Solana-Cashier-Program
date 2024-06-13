@@ -13,9 +13,12 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
   result,
   onDismiss,
 }) => {
+  const imageEnabled = false;
+
   const { winner, fighters, winAmount } = result ?? {};
   const isWin = winAmount && +winAmount > 0;
   const winnerIndex = fighters?.findIndex((f) => f.codeName === winner);
+  const loserIndex = winnerIndex - 1;
   const [isSavingPng, setSavingPng] = useState(false);
   const [isPngSaved, setPngSaved] = useState(false);
 
@@ -46,14 +49,16 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
   }, [onDismiss]);
 
   useEffect(() => {
-    if (!isSavingPng) return;
+    if (!imageEnabled || !isSavingPng) return;
 
     generateImage();
-  }, [isSavingPng, generateImage]);
+  }, [isSavingPng, imageEnabled, generateImage]);
 
   const share = useCallback(async () => {
-    const text = encodeURI(
-      `Another epic battle in @Brawl3rs! 🥊 Join the fight to win tournament prizes at www.frogsvdogs.ai.`,
+    const text = encodeURIComponent(
+      `🥊 ${fighters.at(winnerIndex)?.displayName} conquers ${fighters.at(loserIndex)?.displayName} in @BRAWL3RS!\
+      \n🪙 Banked +${winAmount} Brawl3r credits and shot up the leaderboard.\
+      \n🏆 Eyeing those tournament prizes. Who’s next??`,
     );
 
     const hashtags = ['LFB'].join(',');
@@ -62,7 +67,7 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
       `https://twitter.com/intent/tweet?text=${text}&hashtags=${hashtags}`,
       '__blank',
     );
-  }, []);
+  }, [fighters, loserIndex, winnerIndex, winAmount]);
 
   return (
     <div
@@ -99,7 +104,7 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
 
             {!isSavingPng && (
               <div className="widget-actions">
-                {!isPngSaved && (
+                {imageEnabled && !isPngSaved && (
                   <Button
                     className="p-button-secondary p-button-outlined"
                     label="Get Result Image"
@@ -107,7 +112,7 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
                   />
                 )}
 
-                {isPngSaved && (
+                {(!imageEnabled || isPngSaved) && (
                   <Button
                     className="p-button-secondary p-button-outlined"
                     label="Share"

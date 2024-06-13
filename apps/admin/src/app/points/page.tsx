@@ -36,15 +36,26 @@ const Points = () => {
   } = useDisclosure();
   const downloadBalances = useDownloadBalances();
 
-  const { isPending, error, data } = useQuery<{
+  const isPending = false;
+  const data: {
     accounts: {
       accountId: string;
       primaryWalletAddress: string;
       balance: number;
     }[];
-  }>({
-    queryKey: ['points-balances'],
-  });
+  } = {
+    accounts: [],
+  };
+
+  // const { isPending, error, data } = useQuery<{
+  //   accounts: {
+  //     accountId: string;
+  //     primaryWalletAddress: string;
+  //     balance: number;
+  //   }[];
+  // }>({
+  //   queryKey: ['points-balances'],
+  // });
 
   const onDownloadBalances = async () => {
     const blob: any = await downloadBalances();

@@ -2,14 +2,20 @@ import { Key } from '@/interfaces/key';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel, Model } from 'nestjs-dynamoose';
-import { StreamToken } from './streamToken.interface';
+import * as jwt from 'jsonwebtoken';
+import { v4 as uuid } from 'uuid';
 import dayjs from '@/dayjs';
+import { StreamToken } from './streamToken.interface';
 
 const millicastApiUrl = 'https://api.millicast.com/api';
 
 @Injectable()
 export class StreamTokenService {
   private readonly apiSecret: string;
+  private readonly streamName: string;
+  private readonly parentSubscribeToken: string;
+  private readonly parentSubscribeTokenId: string;
+  private readonly allowedOrigins: string[];
 
   constructor(
     private readonly configService: ConfigService,
@@ -17,9 +23,50 @@ export class StreamTokenService {
     private readonly streamTokenModel: Model<StreamToken, Key>,
   ) {
     this.apiSecret = this.configService.get('millicastApiSecret');
+    this.streamName = this.configService.get('millicastStreamName');
+    this.parentSubscribeToken = this.configService.get(
+      'millicastParentSubscribeToken',
+    );
+    this.parentSubscribeTokenId = this.configService.get(
+      'millicastParentSubscribeTokenId',
+    );
+
+    const allowedOrigins = this.configService.get<string>(
+      'millicastAllowedOrigins',
+    );
+    if (allowedOrigins?.length > 0) {
+      this.allowedOrigins = allowedOrigins.split(',');
+    } else {
+      this.allowedOrigins = [];
+    }
   }
 
   private async generateToken(userId: string) {
+    const id = uuid();
+
+    const payload = {
+      streaming: {
+        tokenType: 'Subscribe',
+        tokenId: parseInt(this.parentSubscribeTokenId),
+        streamName: this.streamName,
+        allowedOrigins: this.allowedOrigins,
+        allowedIpAddresses: [],
+        tracking: {
+          trackingId: `user#${userId}`,
+        },
+      },
+    };
+
+    const signedToken = jwt.sign(payload, this.parentSubscribeToken, {
+      algorithm: 'HS256',
+      expiresIn: '1m',
+    });
+
+    const decodedToken = jwt.decode(signedToken) as jwt.JwtPayload;
+
+    const expiresAt = dayjs.utc(decodedToken.exp * 1000).toISOString();
+
+    /*
     const options = {
       method: 'POST',
       headers: {
@@ -46,10 +93,12 @@ export class StreamTokenService {
 
     const { id, token, expiresOn } = responseData.data;
 
+    */
+
     return {
       id,
-      token,
-      expiresOn,
+      token: signedToken,
+      expiresAt,
     };
   }
 
@@ -76,7 +125,7 @@ export class StreamTokenService {
     const streamToken = {
       pk: `streamToken#${userId}`,
       sk: dayjs.utc().toISOString(),
-      expiresAt: dayjs.utc().add(4, 'hours').toISOString(),
+      expiresAt: generateTokenResult.expiresAt,
       tokenId: generateTokenResult.id.toString(),
       token: generateTokenResult.token,
     };
@@ -92,7 +141,7 @@ export class StreamTokenService {
       // Delete all except the last two tokens
       const tokensToDelete = existingTokens.slice(0, -2);
       for (const token of tokensToDelete) {
-        await this.deleteToken(token.tokenId);
+        //await this.deleteToken(token.tokenId);
         await this.streamTokenModel.delete(token);
       }
     }

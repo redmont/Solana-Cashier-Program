@@ -18,12 +18,14 @@ export class TournamentController {
     );
 
     if (currentTournamentCodeName) {
+      // We only track the balance,
+      // as the win amount is tracked elsewhere
+      // (we need the net win amount).
       await this.service.updateTournamentEntry({
         timestamp: data.timestamp,
         tournament: currentTournamentCodeName,
         userId: data.userId,
         primaryWalletAddress: data.primaryWalletAddress,
-        winAmount: parseInt(data.amount),
         balance: data.balance,
       });
     }

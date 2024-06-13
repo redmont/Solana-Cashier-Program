@@ -21,6 +21,9 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
   const [isMuted, setMuted] = useState(true);
   const { connected, send } = useSocket();
   const [streamToken, setStreamToken] = useState<string | undefined>();
+  const [millicastView, setMillicastView] = useState<MillicastView | undefined>(
+    undefined,
+  );
 
   const { accountId, streamName } = parseStreamUrl();
 
@@ -36,11 +39,16 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
       }
     };
 
-    if (connected) {
+    if (connected && !src) {
+      // If we are connected to the WebSocket,
+      // and we don't have a src override,
+      // then we need to get a fresh token.
       getToken();
     }
   }, [src, connected, send]);
 
+  // We need a new token generator
+  // whenever the stream token changes.
   const tokenGenerator = useCallback(
     () =>
       Director.getSubscriber({
@@ -51,10 +59,25 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
     [streamToken, streamName, accountId],
   );
 
+  // Ensure we stop the previous MillicastView.
+  useEffect(() => {
+    setMillicastView((prevMillicastView) => {
+      prevMillicastView?.stop();
+
+      return new MillicastView(streamName, tokenGenerator, videoRef.current!);
+    });
+
+    return () => {
+      millicastView?.stop();
+    };
+  }, [tokenGenerator]);
+
   useEffect(() => {
     if (src) {
       videoRef.current!.srcObject = null;
       videoRef.current!.src = src;
+
+      millicastView?.stop();
     } else {
       videoRef.current!.src = '';
 
@@ -62,22 +85,20 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
       const seed = Math.floor(Math.random() * 1000);
 
       let isOn = true;
-
-      const millicastView = new MillicastView(
-        streamName,
-        tokenGenerator,
-        videoRef.current!,
-      );
+      let timeout: any;
 
       const connect = async () => {
         if (!isOn) return;
 
         try {
-          await millicastView.connect();
+          await millicastView?.connect();
           console.log(`[${seed}] Connected`);
         } catch (e) {
           console.log(`[${seed}] Failed to connect`, e);
-          setTimeout(connect, 1000);
+          if (timeout) {
+            clearTimeout(timeout);
+          }
+          timeout = setTimeout(connect, 1000);
         }
       };
 
@@ -87,10 +108,11 @@ const MillicastStream: React.FC<{ src: string | undefined }> = ({ src }) => {
 
       return () => {
         isOn = false;
+        clearTimeout(timeout);
         millicastView?.stop();
       };
     }
-  }, [src, tokenGenerator, streamToken, streamName]);
+  }, [src, millicastView]);
 
   return (
     <>

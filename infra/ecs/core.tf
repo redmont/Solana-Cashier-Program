@@ -112,7 +112,10 @@ locals {
       },
       {
         name = "USE_MOCK_GAME_SERVER", value = var.environment == "dev" ? "true" : "false"
-      }
+      },
+      {
+        name = "DYNAMIC_PUBLIC_KEY", value = var.dynamic_public_key
+      },
     ]
   }
 

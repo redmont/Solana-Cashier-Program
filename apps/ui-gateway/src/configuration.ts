@@ -21,4 +21,8 @@ export default () => ({
   mediaUri: process.env.MEDIA_URI,
   dynamicPublicKey: process.env.DYNAMIC_PUBLIC_KEY,
   millicastApiSecret: process.env.MILLICAST_API_SECRET,
+  millicastStreamName: process.env.MILLICAST_STREAM_NAME,
+  millicastParentSubscribeToken: process.env.MILLICAST_PARENT_SUBSCRIBE_TOKEN,
+  millicastParentSubscribeTokenId: process.env.MILLICAST_PARENT_SUBSCRIBE_TOKEN_ID,
+  millicastAllowedOrigins: process.env.MILLICAST_ALLOWED_ORIGINS,
 });

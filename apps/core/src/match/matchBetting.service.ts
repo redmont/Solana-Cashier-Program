@@ -8,6 +8,7 @@ import dayjs from '@/dayjs';
 import { SeriesConfig } from '@/series/seriesConfig.model';
 import { GatewayManagerService } from '@/gatewayManager/gatewayManager.service';
 import { MatchResultEvent } from 'core-messages';
+import { TournamentService } from '@/tournament/tournament.service';
 
 @Injectable()
 export class MatchBettingService {
@@ -18,6 +19,7 @@ export class MatchBettingService {
     @Inject('BROKER') private readonly broker: ClientProxy,
     private readonly activityStreamService: ActivityStreamService,
     private readonly gatewayManagerService: GatewayManagerService,
+    private readonly tournamentService: TournamentService,
   ) {}
 
   async getBets(matchId: string) {
@@ -116,6 +118,17 @@ export class MatchBettingService {
       const betAmount = bets
         .filter((x) => x.userId === userId)
         .reduce((acc, bet) => acc + bet.amount, 0);
+
+      // Calculate net winnings
+      const netWinAmount = Math.floor(amount - betAmount);
+      if (netWinAmount > 0) {
+        await this.tournamentService.trackWin({
+          userId,
+          timestamp: dayjs.utc().toISOString(),
+          netWinAmount,
+
+        });
+      }
 
       const timestamp =
         await this.matchPersistenceService.createUserMatchResult(

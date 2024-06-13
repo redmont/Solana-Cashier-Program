@@ -1,0 +1,147 @@
+.welcome-dialog {
+  width: 90%;
+  max-width: 38rem;
+  padding: 0;
+  border-radius: $borderRadius;
+  max-height: 100%;
+
+  .dialog-body {
+    width: 100%;
+  }
+
+  .p-dialog-content {
+    padding: 0;
+    border-top-left-radius: $borderRadius;
+    border-top-right-radius: $borderRadius;
+    background: var(--surface-0);
+    border: 2px solid var(--gray-700);
+  }
+
+  .slide {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+  }
+
+  .slide-title {
+    font-size: 1.5rem;
+    padding: 1rem;
+  }
+
+  .slide-image-box {
+    width: 100%;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+
+    img {
+      object-fit: cover;
+      width: 100%;
+    }
+  }
+
+  .slide-text {
+    font-size: 1rem;
+    text-align: center;
+    line-height: 1.5;
+    margin: 0;
+    padding: 1rem;
+  }
+
+  #intro-slide {
+    .slide-image-box {
+      padding: 0;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  #connect-slide {
+    img {
+      max-width: 24rem;
+    }
+  }
+
+  #community-slide,
+  #leaderboard-slide {
+    img {
+      max-height: 15rem;
+      object-fit: contain;
+    }
+  }
+
+  .dialog-footer {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 2rem;
+    width: 100%;
+    gap: 2rem;
+    align-items: center;
+
+    .p-button {
+      padding: 0.5rem 1rem;
+      justify-content: center;
+      flex: 1 1 50%;
+      max-width: 20rem;
+    }
+
+    .p-button-label {
+      flex-grow: 0;
+    }
+  }
+
+  .dialog-nav {
+    width: 100%;
+    max-width: 30rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  @media screen and (min-width: 36rem) {
+    .slide {
+      flex-grow: 1;
+    }
+
+    .slide-title {
+      font-size: 2rem;
+      padding: 2rem;
+    }
+
+    .slide-image-box {
+      padding: 0 2rem;
+    }
+
+    .slide-text {
+      font-size: 1.25rem;
+      padding: 2rem;
+    }
+
+    .dialog-footer {
+      flex-direction: row;
+      padding-bottom: 2rem;
+
+      .p-button {
+        padding: 0.5rem 1rem;
+        justify-content: center;
+        flex-grow: 0;
+        flex-basis: auto;
+        max-width: 20rem;
+      }
+    }
+
+    .dialog-nav {
+      order: 1;
+      width: auto;
+      flex-grow: 1;
+      justify-content: right;
+    }
+  }
+}

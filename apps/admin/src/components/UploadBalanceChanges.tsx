@@ -16,6 +16,7 @@ import {
 } from '@chakra-ui/react';
 import { FileUpload } from './FileUpload';
 import { useMutation } from '@tanstack/react-query';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 
 interface UploadResult {
   credits: number;
@@ -32,6 +33,7 @@ export const UploadBalanceChanges = ({
   isOpen: boolean;
   onClose: () => void;
 }) => {
+  const { authToken } = useDynamicContext();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
@@ -44,6 +46,9 @@ export const UploadBalanceChanges = ({
       return fetch(`${baseUrl}/points-balances/upload`, {
         method: 'POST',
         body: formData,
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
       });
     },
   });

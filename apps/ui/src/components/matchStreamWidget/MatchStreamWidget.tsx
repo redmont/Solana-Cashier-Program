@@ -42,7 +42,7 @@ export const MatchStreamWidget: FC = () => {
 
   const matchStreamUrl = isMatchFinished
     ? match?.preMatchVideoUrl ?? trailerUrl
-    : streamUrl;
+    : undefined;
 
   const handleBannerClick = useCallback(() => {
     isConnected ? setShowDynamicUserProfile(true) : setShowAuthFlow(true);
@@ -75,7 +75,7 @@ export const MatchStreamWidget: FC = () => {
       )}
 
       {isConnected && streamSource === 'millicast' && (
-        <MillicastStream src={streamUrl} />
+        <MillicastStream src={matchStreamUrl} />
       )}
 
       {isConnected && streamSource === 'cloudflare' && (
@@ -91,8 +91,6 @@ export const MatchStreamWidget: FC = () => {
           height="100%"
         />
       )}
-
-      <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
     </div>
   );
 };

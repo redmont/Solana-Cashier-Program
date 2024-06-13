@@ -37,7 +37,12 @@ resource "aws_iam_policy" "cashier_policy" {
           "dynamodb:Scan",
           "dynamodb:UpdateItem"
         ],
-        Resource = [var.cashier_events_table_arn, var.cashier_read_model_table_arn]
+        Resource = [
+          var.cashier_events_table_arn,
+          "${var.cashier_events_table_arn}/index/*",
+          var.cashier_read_model_table_arn,
+          "${var.cashier_read_model_table_arn}/index/*"
+        ]
       }
     ]
   })
