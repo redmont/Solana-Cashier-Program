@@ -41,10 +41,8 @@
   cursor: pointer;
 }
 
-.bet-list-widget {
-  .viewport {
-    display: none;
-  }
+.bet-list-viewport {
+  display: none !important;
 }
 
 .activity-stream-widget {
@@ -133,10 +131,10 @@
   .bet-list-widget {
     grid-column: 1;
     grid-row: 2 / 4;
+  }
 
-    .viewport {
-      display: block;
-    }
+  .bet-list-viewport {
+    display: flex !important;
   }
 
   .bet-placement-widget {

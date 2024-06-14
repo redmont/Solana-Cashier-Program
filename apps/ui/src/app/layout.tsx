@@ -9,6 +9,8 @@ import 'primereact/resources/primereact.css';
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
 import '@/styles/app.scss';
+import 'overlayscrollbars/overlayscrollbars.css';
+
 import { AppProviders } from '@/providers';
 
 export const plusJakartaSans = Plus_Jakarta_Sans({

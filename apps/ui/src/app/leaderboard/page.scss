@@ -419,8 +419,8 @@
     }
 
     .table {
-      display: block;
-      overflow: auto;
+      display: flex;
+      overflow-y: auto;
     }
   }
 }
