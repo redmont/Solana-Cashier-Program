@@ -242,7 +242,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
                 isLoading ||
                 !!error ||
                 betAmount === 0 ||
-                match?.status !== MatchStatus.BetsOpen
+                (match?.status !== MatchStatus.BetsOpen && isConnected)
               }
               onClick={isConnected ? placeBet : join}
             />
