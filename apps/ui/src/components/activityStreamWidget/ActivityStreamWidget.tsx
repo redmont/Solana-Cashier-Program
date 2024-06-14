@@ -1,12 +1,13 @@
-import { FC, useRef, useEffect } from 'react';
+import { FC, useRef, useEffect, useCallback } from 'react';
 import { useAppState } from '@/hooks';
 import { useActivityStream } from './useActivityStream';
+import { Scrollable, ScrollableRef } from '@/components/Scrollable';
 
 export const ActivityStreamWidget: FC = () => {
   const { match } = useAppState();
   const { messages } = useActivityStream(match?.series, match?.matchId);
   const lastMessageRef = useRef<HTMLDivElement>(null);
-  const chatViewportRef = useRef<HTMLDivElement>(null);
+  const scrollableRef = useRef<ScrollableRef>(null);
   const prevChatViewportRef = useRef<{
     scrollHeight: number;
     clientHeight: number;
@@ -15,9 +16,10 @@ export const ActivityStreamWidget: FC = () => {
     clientHeight: 0,
   });
 
-  const handleScroll = () => {
-    if (chatViewportRef.current && lastMessageRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = chatViewportRef.current;
+  const handleScroll = useCallback(() => {
+    if (scrollableRef.current && lastMessageRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } =
+        scrollableRef.current.getElement() as HTMLElement;
 
       const { scrollHeight: prevScrollHeight, clientHeight: prevClientHeight } =
         prevChatViewportRef.current;
@@ -31,7 +33,11 @@ export const ActivityStreamWidget: FC = () => {
       ) {
         // checking previous clientHeight to handle scroll after resize
         // scroll if previous message was visible in previous state
-        lastMessageRef.current.scrollIntoView({ behavior: 'smooth' });
+        // have to use timeout to make it working with Scrollable
+
+        setTimeout(() => {
+          lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
       }
 
       prevChatViewportRef.current = {
@@ -39,11 +45,11 @@ export const ActivityStreamWidget: FC = () => {
         clientHeight,
       };
     }
-  };
+  }, []);
 
   useEffect(() => {
     handleScroll();
-  }, [messages]);
+  }, [messages, handleScroll]);
 
   return (
     <div className="widget activity-stream-widget">
@@ -55,7 +61,7 @@ export const ActivityStreamWidget: FC = () => {
         )}
 
         {messages.length > 0 && (
-          <div className="chat-viewport" ref={chatViewportRef}>
+          <Scrollable className="chat-viewport" ref={scrollableRef}>
             <div className="chat-body">
               {messages.map((msg, index) => (
                 <div
@@ -70,7 +76,7 @@ export const ActivityStreamWidget: FC = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </Scrollable>
         )}
       </div>
     </div>

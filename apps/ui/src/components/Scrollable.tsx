@@ -1,16 +1,25 @@
 'use client';
 
-import { FC, ReactNode } from 'react';
-import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
+import { ReactNode, forwardRef } from 'react';
+import {
+  OverlayScrollbarsComponent,
+  OverlayScrollbarsComponentRef,
+} from 'overlayscrollbars-react';
 
 export interface ScrollableProps {
   children?: ReactNode;
   className?: string;
 }
 
-export const Scrollable: FC<ScrollableProps> = (props) => {
+export type { OverlayScrollbarsComponentRef as ScrollableRef };
+
+export const Scrollable = forwardRef<
+  OverlayScrollbarsComponentRef,
+  ScrollableProps
+>((props, ref) => {
   return (
     <OverlayScrollbarsComponent
+      ref={ref}
       defer
       className={props.className}
       options={{
@@ -24,4 +33,4 @@ export const Scrollable: FC<ScrollableProps> = (props) => {
       {props.children}
     </OverlayScrollbarsComponent>
   );
-};
+});
