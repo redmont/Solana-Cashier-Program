@@ -1,4 +1,4 @@
-import { FC, useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { FC, useState, useCallback, useEffect, useMemo } from 'react';
 import { classNames } from 'primereact/utils';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
@@ -32,7 +32,6 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
   const [betPercent, setBetPercent] = useState(25);
   // const [timeLeft, setTimeLeft] = useState('00 : 00');
   // const [matchTime, setMatchTime] = useState('00 : 00');
-  const countdown = useRef<NodeJS.Timeout>();
   const { send } = useSocket();
   const posthog = usePostHog();
 

@@ -14,8 +14,8 @@ export const MatchStatusWidget: FC = () => {
   const [timeLeft, setTimeLeft] = useState('0m : 00s');
   const [matchTime, setMatchTime] = useState('0m : 00s');
   const [progress, setProgress] = useState(0);
-
   const [statusTimestamp, setStatusTimestamp] = useState(0);
+  const widgetBodyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!match?.startTime) return;
@@ -64,34 +64,53 @@ export const MatchStatusWidget: FC = () => {
 
     setProgress(0);
     setStatusTimestamp(timestamp);
+
+    const widgetBodyEl = widgetBodyRef.current;
+    const stageEl = document.querySelector(`.match-stage.current`);
+
+    if (!stageEl) {
+      return widgetBodyEl?.scrollTo({ left: 0, behavior: 'smooth' });
+    }
+
+    const { left: containerX = 0 } =
+      widgetBodyEl?.getBoundingClientRect() ?? {};
+
+    const { x } = stageEl.getBoundingClientRect();
+
+    return widgetBodyEl?.scrollTo({
+      left: x - containerX + (widgetBodyEl?.scrollLeft ?? 0),
+      behavior: 'smooth',
+    });
   }, [match?.status]);
 
   return (
     <div className="widget match-status-widget">
-      <MatchStage
-        order={1}
-        futureLabel="Pool Closed"
-        currentLabel={`Pool Open ${timeLeft}`}
-        pastLabel="Pool Closed"
-      />
+      <div ref={widgetBodyRef} className="widget-body">
+        <MatchStage
+          order={1}
+          futureLabel="Pool Closed"
+          currentLabel={`Pool Open ${timeLeft}`}
+          pastLabel="Pool Closed"
+        />
 
-      <MatchStageTransition stage={1} progress={progress} />
+        <MatchStageTransition stage={1} progress={progress} />
 
-      <MatchStage
-        order={2}
-        futureLabel="Prices Locked"
-        currentLabel="Fetching Prices"
-        pastLabel="Prices Locked"
-      />
+        <MatchStage
+          order={2}
+          futureLabel="Prices Locked"
+          currentLabel="Fetching Prices"
+          pastLabel="Prices Locked"
+        />
 
-      <MatchStageTransition stage={2} progress={progress} />
+        <MatchStageTransition stage={2} progress={progress} />
 
-      <MatchStage
-        order={3}
-        futureLabel="Fight!"
-        currentLabel={`Fight! ${matchTime}`}
-        pastLabel="Finished"
-      />
+        <MatchStage
+          order={3}
+          futureLabel="Fight!"
+          currentLabel={`Fight! ${matchTime}`}
+          pastLabel="Finished"
+        />
+      </div>
     </div>
   );
 };
