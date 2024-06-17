@@ -2,6 +2,7 @@ import { Logger } from '@nestjs/common';
 import { SeriesConfig } from '../seriesConfig.model';
 import { ServerCapabilities } from '@/gameServer/models/serverCapabilities';
 import { SeriesContext } from './seriesContext';
+import { MatchState } from './matchState';
 
 export interface FSMDependencies {
   logger: Logger;
@@ -33,6 +34,6 @@ export interface FSMDependencies {
     startTime: string,
   ) => Promise<void>;
   resetBets: (codeName: string) => Promise<void>;
-  onStateChange: (state: string, context: SeriesContext) => Promise<void>;
+  onStateChange: (state: MatchState, context: SeriesContext) => Promise<void>;
   matchCompleted: () => Promise<void>;
 }
