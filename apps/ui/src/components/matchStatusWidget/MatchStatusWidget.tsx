@@ -1,33 +1,26 @@
-import { FC, useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { FC, useState, useRef, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { classNames } from 'primereact/utils';
 
 import { MatchStatus } from '@/types';
-import { useSocket, useAppState, usePostHog, useEthWallet } from '@/hooks';
-
-const matchStages: MatchStatus[] = [
-  MatchStatus.PendingStart,
-  MatchStatus.BetsOpen,
-  MatchStatus.PollingPrices,
-  MatchStatus.InProgress,
-  MatchStatus.Finished,
-];
+import { useAppState } from '@/hooks';
+import { MatchStage } from './MatchStage';
+import { MatchStageTransition } from './MatchStageTransition';
 
 const pricePollingStageDurationMs = 10 * 1000;
 
 export const MatchStatusWidget: FC = () => {
+  const timer = useRef<NodeJS.Timeout>();
   const { match } = useAppState();
-  const [timeLeft, setTimeLeft] = useState('00 : 00');
-  const [matchTime, setMatchTime] = useState('00 : 00');
+  const [timeLeft, setTimeLeft] = useState('0m : 00s');
+  const [matchTime, setMatchTime] = useState('0m : 00s');
   const [progress, setProgress] = useState(0);
-  const countdown = useRef<NodeJS.Timeout>();
+
   const [statusTimestamp, setStatusTimestamp] = useState(0);
-  const stage = matchStages.indexOf(match?.status ?? MatchStatus.Unknown);
 
   useEffect(() => {
     if (!match?.startTime) return;
 
-    countdown.current = setInterval(() => {
+    timer.current = setInterval(() => {
       const startTime = dayjs(match.startTime);
       const startTimeDiff = startTime.diff();
 
@@ -40,15 +33,13 @@ export const MatchStatusWidget: FC = () => {
 
         const progress = Math.floor((1 - millisLeft / durationMs) * 100);
 
-        const timeLeftVal = dayjs.duration(millisLeft).format('mm[m] : ss[s]');
+        const timeLeftVal = dayjs.duration(millisLeft).format('m[m] : ss[s]');
 
         setTimeLeft(timeLeftVal);
         setProgress(progress);
       }
 
       if (match.status === MatchStatus.PollingPrices) {
-        console.log(startTimeDiff, pricePollingStageDurationMs);
-
         const progress = Math.floor(
           (-startTimeDiff / pricePollingStageDurationMs) * 100,
         );
@@ -59,13 +50,13 @@ export const MatchStatusWidget: FC = () => {
       if (match.status === MatchStatus.InProgress) {
         const matchTimeVal = dayjs
           .duration(-startTimeDiff - pricePollingStageDurationMs)
-          .format('mm[m] : ss[s]');
+          .format('m[m] : ss[s]');
 
         setMatchTime(matchTimeVal);
       }
     }, 1000);
 
-    return () => clearInterval(countdown.current);
+    return () => clearInterval(timer.current);
   }, [match?.startTime, match?.status, statusTimestamp]);
 
   useEffect(() => {
@@ -77,52 +68,30 @@ export const MatchStatusWidget: FC = () => {
 
   return (
     <div className="widget match-status-widget">
-      <div
-        className={classNames('match-status-box', {
-          current: stage === 1,
-          past: stage > 1,
-        })}
-      >
-        {stage === 1 ? `Pool Open ${timeLeft}` : 'Pool Closed'}
-      </div>
-      <div className="match-status-spacer">
-        <div className="match-status-transition">
-          <div
-            className="match-status-progress"
-            style={{ width: stage <= 1 ? `${progress}%` : '100%' }}
-          ></div>
-        </div>
-      </div>
-      <div
-        className={classNames('match-status-box', {
-          current: stage === 2,
-          past: stage > 2,
-        })}
-      >
-        {stage > 2 ? 'Prices Locked' : 'Fetching Prices'}
-      </div>
-      <div className="match-status-spacer">
-        <div className="match-status-transition">
-          <div
-            className="match-status-progress"
-            style={{
-              width: stage < 2 ? 0 : stage === 2 ? `${progress}%` : '100%',
-            }}
-          ></div>
-        </div>
-      </div>
-      <div
-        className={classNames('match-status-box', {
-          current: stage === 3,
-          past: stage > 3,
-        })}
-      >
-        {stage < 3
-          ? 'Fight!'
-          : stage === 3
-            ? `Fight! ${matchTime}`
-            : 'Finished'}
-      </div>
+      <MatchStage
+        order={1}
+        futureLabel="Pool Closed"
+        currentLabel={`Pool Open ${timeLeft}`}
+        pastLabel="Pool Closed"
+      />
+
+      <MatchStageTransition stage={1} progress={progress} />
+
+      <MatchStage
+        order={2}
+        futureLabel="Prices Locked"
+        currentLabel="Fetching Prices"
+        pastLabel="Prices Locked"
+      />
+
+      <MatchStageTransition stage={2} progress={progress} />
+
+      <MatchStage
+        order={3}
+        futureLabel="Fight!"
+        currentLabel={`Fight! ${matchTime}`}
+        pastLabel="Finished"
+      />
     </div>
   );
 };
