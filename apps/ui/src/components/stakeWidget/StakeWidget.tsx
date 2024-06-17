@@ -29,9 +29,9 @@ export const StakeWidget: FC<StakeWidgetProps> = ({
   return (
     <div className="widget stake-widget">
       <div className="widget-body framed">
-        <div className="widget-header">
+        {/* <div className="widget-header">
           <div className="widget-label">My Stake</div>
-        </div>
+        </div> */}
 
         <div className="fighter-bet">
           <div className="fighter-tile">

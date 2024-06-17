@@ -7,13 +7,13 @@
     }
 
     .win-amount {
-      color: #f0ac5d;
+      color: var(--orange-300);
     }
 
     .widget-actions {
       button {
-        border-color: #f0ac5d;
-        color: #f0ac5d;
+        border-color: var(--orange-300);
+        color: var(--orange-300);
       }
     }
 

@@ -18,6 +18,7 @@ import {
   TutorialDialog,
   shouldShowTutorial,
 } from '@/components/tutorialDialog';
+import { MatchStatusWidget } from '@/components/matchStatusWidget';
 
 export default function Home() {
   const [welcomeVisible, setWelcomeVisible] = useState(false);
@@ -59,6 +60,8 @@ export default function Home() {
         visible={welcomeVisible}
         onHide={() => setWelcomeVisible(false)}
       />
+
+      <MatchStatusWidget />
 
       {matchResult && (
         <MatchResultWidget

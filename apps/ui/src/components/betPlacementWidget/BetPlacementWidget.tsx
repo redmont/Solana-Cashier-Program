@@ -2,21 +2,13 @@ import { FC, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { classNames } from 'primereact/utils';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
-import dayjs from 'dayjs';
+// import dayjs from 'dayjs';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 
 import { MatchStatus } from '@/types';
 import { Slider } from '../slider';
 import { useSocket, useAppState, usePostHog, useEthWallet } from '@/hooks';
 import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
-
-const matchStatusText: Record<MatchStatus, string> = {
-  [MatchStatus.Unknown]: 'Unknown',
-  [MatchStatus.BetsOpen]: 'Pool is open',
-  [MatchStatus.PendingStart]: 'Match starting soon',
-  [MatchStatus.InProgress]: 'Match in progress',
-  [MatchStatus.Finished]: 'Match is finished',
-};
 
 export interface BetPlacementWidgetProps {
   fighter: number; // 0 or 1
@@ -38,8 +30,8 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
   const [isDirty, setDirty] = useState(false);
   const [isLoading, setLoading] = useState(true);
   const [betPercent, setBetPercent] = useState(25);
-  const [timeLeft, setTimeLeft] = useState('00 : 00');
-  const [matchTime, setMatchTime] = useState('00 : 00');
+  // const [timeLeft, setTimeLeft] = useState('00 : 00');
+  // const [matchTime, setMatchTime] = useState('00 : 00');
   const countdown = useRef<NodeJS.Timeout>();
   const { send } = useSocket();
   const posthog = usePostHog();
@@ -72,25 +64,25 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isBalanceReady, isAuthenticated, onBetChange]);
 
-  useEffect(() => {
-    if (!match?.startTime) return;
+  // useEffect(() => {
+  //   if (!match?.startTime) return;
 
-    countdown.current = setInterval(() => {
-      const startTime = dayjs(match.startTime);
-      let millisLeft = startTime.diff();
-      const millisSince = dayjs().diff(startTime);
+  //   countdown.current = setInterval(() => {
+  //     const startTime = dayjs(match.startTime);
+  //     let millisLeft = startTime.diff();
+  //     const millisSince = dayjs().diff(startTime);
 
-      if (millisLeft < 0) millisLeft = 0;
+  //     if (millisLeft < 0) millisLeft = 0;
 
-      const timeLeftVal = dayjs.duration(millisLeft).format('mm[m] : ss[s]');
-      const matchTimeVal = dayjs.duration(millisSince).format('mm[m] : ss[s]');
+  //     const timeLeftVal = dayjs.duration(millisLeft).format('mm[m] : ss[s]');
+  //     const matchTimeVal = dayjs.duration(millisSince).format('mm[m] : ss[s]');
 
-      setTimeLeft(timeLeftVal);
-      setMatchTime(matchTimeVal);
-    }, 1000);
+  //     setTimeLeft(timeLeftVal);
+  //     setMatchTime(matchTimeVal);
+  //   }, 1000);
 
-    return () => clearInterval(countdown.current);
-  }, [match?.startTime]);
+  //   return () => clearInterval(countdown.current);
+  // }, [match?.startTime]);
 
   const handleFighterChange = useCallback(
     (fighter: number) => {
@@ -155,7 +147,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
   return (
     <div className="widget bet-placement-widget">
       <div className="widget-body framed">
-        <div className="widget-header">
+        {/* <div className="widget-header">
           {match?.status && (
             <div className="widget-label">
               {matchStatusText[match?.status || MatchStatus.Unknown]}
@@ -169,7 +161,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
           {match?.status === MatchStatus.InProgress && (
             <div className="widget-label match-timer">{matchTime}</div>
           )}
-        </div>
+        </div> */}
 
         <div className="widget-section">
           <div className="fighter-selection">
