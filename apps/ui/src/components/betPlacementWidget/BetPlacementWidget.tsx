@@ -2,7 +2,6 @@ import { FC, useState, useCallback, useEffect, useMemo } from 'react';
 import { classNames } from 'primereact/utils';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
-// import dayjs from 'dayjs';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 
 import { MatchStatus } from '@/types';
@@ -30,8 +29,6 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
   const [isDirty, setDirty] = useState(false);
   const [isLoading, setLoading] = useState(true);
   const [betPercent, setBetPercent] = useState(25);
-  // const [timeLeft, setTimeLeft] = useState('00 : 00');
-  // const [matchTime, setMatchTime] = useState('00 : 00');
   const { send } = useSocket();
   const posthog = usePostHog();
 
@@ -62,26 +59,6 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
     // to apply this once balance is fetched from server
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isBalanceReady, isAuthenticated, onBetChange]);
-
-  // useEffect(() => {
-  //   if (!match?.startTime) return;
-
-  //   countdown.current = setInterval(() => {
-  //     const startTime = dayjs(match.startTime);
-  //     let millisLeft = startTime.diff();
-  //     const millisSince = dayjs().diff(startTime);
-
-  //     if (millisLeft < 0) millisLeft = 0;
-
-  //     const timeLeftVal = dayjs.duration(millisLeft).format('mm[m] : ss[s]');
-  //     const matchTimeVal = dayjs.duration(millisSince).format('mm[m] : ss[s]');
-
-  //     setTimeLeft(timeLeftVal);
-  //     setMatchTime(matchTimeVal);
-  //   }, 1000);
-
-  //   return () => clearInterval(countdown.current);
-  // }, [match?.startTime]);
 
   const handleFighterChange = useCallback(
     (fighter: number) => {
@@ -146,22 +123,6 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
   return (
     <div className="widget bet-placement-widget">
       <div className="widget-body framed">
-        {/* <div className="widget-header">
-          {match?.status && (
-            <div className="widget-label">
-              {matchStatusText[match?.status || MatchStatus.Unknown]}
-            </div>
-          )}
-
-          {match?.status === MatchStatus.BetsOpen && (
-            <div className="widget-label match-timer">{timeLeft}</div>
-          )}
-
-          {match?.status === MatchStatus.InProgress && (
-            <div className="widget-label match-timer">{matchTime}</div>
-          )}
-        </div> */}
-
         <div className="widget-section">
           <div className="fighter-selection">
             <div className="selection-title">Back your fighter</div>
