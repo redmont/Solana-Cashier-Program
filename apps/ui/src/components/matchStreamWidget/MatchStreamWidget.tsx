@@ -21,7 +21,7 @@ const MillicastStream = dynamic(() => import('./MillicastStream'), {
   ssr: false,
 });
 
-type StreamSource = 'millicast' | 'cloudflare' | 'static';
+type StreamSource = 'millicast' | 'cloudflare' | 'youtube' | 'static';
 
 export const MatchStreamWidget: FC = () => {
   const { isConnected } = useEthWallet();
@@ -34,6 +34,8 @@ export const MatchStreamWidget: FC = () => {
 
   if (streamUrl.indexOf('millicast.com')) {
     streamSource = 'millicast';
+  } else if (streamUrl.indexOf('youtube.com') >= 0) {
+    streamSource = 'youtube';
   } else if (/^[0-9a-f]{32}$/.test(streamUrl)) {
     streamSource = 'cloudflare';
   }
@@ -56,7 +58,7 @@ export const MatchStreamWidget: FC = () => {
         </>
       )}
 
-      {!isConnected && youTubeStreamId && (
+      {(!isConnected || streamSource === 'youtube') && youTubeStreamId && (
         <YouTubeStream streamId={youTubeStreamId} />
       )}
 
@@ -68,9 +70,7 @@ export const MatchStreamWidget: FC = () => {
         />
       )}
 
-      {isConnected && streamSource === 'millicast' && (
-        <MillicastStream />
-      )}
+      {isConnected && streamSource === 'millicast' && <MillicastStream />}
 
       {isConnected && streamSource === 'cloudflare' && (
         <CloudFlareStream controls src={streamUrl} autoplay={true} />
