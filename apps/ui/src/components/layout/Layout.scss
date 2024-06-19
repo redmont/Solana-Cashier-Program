@@ -2,7 +2,6 @@ $topbar-height: 5rem;
 
 .layout {
   margin: 0 auto;
-  height: 100%;
   width: 100%;
   min-width: 20rem;
   max-width: 36rem;
@@ -122,7 +121,7 @@ main {
   }
 
   main {
-    height: calc(100vh - $topbar-height);
+    min-height: calc(100vh - $topbar-height);
   }
 }
 

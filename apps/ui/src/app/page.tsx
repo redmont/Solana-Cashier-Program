@@ -52,38 +52,43 @@ export default function Home() {
 
   return (
     <main className="main-page">
-      <MatchStreamWidget />
+      <div className="main-page-content">
+        <MatchStreamWidget />
 
-      <BetListWidget />
+        <BetListWidget />
 
-      <TutorialDialog
-        visible={welcomeVisible}
-        onHide={() => setWelcomeVisible(false)}
-      />
-
-      <MatchStatusWidget />
-
-      {matchResult && (
-        <MatchResultWidget
-          result={matchResult}
-          onDismiss={() => setMatchResult(null)}
+        <TutorialDialog
+          visible={welcomeVisible}
+          onHide={() => setWelcomeVisible(false)}
         />
-      )}
 
-      {!matchResult && (
-        <BetPlacementWidget
-          fighter={currentFighter}
-          betAmount={currentBet}
-          onBetChange={setCurrentBet}
-          onFighterChange={setCurrentFighter}
-        />
-      )}
+        <MatchStatusWidget />
 
-      {!matchResult && (
-        <StakeWidget currentBet={currentBet} currentFighter={currentFighter} />
-      )}
+        {matchResult && (
+          <MatchResultWidget
+            result={matchResult}
+            onDismiss={() => setMatchResult(null)}
+          />
+        )}
 
-      <ActivityStreamWidget />
+        {!matchResult && (
+          <BetPlacementWidget
+            fighter={currentFighter}
+            betAmount={currentBet}
+            onBetChange={setCurrentBet}
+            onFighterChange={setCurrentFighter}
+          />
+        )}
+
+        {!matchResult && (
+          <StakeWidget
+            currentBet={currentBet}
+            currentFighter={currentFighter}
+          />
+        )}
+
+        <ActivityStreamWidget />
+      </div>
     </main>
   );
 }

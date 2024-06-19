@@ -5,10 +5,12 @@ import {
   OverlayScrollbarsComponent,
   OverlayScrollbarsComponentRef,
 } from 'overlayscrollbars-react';
+import { ScrollbarsAutoHideBehavior } from 'overlayscrollbars';
 
 export interface ScrollableProps {
   children?: ReactNode;
   className?: string;
+  autoHide?: ScrollbarsAutoHideBehavior;
 }
 
 export type { OverlayScrollbarsComponentRef as ScrollableRef };
@@ -24,8 +26,8 @@ export const Scrollable = forwardRef<
       className={props.className}
       options={{
         scrollbars: {
-          autoHide: 'leave',
-          autoHideDelay: 0,
+          autoHide: props.autoHide ?? 'leave',
+          autoHideDelay: 1000,
           theme: 'os-theme-light',
         },
       }}
