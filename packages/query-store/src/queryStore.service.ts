@@ -585,10 +585,10 @@ export class QueryStoreService implements OnModuleInit {
       if (searchQuery) {
         const matches: (TournamentEntry & { rank: number })[] = [];
         for (const item of response) {
+          let walletAddress = item.primaryWalletAddress;
           if (
-            item.primaryWalletAddress
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase())
+            walletAddress &&
+            walletAddress.toLowerCase().includes(searchQuery.toLowerCase())
           ) {
             matches.push({ ...item, rank });
           }

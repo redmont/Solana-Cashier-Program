@@ -115,12 +115,13 @@ export class TournamentService {
         sk: userId,
       },
       updateRecord,
+      { return: 'item', returnValues: 'ALL_NEW' },
     );
 
     await this.queryStore.updateTournamentEntry({
       tournament,
       userId,
-      primaryWalletAddress,
+      primaryWalletAddress: item.primaryWalletAddress,
       // We get the winAmount from the update response,
       // as it will have the final amount
       tournamentEntryWinAmount: item.winAmount,
