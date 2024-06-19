@@ -32,7 +32,7 @@ export const MatchStreamWidget: FC = () => {
 
   let streamSource: StreamSource = 'static';
 
-  if (streamUrl.indexOf('millicast.com')) {
+  if (streamUrl.indexOf('millicast.com') >= 0) {
     streamSource = 'millicast';
   } else if (streamUrl.indexOf('youtube.com') >= 0) {
     streamSource = 'youtube';
