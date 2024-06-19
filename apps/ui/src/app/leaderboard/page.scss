@@ -278,6 +278,7 @@
     width: 100%;
     height: 100%;
     text-align: center;
+    flex-direction: column;
 
     .rank {
       width: 5rem;
@@ -347,7 +348,6 @@
     display: flex;
     flex-direction: row;
     height: 2.5rem;
-    position: sticky;
     top: 0;
     background-color: #0e0e10;
     padding-bottom: 0.5rem;
@@ -420,7 +420,6 @@
 
     .table {
       display: flex;
-      overflow-y: auto;
     }
   }
 }
