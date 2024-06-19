@@ -85,8 +85,6 @@ export const MatchStreamWidget: FC = () => {
           height="100%"
         />
       )}
-
-      <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
     </div>
   );
 };

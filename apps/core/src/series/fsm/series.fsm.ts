@@ -186,7 +186,7 @@ export function createSeriesFSM(
                 invoke: {
                   src: 'onStateChange',
                   input: ({ context }) => ({
-                    state: 'matchInProgress',
+                    state: 'pollingPrices',
                     context,
                   }),
                   onDone: {
@@ -196,7 +196,19 @@ export function createSeriesFSM(
                   },
                 },
                 after: {
-                  10_000: 'determineOutcome',
+                  10_000: 'setMatchInProgress',
+                },
+              },
+              setMatchInProgress: {
+                invoke: {
+                  src: 'onStateChange',
+                  input: ({ context }) => ({
+                    state: 'matchInProgress',
+                    context,
+                  }),
+                  onDone: {
+                    target: 'determineOutcome',
+                  },
                 },
               },
               determineOutcome: {

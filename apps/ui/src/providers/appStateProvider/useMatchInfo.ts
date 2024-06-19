@@ -9,7 +9,7 @@ export interface FighterBets {
   total: number;
   stake: number;
   winRate: string;
-  projectWinRate: (stakeAddon: number) => string;
+  projectWinRate: (stakeAddon: number, isForOpponent: boolean) => string;
 }
 
 export type MatchInfo = Omit<MatchState, 'bets' | 'state'> & {
@@ -58,17 +58,24 @@ export function useMatchInfo() {
       }
     });
 
-    const calcWinRate = (fighter: string, addon: number = 0) => {
+    const calcWinRate = (
+      fighter: string,
+      addon: number = 0,
+      isForOpponent = false,
+    ) => {
       const info = result.bets[fighter];
       const fighterIndex = fighters.indexOf(fighter);
       const opponent = fighters[(fighterIndex + 1) % 2];
 
-      const stake = info.stake + addon;
-      const totalBet = info.total + addon;
+      const fighterAddon = isForOpponent ? 0 : addon;
+      const opponentAddon = isForOpponent ? addon : 0;
+
+      const stake = info.stake + fighterAddon;
+      const totalBet = info.total + fighterAddon;
 
       if (!stake) return 1;
 
-      const opTotalBet = result.bets[opponent].total;
+      const opTotalBet = result.bets[opponent].total + opponentAddon;
 
       const rate = totalBet ? stake / totalBet : 0;
       const win = opTotalBet * rate + stake;
@@ -81,8 +88,8 @@ export function useMatchInfo() {
 
       info.winRate = calcWinRate(fighter).toFixed(2);
 
-      info.projectWinRate = (stakeAddon: number) =>
-        calcWinRate(fighter, stakeAddon).toFixed(2);
+      info.projectWinRate = (stakeAddon: number, isForOpponent: boolean) =>
+        calcWinRate(fighter, stakeAddon, isForOpponent).toFixed(2);
     });
 
     return result;

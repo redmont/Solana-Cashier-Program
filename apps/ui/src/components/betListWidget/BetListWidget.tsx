@@ -2,7 +2,7 @@ import { FC } from 'react';
 import { useAppState, useEthWallet } from '@/hooks';
 import { truncateEthAddress } from '../../utils';
 import { classNames } from 'primereact/utils';
-import { ScrollPanel } from 'primereact/scrollpanel';
+import { Scrollable } from '@/components/Scrollable';
 
 export const BetListWidget: FC = () => {
   const { match } = useAppState();
@@ -19,16 +19,16 @@ export const BetListWidget: FC = () => {
         <div className="header">
           <div className="column">
             <div className="fighter-name">{fighters[0]?.displayName}</div>
-            <div className="bet-total">{bets[0]?.total || 0} Points</div>
+            <div className="bet-total">{bets[0]?.total || 0} Credits</div>
           </div>
 
           <div className="column">
             <div className="fighter-name">{fighters[1]?.displayName}</div>
-            <div className="bet-total">{bets[1]?.total || 0} Points</div>
+            <div className="bet-total">{bets[1]?.total || 0} Credits</div>
           </div>
         </div>
 
-        <ScrollPanel className="viewport">
+        <Scrollable className="bet-list-viewport">
           <div className="bet-list">
             <div className="column">
               {bets[0]?.list.map(({ amount, walletAddress }, index) => (
@@ -58,7 +58,7 @@ export const BetListWidget: FC = () => {
               ))}
             </div>
           </div>
-        </ScrollPanel>
+        </Scrollable>
       </div>
     </div>
   );

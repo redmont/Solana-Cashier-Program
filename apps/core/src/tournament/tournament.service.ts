@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel, Model } from 'nestjs-dynamoose';
+import { InjectModel, Model, UpdatePartial } from 'nestjs-dynamoose';
 import { Tournament } from './interfaces/tournament.interface';
 import { Key } from '@/interfaces/key';
 import dayjs from '@/dayjs';
@@ -51,6 +51,28 @@ export class TournamentService {
     return tournaments.length > 0 ? tournaments[0].sk : null;
   }
 
+  async trackWin({
+    userId,
+    timestamp,
+    netWinAmount,
+  }: {
+    userId: string;
+    timestamp: string;
+    netWinAmount: number;
+  }) {
+    const currentTournamentCodeName =
+      await this.getTournamentCodeName(timestamp);
+
+    if (currentTournamentCodeName) {
+      await this.updateTournamentEntry({
+        timestamp: timestamp,
+        tournament: currentTournamentCodeName,
+        userId: userId,
+        winAmount: netWinAmount,
+      });
+    }
+  }
+
   async updateTournamentEntry({
     timestamp,
     tournament,
@@ -62,25 +84,37 @@ export class TournamentService {
     timestamp: string;
     tournament: string;
     userId: string;
-    primaryWalletAddress: string;
-    winAmount: number;
-    balance: string;
+    primaryWalletAddress?: string;
+    winAmount?: number;
+    balance?: string;
   }) {
+    let updateRecord: UpdatePartial<TournamentEntry> = {
+      $SET: { updatedAt: timestamp },
+    };
+
+    if (primaryWalletAddress !== undefined) {
+      updateRecord.$SET.primaryWalletAddress = primaryWalletAddress;
+    }
+
+    if (balance !== undefined) {
+      updateRecord.$SET.balance = balance;
+    }
+
+    if (winAmount) {
+      updateRecord = {
+        ...updateRecord,
+        $ADD: {
+          winAmount,
+        },
+      };
+    }
+
     const item = await this.tournamentEntryModel.update(
       {
         pk: `tournamentEntry#${tournament}`,
         sk: userId,
       },
-      {
-        $ADD: {
-          winAmount,
-        },
-        $SET: {
-          primaryWalletAddress,
-          balance,
-          updatedAt: timestamp,
-        },
-      },
+      updateRecord,
     );
 
     await this.queryStore.updateTournamentEntry({
@@ -90,7 +124,7 @@ export class TournamentService {
       // We get the winAmount from the update response,
       // as it will have the final amount
       tournamentEntryWinAmount: item.winAmount,
-      balance,
+      balance: item.balance,
     });
   }
 

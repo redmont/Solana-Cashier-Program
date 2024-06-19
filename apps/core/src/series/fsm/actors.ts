@@ -4,6 +4,7 @@ import dayjs from '@/dayjs';
 import { FSMDependencies } from './fsmDependencies';
 import { SeriesConfig } from '../seriesConfig.model';
 import { SeriesContext } from './seriesContext';
+import { MatchState } from './matchState';
 
 export const getActors = ({
   logger,
@@ -110,10 +111,11 @@ export const getActors = ({
   resetBets: fromPromise<void, string>(async ({ input }) => {
     await resetBets(input);
   }),
-  onStateChange: fromPromise<void, { state: string; context: SeriesContext }>(
-    async ({ input }) => {
-      await onStateChange(input.state, input.context);
-    },
-  ),
+  onStateChange: fromPromise<
+    void,
+    { state: MatchState; context: SeriesContext }
+  >(async ({ input }) => {
+    await onStateChange(input.state, input.context);
+  }),
   matchCompleted: fromPromise<void, void>(() => matchCompleted()),
 });

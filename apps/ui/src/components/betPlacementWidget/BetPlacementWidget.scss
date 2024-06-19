@@ -4,11 +4,9 @@
     gap: 2rem;
   }
 
-  &.compact {
-    .input-section {
-      width: 100%;
-      padding: 0;
-    }
+  .input-section {
+    width: 100%;
+    padding: 0;
   }
 
   .spacer {
@@ -70,24 +68,26 @@
     }
   }
 
-  .points-slider-labels {
+  .credits-slider-labels {
     display: flex;
     justify-content: space-between;
     margin-bottom: 0.5rem;
   }
 
-  .points-input-group {
+  .credits-input-group {
     margin-top: 1rem;
     height: 2.5rem;
   }
 
-  .points-label {
+  .credits-label {
     padding: 0 0.75rem;
   }
 
-  .bet-preview-items {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  .button-place {
+    justify-content: center;
+
+    .p-button-label {
+      flex-grow: 0;
+    }
   }
 }

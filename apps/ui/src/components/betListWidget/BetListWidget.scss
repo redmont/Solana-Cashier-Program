@@ -24,6 +24,10 @@
       font-weight: bold;
       font-size: 1.25rem;
       word-break: break-all;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
     }
 
     .bet-total {
@@ -36,7 +40,7 @@
     flex: 1 0 50%;
   }
 
-  .viewport {
+  .bet-list-viewport {
     overflow-y: auto;
     flex-grow: 1;
   }

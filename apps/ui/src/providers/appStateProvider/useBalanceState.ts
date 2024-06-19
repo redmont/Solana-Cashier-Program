@@ -10,13 +10,15 @@ import { useDeferredState } from '@/hooks/useDeferredState';
 
 export interface BalanceState {
   balance: number;
+  isBalanceReady: boolean;
 }
 
 export function useBalanceState() {
   const { send, subscribe, connected } = useSocket();
 
   const [state, patchState, setState] = useDeferredState<BalanceState>({
-    balance: 0,
+    balance: 1000,
+    isBalanceReady: false,
   });
 
   useEffect(() => {
@@ -37,13 +39,13 @@ export function useBalanceState() {
 
       console.log(GetBalanceMessage.messageType, message);
 
-      setState(new Date(), { balance });
+      setState(new Date(), { balance, isBalanceReady: true });
     });
 
     return () => {
       subscriptions.forEach((unsubscribe) => unsubscribe());
     };
-  }, [connected]);
+  }, [connected, patchState, send, setState, subscribe]);
 
   return state;
 }

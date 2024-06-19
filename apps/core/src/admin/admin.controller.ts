@@ -3,6 +3,7 @@ import {
   Header,
   Put,
   StreamableFile,
+  UseGuards,
 } from '@nestjs/common';
 import {
   Body,
@@ -38,6 +39,7 @@ import { ConfigService } from '@nestjs/config';
 import { TournamentService } from '@/tournament/tournament.service';
 import { CreateTournamentRequest } from './models/createTournamentRequest';
 import { UpdateTournamentRequest } from './models/updateTournamentRequest';
+import { AdminAuthGuard } from '@/auth/adminAuthGuard';
 
 @Controller('admin')
 export class AdminController {
@@ -60,11 +62,13 @@ export class AdminController {
     return `${this.mediaUri}/${path}`;
   }
 
+  @UseGuards(AdminAuthGuard)
   @Get('/series')
   async listSeries() {
     return { series: this.seriesService.listSeries() };
   }
 
+  @UseGuards(AdminAuthGuard)
   @Get('/series/:codeName')
   async getSeries(@Param('codeName') codeName: string) {
     const series = await this.seriesService.getSeries(codeName);
@@ -83,6 +87,7 @@ export class AdminController {
     };
   }
 
+  @UseGuards(AdminAuthGuard)
   @Post('/series')
   async createSeries(@Body() body: CreateSeriesRequest) {
     const {
@@ -108,6 +113,7 @@ export class AdminController {
     );
   }
 
+  @UseGuards(AdminAuthGuard)
   @Put('/series/:codeName')
   updateSeries(
     @Param('codeName') codeName: string,
@@ -132,27 +138,32 @@ export class AdminController {
     );
   }
 
+  @UseGuards(AdminAuthGuard)
   @Post('/series/run')
   async runSeries(@Body() body: { codeName: string }) {
     this.seriesService.sendEvent(body.codeName, 'RUN');
   }
 
+  @UseGuards(AdminAuthGuard)
   @Get('/game-server-configs')
   async getGameServerConfigs() {
     return { serverConfigs: await this.gameServerConfigService.getAll() };
   }
 
+  @UseGuards(AdminAuthGuard)
   @Post('/game-server-configs')
   async createGameServerConfig(@Body() body: CreateGameServerConfigRequest) {
     await this.gameServerConfigService.create(body.codeName, body.streamUrl);
   }
 
+  @UseGuards(AdminAuthGuard)
   @Patch('/game-server-configs/:id')
   async updateGameServerConfig(
     @Param('id') id: string,
     @Body() body: UpdateGameServerConfigRequest,
   ) {}
 
+  @UseGuards(AdminAuthGuard)
   @Get('/game-server-capabilities')
   async getGameServerCapabilities() {
     return {
@@ -160,6 +171,7 @@ export class AdminController {
     };
   }
 
+  @UseGuards(AdminAuthGuard)
   @Get('/points-balances')
   async getPointsBalance() {
     return await sendBrokerMessage<
@@ -168,6 +180,7 @@ export class AdminController {
     >(this.broker, new GetAllBalancesMessage());
   }
 
+  @UseGuards(AdminAuthGuard)
   @Get('/points-balances/download')
   @Header('Content-Type', 'text/csv')
   @Header('Content-Disposition', 'attachment; filename="balances.csv"')
@@ -189,17 +202,20 @@ export class AdminController {
     return new StreamableFile(buffer);
   }
 
+  @UseGuards(AdminAuthGuard)
   @Post('/points-balances/upload')
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     return this.adminService.processPointsBalancesUpload(file);
   }
 
+  @UseGuards(AdminAuthGuard)
   @Get('/roster')
   getRoster() {
     return this.rosterService.getRoster();
   }
 
+  @UseGuards(AdminAuthGuard)
   @Patch('/roster')
   updateRoster(@Body() body: UpdateRosterRequest) {
     return this.rosterService.updateRoster(
@@ -210,21 +226,25 @@ export class AdminController {
     );
   }
 
+  @UseGuards(AdminAuthGuard)
   @Get('/tournaments')
   async listTournaments() {
     return { tournaments: await this.tournamentService.getTournaments() };
   }
 
+  @UseGuards(AdminAuthGuard)
   @Post('/tournaments')
   createTournament(@Body() body: CreateTournamentRequest) {
     return this.tournamentService.createTournament(body);
   }
 
+  @UseGuards(AdminAuthGuard)
   @Get('/tournaments/:codeName')
   async getTournament(@Param('codeName') codeName: string) {
     return this.tournamentService.getTournament(codeName);
   }
 
+  @UseGuards(AdminAuthGuard)
   @Put('/tournaments/:codeName')
   updateTournament(
     @Param('codeName') codeName: string,

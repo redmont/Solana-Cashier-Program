@@ -6,28 +6,9 @@
   display: flex;
   font-size: 0.875rem;
   align-items: stretch;
-  padding: 2rem 1rem 1rem 1rem;
+  padding: 1rem;
   border: 2px solid rgba(11, 209, 138, 0.2);
   border-radius: $borderRadius;
   background: #0e0e10;
   position: relative;
-}
-
-.widget-header {
-  position: absolute;
-  top: -1rem;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.widget-label {
-  display: inline-block;
-  background: #0e0e10;
-  border: 3px solid #000;
-  border-radius: $borderRadius;
-  line-height: 2rem;
-  padding: 0 1rem;
 }

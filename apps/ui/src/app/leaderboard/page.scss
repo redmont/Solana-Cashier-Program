@@ -1,6 +1,6 @@
 .leaderboard-page {
   align-items: center;
-  padding: 1rem 0.75rem 0;
+  padding: 1rem 0.75rem;
   max-width: 36rem;
   width: 100vw;
   margin: 0 auto;
@@ -261,13 +261,13 @@
       grid-row: 2;
     }
 
-    .points-label {
+    .credits-label {
       grid-column: 2;
       grid-row: 3;
       font-weight: bold;
     }
 
-    .points-value {
+    .credits-value {
       grid-column: 3;
       grid-row: 3;
     }
@@ -322,7 +322,7 @@
       text-align: left;
     }
 
-    .points {
+    .credits {
       width: 8rem;
       text-align: left;
       flex-grow: 1;
@@ -395,6 +395,7 @@
     grid-template-rows: 2rem auto 1fr 1px;
     padding-bottom: 1rem;
     max-width: 48rem;
+    width: 100%;
   }
 
   .leaderboard {
@@ -418,8 +419,8 @@
     }
 
     .table {
-      display: block;
-      overflow: auto;
+      display: flex;
+      overflow-y: auto;
     }
   }
 }

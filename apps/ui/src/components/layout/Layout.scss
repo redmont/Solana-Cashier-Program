@@ -3,7 +3,7 @@ $topbar-height: 5rem;
 .layout {
   margin: 0 auto;
   height: 100%;
-  width: 100vw;
+  width: 100%;
   min-width: 20rem;
   max-width: 36rem;
 }
@@ -87,7 +87,7 @@ $topbar-height: 5rem;
 }
 
 main {
-  height: calc(100vh - $topbar-height);
+  padding-bottom: 1rem;
 }
 
 @media screen and (min-width: 48rem) {
@@ -119,6 +119,10 @@ main {
   .layout {
     max-width: 75rem;
     padding: 0 1rem;
+  }
+
+  main {
+    height: calc(100vh - $topbar-height);
   }
 }
 

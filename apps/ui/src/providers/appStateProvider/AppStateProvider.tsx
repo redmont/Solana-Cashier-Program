@@ -7,20 +7,22 @@ export type { MatchInfo };
 
 export interface AppStateContextValue {
   balance: number;
+  isBalanceReady: boolean;
   match?: MatchInfo | null;
 }
 
 export const AppStateContext = createContext<AppStateContextValue>({
   balance: 0,
+  isBalanceReady: false,
   match: null,
 });
 
 export const AppStateProvider: FC<PropsWithChildren> = ({ children }) => {
   const match = useMatchInfo();
-  const { balance } = useBalanceState();
+  const { balance, isBalanceReady } = useBalanceState();
 
   return (
-    <AppStateContext.Provider value={{ match, balance }}>
+    <AppStateContext.Provider value={{ match, balance, isBalanceReady }}>
       {children}
     </AppStateContext.Provider>
   );
