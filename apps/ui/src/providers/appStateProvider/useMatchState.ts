@@ -1,5 +1,5 @@
 import { Bet, Fighter } from '@/types';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSocket } from '../../providers/SocketProvider';
 
 import {
@@ -12,9 +12,22 @@ import {
 
 import { useDeferredState } from '@/hooks/useDeferredState';
 
+interface Price {
+  ticker: string;
+  value: string;
+  change: 'up' | 'down' | 'same';
+}
+
+function getPriceChange(prev: string, current: string): 'up' | 'down' | 'same' {
+  if (+prev === +current) return 'same';
+
+  return +prev < +current ? 'up' : 'down';
+}
+
 export interface MatchState {
   fighters: Fighter[];
   bets: Bet[];
+  prices: Price[];
   matchId: string;
   series: string;
   state: string;
@@ -34,6 +47,7 @@ export function useMatchState() {
     state: '',
     preMatchVideoUrl: '',
     bets: [],
+    prices: [],
   });
 
   useEffect(() => {
@@ -46,6 +60,39 @@ export function useMatchState() {
       });
     });
   }, [state, patchState, subscribe]);
+
+  const pricePoll = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (pricePoll.current) return;
+
+    const { prices } = state;
+
+    pricePoll.current = setTimeout(() => {
+      const price1 = Math.random().toFixed(6);
+      const price2 = Math.random().toFixed(6);
+
+      patchState(new Date(), {
+        prices: [
+          {
+            ticker: 'DOGE',
+            value: price1,
+            change: getPriceChange(prices[0]?.value ?? '0', price1),
+          },
+          {
+            ticker: 'PEPE',
+            value: price2,
+            change: getPriceChange(prices[1]?.value ?? '0', price2),
+          },
+        ],
+      });
+    }, 1000);
+
+    return () => {
+      pricePoll.current && clearTimeout(pricePoll.current);
+      pricePoll.current = null;
+    };
+  }, [state, patchState]);
 
   useEffect(() => {
     const subscriptions = [
@@ -113,6 +160,7 @@ export function useMatchState() {
         startTime,
         winner,
         bets,
+        prices: [],
       });
     });
   }, [connected, send, setState]);
