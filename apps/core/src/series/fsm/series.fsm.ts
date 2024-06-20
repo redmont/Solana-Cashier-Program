@@ -302,7 +302,12 @@ export function createSeriesFSM(
           },
         },
         onDone: {
-          target: 'matchCompleted',
+          target: 'postMatchDelay',
+        },
+      },
+      postMatchDelay: {
+        after: {
+          5_000: 'matchCompleted',
         },
       },
       matchCompleted: {

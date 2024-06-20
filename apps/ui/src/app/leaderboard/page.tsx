@@ -12,7 +12,6 @@ import dayjs from 'dayjs';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import { Button } from 'primereact/button';
-import { Scrollable } from '@/components/Scrollable';
 import {
   GetTournamentMessage,
   GetTournamentMessageResponse,
@@ -204,7 +203,7 @@ export default function Leaderboard() {
           ))}
 
           {records.length > 0 && (
-            <Scrollable className="table">
+            <div className="table">
               <div className="table-header">
                 <div className="rank">Rank</div>
                 <div className="player">Player</div>
@@ -223,7 +222,7 @@ export default function Leaderboard() {
                   />
                 ))}
               </div>
-            </Scrollable>
+            </div>
           )}
         </div>
       </div>

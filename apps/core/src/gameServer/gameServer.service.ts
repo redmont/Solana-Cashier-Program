@@ -134,7 +134,7 @@ export class GameServerService {
 
         this.logger.log(`Existing server '${serverId}' is ready`);
       }
-    } else if (data.type === 'matchFinished') {
+    } else if (data.type.toLowerCase() === 'matchfinished') {
       const fsm = this.gameServerFSMs.get(serverId);
       if (fsm) {
         const context = fsm.getSnapshot().context;

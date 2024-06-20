@@ -77,10 +77,6 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
       })}
     >
       <div className="widget-body framed">
-        <div className="widget-header">
-          <div className="widget-label">Match Finished</div>
-        </div>
-
         {isSavingPng && (
           <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
         )}
