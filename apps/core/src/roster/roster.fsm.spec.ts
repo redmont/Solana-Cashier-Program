@@ -116,8 +116,12 @@ describe('RosterFsm', () => {
 
     snapshot = service.getSnapshot();
 
-    expect(snapshot.value).toBe('getNextSeriesFromSchedule');
-  });
+    expect(snapshot.value).toBe('postMatchDelay');
+
+    await waitFor(service, (state) => state.value === 'getNextSeriesFromSchedule', {
+      timeout: 15_000,
+    });
+  }, 30_000);
 
   it('should not transition when match is completed with an unknown series', async () => {
     let snapshot;
