@@ -1,5 +1,5 @@
 import { Key } from '@/interfaces/key';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel, Model } from 'nestjs-dynamoose';
 import * as jwt from 'jsonwebtoken';
@@ -11,6 +11,8 @@ const millicastApiUrl = 'https://api.millicast.com/api';
 
 @Injectable()
 export class StreamTokenService {
+  private readonly logger = new Logger('StreamTokenService');
+
   private readonly apiSecret: string;
   private readonly streamName: string;
   private readonly parentSubscribeToken: string;
@@ -41,7 +43,7 @@ export class StreamTokenService {
     }
   }
 
-  private async generateToken(userId: string) {
+  private async generateToken(userId: string, ipAddress: string) {
     const id = uuid();
 
     const payload = {
@@ -65,6 +67,10 @@ export class StreamTokenService {
     const decodedToken = jwt.decode(signedToken) as jwt.JwtPayload;
 
     const expiresAt = dayjs.utc(decodedToken.exp * 1000).toISOString();
+
+    this.logger.log(
+      `Generated token for '${ipAddress}' user#${userId} with expiry '${expiresAt}': ${signedToken}`,
+    );
 
     /*
     const options = {
@@ -117,9 +123,9 @@ export class StreamTokenService {
     );
   }
 
-  async getToken(userId: string) {
+  async getToken(userId: string, ipAddress?: string) {
     // Generate a token for the user
-    const generateTokenResult = await this.generateToken(userId);
+    const generateTokenResult = await this.generateToken(userId, ipAddress);
 
     // Save the token to the database
     const streamToken = {
@@ -139,11 +145,11 @@ export class StreamTokenService {
 
     if (existingTokens.length > 2) {
       // Delete all except the last two tokens
-      const tokensToDelete = existingTokens.slice(0, -2);
-      for (const token of tokensToDelete) {
-        //await this.deleteToken(token.tokenId);
-        await this.streamTokenModel.delete(token);
-      }
+      // const tokensToDelete = existingTokens.slice(0, -2);
+      // for (const token of tokensToDelete) {
+      //   //await this.deleteToken(token.tokenId);
+      //   await this.streamTokenModel.delete(token);
+      // }
     }
 
     return generateTokenResult.token;
