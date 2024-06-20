@@ -84,6 +84,13 @@ export class AppGateway
 
   @UseGuards(JwtAuthGuard)
   async handleConnection(client: Socket, ...args: any[]) {
+    this.logger.log(
+      `Number of clients connected: ${this.server.engine.clientsCount}`,
+    );
+
+    const ipAddress = client.handshake.headers['x-forwarded-for'] as string;
+    client.data.ipAddress = ipAddress;
+
     const token = client.handshake.auth?.token;
     if (token) {
       // Token is optional, and is only provided by authenticated users
@@ -130,6 +137,10 @@ export class AppGateway
   }
 
   handleDisconnect(client: Socket) {
+    this.logger.log(
+      `Number of clients connected: ${this.server.engine.clientsCount}`,
+    );
+
     const userId = this.clientUserIdMap.get(client.id);
 
     if (userId) {
@@ -369,7 +380,10 @@ export class AppGateway
       };
     }
 
-    const token = await this.streamTokenService.getToken(userId);
+    const token = await this.streamTokenService.getToken(
+      userId,
+      client.data.ipAddress,
+    );
 
     return {
       success: true,
