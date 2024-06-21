@@ -8,20 +8,23 @@ import {
   MatchUpdatedEvent,
   BetsUpdatedEvent,
   MatchResultEvent,
+  TickerPriceEvent,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { useDeferredState } from '@/hooks/useDeferredState';
 
+type PriceChange = 'up' | 'down' | 'same';
+
 interface Price {
   ticker: string;
-  value: string;
-  change: 'up' | 'down' | 'same';
+  value?: number;
+  change?: PriceChange;
 }
 
-function getPriceChange(prev: string, current: string): 'up' | 'down' | 'same' {
-  if (+prev === +current) return 'same';
+function getPriceChange(current: number, prev?: number): PriceChange {
+  if (prev === undefined || prev === current) return 'same';
 
-  return +prev < +current ? 'up' : 'down';
+  return prev < +current ? 'up' : 'down';
 }
 
 export interface MatchState {
@@ -61,38 +64,48 @@ export function useMatchState() {
     });
   }, [state, patchState, subscribe]);
 
-  const pricePoll = useRef<NodeJS.Timeout | null>(null);
-
   useEffect(() => {
-    if (pricePoll.current) return;
+    const subscriptions = [
+      subscribe(
+        MatchUpdatedEvent.messageType,
+        ({ timestamp, matchId }: MatchUpdatedEvent) => {
+          if (matchId === state.matchId) return;
 
-    const { prices } = state;
+          patchState(timestamp, {
+            prices: state.fighters.map((f) => ({
+              ticker: f.ticker,
+            })),
+          });
+        },
+      ),
 
-    pricePoll.current = setTimeout(() => {
-      const price1 = Math.random().toFixed(6);
-      const price2 = Math.random().toFixed(6);
+      subscribe(TickerPriceEvent.messageType, (message: TickerPriceEvent) => {
+        const { ticker, price, timestamp } = message;
 
-      patchState(new Date(), {
-        prices: [
-          {
-            ticker: 'DOGE',
-            value: price1,
-            change: getPriceChange(prices[0]?.value ?? '0', price1),
-          },
-          {
-            ticker: 'PEPE',
-            value: price2,
-            change: getPriceChange(prices[1]?.value ?? '0', price2),
-          },
-        ],
-      });
-    }, 1000);
+        const fighterIndex = state.fighters.findIndex(
+          (f) => f.ticker === ticker,
+        );
+
+        if (fighterIndex < 0) return;
+
+        const prices = [...state.prices];
+
+        prices[fighterIndex] = {
+          ticker,
+          value: price,
+          change: getPriceChange(price, state.prices[fighterIndex]?.value),
+        };
+
+        patchState(timestamp, {
+          prices,
+        });
+      }),
+    ];
 
     return () => {
-      pricePoll.current && clearTimeout(pricePoll.current);
-      pricePoll.current = null;
+      subscriptions.forEach((unsubscribe) => unsubscribe());
     };
-  }, [state, patchState]);
+  }, [state]);
 
   useEffect(() => {
     const subscriptions = [
@@ -160,7 +173,9 @@ export function useMatchState() {
         startTime,
         winner,
         bets,
-        prices: [],
+        prices: fighters.map((f) => ({
+          ticker: f.ticker,
+        })),
       });
     });
   }, [connected, send, setState]);
