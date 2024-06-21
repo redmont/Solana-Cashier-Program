@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { QueryModelBusService } from './queryModelBus.service';
 import { QueryModelBusAdapter } from './queryModelBusAdapter.service';
 import { AccountController } from './account.controller';
@@ -7,24 +6,21 @@ import { EventStoreService } from './eventStore.service';
 import { ConnectedEventStore } from '@castore/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ReadModelModule } from 'cashier-read-model';
+import { NatsJetStreamTransport } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 
 @Module({
   imports: [
-    ClientsModule.registerAsync([
-      {
-        name: 'BROKER',
-        imports: [ConfigModule],
-        useFactory: async (configService: ConfigService) => {
-          return {
-            transport: Transport.NATS,
-            options: {
-              servers: [configService.get<string>('natsUri')],
-            },
-          };
-        },
-        inject: [ConfigService],
+    NatsJetStreamTransport.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          connectionOptions: {
+            servers: [configService.get<string>('natsUri')],
+          },
+        };
       },
-    ]),
+      inject: [ConfigService],
+    }),
     ReadModelModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
@@ -53,5 +49,6 @@ import { ReadModelModule } from 'cashier-read-model';
     },
   ],
   controllers: [AccountController],
+  exports: [ConnectedEventStore],
 })
 export class AccountModule {}

@@ -2,8 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
 import { v4 as uuid } from 'uuid';
 import { recoverMessageAddress } from 'viem';
-import { ClientProxy } from '@nestjs/microservices';
-import { sendBrokerMessage } from 'broker-comms';
+import { sendBrokerCommand } from 'broker-comms';
 import {
   EnsureUserIdMessage,
   EnsureUserIdMessageReturnType,
@@ -14,6 +13,7 @@ import dayjs from '@/dayjs';
 import { JWT_AUTH_SERVICE } from '@/jwtAuth/jwtAuth.constants';
 import { IJwtAuthService } from '@/jwtAuth/jwtAuth.interface';
 import { Nonce } from './nonce.interface';
+import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 
 const welcomeMessage = `Welcome to Brawlers!\nSign this message to continue.\n\n`;
 
@@ -24,7 +24,7 @@ export class AuthService {
     @InjectModel('nonce')
     private readonly nonceModel: Model<Nonce, Key>,
     @Inject(JWT_AUTH_SERVICE) private readonly jwtAuthService: IJwtAuthService,
-    @Inject('BROKER') private broker: ClientProxy,
+    private readonly broker: NatsJetStreamClientProxy,
   ) {}
 
   async getNonceMessage(walletAddress: string) {
@@ -76,7 +76,7 @@ export class AuthService {
       return new Error('Invalid nonce');
     }
 
-    const result = await sendBrokerMessage<
+    const result = await sendBrokerCommand<
       EnsureUserIdMessage,
       EnsureUserIdMessageReturnType
     >(this.broker, new EnsureUserIdMessage(walletAddress));

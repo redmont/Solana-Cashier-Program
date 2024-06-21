@@ -1,15 +1,20 @@
 import { Controller } from '@nestjs/common';
+import { NatsJetStreamContext } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { TournamentService } from './tournament.service';
 import { AccountCreditedEvent } from 'cashier-messages';
-import { EventPattern } from '@nestjs/microservices';
+import { Ctx, EventPattern, Payload } from '@nestjs/microservices';
 
 @Controller()
 export class TournamentController {
   constructor(private readonly service: TournamentService) {}
 
   @EventPattern(AccountCreditedEvent.messageType)
-  async handleAccountCredited(data: AccountCreditedEvent) {
+  async handleAccountCredited(
+    @Ctx() ctx: NatsJetStreamContext,
+    @Payload() data: AccountCreditedEvent,
+  ) {
     if (data.reason !== 'WIN') {
+      ctx.message.ack();
       return;
     }
 
@@ -29,5 +34,7 @@ export class TournamentController {
         balance: data.balance,
       });
     }
+
+    ctx.message.ack();
   }
 }

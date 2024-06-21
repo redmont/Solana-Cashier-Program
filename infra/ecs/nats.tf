@@ -56,6 +56,7 @@ resource "aws_ecs_task_definition" "nats_task_definition" {
     {
       name    = "nats"
       image   = "nats:2.10.14-alpine",
+      command = ["-js", "--server_name", "n1-c1"]
       cpu     = 256
       memory  = 512
       portMappings = [

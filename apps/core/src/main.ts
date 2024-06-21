@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { NatsJetStreamServer } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { AppModule } from './app.module';
 import configuration from './configuration';
 import { GameServerWsAdapter } from './gameServer/wsAdapter';
@@ -12,12 +13,29 @@ async function bootstrap() {
   });
 
   app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.NATS,
-    options: {
-      servers: [config.natsUri],
-      debug: true,
-      waitOnFirstConnect: true,
-    },
+    strategy: new NatsJetStreamServer({
+      connectionOptions: {
+        servers: config.natsUri,
+        name: 'core-listener',
+        debug: true,
+      },
+      consumerOptions: {
+        deliverGroup: 'core-group',
+        durable: 'core-durable',
+        deliverTo: 'core-messages',
+        manualAck: true,
+      },
+      streamConfig: [
+        {
+          name: 'core',
+          subjects: ['instanceEvent.*.core.*.*', 'core.*', 'core.*.*'],
+        },
+        {
+          name: 'gateway',
+          subjects: ['gateway.>'],
+        },
+      ],
+    }),
   });
 
   app.useWebSocketAdapter(new GameServerWsAdapter(app));

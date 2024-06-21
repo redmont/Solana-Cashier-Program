@@ -6,16 +6,22 @@
 * [AWS CLI (v2)](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 * [NestJS CLI](https://docs.nestjs.com/cli/overview)
 
-```sh
-pnpm i -g @nestjs/cli
-```
+    ```sh
+    pnpm i -g @nestjs/cli
+    ```
+
+* [NATS CLI](https://github.com/nats-io/natscli)
+
+    ```sh
+    curl -sf https://binaries.nats.dev/nats-io/natscli/nats@latest | sh
+    ```
 
 ## Run project
 
 Run infrastructure
 
 ```sh
-./run-ddb.sh
+./run-infra.sh
 ```
 
 Run project:

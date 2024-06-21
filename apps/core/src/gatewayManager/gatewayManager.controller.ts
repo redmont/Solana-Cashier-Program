@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
-import { EventPattern } from '@nestjs/microservices';
-import { RegisterGatewayInstanceMessage } from 'core-messages';
+import { Ctx, EventPattern, Payload } from '@nestjs/microservices';
+import { NatsJetStreamContext } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { GatewayManagerService } from './gatewayManager.service';
 import { BalanceUpdatedEvent as CashierBalanceUpdatedEvent } from 'cashier-messages';
 
@@ -8,33 +8,39 @@ import { BalanceUpdatedEvent as CashierBalanceUpdatedEvent } from 'cashier-messa
 export class GatewayManagerController {
   constructor(private readonly gatewayManagerService: GatewayManagerService) {}
 
-  @EventPattern(RegisterGatewayInstanceMessage.messageType)
-  async handleInstanceStarted(data: { instanceId: string }) {
-    const { instanceId } = data;
-
-    this.gatewayManagerService.registerInstance(instanceId);
-
-    return { success: true };
-  }
-
   @EventPattern(CashierBalanceUpdatedEvent.messageType)
-  async handleBalanceUpdated(data: CashierBalanceUpdatedEvent) {
+  async handleBalanceUpdated(
+    @Ctx() ctx: NatsJetStreamContext,
+    @Payload() data: CashierBalanceUpdatedEvent,
+  ) {
     this.gatewayManagerService.handleBalanceUpdated(data.userId, data.balance);
+
+    ctx.message.ack();
   }
 
   @EventPattern('gateway.userConnected')
-  async handleUserConnected(data: { userId: string; instanceId: string }) {
+  async handleUserConnected(
+    @Ctx() ctx: NatsJetStreamContext,
+    @Payload() data: { userId: string; instanceId: string },
+  ) {
     this.gatewayManagerService.handleUserConnected(
       data.userId,
       data.instanceId,
     );
+
+    ctx.message.ack();
   }
 
   @EventPattern('gateway.userDisconnected')
-  async handleUserDisconnected(data: { userId: string; instanceId: string }) {
+  async handleUserDisconnected(
+    @Ctx() ctx: NatsJetStreamContext,
+    @Payload() data: { userId: string; instanceId: string },
+  ) {
     this.gatewayManagerService.handleUserDisconnected(
       data.userId,
       data.instanceId,
     );
+
+    ctx.message.ack();
   }
 }

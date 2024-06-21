@@ -196,7 +196,7 @@ export function createSeriesFSM(
                   },
                 },
                 after: {
-                  10_000: 'setMatchInProgress',
+                  5_000: 'setMatchInProgress',
                 },
               },
               setMatchInProgress: {
@@ -252,7 +252,7 @@ export function createSeriesFSM(
             },
             // Timeout, in case we never get a 'match finished' state from the game server
             after: {
-              120_000: {
+              180_000: {
                 target: 'distributeWinnings',
               },
             },
@@ -302,7 +302,12 @@ export function createSeriesFSM(
           },
         },
         onDone: {
-          target: 'matchCompleted',
+          target: 'postMatchDelay',
+        },
+      },
+      postMatchDelay: {
+        after: {
+          5_000: 'matchCompleted',
         },
       },
       matchCompleted: {
