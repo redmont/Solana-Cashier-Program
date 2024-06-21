@@ -1,5 +1,5 @@
 import { Bet, Fighter } from '@/types';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSocket } from '../../providers/SocketProvider';
 
 import {
@@ -8,13 +8,29 @@ import {
   MatchUpdatedEvent,
   BetsUpdatedEvent,
   MatchResultEvent,
+  TickerPriceEvent,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { useDeferredState } from '@/hooks/useDeferredState';
 
+type PriceChange = 'up' | 'down' | 'same';
+
+interface Price {
+  ticker: string;
+  value?: number;
+  change?: PriceChange;
+}
+
+function getPriceChange(current: number, prev?: number): PriceChange {
+  if (prev === undefined || prev === current) return 'same';
+
+  return prev < +current ? 'up' : 'down';
+}
+
 export interface MatchState {
   fighters: Fighter[];
   bets: Bet[];
+  prices: Price[];
   matchId: string;
   series: string;
   state: string;
@@ -34,6 +50,7 @@ export function useMatchState() {
     state: '',
     preMatchVideoUrl: '',
     bets: [],
+    prices: [],
   });
 
   useEffect(() => {
@@ -46,6 +63,49 @@ export function useMatchState() {
       });
     });
   }, [state, patchState, subscribe]);
+
+  useEffect(() => {
+    const subscriptions = [
+      subscribe(
+        MatchUpdatedEvent.messageType,
+        ({ timestamp, matchId }: MatchUpdatedEvent) => {
+          if (matchId === state.matchId) return;
+
+          patchState(timestamp, {
+            prices: state.fighters.map((f) => ({
+              ticker: f.ticker,
+            })),
+          });
+        },
+      ),
+
+      subscribe(TickerPriceEvent.messageType, (message: TickerPriceEvent) => {
+        const { ticker, price, timestamp } = message;
+
+        const fighterIndex = state.fighters.findIndex(
+          (f) => f.ticker === ticker,
+        );
+
+        if (fighterIndex < 0) return;
+
+        const prices = [...state.prices];
+
+        prices[fighterIndex] = {
+          ticker,
+          value: price,
+          change: getPriceChange(price, state.prices[fighterIndex]?.value),
+        };
+
+        patchState(timestamp, {
+          prices,
+        });
+      }),
+    ];
+
+    return () => {
+      subscriptions.forEach((unsubscribe) => unsubscribe());
+    };
+  }, [state]);
 
   useEffect(() => {
     const subscriptions = [
@@ -113,6 +173,9 @@ export function useMatchState() {
         startTime,
         winner,
         bets,
+        prices: fighters.map((f) => ({
+          ticker: f.ticker,
+        })),
       });
     });
   }, [connected, send, setState]);
