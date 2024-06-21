@@ -4,15 +4,12 @@ import { DynamooseModule } from 'nestjs-dynamoose';
 import { RedisCacheModule } from 'global-cache';
 import { QueryStoreModule } from 'query-store';
 import { ReadModelModule } from 'cashier-read-model';
-import { AppGateway } from './app.gateway';
-import { AuthModule } from './auth/auth.module';
-import { JwtAuthGuard } from './guards/jwtAuth.guard';
-import { JwtAuthModule } from './jwtAuth/jwtAuth.module';
 import { GlobalClientsModule } from './globalClientsModule';
 import configuration from './configuration';
-import { AppService } from './app.service';
 import { AppController } from './app.controller';
-import { StreamTokensModule } from './streamToken/streamToken.module';
+import { PriceFeedModule } from './priceFeed/priceFeed.module';
+import { GatewayModule } from './gateway';
+import { GatewayInstanceDecoratorProcessorService } from './nats/gatewayInstanceDecoratorProcessorService';
 
 @Module({
   imports: [
@@ -60,11 +57,10 @@ import { StreamTokensModule } from './streamToken/streamToken.module';
       inject: [ConfigService],
     }),
     GlobalClientsModule,
-    AuthModule,
-    JwtAuthModule,
-    StreamTokensModule,
+    PriceFeedModule,
+    GatewayModule,
   ],
-  providers: [AppService, AppGateway, JwtAuthGuard],
+  providers: [GatewayInstanceDecoratorProcessorService],
   controllers: [AppController],
 })
 export class AppModule {}

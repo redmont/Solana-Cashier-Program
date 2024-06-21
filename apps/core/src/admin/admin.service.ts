@@ -1,5 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { Injectable } from '@nestjs/common';
+import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { sendBrokerMessage } from 'broker-comms';
 import {
   CreditByWalletAddressMessage as CreditMessage,
@@ -10,7 +10,7 @@ import {
 
 @Injectable()
 export class AdminService {
-  constructor(@Inject('BROKER') private readonly broker: ClientProxy) {}
+  constructor(private readonly broker: NatsJetStreamClientProxy) {}
 
   async processPointsBalancesUpload(file: Express.Multer.File) {
     const fileData = file.buffer.toString();

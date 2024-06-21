@@ -1,13 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel, Model } from 'nestjs-dynamoose';
 import { v4 as uuid } from 'uuid';
-import { ClientProxy } from '@nestjs/microservices';
+import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { User, UserWallet } from './users.interface';
 import { Key } from 'src/interfaces/key';
-import { sendBrokerMessage } from 'broker-comms';
+import { sendBrokerCommand, sendBrokerMessage } from 'broker-comms';
 import {
-  CreateAccountMessage,
-  CreateAccountMessageResponse,
   EnsureAccountExistsMessage,
   EnsureAccountExistsMessageResponse,
 } from 'cashier-messages';
@@ -24,7 +22,7 @@ export class UsersService {
     private readonly userModel: Model<User, Key>,
     @InjectModel('userWallet')
     private readonly userWalletModel: Model<UserWallet, Key>,
-    @Inject('BROKER') private broker: ClientProxy,
+    private readonly broker: NatsJetStreamClientProxy,
   ) {}
   getUserById(id: string) {
     return this.userModel.get({ pk: `user#${id}`, sk: `user` });
@@ -71,7 +69,7 @@ export class UsersService {
 
     await this.userWalletModel.create(wallet);
 
-    await sendBrokerMessage<
+    await sendBrokerCommand<
       EnsureAccountExistsMessage,
       EnsureAccountExistsMessageResponse
     >(this.broker, new EnsureAccountExistsMessage(id, walletAddress));

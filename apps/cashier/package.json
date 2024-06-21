@@ -22,6 +22,7 @@
     "@aws-sdk/client-dynamodb": "^3.549.0",
     "@castore/core": "^2.3.0",
     "@castore/event-storage-adapter-dynamodb": "^2.3.0",
+    "@nestjs-plugins/nestjs-nats-jetstream-transport": "^2.2.6",
     "@nestjs/common": "^10.3.7",
     "@nestjs/config": "^3.2.1",
     "@nestjs/core": "^10.3.7",
@@ -41,7 +42,8 @@
     "rimraf": "^5.0.5",
     "rxjs": "^7.8.1",
     "socket.io": "^4.7.5",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "viem": "^2.12.4"
   },
   "devDependencies": {
     "@nestjs/testing": "^10.3.7",

@@ -8,9 +8,8 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { ClientProxy } from '@nestjs/microservices';
 import { Server } from 'socket.io';
-import { sendBrokerMessage } from 'broker-comms';
+import { sendBrokerCommand, sendBrokerMessage } from 'broker-comms';
 import {
   PlaceBetMessage as PlaceBetUiGatewayMessage,
   GetBalanceMessage as GetBalanceUiGatewayMessage,
@@ -25,6 +24,8 @@ import {
   GetUserMatchHistoryMessageResponse,
   GetTournamentMessage,
   GetTournamentMessageResponse,
+  GetUserIdMessageResponse,
+  GetUserIdMessage,
   GetStreamTokenMessage,
   GetStreamTokenMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
@@ -39,21 +40,22 @@ import {
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { Socket } from './websocket/socket';
 import { QueryStoreService } from 'query-store';
-import { IJwtAuthService } from './jwtAuth/jwtAuth.interface';
+import { IJwtAuthService } from '@/jwtAuth/jwtAuth.interface';
 import { ConfigService } from '@nestjs/config';
 import { ReadModelService } from 'cashier-read-model';
-import dayjs from './dayjs';
-import { StreamTokenService } from './streamToken/streamToken.service';
+import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
+import dayjs from '@/dayjs';
+import { StreamTokenService } from '@/streamToken/streamToken.service';
 
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
 })
-export class AppGateway
+export class Gateway
   implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  private readonly logger: Logger = new Logger(AppGateway.name);
+  private readonly logger: Logger = new Logger(Gateway.name);
   private readonly mediaUri: string;
 
   @WebSocketServer()
@@ -64,7 +66,7 @@ export class AppGateway
 
   constructor(
     private readonly configService: ConfigService,
-    @Inject('BROKER') private readonly broker: ClientProxy,
+    private readonly broker: NatsJetStreamClientProxy,
     private readonly query: QueryStoreService,
     @Inject('JWT_AUTH_SERVICE')
     private readonly jwtAuthService: IJwtAuthService,
@@ -104,7 +106,7 @@ export class AppGateway
           // Token from dynamic.xyz
           const { address } = decodedToken.verified_credentials[0];
 
-          const { userId } = await sendBrokerMessage<
+          const { userId } = await sendBrokerCommand<
             EnsureUserIdMessage,
             EnsureUserIdMessageReturnType
           >(this.broker, new EnsureUserIdMessage(address));
@@ -204,7 +206,7 @@ export class AppGateway
     }
 
     try {
-      const { success, message } = await sendBrokerMessage<
+      const { success, message } = await sendBrokerCommand<
         PlaceBetMessage,
         PlaceBetMessageResponse
       >(
@@ -225,7 +227,7 @@ export class AppGateway
   @SubscribeMessage(GetBalanceUiGatewayMessage.messageType)
   public async getBalance(@ConnectedSocket() client: Socket) {
     const { userId } = client.data.authorizedUser;
-    const result = await sendBrokerMessage<
+    const result = await sendBrokerCommand<
       GetBalanceMessage,
       GetBalanceMessageResponse
     >(this.broker, new GetBalanceMessage(userId));
@@ -364,6 +366,18 @@ export class AppGateway
       totalCount,
       items,
       currentUserItem,
+    };
+  }
+
+  @SubscribeMessage(GetUserIdMessage.messageType)
+  public async getUserId(
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetUserIdMessageResponse> {
+    const userId = this.clientUserIdMap.get(client.id);
+
+    return {
+      success: true,
+      userId,
     };
   }
 

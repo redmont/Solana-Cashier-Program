@@ -16,7 +16,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { sendBrokerMessage } from 'broker-comms';
 import {
@@ -53,7 +53,7 @@ export class AdminController {
     private readonly gameServerCapabilitiesService: GameServerCapabilitiesService,
     private readonly rosterService: RosterService,
     private readonly tournamentService: TournamentService,
-    @Inject('BROKER') private broker: ClientProxy,
+    private readonly broker: NatsJetStreamClientProxy,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
   }

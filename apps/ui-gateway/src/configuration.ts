@@ -5,7 +5,7 @@ const generateInstanceId = () => {
   return createHash('sha256').update(randomBytes(32)).digest('hex').slice(0, 8);
 };
 
-const instanceId = `gateway-${generateInstanceId()}`;
+const instanceId = generateInstanceId();
 
 export default () => ({
   instanceId,
@@ -23,6 +23,7 @@ export default () => ({
   millicastApiSecret: process.env.MILLICAST_API_SECRET,
   millicastStreamName: process.env.MILLICAST_STREAM_NAME,
   millicastParentSubscribeToken: process.env.MILLICAST_PARENT_SUBSCRIBE_TOKEN,
-  millicastParentSubscribeTokenId: process.env.MILLICAST_PARENT_SUBSCRIBE_TOKEN_ID,
+  millicastParentSubscribeTokenId:
+    process.env.MILLICAST_PARENT_SUBSCRIBE_TOKEN_ID,
   millicastAllowedOrigins: process.env.MILLICAST_ALLOWED_ORIGINS,
 });

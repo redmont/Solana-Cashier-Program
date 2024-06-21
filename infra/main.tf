@@ -75,3 +75,46 @@ module "ecs" {
   millicast_parent_subscribe_token_id = var.millicast_parent_subscribe_token_id
   millicast_allowed_origins           = var.millicast_allowed_origins
 }
+
+module "cashier_webhook_listener" {
+  source      = "./modules/function"
+  name        = "cashier-webhook"
+  prefix      = local.prefix
+  environment = var.environment
+  lambda_dir  = "${var.root_dir}/modules/cashier/dist"
+  filename    = "webhookListener"
+  env_variables = {
+    ALCHEMY_WEBHOOK_SIGNING_KEY  = var.alchemy_webhook_signing_key
+    SERVICE_DISCOVERY_SERVICE_ID = aws_service_discovery_private_dns_namespace.discovery_namespace.id
+  }
+  vpc_config = {
+    subnet_ids         = module.vpc.private_subnets
+    security_group_ids = [module.vpc.default_security_group_id]
+  }
+}
+
+resource "aws_iam_role_policy" "cashier_webhook_listener" {
+  name = "${local.prefix}-cashier-webhook-listener-${var.environment}"
+
+  role = module.cashier_webhook_listener.exec_role_name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "servicediscovery:DiscoverInstances"
+        ]
+        Resource = [
+          "*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_lambda_function_url" "cashier_webhook_listener" {
+  function_name      = module.cashier_webhook_listener.lambda_name
+  authorization_type = "NONE"
+}

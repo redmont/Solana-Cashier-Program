@@ -49,7 +49,7 @@ docker run -p 4515:6379 -d --rm redis
 REDIS_PID=$!
 
 # run NATS
-docker run -d -p 4222:4222 -p 6222:6222 -p 8222:8222 --rm nats
+docker run -d -p 4222:4222 -p 6222:6222 -p 8222:8222 --rm nats -js
 
 NATS_PID=$!
 
