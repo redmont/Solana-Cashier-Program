@@ -7,16 +7,24 @@ import { JoinButton, MobileJoinButton } from '@/components/JoinButton';
 import { ChildContainerProps } from '@/types';
 import { useAppState, useEthWallet } from '@/hooks';
 import { usePostHog } from '@/hooks/usePostHog';
+import {
+  TutorialDialog,
+  shouldShowTutorial,
+} from '@/components/tutorialDialog';
 
 export const Layout = (props: ChildContainerProps) => {
   usePostHog();
 
   const [isReady, setReady] = useState(false);
+  const [isTutorialVisible, setTutorialVisible] = useState(false);
 
   const { balance, isBalanceReady } = useAppState();
   const { isConnected } = useEthWallet();
 
-  useEffect(() => setReady(true), []);
+  useEffect(() => {
+    setReady(true);
+    setTutorialVisible(shouldShowTutorial());
+  }, []);
 
   return (
     <div className="layout">
@@ -29,12 +37,15 @@ export const Layout = (props: ChildContainerProps) => {
         </div>
 
         <div className="topnav">
-          <div>
-            <Link className="nav-link" href="/leaderboard">
-              <i className="pi pi-trophy"></i>
-              Leaderboard
-            </Link>
-          </div>
+          <Link className="nav-link" href="/leaderboard">
+            <i className="pi pi-trophy"></i>
+            Leaderboard
+          </Link>
+
+          <span className="nav-link" onClick={() => setTutorialVisible(true)}>
+            <i className="pi pi-book"></i>
+            How To Play
+          </span>
         </div>
 
         <div className="topbar-tools">
@@ -54,12 +65,24 @@ export const Layout = (props: ChildContainerProps) => {
             <i className="pi pi-trophy"></i>
           </Link>
 
+          <span
+            className="p-button-link md:hidden"
+            onClick={() => setTutorialVisible(true)}
+          >
+            <i className="pi pi-book"></i>
+          </span>
+
           <JoinButton className="p-button-secondary p-button-outlined hidden md:block" />
           <MobileJoinButton className="md:hidden" />
         </div>
       </div>
 
       {props.children}
+
+      <TutorialDialog
+        visible={isTutorialVisible}
+        onHide={() => setTutorialVisible(false)}
+      />
     </div>
   );
 };
