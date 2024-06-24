@@ -12,6 +12,7 @@ import {
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { useDeferredState } from '@/hooks/useDeferredState';
+import dayjs from 'dayjs';
 
 type PriceChange = 'up' | 'down' | 'same';
 
@@ -30,7 +31,7 @@ function getPriceChange(current: number, prev?: number): PriceChange {
 export interface MatchState {
   fighters: Fighter[];
   bets: Bet[];
-  prices: Price[];
+  prices: Record<string, Price>;
   matchId: string;
   series: string;
   state: string;
@@ -50,7 +51,7 @@ export function useMatchState() {
     state: '',
     preMatchVideoUrl: '',
     bets: [],
-    prices: [],
+    prices: {},
   });
 
   useEffect(() => {
@@ -65,6 +66,8 @@ export function useMatchState() {
   }, [state, patchState, subscribe]);
 
   useEffect(() => {
+    const prices: Record<string, Price> = { ...state.prices };
+
     const subscriptions = [
       subscribe(
         MatchUpdatedEvent.messageType,
@@ -72,29 +75,25 @@ export function useMatchState() {
           if (matchId === state.matchId) return;
 
           patchState(timestamp, {
-            prices: state.fighters.map((f) => ({
-              ticker: f.ticker,
-            })),
+            prices: state.fighters.reduce(
+              (result, { ticker }) => ({ ...result, [ticker]: { ticker } }),
+              {} as Record<string, Price>,
+            ),
           });
         },
       ),
 
       subscribe(TickerPriceEvent.messageType, (message: TickerPriceEvent) => {
-        const { ticker, price, timestamp } = message;
+        const { ticker, price } = message;
 
-        const fighterIndex = state.fighters.findIndex(
-          (f) => f.ticker === ticker,
-        );
-
-        if (fighterIndex < 0) return;
-
-        const prices = [...state.prices];
-
-        prices[fighterIndex] = {
+        prices[ticker] = {
           ticker,
           value: price,
-          change: getPriceChange(price, state.prices[fighterIndex]?.value),
+          change: getPriceChange(price, prices[ticker]?.value),
         };
+
+        // Add a decent offset so it will set prices once match state is set
+        const timestamp = dayjs(message.timestamp).add(5, 'minutes').toDate();
 
         patchState(timestamp, {
           prices,
@@ -173,9 +172,7 @@ export function useMatchState() {
         startTime,
         winner,
         bets,
-        prices: fighters.map((f) => ({
-          ticker: f.ticker,
-        })),
+        prices: {},
       });
     });
   }, [connected, send, setState]);

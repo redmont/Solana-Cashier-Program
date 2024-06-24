@@ -24,7 +24,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
   const { isConnected, isAuthenticated } = useEthWallet();
   const { setShowAuthFlow } = useDynamicContext();
   const { isBalanceReady, balance, match } = useAppState();
-  const { fighters = [], prices = [] } = match ?? {};
+  const { fighters = [] } = match ?? {};
   const [error, setError] = useState('');
   const [isDirty, setDirty] = useState(false);
   const [isLoading, setLoading] = useState(true);
@@ -34,6 +34,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
 
   const betAmount = props.betAmount ?? 0;
   const selectedFighter = fighters[props.fighter];
+  const prices = fighters.map((f) => match?.prices?.[f.ticker]);
 
   useEffect(() => {
     if (balance < betAmount) {
