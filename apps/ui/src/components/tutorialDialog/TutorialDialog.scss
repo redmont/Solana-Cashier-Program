@@ -1,6 +1,6 @@
 .welcome-dialog {
   width: 90%;
-  max-width: 38rem;
+  max-width: 48rem;
   padding: 0;
   border-radius: $borderRadius;
   max-height: 100%;
@@ -25,56 +25,70 @@
     height: 100%;
   }
 
-  .slide-title {
-    font-size: 1.5rem;
-    padding: 1rem;
+  .slide-header {
+    padding: 0 2rem;
+    flex-grow: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 12rem;
+
+    &.no-title {
+      padding: 0;
+    }
   }
 
-  .slide-image-box {
+  .slide-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding: 1rem 0;
+    text-align: center;
+  }
+
+  .slide-image {
     width: 100%;
     flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 1rem;
-
-    img {
-      object-fit: cover;
-      width: 100%;
-    }
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
   }
 
   .slide-text {
     font-size: 1rem;
+    font-weight: 500;
     text-align: center;
     line-height: 1.5;
     margin: 0;
     padding: 1rem;
   }
 
-  #intro-slide {
-    .slide-image-box {
-      padding: 0;
-    }
-
-    img {
-      width: 100%;
-      height: 100%;
-    }
+  #intro-slide-image {
+    background-image: url('/tutorial/welcome.png');
+    background-size: cover;
   }
 
-  #connect-slide {
-    img {
-      max-width: 24rem;
-    }
+  #connect-slide-image {
+    background-image: url('/tutorial/connect-mob.png');
   }
 
-  #community-slide,
-  #leaderboard-slide {
-    img {
-      max-height: 15rem;
-      object-fit: contain;
-    }
+  #brawlers-slide-image {
+    background-image: url('/tutorial/brawlers_mob.png');
+  }
+
+  #stakes-slide-image {
+    background-image: url('/tutorial/stakes_mob.png');
+  }
+
+  #win-slide-image {
+    background-image: url('/tutorial/win.png');
+  }
+
+  #leaderboard-slide-image {
+    background-image: url('/tutorial/leaderboard.png');
+  }
+
+  #community-slide-image {
+    background-image: url('/tutorial/community.png');
   }
 
   .dialog-footer {
@@ -99,29 +113,39 @@
 
   .dialog-nav {
     width: 100%;
-    max-width: 30rem;
     display: flex;
     justify-content: center;
     gap: 1rem;
   }
 
   @media screen and (min-width: 36rem) {
-    .slide {
-      flex-grow: 1;
+    .slide-header {
+      height: 16rem;
+      padding: 0 3rem;
     }
 
     .slide-title {
       font-size: 2rem;
       padding: 2rem;
-    }
-
-    .slide-image-box {
-      padding: 0 2rem;
+      font-weight: bold;
     }
 
     .slide-text {
+      padding: 1rem 2rem;
       font-size: 1.25rem;
-      padding: 2rem;
+    }
+
+    #connect-slide-image {
+      background-image: url('/tutorial/connect.png');
+      background-size: contain;
+    }
+
+    #brawlers-slide-image {
+      background-image: url('/tutorial/brawlers.png');
+    }
+
+    #stakes-slide-image {
+      background-image: url('/tutorial/stakes.png');
     }
 
     .dialog-footer {
@@ -129,11 +153,12 @@
       padding-bottom: 2rem;
 
       .p-button {
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 2rem;
         justify-content: center;
         flex-grow: 0;
         flex-basis: auto;
         max-width: 20rem;
+        // font-size: 1.25rem;
       }
     }
 
@@ -142,6 +167,16 @@
       width: auto;
       flex-grow: 1;
       justify-content: right;
+    }
+  }
+
+  @media screen and (min-width: 48rem) {
+    .slide-header {
+      height: 20rem;
+    }
+
+    .slide-text {
+      padding: 2rem 4rem;
     }
   }
 }
