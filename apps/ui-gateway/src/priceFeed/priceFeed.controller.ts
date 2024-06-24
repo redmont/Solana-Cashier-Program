@@ -1,8 +1,10 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
+import { OnEvent } from '@nestjs/event-emitter';
 import { MatchUpdatedEvent } from 'core-messages';
 import { PriceFeedEventPayload } from './interfaces/priceFeedEventPayload.interface';
 import { PriceFeedService } from './priceFeed.service';
+import { UserConnectedEvent } from '@/internalEvents';
 
 @Controller()
 export class PriceFeedController {
@@ -38,5 +40,10 @@ export class PriceFeedController {
     }));
 
     this.priceFeedService.handleCurrentTickers(tickers);
+  }
+
+  @OnEvent(UserConnectedEvent.type)
+  onUserConnected(@Payload() data: typeof UserConnectedEvent.payloadType) {
+    this.priceFeedService.handleUserConnected(data.clientId);
   }
 }

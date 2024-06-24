@@ -8,8 +8,9 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Server } from 'socket.io';
-import { sendBrokerCommand, sendBrokerMessage } from 'broker-comms';
+import { sendBrokerCommand } from 'broker-comms';
 import {
   PlaceBetMessage as PlaceBetUiGatewayMessage,
   GetBalanceMessage as GetBalanceUiGatewayMessage,
@@ -46,6 +47,7 @@ import { ReadModelService } from 'cashier-read-model';
 import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import dayjs from '@/dayjs';
 import { StreamTokenService } from '@/streamToken/streamToken.service';
+import { emitInternalEvent, UserConnectedEvent } from '@/internalEvents';
 
 @WebSocketGateway({
   cors: {
@@ -72,6 +74,7 @@ export class Gateway
     private readonly jwtAuthService: IJwtAuthService,
     private readonly cashierReadModelService: ReadModelService,
     private readonly streamTokenService: StreamTokenService,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
   }
@@ -136,6 +139,10 @@ export class Gateway
         console.log('Error verifying token', error);
       }
     }
+
+    emitInternalEvent(this.eventEmitter, UserConnectedEvent, {
+      clientId: client.id,
+    });
   }
 
   handleDisconnect(client: Socket) {
@@ -421,5 +428,19 @@ export class Gateway
     );
 
     this.server.to(`user-${userId}`).emit(messageType, data);
+  }
+
+  public publishToClient<T extends GatewayEvent>(clientId: string, data: T) {
+    const messageType = (data.constructor as any).messageType;
+
+    this.logger.verbose(
+      `Emitting message of type '${messageType}' to client '${clientId}'`,
+    );
+
+    // Get the socket instance for the client
+    const client = this.server.sockets.sockets.get(clientId);
+    if (client) {
+      client.emit(messageType, data);
+    }
   }
 }

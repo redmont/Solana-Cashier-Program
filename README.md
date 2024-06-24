@@ -207,6 +207,14 @@ curl -X PUT --location 'http://localhost:8080/admin/roster' \
 }'
 ```
 
+## Sending price oracle price updates
+
+You can publish mock price oracle messages to the NATS server by running the following command (_NATS CLI is required_):
+
+```sh
+nats pub oracleIndexer.price.2.pyth.pyth.doge.usd '{"symbol":{"base":"PEPE"},"timestamp":'$(date +%s)'000,"price":1.234,"exchange":"binance","provider":"cc"}'
+```
+
 ## GitHub Actions
 
 To test the GH actions locally, use [Act](https://nektosact.com/).

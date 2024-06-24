@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { RedisCacheModule } from 'global-cache';
 import { QueryStoreModule } from 'query-store';
@@ -17,6 +18,7 @@ import { GatewayInstanceDecoratorProcessorService } from './nats/gatewayInstance
       isGlobal: true,
       load: [configuration],
     }),
+    EventEmitterModule.forRoot(),
     RedisCacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {

@@ -30,6 +30,7 @@
     "@nestjs/platform-express": "^10.3.7",
     "@nestjs/platform-socket.io": "^10.3.7",
     "@nestjs/websockets": "^10.3.7",
+    "@nestjs/event-emitter": "^2.0.4",
     "@socket.io/redis-adapter": "^8.3.0",
     "broker-comms": "workspace:*",
     "cashier-read-model": "workspace:*",
