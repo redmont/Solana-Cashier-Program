@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 
 import { JoinButton, MobileJoinButton } from '@/components/JoinButton';
@@ -25,6 +25,8 @@ export const Layout = (props: ChildContainerProps) => {
     setReady(true);
     setTutorialVisible(shouldShowTutorial());
   }, []);
+
+  const hideTutorial = useCallback(() => setTutorialVisible(false), []);
 
   return (
     <div className="layout">
@@ -79,10 +81,7 @@ export const Layout = (props: ChildContainerProps) => {
 
       {props.children}
 
-      <TutorialDialog
-        visible={isTutorialVisible}
-        onHide={() => setTutorialVisible(false)}
-      />
+      <TutorialDialog visible={isTutorialVisible} onHide={hideTutorial} />
     </div>
   );
 };
