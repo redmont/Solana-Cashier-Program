@@ -34,16 +34,7 @@ interface CreateSeriesRequest {
   betPlacementTime: number;
   preMatchVideoPath: string;
   preMatchDelay: number;
-  fighters: {
-    codeName: string;
-    displayName: string;
-    imagePath: string;
-    model: {
-      head: string;
-      torso: string;
-      legs: string;
-    };
-  }[];
+  fighterProfiles: string[];
   level: string;
 }
 
@@ -52,16 +43,7 @@ interface UpdateSeriesRequest {
   betPlacementTime: number;
   preMatchVideoPath: string;
   preMatchDelay: number;
-  fighters: {
-    codeName: string;
-    displayName: string;
-    imagePath: string;
-    model: {
-      head: string;
-      torso: string;
-      legs: string;
-    };
-  }[];
+  fighterProfiles: string[];
   level: string;
 }
 
@@ -224,7 +206,7 @@ const EditSeries = ({ params }: { params: { codename: string } }) => {
         betPlacementTime: { type: 'number', title: 'Bet placement time' },
         preMatchVideoPath: { type: 'string', title: 'Pre-match video' },
         preMatchDelay: { type: 'number', title: 'Pre-match delay' },
-        fighters: {
+        fighterProfiles: {
           type: 'array',
           title: 'Fighters',
           items: {
