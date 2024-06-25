@@ -25,17 +25,7 @@ export class SeriesPersistenceService {
     betPlacementTime: number,
     preMatchVideoPath: string,
     preMatchDelay: number,
-    fighters: {
-      codeName: string;
-      displayName: string;
-      ticker: string;
-      imagePath: string;
-      model: {
-        head: string;
-        torso: string;
-        legs: string;
-      };
-    }[],
+    fighterProfiles: string[],
     level: string,
     fightType: string,
   ) {
@@ -46,7 +36,7 @@ export class SeriesPersistenceService {
       betPlacementTime,
       preMatchVideoPath,
       preMatchDelay,
-      fighters,
+      fighterProfiles,
       level,
       fightType,
     };
@@ -65,31 +55,12 @@ export class SeriesPersistenceService {
     betPlacementTime: number,
     preMatchVideoPath: string,
     preMatchDelay: number,
-    fighters: {
-      codeName: string;
-      displayName: string;
-      ticker: string;
-      imagePath: string;
-      model: {
-        head: string;
-        torso: string;
-        legs: string;
-      };
-    }[],
+    fighterProfiles: string[],
     level: string,
   ) {
     const series = await this.getOne(codeName);
     if (!series) {
       throw new Error('Series not found');
-    }
-
-    if (
-      fighters.length !== series.fighters.length ||
-      fighters.find(
-        (x) => !series.fighters.map((y) => y.codeName).includes(x.codeName),
-      )
-    ) {
-      throw new Error('Fighters do not match');
     }
 
     await this.seriesModel.update(
@@ -102,7 +73,7 @@ export class SeriesPersistenceService {
         betPlacementTime,
         preMatchVideoPath,
         preMatchDelay,
-        fighters,
+        fighterProfiles,
         level,
       },
     );
