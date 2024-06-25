@@ -40,6 +40,7 @@ import { TournamentService } from '@/tournament/tournament.service';
 import { CreateTournamentRequest } from './models/createTournamentRequest';
 import { UpdateTournamentRequest } from './models/updateTournamentRequest';
 import { AdminAuthGuard } from '@/auth/adminAuthGuard';
+import { FighterProfilesService } from '@/fighterProfiles/fighterProfiles.service';
 
 @Controller('admin')
 export class AdminController {
@@ -53,6 +54,7 @@ export class AdminController {
     private readonly gameServerCapabilitiesService: GameServerCapabilitiesService,
     private readonly rosterService: RosterService,
     private readonly tournamentService: TournamentService,
+    private readonly fighterProfilesService: FighterProfilesService,
     @Inject('BROKER') private broker: ClientProxy,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
@@ -76,15 +78,7 @@ export class AdminController {
       throw new BadRequestException('Series not found');
     }
 
-    const fighters = series.fighters.map((fighter) => ({
-      ...fighter,
-      imageUrl: this.getMediaUrl(fighter.imagePath),
-    }));
-
-    return {
-      ...series,
-      fighters,
-    };
+    return series;
   }
 
   @UseGuards(AdminAuthGuard)
@@ -96,7 +90,7 @@ export class AdminController {
       betPlacementTime,
       preMatchVideoPath,
       preMatchDelay,
-      fighters,
+      fighterProfiles,
       level,
       fightType,
     } = body;
@@ -107,7 +101,7 @@ export class AdminController {
       betPlacementTime,
       preMatchVideoPath,
       preMatchDelay,
-      fighters,
+      fighterProfiles,
       level,
       fightType,
     );
@@ -124,7 +118,7 @@ export class AdminController {
       betPlacementTime,
       preMatchVideoPath,
       preMatchDelay,
-      fighters,
+      fighterProfiles,
       level,
     } = body;
     return this.seriesService.updateSeries(
@@ -133,7 +127,7 @@ export class AdminController {
       betPlacementTime,
       preMatchVideoPath,
       preMatchDelay,
-      fighters,
+      fighterProfiles,
       level,
     );
   }
@@ -259,5 +253,39 @@ export class AdminController {
       endDate,
       prizes,
     });
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Get('/fighter-profiles')
+  async listFighterProfiles() {
+    return {
+      fighterProfiles: await this.fighterProfilesService.list(),
+    };
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Get('/fighter-profiles/:codeName')
+  async getFighterProfile(@Param('codeName') codeName: string) {
+    const fighterProfile = await this.fighterProfilesService.get(codeName);
+
+    return {
+      ...fighterProfile,
+      imageUrl: this.getMediaUrl(fighterProfile.imagePath),
+    };
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Post('/fighter-profiles')
+  async createFighterProfile(@Body() body: any) {
+    return this.fighterProfilesService.create(body);
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Put('/fighter-profiles/:codeName')
+  async updateFighterProfile(
+    @Param('codeName') codeName: string,
+    @Body() body: any,
+  ) {
+    return this.fighterProfilesService.update(codeName, body);
   }
 }

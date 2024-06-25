@@ -40,6 +40,38 @@ curl --location 'http://localhost:8080/admin/game-server-configs' \
 }'
 ```
 
+Create fighter profiles:
+
+```sh
+curl --location 'http://localhost:8080/admin/fighter-profiles' \
+--header 'Content-Type: application/json' \
+--data '{
+    "codeName": "pepe",
+    "displayName": "Pepe",
+    "ticker": "PEPE",
+    "imagePath": "",
+    "model": {
+        "head": "H_PepeA",
+        "torso": "T_PepeA",
+        "legs": "L_PepeA"
+    }
+}'
+
+curl --location 'http://localhost:8080/admin/fighter-profiles' \
+--header 'Content-Type: application/json' \
+--data '{
+    "codeName": "doge",
+    "displayName": "Doge",
+    "ticker": "DOGE",
+    "imagePath": "",
+    "model": {
+        "head": "H_DogeA",
+        "torso": "T_DogeA",
+        "legs": "L_DogeA"
+    }
+}'
+```
+
 Create the series:
 
 ```sh
@@ -49,30 +81,7 @@ curl --location 'http://localhost:8080/admin/series' \
     "codeName": "frogs-vs-dogs",
     "displayName": "Frogs vs Dogs",
     "betPlacementTime": 20,
-    "fighters": [
-        {
-            "codeName": "pepe",
-            "displayName": "Pepe",
-            "ticker": "PEPE",
-            "imagePath": "",
-            "model": {
-                "head": "H_PepeA",
-                "torso": "T_PepeA",
-                "legs": "L_PepeA"
-            }
-        },
-        {
-            "codeName": "doge",
-            "displayName": "Doge",
-            "ticker": "DOGE",
-            "imagePath": "",
-            "model": {
-                "head": "H_DogeA",
-                "torso": "T_DogeA",
-                "legs": "L_DogeA"
-            }
-        }
-    ],
+    "fighterProfiles": ["pepe", "doge"],
     "level": "level001",
     "fightType": "MMA"
 }'

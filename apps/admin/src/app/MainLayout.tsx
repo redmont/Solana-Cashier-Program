@@ -19,6 +19,7 @@ import {
   AiOutlineOrderedList,
   AiOutlineSetting,
   AiOutlineTrophy,
+  AiOutlineUser,
 } from 'react-icons/ai';
 import { BrandName } from '@/constants';
 import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
@@ -27,6 +28,11 @@ import { useSession } from 'next-auth/react';
 const menuItems = [
   { text: 'Dashboard', icon: AiOutlineHome, path: '/' },
   { text: 'Tournaments', icon: AiOutlineTrophy, path: '/tournaments' },
+  {
+    text: 'Fighter profiles',
+    icon: AiOutlineUser,
+    path: '/fighter-profiles',
+  },
   { text: 'Series', icon: AiOutlineCrown, path: '/series' },
   { text: 'Roster', icon: AiOutlineOrderedList, path: '/roster' },
   { text: 'Points', icon: AiOutlineDollarCircle, path: '/points' },

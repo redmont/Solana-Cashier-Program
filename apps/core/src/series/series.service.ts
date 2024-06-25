@@ -17,6 +17,7 @@ import { ActivityStreamService } from '@/activityStream/activityStream.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Series } from './series.interface';
 import { FightType } from './seriesConfig.model';
+import { FighterProfilesService } from '@/fighterProfiles/fighterProfiles.service';
 
 @Injectable()
 export class SeriesService {
@@ -37,8 +38,9 @@ export class SeriesService {
     private readonly activityStreamService: ActivityStreamService,
     private readonly matchManagementService: MatchManagementService,
     private readonly gatewayManagerService: GatewayManagerService,
-    @Inject('BROKER') private readonly broker: ClientProxy,
+    private readonly fighterProfilesService: FighterProfilesService,
     private readonly eventEmitter: EventEmitter2,
+    @Inject('BROKER') private readonly broker: ClientProxy,
   ) {}
 
   async initialise() {
@@ -102,15 +104,41 @@ export class SeriesService {
       createSeriesFSM(codeName, displayName, {
         logger: this.logger,
         getSeriesConfig: async (codeName) => {
-          const x = await this.seriesPersistenceService.getOne(codeName);
+          const series = await this.seriesPersistenceService.getOne(codeName);
+
+          const fighterProfiles = await this.fighterProfilesService.list();
+
+          let fighters = [];
+          for (const fighterProfile of series.fighterProfiles) {
+            if (fighterProfile === '#RANDOM#') {
+              while (true) {
+                // Random fighter
+                const randomIndex = Math.floor(
+                  Math.random() * fighterProfiles.length,
+                );
+                const fighter = fighterProfiles[randomIndex];
+                // We can't use the same fighter twice
+                if (!fighters.includes(fighter)) {
+                  fighters.push(fighter);
+                  break;
+                }
+              }
+            } else {
+              const fighter = fighterProfiles.find(
+                (x) => x.codeName === fighterProfile,
+              );
+              fighters.push(fighter);
+            }
+          }
+
           return {
             requiredCapabilities: {},
-            betPlacementTime: x.betPlacementTime,
-            preMatchDelay: x.preMatchDelay,
-            preMatchVideoPath: x.preMatchVideoPath,
-            fighters: x.fighters,
-            level: x.level,
-            fightType: x.fightType as FightType,
+            betPlacementTime: series.betPlacementTime,
+            preMatchDelay: series.preMatchDelay,
+            preMatchVideoPath: series.preMatchVideoPath,
+            fighters,
+            level: series.level,
+            fightType: series.fightType as FightType,
           };
         },
         setCurrentMatchId: (codeName, matchId) => {
@@ -211,17 +239,7 @@ export class SeriesService {
     betPlacementTime: number,
     preMatchVideoPath: string,
     preMatchDelay: number,
-    fighters: {
-      codeName: string;
-      displayName: string;
-      ticker: string;
-      imagePath: string;
-      model: {
-        head: string;
-        torso: string;
-        legs: string;
-      };
-    }[],
+    fighterProfiles: string[],
     level: string,
     fightType: string,
   ) {
@@ -231,7 +249,7 @@ export class SeriesService {
       betPlacementTime,
       preMatchVideoPath,
       preMatchDelay,
-      fighters,
+      fighterProfiles,
       level,
       fightType,
     );
@@ -245,17 +263,7 @@ export class SeriesService {
     betPlacementTime: number,
     preMatchVideoPath: string,
     preMatchDelay: number,
-    fighters: {
-      codeName: string;
-      displayName: string;
-      ticker: string;
-      imagePath: string;
-      model: {
-        head: string;
-        torso: string;
-        legs: string;
-      };
-    }[],
+    fighterProfiles: string[],
     level: string,
   ) {
     await this.seriesPersistenceService.update(
@@ -264,7 +272,7 @@ export class SeriesService {
       betPlacementTime,
       preMatchVideoPath,
       preMatchDelay,
-      fighters,
+      fighterProfiles,
       level,
     );
   }

@@ -5,17 +5,7 @@ export interface Series extends Key {
   betPlacementTime: number;
   preMatchVideoPath: string;
   preMatchDelay: number;
-  fighters: {
-    codeName: string;
-    displayName: string;
-    ticker: string;
-    imagePath: string;
-    model: {
-      head: string;
-      torso?: string;
-      legs?: string;
-    };
-  }[];
+  fighterProfiles: string[];
   level: string;
   fightType: string;
   state?: string;
