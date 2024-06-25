@@ -1,13 +1,13 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { MatchPersistenceService } from './matchPersistence.service';
-import { sendBrokerMessage } from 'broker-comms';
-import { ClientProxy } from '@nestjs/microservices';
+import { Injectable, Logger } from '@nestjs/common';
+import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
+import { sendBrokerCommand } from 'broker-comms';
 import { CreditMessage } from 'cashier-messages';
 import { ActivityStreamService } from '@/activityStream/activityStream.service';
 import dayjs from '@/dayjs';
 import { SeriesConfig } from '@/series/seriesConfig.model';
 import { GatewayManagerService } from '@/gatewayManager/gatewayManager.service';
 import { MatchResultEvent } from 'core-messages';
+import { MatchPersistenceService } from './matchPersistence.service';
 import { TournamentService } from '@/tournament/tournament.service';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class MatchBettingService {
 
   constructor(
     private readonly matchPersistenceService: MatchPersistenceService,
-    @Inject('BROKER') private readonly broker: ClientProxy,
+    private readonly broker: NatsJetStreamClientProxy,
     private readonly activityStreamService: ActivityStreamService,
     private readonly gatewayManagerService: GatewayManagerService,
     private readonly tournamentService: TournamentService,
@@ -98,7 +98,7 @@ export class MatchBettingService {
       const amount = winsPerUser[userId];
 
       // Send credit message to cashier
-      await sendBrokerMessage(
+      await sendBrokerCommand(
         this.broker,
         new CreditMessage(userId, amount, 'WIN'),
       );

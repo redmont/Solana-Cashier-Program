@@ -6,16 +6,22 @@
 * [AWS CLI (v2)](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 * [NestJS CLI](https://docs.nestjs.com/cli/overview)
 
-```sh
-pnpm i -g @nestjs/cli
-```
+    ```sh
+    pnpm i -g @nestjs/cli
+    ```
+
+* [NATS CLI](https://github.com/nats-io/natscli)
+
+    ```sh
+    curl -sf https://binaries.nats.dev/nats-io/natscli/nats@latest | sh
+    ```
 
 ## Run project
 
 Run infrastructure
 
 ```sh
-./run-ddb.sh
+./run-infra.sh
 ```
 
 Run project:
@@ -208,6 +214,14 @@ curl -X PUT --location 'http://localhost:8080/admin/roster' \
     "scheduleType": "linear",
     "series": ["frogs-vs-dogs", "fightera-vs-fighterb", "fighterc-vs-fighterd"]
 }'
+```
+
+## Sending price oracle price updates
+
+You can publish mock price oracle messages to the NATS server by running the following command (_NATS CLI is required_):
+
+```sh
+nats pub oracleIndexer.price.2.pyth.pyth.doge.usd '{"symbol":{"base":"PEPE"},"timestamp":'$(date +%s)'000,"price":1.234,"exchange":"binance","provider":"cc"}'
 ```
 
 ## GitHub Actions

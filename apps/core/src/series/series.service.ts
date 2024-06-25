@@ -1,7 +1,7 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Actor, createActor } from 'xstate';
-import { ClientProxy } from '@nestjs/microservices';
-import { sendBrokerMessage } from 'broker-comms';
+import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
+import { sendBrokerCommand } from 'broker-comms';
 import { DebitMessage, DebitMessageResponse } from 'cashier-messages';
 import { QueryStoreService } from 'query-store';
 import dayjs from '@/dayjs';
@@ -40,7 +40,7 @@ export class SeriesService {
     private readonly gatewayManagerService: GatewayManagerService,
     private readonly fighterProfilesService: FighterProfilesService,
     private readonly eventEmitter: EventEmitter2,
-    @Inject('BROKER') private readonly broker: ClientProxy,
+    private readonly broker: NatsJetStreamClientProxy,
   ) {}
 
   async initialise() {
@@ -344,7 +344,7 @@ export class SeriesService {
       };
     }
 
-    const debitResult = await sendBrokerMessage<
+    const debitResult = await sendBrokerCommand<
       DebitMessage,
       DebitMessageResponse
     >(this.broker, new DebitMessage(userId, amount, 'BET'));

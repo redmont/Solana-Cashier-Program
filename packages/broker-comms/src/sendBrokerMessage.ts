@@ -1,12 +1,12 @@
-import { ClientProxy } from '@nestjs/microservices';
-import { catchError, firstValueFrom, map, retry, timeout, timer } from 'rxjs';
+import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
+import { catchError, firstValueFrom, retry, timeout, timer } from 'rxjs';
 import { BrokerMessage } from './brokerMessage';
 import { BaseResponse } from './baseResponse';
 
 export async function sendBrokerMessage<
   T extends BrokerMessage<TResponse>,
   TResponse extends BaseResponse,
->(clientProxy: ClientProxy, message: T): Promise<TResponse> {
+>(clientProxy: NatsJetStreamClientProxy, message: T): Promise<TResponse> {
   const messageType = (message.constructor as any).messageType;
 
   const response = await firstValueFrom(
@@ -27,4 +27,23 @@ export async function sendBrokerMessage<
   );
 
   return response;
+}
+
+export async function sendBrokerCommand<
+  T extends BrokerMessage<TResponse>,
+  TResponse extends BaseResponse,
+>(clientProxy: NatsJetStreamClientProxy, message: T): Promise<TResponse> {
+  const messageType = (message.constructor as any).messageType;
+
+  try {
+    return await firstValueFrom(
+      clientProxy.send<TResponse>({ cmd: messageType }, message),
+    );
+  } catch (error) {
+    console.log(
+      `Error in sendBrokerCommand sending message of type ${messageType}: `,
+      JSON.stringify(message),
+    );
+    throw error;
+  }
 }

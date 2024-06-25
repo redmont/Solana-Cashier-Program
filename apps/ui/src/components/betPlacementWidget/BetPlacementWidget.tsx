@@ -34,6 +34,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
 
   const betAmount = props.betAmount ?? 0;
   const selectedFighter = fighters[props.fighter];
+  const prices = fighters.map((f) => match?.prices?.[f.ticker]);
 
   useEffect(() => {
     if (balance < betAmount) {
@@ -127,27 +128,55 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
           <div className="fighter-selection">
             <div className="selection-title">Back your fighter</div>
 
-            <div className="fighter-switch">
-              <div
-                className={classNames('fighter-tile', {
-                  selected: selectedFighter?.codeName === fighters[0]?.codeName,
-                })}
-                onClick={() => handleFighterChange(0)}
-              >
-                <img src={fighters[0]?.imageUrl} />
-                {fighters[0]?.displayName}
+            <div>
+              <div className="current-prices">
+                <div className={classNames('price-info', prices[0]?.change)}>
+                  <span className="price-ticker">${prices[0]?.ticker}</span>
+                  <span className="price-value">{prices[0]?.value}</span>
+                  <i
+                    className={classNames('price-change-indicator pi', {
+                      'pi-sort-down-fill': prices[0]?.change === 'down',
+                      'pi-sort-up-fill': prices[0]?.change === 'up',
+                    })}
+                  ></i>
+                </div>
+
+                <div className={classNames('price-info', prices[1]?.change)}>
+                  <i
+                    className={classNames('price-change-indicator pi', {
+                      'pi-sort-down-fill': prices[1]?.change === 'down',
+                      'pi-sort-up-fill': prices[1]?.change === 'up',
+                    })}
+                  ></i>
+                  <span className="price-value">{prices[1]?.value}</span>
+                  <span className="price-ticker">${prices[1]?.ticker}</span>
+                </div>
               </div>
 
-              <span>VS</span>
+              <div className="fighter-switch">
+                <div
+                  className={classNames('fighter-tile', {
+                    selected:
+                      selectedFighter?.codeName === fighters[0]?.codeName,
+                  })}
+                  onClick={() => handleFighterChange(0)}
+                >
+                  <img src={fighters[0]?.imageUrl} />
+                  {fighters[0]?.displayName}
+                </div>
 
-              <div
-                className={classNames('fighter-tile', {
-                  selected: selectedFighter?.codeName === fighters[1]?.codeName,
-                })}
-                onClick={() => handleFighterChange(1)}
-              >
-                {fighters[1]?.displayName}
-                <img src={fighters[1]?.imageUrl} />
+                <span>VS</span>
+
+                <div
+                  className={classNames('fighter-tile', {
+                    selected:
+                      selectedFighter?.codeName === fighters[1]?.codeName,
+                  })}
+                  onClick={() => handleFighterChange(1)}
+                >
+                  {fighters[1]?.displayName}
+                  <img src={fighters[1]?.imageUrl} />
+                </div>
               </div>
             </div>
           </div>

@@ -30,7 +30,7 @@ export class AccountController {
     private readonly readModelService: ReadModelService,
   ) {}
 
-  @MessagePattern(EnsureAccountExistsMessage.messageType)
+  @MessagePattern({ cmd: EnsureAccountExistsMessage.messageType })
   async handleEnsureAccountExists(@Payload() data: EnsureAccountExistsMessage) {
     await ensureAccountExistsCommand(this.eventStore).handler(
       {
@@ -45,7 +45,7 @@ export class AccountController {
     return { success: true };
   }
 
-  @MessagePattern(CreateAccountMessage.messageType)
+  @MessagePattern({ cmd: CreateAccountMessage.messageType })
   async handleCreateAccount(@Payload() data: CreateAccountMessage) {
     await createAccountCommand(this.eventStore).handler(
       {
@@ -69,7 +69,7 @@ export class AccountController {
     return { success: true };
   }
 
-  @MessagePattern(GetBalanceMessage.messageType)
+  @MessagePattern({ cmd: GetBalanceMessage.messageType })
   async handleGetBalance(@Payload() data: GetBalanceMessage) {
     const account = await this.readModelService.getAccount(data.accountId);
 
@@ -79,7 +79,7 @@ export class AccountController {
     };
   }
 
-  @MessagePattern(DebitMessage.messageType)
+  @MessagePattern({ cmd: DebitMessage.messageType })
   async handleDebit(@Payload() { accountId, amount, reason }: DebitMessage) {
     try {
       await debitAccountCommand(this.eventStore).handler(
@@ -103,7 +103,7 @@ export class AccountController {
     return { success: true };
   }
 
-  @MessagePattern(CreditMessage.messageType)
+  @MessagePattern({ cmd: CreditMessage.messageType })
   async handleCredit(@Payload() { accountId, amount, reason }: CreditMessage) {
     try {
       await creditAccountCommand(this.eventStore).handler(
@@ -123,7 +123,7 @@ export class AccountController {
     return { success: true };
   }
 
-  @MessagePattern(DebitByWalletAddressMessage.messageType)
+  @MessagePattern({ cmd: DebitByWalletAddressMessage.messageType })
   async handleDebitByWalletAddress(
     @Payload() { walletAddress, amount, reason }: DebitByWalletAddressMessage,
   ) {
@@ -157,7 +157,7 @@ export class AccountController {
     return { success: true };
   }
 
-  @MessagePattern(CreditByWalletAddressMessage.messageType)
+  @MessagePattern({ cmd: CreditByWalletAddressMessage.messageType })
   async handleCreditByWalletAddress(
     @Payload() data: CreditByWalletAddressMessage,
   ) {
@@ -188,7 +188,7 @@ export class AccountController {
     return { success: true };
   }
 
-  @MessagePattern(GetAllBalancesMessage.messageType)
+  @MessagePattern({ cmd: GetAllBalancesMessage.messageType })
   async handleGetAllBalances(): Promise<GetAllBalancesMessageResponse> {
     const accounts = await this.readModelService.getAllAccounts();
 

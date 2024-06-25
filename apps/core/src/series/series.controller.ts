@@ -1,10 +1,6 @@
-import { Controller, Inject } from '@nestjs/common';
-import {
-  ClientProxy,
-  MessagePattern,
-  Payload,
-  RpcException,
-} from '@nestjs/microservices';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
+import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import {
   PlaceBetMessage,
   MatchCompletedMessage,
@@ -15,7 +11,7 @@ import {
   GetBalanceMessage as CashierGetBalanceMessage,
   GetBalanceMessageResponse as CashierGetBalanceMessageResponse,
 } from 'cashier-messages';
-import { sendBrokerMessage } from 'broker-comms';
+import { sendBrokerCommand } from 'broker-comms';
 import { OnEvent } from '@nestjs/event-emitter';
 import { SeriesService } from './series.service';
 import { PlaceBetMessageResponse } from '@bltzr-gg/brawlers-ui-gateway-messages';
@@ -24,10 +20,10 @@ import { PlaceBetMessageResponse } from '@bltzr-gg/brawlers-ui-gateway-messages'
 export class SeriesController {
   constructor(
     private readonly seriesService: SeriesService,
-    @Inject('BROKER') private readonly broker: ClientProxy,
+    private readonly broker: NatsJetStreamClientProxy,
   ) {}
 
-  @MessagePattern(PlaceBetMessage.messageType)
+  @MessagePattern({ cmd: PlaceBetMessage.messageType })
   async handlePlaceBet(
     @Payload() data: PlaceBetMessage,
   ): Promise<PlaceBetMessageResponse> {
@@ -60,9 +56,9 @@ export class SeriesController {
     return { success: true };
   }
 
-  @MessagePattern(GetBalanceMessage.messageType)
+  @MessagePattern({ cmd: GetBalanceMessage.messageType })
   async handleGetBalance(@Payload() data: any) {
-    const result = await sendBrokerMessage<
+    const result = await sendBrokerCommand<
       CashierGetBalanceMessage,
       CashierGetBalanceMessageResponse
     >(this.broker, new CashierGetBalanceMessage(data.userId));

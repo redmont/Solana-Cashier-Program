@@ -8,4 +8,5 @@ export * from './getRoster';
 export * from './getMatchHistory';
 export * from './getUserMatchHistory';
 export * from './getTournament';
+export * from './getUserId';
 export * from './getStreamToken';

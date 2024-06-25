@@ -1,5 +1,5 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import {
   BalanceUpdatedEvent,
   BetPlacedEvent,
@@ -11,24 +11,16 @@ import dayjs from '@/dayjs';
 import { ClientDiscovery } from './clientDiscovery';
 
 @Injectable()
-export class GatewayManagerService implements OnModuleInit, OnModuleDestroy {
+export class GatewayManagerService implements OnModuleInit {
   private clientDiscovery: ClientDiscovery;
   private readonly userIdInstances: {
     [userId: string]: string[];
   } = {};
 
-  constructor(private readonly config: ConfigService) {}
+  constructor(private readonly broker: NatsJetStreamClientProxy) {}
 
   onModuleInit() {
-    this.clientDiscovery = new ClientDiscovery(this.config);
-  }
-
-  onModuleDestroy() {
-    this.clientDiscovery.destroy();
-  }
-
-  registerInstance(instanceId: string) {
-    this.clientDiscovery.addClient(instanceId);
+    this.clientDiscovery = new ClientDiscovery(this.broker);
   }
 
   emitToAll(event: string, data: any) {
