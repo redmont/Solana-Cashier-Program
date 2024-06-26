@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { KmsJwtAuthService } from './kmsJwtAuth.service';
 import { TestJwtAuthService } from './testJwtAuth.service';
 import { JWT_AUTH_SERVICE } from './jwtAuth.constants';
-import { JwtAuthGuard } from '../guards/jwtAuth.guard';
+import { JwtAuthGuard } from '../gateway/guards/jwtAuth.guard';
 
 @Module({
   providers: [

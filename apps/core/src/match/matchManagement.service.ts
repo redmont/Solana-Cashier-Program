@@ -34,7 +34,7 @@ const parseSeriesConfig = (config: SeriesConfig) => {
   };
 };
 
-const formatSymbol = (ticker: string) => `Crypto.${ticker}/USD`;
+const formatSymbol = (ticker: string) => ticker.toLowerCase();
 
 @Injectable()
 export class MatchManagementService {

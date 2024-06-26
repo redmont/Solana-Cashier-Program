@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { EventPattern, Payload } from '@nestjs/microservices';
+import { Ctx, EventPattern, Payload } from '@nestjs/microservices';
 import {
   ActivityStreamEvent,
   BalanceUpdatedEvent,
@@ -18,8 +18,10 @@ import {
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { Dayjs } from 'dayjs';
 import dayjs from '@/dayjs';
-import { AppGateway } from './app.gateway';
 import { ConfigService } from '@nestjs/config';
+import { NatsJetStreamContext } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
+import { Gateway } from './gateway';
+import { GatewayInstanceEventPattern } from './nats/gatewayInstanceEventPattern';
 
 @Controller()
 export class AppController {
@@ -28,7 +30,7 @@ export class AppController {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly gateway: AppGateway,
+    private readonly gateway: Gateway,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
   }
@@ -37,8 +39,11 @@ export class AppController {
     return `${this.mediaUri}/${path}`;
   }
 
-  @EventPattern(BetPlacedEvent.messageType)
-  onBetPlaced(@Payload() data: BetPlacedEvent) {
+  @GatewayInstanceEventPattern(BetPlacedEvent.messageType)
+  onBetPlaced(
+    @Ctx() ctx: NatsJetStreamContext,
+    @Payload() data: BetPlacedEvent,
+  ) {
     const { timestamp, seriesCodeName, walletAddress, amount, fighter } = data;
 
     this.gateway.publish(
@@ -50,10 +55,15 @@ export class AppController {
         fighter,
       ),
     );
+
+    ctx.message.ack();
   }
 
-  @EventPattern(MatchUpdatedEvent.messageType)
-  onMatchUpdated(@Payload() data: MatchUpdatedEvent) {
+  @EventPattern(`${MatchUpdatedEvent.messageType}`)
+  onMatchUpdated(
+    @Ctx() ctx: NatsJetStreamContext,
+    @Payload() data: MatchUpdatedEvent,
+  ) {
     const {
       timestamp,
       seriesCodeName,
@@ -68,6 +78,7 @@ export class AppController {
 
     if (ts < this.lastEventTimestamp) {
       console.log('Discarding late event');
+      ctx.message.ack();
       return;
     }
 
@@ -93,39 +104,61 @@ export class AppController {
         winner,
       ),
     );
+
+    ctx.message.ack();
   }
 
-  @EventPattern(BalanceUpdatedEvent.messageType)
-  onBalanceUpdated(@Payload() data: BalanceUpdatedEvent) {
+  @GatewayInstanceEventPattern(BalanceUpdatedEvent.messageType)
+  onBalanceUpdated(
+    @Ctx() ctx: NatsJetStreamContext,
+    @Payload() data: BalanceUpdatedEvent,
+  ) {
     const { timestamp, userId, balance } = data;
 
     this.gateway.publishToUser(
       userId,
       new BalanceUpdatedUiGatewayEvent(timestamp, balance),
     );
+
+    ctx.message.ack();
   }
 
-  @EventPattern(ActivityStreamEvent.messageType)
-  onActivityStream(@Payload() data: ActivityStreamEvent) {
+  @GatewayInstanceEventPattern(ActivityStreamEvent.messageType)
+  onActivityStream(
+    @Ctx() ctx: NatsJetStreamContext,
+    @Payload() data: ActivityStreamEvent,
+  ) {
     const { timestamp, userId, message } = data;
 
     this.gateway.publishToUser(
       userId,
       new ActivityStreamUiGatewayEvent(timestamp, message),
     );
+
+    ctx.message.ack();
   }
 
   @EventPattern(BetsUpdatedEvent.messageType)
-  onBetsUpdated(@Payload() data: BetsUpdatedEvent) {
+  onBetsUpdated(
+    @Ctx() ctx: NatsJetStreamContext,
+    @Payload() data: BetsUpdatedEvent,
+  ) {
     const { timestamp, seriesCodeName, bets } = data;
+
+    console.log('Got bets updated', data);
 
     this.gateway.publish(
       new BetsUpdatedUiGatewayEvent(timestamp, seriesCodeName, bets),
     );
+
+    ctx.message.ack();
   }
 
-  @EventPattern(MatchResultEvent.messageType)
-  onMatchResult(@Payload() data: MatchResultEvent) {
+  @GatewayInstanceEventPattern(MatchResultEvent.messageType)
+  onMatchResult(
+    @Ctx() ctx: NatsJetStreamContext,
+    @Payload() data: MatchResultEvent,
+  ) {
     const { userId, timestamp, matchId, betAmount, winAmount, fighter } = data;
 
     this.gateway.publishToUser(
@@ -138,5 +171,7 @@ export class AppController {
         fighter,
       ),
     );
+
+    ctx.message.ack();
   }
 }

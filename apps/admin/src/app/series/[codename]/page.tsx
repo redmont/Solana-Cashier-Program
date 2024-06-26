@@ -34,16 +34,7 @@ interface CreateSeriesRequest {
   betPlacementTime: number;
   preMatchVideoPath: string;
   preMatchDelay: number;
-  fighters: {
-    codeName: string;
-    displayName: string;
-    imagePath: string;
-    model: {
-      head: string;
-      torso: string;
-      legs: string;
-    };
-  }[];
+  fighterProfiles: string[];
   level: string;
 }
 
@@ -52,16 +43,7 @@ interface UpdateSeriesRequest {
   betPlacementTime: number;
   preMatchVideoPath: string;
   preMatchDelay: number;
-  fighters: {
-    codeName: string;
-    displayName: string;
-    imagePath: string;
-    model: {
-      head: string;
-      torso: string;
-      legs: string;
-    };
-  }[];
+  fighterProfiles: string[];
   level: string;
 }
 
@@ -151,16 +133,6 @@ const uiSchema: UiSchema = {
   preMatchVideoPath: {
     'ui:widget': MediaSelectorWidget,
   },
-  fighters: {
-    items: {
-      imageUrl: {
-        'ui:widget': MediaPreviewWidget,
-      },
-      imagePath: {
-        'ui:widget': MediaSelectorWidget,
-      },
-    },
-  },
 };
 
 const EditSeries = ({ params }: { params: { codename: string } }) => {
@@ -168,6 +140,24 @@ const EditSeries = ({ params }: { params: { codename: string } }) => {
   const toast = useToast();
   const { authToken } = useDynamicContext();
   const [formData, setFormData] = useState(null);
+
+  const { data: fighterProfilesResponse } = useQuery<{
+    fighterProfiles: {
+      codeName: string;
+      displayName: string;
+    }[];
+  }>({
+    queryKey: ['fighter-profiles'],
+  });
+
+  const fighterProfileCodenames = useMemo(() => {
+    const profiles =
+      fighterProfilesResponse?.fighterProfiles.map(
+        (fighter) => fighter.codeName,
+      ) ?? [];
+
+    return ['#RANDOM#', ...profiles];
+  }, [fighterProfilesResponse]);
 
   const { data: gameServerCapabilities } = useQuery<{
     capabilities: {
@@ -180,20 +170,6 @@ const EditSeries = ({ params }: { params: { codename: string } }) => {
   }>({
     queryKey: ['game-server-capabilities'],
   });
-
-  const torsoModels = useMemo(() => {
-    if (gameServerCapabilities?.capabilities?.torsoModels) {
-      return ['', ...gameServerCapabilities.capabilities.torsoModels];
-    }
-
-    return [''];
-  }, [gameServerCapabilities]);
-
-  const legModels = useMemo(() => {
-    if (gameServerCapabilities?.capabilities?.legModels) {
-      return ['', ...gameServerCapabilities.capabilities.legModels];
-    }
-  }, [gameServerCapabilities]);
 
   const { data } = useQuery<any>({
     queryKey: [`series/${params.codename}`],
@@ -230,40 +206,12 @@ const EditSeries = ({ params }: { params: { codename: string } }) => {
         betPlacementTime: { type: 'number', title: 'Bet placement time' },
         preMatchVideoPath: { type: 'string', title: 'Pre-match video' },
         preMatchDelay: { type: 'number', title: 'Pre-match delay' },
-        fighters: {
+        fighterProfiles: {
           type: 'array',
           title: 'Fighters',
           items: {
-            type: 'object',
             title: 'Fighter',
-            properties: {
-              codeName: { type: 'string', title: 'Code name' },
-              displayName: { type: 'string', title: 'Display name' },
-              ticker: { type: 'string', title: 'Ticker' },
-              imageUrl: { type: 'string', title: '' },
-              imagePath: { type: 'string', title: 'Image' },
-              model: {
-                type: 'object',
-                title: 'Model',
-                properties: {
-                  head: {
-                    type: 'string',
-                    title: 'Head',
-                    enum: gameServerCapabilities?.capabilities.headModels,
-                  },
-                  torso: {
-                    type: 'string',
-                    title: 'Torso',
-                    enum: torsoModels,
-                  },
-                  legs: {
-                    type: 'string',
-                    title: 'Legs',
-                    enum: legModels,
-                  },
-                },
-              },
-            },
+            enum: fighterProfileCodenames,
           },
         },
         level: {

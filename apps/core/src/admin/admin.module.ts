@@ -7,6 +7,7 @@ import { GameServerCapabilitiesModule } from '@/gameServerCapabilities/gameServe
 import { RosterModule } from '@/roster/roster.module';
 import { TournamentModule } from '@/tournament/tournament.module';
 import { AuthModule } from '@/auth/auth.module';
+import { FighterProfilesModule } from '@/fighterProfiles/fighterProfiles.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AuthModule } from '@/auth/auth.module';
     GameServerCapabilitiesModule,
     RosterModule,
     TournamentModule,
+    FighterProfilesModule
   ],
   providers: [AdminService],
   controllers: [AdminController],

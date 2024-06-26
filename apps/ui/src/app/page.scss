@@ -124,11 +124,10 @@
 @media screen and (min-width: 75rem) {
   .main-page {
     align-items: center;
-    justify-content: center;
   }
 
   .main-page-content {
-    grid-template-rows: 27.75rem 2rem 20rem;
+    grid-template-rows: 27.75rem 2rem 21rem;
     grid-template-columns: repeat(2, 25rem) auto;
     gap: 1rem;
   }
@@ -182,7 +181,7 @@
 
 @media screen and (min-width: 92rem) {
   .main-page-content {
-    grid-template-rows: 27rem 2rem 20rem;
+    grid-template-rows: 27rem 2rem 21rem;
     grid-template-columns: 1fr repeat(2, 23.5rem) 1fr;
     gap: 1rem;
   }

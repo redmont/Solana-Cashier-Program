@@ -11,7 +11,7 @@ interface EnsureUserIdPayload {
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @MessagePattern(EnsureUserIdMessage.messageType)
+  @MessagePattern({ cmd: EnsureUserIdMessage.messageType })
   async handleEnsureUserId(@Payload() data: EnsureUserIdPayload) {
     const { walletAddress } = data;
 

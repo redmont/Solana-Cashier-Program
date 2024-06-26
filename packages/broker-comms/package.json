@@ -16,6 +16,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@nestjs-plugins/nestjs-nats-jetstream-transport": "^2.2.6",
     "@nestjs/microservices": "^10.3.7"
   }
 }

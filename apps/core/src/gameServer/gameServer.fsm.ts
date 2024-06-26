@@ -1,9 +1,10 @@
 import { Logger } from '@nestjs/common';
-import { setup, assign, assertEvent } from 'xstate';
+import { setup, assign, assertEvent, fromPromise } from 'xstate';
 import { MatchSetup } from './models/matchSetup';
 import { ServerMessage } from './models/serverMessage';
 import { ServerCapabilities } from './models/serverCapabilities';
 import { FightType } from './models/fightType';
+import { Error } from './models/error';
 
 export interface MatchParameters {
   startTime: string;
@@ -74,6 +75,15 @@ export const createGameServerFSM = (
         });
       },
     },
+    actors: {
+      forceReset: fromPromise<void, string>(async ({ input: serverId }) => {
+        console.log('Sending reset message to server');
+        await sendMessage<Error>({
+          serverId,
+          payload: new Error(),
+        });
+      }),
+    },
   }).createMachine({
     id: `gameServer-${serverId}`,
     initial: 'ready',
@@ -109,6 +119,18 @@ export const createGameServerFSM = (
       waitingForReady: {
         on: {
           READY: 'ready',
+        },
+        after: {
+          60_000: 'forceReset',
+        },
+      },
+      forceReset: {
+        invoke: {
+          src: 'forceReset',
+          input: ({ context }) => context.codeName,
+          onDone: {
+            target: 'waitingForReady',
+          },
         },
       },
     },

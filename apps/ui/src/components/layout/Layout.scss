@@ -15,6 +15,7 @@ $topbar-height: 5rem;
 .topnav {
   display: none;
   flex: 1 1 auto;
+  gap: 1.5rem;
 }
 
 .nav-link {
@@ -24,6 +25,7 @@ $topbar-height: 5rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  cursor: pointer;
 
   &:hover {
     text-shadow: 0 0 4px $primaryColor;
@@ -71,6 +73,7 @@ $topbar-height: 5rem;
   border: 1px solid white;
   border-radius: 50%;
   padding: 1.5rem;
+  cursor: pointer;
 
   &:hover {
     background: $shade900;

@@ -4,8 +4,8 @@ import {
   PublishMessageOptions,
   StateCarryingMessage,
 } from '@castore/core';
-import { Inject, Injectable } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
+import { Injectable } from '@nestjs/common';
 import {
   AccountCreditedEvent,
   AccountDebitedEvent,
@@ -19,7 +19,7 @@ import { AccountEventDetails } from 'src/account/reducers/accountsReducer';
 export class QueryModelBusAdapter implements MessageChannelAdapter {
   constructor(
     private readonly readModelService: ReadModelService,
-    @Inject('BROKER') private readonly broker: ClientProxy,
+    private readonly broker: NatsJetStreamClientProxy,
   ) {}
 
   async publishMessage(

@@ -18,6 +18,11 @@ variable "dynamic_public_key" {
   type        = string
 }
 
+variable "alchemy_webhook_signing_key" {
+  description = "Alchemy webhook signing key"
+  type        = string
+}
+
 variable "millicast_api_secret" {
   description = "Millicast API secret"
   type        = string

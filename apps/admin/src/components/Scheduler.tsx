@@ -8,6 +8,7 @@ import axios from 'axios';
 import { baseUrl } from '@/config';
 import { dayjs } from '@/dayjs';
 import { UpdateRosterRequest } from '@/app/models/updateRosterRequest';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 
 export const Scheduler = ({
   series,
@@ -18,6 +19,7 @@ export const Scheduler = ({
     state: string | object;
   }[];
 }) => {
+  const { authToken } = useDynamicContext();
   const queryClient = useQueryClient();
 
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({
@@ -44,7 +46,11 @@ export const Scheduler = ({
 
   const updateRosterMutation = useMutation({
     mutationFn: (data: UpdateRosterRequest) => {
-      return axios.patch(`${baseUrl}/roster`, data);
+      return axios.patch(`${baseUrl}/roster`, data, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
     },
   });
 

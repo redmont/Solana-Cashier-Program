@@ -62,10 +62,15 @@ export function createRosterFSM({
         },
         on: {
           seriesMatchCompleted: {
-            target: 'getNextSeriesFromSchedule',
+            target: 'postMatchDelay',
             guard: ({ context, event }) =>
               event.codeName === context.nextSeriesCodeName,
           },
+        },
+      },
+      postMatchDelay: {
+        after: {
+          10_000: 'getNextSeriesFromSchedule',
         },
       },
     },

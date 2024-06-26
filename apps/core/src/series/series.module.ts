@@ -7,6 +7,7 @@ import { SeriesPersistenceService } from './seriesPersistence.service';
 import { SeriesSchema } from './series.schema';
 import { MatchModule } from 'src/match/match.module';
 import { GatewayManagerModule } from '@/gatewayManager/gatewayManager.module';
+import { FighterProfilesModule } from '@/fighterProfiles/fighterProfiles.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { GatewayManagerModule } from '@/gatewayManager/gatewayManager.module';
     ]),
     MatchModule,
     GatewayManagerModule,
+    FighterProfilesModule
   ],
   providers: [SeriesService, SeriesPersistenceService],
   controllers: [SeriesController],
