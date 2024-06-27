@@ -13,6 +13,7 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChangeEvent, useMemo, useState } from 'react';
 import { FileUpload } from '../FileUpload';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 
 export const MediaUploadModal = ({
   path,
@@ -26,6 +27,7 @@ export const MediaUploadModal = ({
   onClose: () => void;
 }) => {
   const queryClient = useQueryClient();
+  const { authToken } = useDynamicContext();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -43,6 +45,9 @@ export const MediaUploadModal = ({
 
       return fetch(`${baseUrl}/media-library/upload`, {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
         body: formData,
       });
     },
