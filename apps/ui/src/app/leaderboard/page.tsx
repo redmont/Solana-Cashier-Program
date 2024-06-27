@@ -18,6 +18,7 @@ import {
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { useSocket } from '@/hooks';
 import { truncateEthAddress } from '@/utils';
+import { Tooltip } from '@/components/Tooltip';
 
 interface RecordProps {
   walletAddress: string;
@@ -26,6 +27,8 @@ interface RecordProps {
   highlighted?: boolean;
   winAmount?: string;
 }
+
+const leaderboardPrizeOrder = ['2', '1', '3'] as const;
 
 export default function Leaderboard() {
   const coundownTimer = useRef<NodeJS.Timeout>();
@@ -149,24 +152,13 @@ export default function Leaderboard() {
         className={classNames('prize-carousel', { loading: !isReady })}
         ref={carouselRef}
       >
-        <PrizeTile
-          place="2"
-          value={prizes[1]?.title}
-          description={prizes[1]?.description}
-        />
-
-        <PrizeTile
-          large
-          place="1"
-          value={prizes[0]?.title}
-          description={prizes[0]?.description}
-        />
-
-        <PrizeTile
-          place="3"
-          value={prizes[2]?.title}
-          description={prizes[2]?.description}
-        />
+        {leaderboardPrizeOrder.map((place) => (
+          <PrizeTile
+            large={place === '1'}
+            place={place}
+            value={prizes[+place - 1]?.title}
+            description={prizes[+place - 1]?.description}
+          />
       </div>
 
       <div className="leaderboard">
