@@ -13,25 +13,34 @@ import {
 
 import { useDeferredState } from '@/hooks/useDeferredState';
 import dayjs from 'dayjs';
-
-type PriceChange = 'up' | 'down' | 'same';
+import { LOCAL_PRICE_CACHE_PERIOD } from '@/config';
 
 interface Price {
   ticker: string;
-  value?: number;
-  change?: PriceChange;
+  value: number;
+  change: { bps: number; absolute: number };
+  event: TickerPriceEvent;
+  pastEvents: TickerPriceEvent[];
 }
 
-function getPriceChange(current: number, prev?: number): PriceChange {
-  if (prev === undefined || prev === current) return 'same';
+function getPriceChange(args: {
+  current: TickerPriceEvent;
+  prev: TickerPriceEvent;
+}): Price['change'] {
+  const change = {
+    bps: 0,
+    absolute: 0,
+  };
 
-  return prev < +current ? 'up' : 'down';
+  change.absolute = args.current.price - args.prev.price;
+  change.bps = (change.absolute / args.prev.price) * 100;
+  return change;
 }
 
 export interface MatchState {
   fighters: Fighter[];
   bets: Bet[];
-  prices: Record<string, Price>;
+  prices: Map<string, Price>;
   matchId: string;
   series: string;
   state: string;
@@ -51,7 +60,7 @@ export function useMatchState() {
     state: '',
     preMatchVideoUrl: '',
     bets: [],
-    prices: {},
+    prices: new Map(),
   });
 
   useEffect(() => {
@@ -66,7 +75,7 @@ export function useMatchState() {
   }, [state, patchState, subscribe]);
 
   useEffect(() => {
-    const prices: Record<string, Price> = { ...state.prices };
+    const prices = new Map(state.prices);
 
     const subscriptions = [
       subscribe(
@@ -75,10 +84,7 @@ export function useMatchState() {
           if (matchId === state.matchId) return;
 
           patchState(timestamp, {
-            prices: state.fighters.reduce(
-              (result, { ticker }) => ({ ...result, [ticker]: { ticker } }),
-              {} as Record<string, Price>,
-            ),
+            prices: new Map(),
           });
         },
       ),
@@ -86,11 +92,29 @@ export function useMatchState() {
       subscribe(TickerPriceEvent.messageType, (message: TickerPriceEvent) => {
         const { ticker, price } = message;
 
-        prices[ticker] = {
+        const thresholdTime = new Date(Date.now() - LOCAL_PRICE_CACHE_PERIOD);
+
+        const pastEvents = prices.get(ticker)?.pastEvents ?? [];
+
+        const eventIndex = pastEvents.findIndex(
+          (event) => new Date(event.timestamp) > thresholdTime,
+        );
+        const filteredEvents =
+          eventIndex === -1 ? [] : pastEvents.slice(eventIndex - 1);
+
+        prices.set(ticker, {
           ticker,
           value: price,
-          change: getPriceChange(price, prices[ticker]?.value),
-        };
+          change: getPriceChange({
+            current: message,
+            prev: pastEvents[0] ?? message,
+          }),
+          event: message,
+          pastEvents: [...filteredEvents, message].sort(
+            (a, b) =>
+              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+          ),
+        });
 
         // Add a decent offset so it will set prices once match state is set
         const timestamp = dayjs(message.timestamp).add(5, 'minutes').toDate();
@@ -155,7 +179,7 @@ export function useMatchState() {
       const {
         matchId,
         series,
-        state,
+        state: messageState,
         preMatchVideoUrl,
         startTime,
         winner,
@@ -163,16 +187,22 @@ export function useMatchState() {
         fighters,
       } = matchStatus as typeof GetMatchStatusMessage.responseType;
 
+      const prices = new Map(
+        fighters
+          .map((fighter) => [fighter.ticker, state.prices.get(fighter.ticker)])
+          .filter(([, v]) => v !== undefined) as [string, Price][],
+      );
+
       setState(new Date(), {
         fighters,
         matchId,
         series,
-        state,
+        state: messageState,
         preMatchVideoUrl,
         startTime,
         winner,
         bets,
-        prices: {},
+        prices,
       });
     });
   }, [connected, send, setState]);
