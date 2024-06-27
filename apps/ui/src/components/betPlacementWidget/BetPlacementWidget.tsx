@@ -37,7 +37,6 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
 
   const betAmount = props.betAmount ?? 0;
   const selectedFighter = fighters[props.fighter];
-  const prices = fighters.map((f) => match?.prices?.get(f.ticker));
 
   useEffect(() => {
     if (balance < betAmount) {
@@ -133,24 +132,25 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
 
             <div>
               <div className="current-prices">
-                {prices.map((price) => {
-                  if (!price) return null;
+                {fighters.map((fighter) => {
+                  const price = match?.prices?.get(fighter.ticker);
+
                   let direction =
-                    price.change.absolute === 0
+                    !price || price.change.absolute === 0
                       ? 'none'
                       : price.change.absolute > 0
                         ? 'up'
                         : 'down';
                   const displayPrice = formatNumber({
-                    number: Math.abs(price.change.bps),
+                    number: Math.abs(price ? price.change.bps : 0),
                     decimals: 4,
                   });
                   return (
                     <Tooltip
-                      content={`LIVE ${price?.ticker} price change over ${LOCAL_PRICE_CACHE_PERIOD / 1000}s`}
+                      content={`[LIVE] ${fighter.ticker} price change over ${LOCAL_PRICE_CACHE_PERIOD / 1000}s`}
                     >
                       <div className={classNames('price-info', direction)}>
-                        <span className="price-ticker">${price?.ticker}</span>
+                        <span className="price-ticker">${fighter.ticker}</span>
                         <span className="price-value">{`${displayPrice}bp`}</span>
                         <i
                           className={classNames(
