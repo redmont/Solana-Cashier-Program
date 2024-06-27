@@ -140,12 +140,14 @@ export default function Leaderboard() {
       <div className="tournament-info">
         <div className="tournament-name">{tournamentName}</div>
 
-        <div className="tournament-countdown">
-          <span>{countdownDays}d</span>
-          <span>{countdownHours}h</span>
-          <span>{countdownMinutes}m</span>
-          <span>{countdownSeconds}s</span>
-        </div>
+        <Tooltip content={`Time left until the tournament ends`}>
+          <div className="tournament-countdown">
+            <span>{countdownDays}d</span>
+            <span>{countdownHours}h</span>
+            <span>{countdownMinutes}m</span>
+            <span>{countdownSeconds}s</span>
+          </div>
+        </Tooltip>
       </div>
 
       <div
@@ -159,6 +161,7 @@ export default function Leaderboard() {
             value={prizes[+place - 1]?.title}
             description={prizes[+place - 1]?.description}
           />
+        ))}
       </div>
 
       <div className="leaderboard">
@@ -197,10 +200,18 @@ export default function Leaderboard() {
           {records.length > 0 && (
             <div className="table">
               <div className="table-header">
-                <div className="rank">Rank</div>
+                <Tooltip content="Rank in this tournament">
+                  <div className="rank">Rank</div>
+                </Tooltip>
                 <div className="player">Player</div>
-                <div className="credits">Credit Balance</div>
-                <div className="wins">Winnings</div>
+                <Tooltip content="Last recorded credit balance in this tournament">
+                  <div className="credits">Credit Balance</div>
+                </Tooltip>
+                <Tooltip
+                  content={`Sum of net earnings from each match played in this tournament`}
+                >
+                  <div className="wins">Winnings</div>
+                </Tooltip>
               </div>
 
               <div className="table-body">
