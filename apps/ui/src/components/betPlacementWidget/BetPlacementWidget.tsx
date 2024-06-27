@@ -1,4 +1,4 @@
-import { FC, useState, useCallback, useEffect, useMemo } from 'react';
+import { FC, useState, useCallback, useEffect, useMemo, Fragment } from 'react';
 import { classNames } from 'primereact/utils';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
@@ -8,6 +8,9 @@ import { MatchStatus } from '@/types';
 import { Slider } from '../slider';
 import { useSocket, useAppState, usePostHog, useEthWallet } from '@/hooks';
 import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
+import { formatNumber } from '@/utils';
+import { Tooltip } from '../Tooltip';
+import { LOCAL_PRICE_CACHE_PERIOD } from '@/config';
 
 export interface BetPlacementWidgetProps {
   fighter: number; // 0 or 1
@@ -34,7 +37,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
 
   const betAmount = props.betAmount ?? 0;
   const selectedFighter = fighters[props.fighter];
-  const prices = fighters.map((f) => match?.prices?.[f.ticker]);
+  const prices = fighters.map((f) => match?.prices?.get(f.ticker));
 
   useEffect(() => {
     if (balance < betAmount) {
@@ -130,53 +133,55 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
 
             <div>
               <div className="current-prices">
-                <div className={classNames('price-info', prices[0]?.change)}>
-                  <span className="price-ticker">${prices[0]?.ticker}</span>
-                  <span className="price-value">{prices[0]?.value}</span>
-                  <i
-                    className={classNames('price-change-indicator pi', {
-                      'pi-sort-down-fill': prices[0]?.change === 'down',
-                      'pi-sort-up-fill': prices[0]?.change === 'up',
-                    })}
-                  ></i>
-                </div>
-
-                <div className={classNames('price-info', prices[1]?.change)}>
-                  <i
-                    className={classNames('price-change-indicator pi', {
-                      'pi-sort-down-fill': prices[1]?.change === 'down',
-                      'pi-sort-up-fill': prices[1]?.change === 'up',
-                    })}
-                  ></i>
-                  <span className="price-value">{prices[1]?.value}</span>
-                  <span className="price-ticker">${prices[1]?.ticker}</span>
-                </div>
+                {prices.map((price) => {
+                  if (!price) return null;
+                  let direction =
+                    price.change.absolute === 0
+                      ? 'none'
+                      : price.change.absolute > 0
+                        ? 'up'
+                        : 'down';
+                  const displayPrice = formatNumber({
+                    number: Math.abs(price.change.bps),
+                    decimals: 4,
+                  });
+                  return (
+                    <Tooltip
+                      content={`LIVE ${price?.ticker} price change over ${LOCAL_PRICE_CACHE_PERIOD / 1000}s`}
+                    >
+                      <div className={classNames('price-info', direction)}>
+                        <span className="price-ticker">${price?.ticker}</span>
+                        <span className="price-value">{`${displayPrice}bp`}</span>
+                        <i
+                          className={classNames(
+                            'price-change-indicator pi',
+                            direction === 'none'
+                              ? 'pi-wave-pulse'
+                              : `pi-sort-${direction}-fill`,
+                          )}
+                        ></i>
+                      </div>
+                    </Tooltip>
+                  );
+                })}
               </div>
 
               <div className="fighter-switch">
-                <div
-                  className={classNames('fighter-tile', {
-                    selected:
-                      selectedFighter?.codeName === fighters[0]?.codeName,
-                  })}
-                  onClick={() => handleFighterChange(0)}
-                >
-                  <img src={fighters[0]?.imageUrl} />
-                  {fighters[0]?.displayName}
-                </div>
-
-                <span>VS</span>
-
-                <div
-                  className={classNames('fighter-tile', {
-                    selected:
-                      selectedFighter?.codeName === fighters[1]?.codeName,
-                  })}
-                  onClick={() => handleFighterChange(1)}
-                >
-                  {fighters[1]?.displayName}
-                  <img src={fighters[1]?.imageUrl} />
-                </div>
+                {fighters.map((fighter, i) => (
+                  <>
+                    <div
+                      className={classNames('fighter-tile', {
+                        selected:
+                          selectedFighter?.codeName === fighter.codeName,
+                      })}
+                      onClick={() => handleFighterChange(i)}
+                    >
+                      <img src={fighter.imageUrl} alt={fighter.displayName} />
+                      {fighter.displayName}
+                    </div>
+                    {i % 2 === 0 && <span className="vs-text">VS</span>}
+                  </>
+                ))}
               </div>
             </div>
           </div>
