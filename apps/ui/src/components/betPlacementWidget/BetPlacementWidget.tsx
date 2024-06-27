@@ -176,9 +176,25 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
                       })}
                       onClick={() => handleFighterChange(i)}
                     >
-                      <img src={fighter.imageUrl} alt={fighter.displayName} />
-                      {fighter.displayName}
+                      {i % 2 === 0 ? ( // reverse order every other fighter
+                        <>
+                          <img
+                            src={fighter.imageUrl}
+                            alt={fighter.displayName}
+                          />
+                          {fighter.displayName}
+                        </>
+                      ) : (
+                        <>
+                          {fighter.displayName}
+                          <img
+                            src={fighter.imageUrl}
+                            alt={fighter.displayName}
+                          />
+                        </>
+                      )}
                     </div>
+                    {/* Add VS between every other fighter */}
                     {i % 2 === 0 && <span className="vs-text">VS</span>}
                   </>
                 ))}
