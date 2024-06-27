@@ -22,7 +22,7 @@ export const StakeWidget: FC<StakeWidgetProps> = ({
 
     return {
       ...bet,
-      stake: isOpponent ? stake : stake + currentBet,
+      stake,
       projectedWinRate: bet?.projectWinRate(currentBet, isOpponent),
     };
   });

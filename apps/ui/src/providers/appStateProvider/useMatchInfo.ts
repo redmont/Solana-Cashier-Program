@@ -70,17 +70,11 @@ export function useMatchInfo() {
       const fighterAddon = isForOpponent ? 0 : addon;
       const opponentAddon = isForOpponent ? addon : 0;
 
-      const stake = info.stake + fighterAddon;
       const totalBet = info.total + fighterAddon;
-
-      if (!stake) return 1;
 
       const opTotalBet = result.bets[opponent].total + opponentAddon;
 
-      const rate = totalBet ? stake / totalBet : 0;
-      const win = opTotalBet * rate + stake;
-
-      return win / stake;
+      return  1 + (totalBet > 0 ? opTotalBet / totalBet : 0)
     };
 
     Object.entries(result.bets).forEach(([fighter, info]) => {

@@ -77,7 +77,6 @@ export const TutorialDialog: FC<TutorialDialogProps> = ({
         <div className="dialog-nav">
           {slideNum > 0 && (
             <Button
-              icon="pi pi-arrow-left"
               label="Back"
               className="button-back p-button-secondary p-button-outlined border-none"
               onClick={goBack}
@@ -86,8 +85,6 @@ export const TutorialDialog: FC<TutorialDialogProps> = ({
 
           {!isLastSlide && (
             <Button
-              icon="pi pi-arrow-right"
-              iconPos="right"
               label="Next"
               className="button-next p-button-secondary p-button-outlined"
               onClick={goNext}
