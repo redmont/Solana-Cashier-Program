@@ -1,0 +1,37 @@
+import { FC, ReactNode, useMemo, useRef, useState } from 'react';
+import {
+  Tooltip as PRTooltip,
+  TooltipProps as PRTooltipProps,
+} from 'primereact/tooltip';
+
+export interface TooltipProps extends PRTooltipProps {
+  children: ReactNode;
+}
+
+const defaultProps: PRTooltipProps = {
+  content: 'lorem ipsum',
+  mouseTrack: true,
+  showDelay: 100,
+  position: 'top',
+};
+
+export const Tooltip: FC<TooltipProps> = ({ children, ...tooltipProps }) => {
+  const targetRef = useRef<HTMLDivElement>(null);
+
+  const mergedProps = useMemo(
+    () => ({
+      ...defaultProps,
+      ...tooltipProps,
+    }),
+    [tooltipProps],
+  );
+
+  return (
+    <>
+      <div ref={targetRef} style={{ all: 'unset', display: 'contents' }}>
+        {children}
+      </div>
+      <PRTooltip target={targetRef} {...mergedProps}></PRTooltip>
+    </>
+  );
+};
