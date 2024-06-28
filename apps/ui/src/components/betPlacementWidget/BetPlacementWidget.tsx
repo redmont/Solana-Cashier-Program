@@ -4,13 +4,12 @@ import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 
-import { MatchStatus } from '@/types';
+import { Fighter, MatchStatus } from '@/types';
 import { Slider } from '../slider';
 import { useSocket, useAppState, usePostHog, useEthWallet } from '@/hooks';
 import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
-import { formatNumber } from '@/utils';
-import { Tooltip } from '../Tooltip';
-import { LOCAL_PRICE_CACHE_PERIOD } from '@/config';
+import { FighterSwitch } from './FighterSwitch';
+import { PriceVisualisation } from './PriceVisualisation';
 
 export interface BetPlacementWidgetProps {
   fighter: number; // 0 or 1
@@ -36,7 +35,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
   const posthog = usePostHog();
 
   const betAmount = props.betAmount ?? 0;
-  const selectedFighter = fighters[props.fighter];
+  const selectedFighter = fighters.at(props.fighter);
 
   useEffect(() => {
     if (balance < betAmount) {
@@ -130,76 +129,13 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
           <div className="fighter-selection">
             <div className="selection-title">Back your fighter</div>
 
-            <div>
-              <div className="current-prices">
-                {fighters.map((fighter) => {
-                  const price = match?.prices?.get(fighter.ticker);
+            <PriceVisualisation fighters={fighters} match={match} />
 
-                  let direction =
-                    !price || price.change.absolute === 0
-                      ? 'none'
-                      : price.change.absolute > 0
-                        ? 'up'
-                        : 'down';
-                  const displayPrice = formatNumber({
-                    number: Math.abs(price ? price.change.bps : 0),
-                    decimals: 4,
-                  });
-                  return (
-                    <Tooltip
-                      content={`[LIVE] ${fighter.ticker} price change over ${LOCAL_PRICE_CACHE_PERIOD / 1000}s`}
-                    >
-                      <div className={classNames('price-info', direction)}>
-                        <span className="price-ticker">${fighter.ticker}</span>
-                        <span className="price-value">{`${displayPrice}bp`}</span>
-                        <i
-                          className={classNames(
-                            'price-change-indicator pi',
-                            direction === 'none'
-                              ? 'pi-wave-pulse'
-                              : `pi-sort-${direction}-fill`,
-                          )}
-                        ></i>
-                      </div>
-                    </Tooltip>
-                  );
-                })}
-              </div>
-
-              <div className="fighter-switch">
-                {fighters.map((fighter, i) => (
-                  <>
-                    <div
-                      className={classNames('fighter-tile', {
-                        selected:
-                          selectedFighter?.codeName === fighter.codeName,
-                      })}
-                      onClick={() => handleFighterChange(i)}
-                    >
-                      {i % 2 === 0 ? ( // reverse order every other fighter
-                        <>
-                          <img
-                            src={fighter.imageUrl}
-                            alt={fighter.displayName}
-                          />
-                          {fighter.displayName}
-                        </>
-                      ) : (
-                        <>
-                          {fighter.displayName}
-                          <img
-                            src={fighter.imageUrl}
-                            alt={fighter.displayName}
-                          />
-                        </>
-                      )}
-                    </div>
-                    {/* Add VS between every other fighter */}
-                    {i % 2 === 0 && <span className="vs-text">VS</span>}
-                  </>
-                ))}
-              </div>
-            </div>
+            <FighterSwitch
+              fighters={fighters}
+              selectedFighter={selectedFighter}
+              handleFighterChange={handleFighterChange}
+            />
           </div>
 
           <div className="credits-selection">
@@ -227,13 +163,15 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
               <span className="p-inputgroup-addon credits-label">Credits</span>
             </div>
 
-            {!error && (
-              <div className="text-sm text-600 mt-2">
-                Stakes are locked until the end of the fight.
-              </div>
-            )}
-
-            {error && <div className="text-sm mt-2 text-red-500">{error}</div>}
+            <div className="text-sm mt-2">
+              {error ? (
+                <span className="text-red-500">{error}</span>
+              ) : (
+                <span className="text-600">
+                  Stakes are locked until the end of the fight.
+                </span>
+              )}
+            </div>
 
             <Button
               loading={isLoading}
