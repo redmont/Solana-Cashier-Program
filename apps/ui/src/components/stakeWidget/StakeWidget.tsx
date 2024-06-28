@@ -41,7 +41,7 @@ export const StakeWidget: FC<StakeWidgetProps> = ({
                 content={`Your existing stake on ${fighter.displayName}`}
               >
                 <div className="bet-purchase-price mt-3 flex justify-content-between text-white">
-                  <span>Total staked:</span>
+                  <span>My Stake</span>
                   <span>{bets[i]?.stake ?? 0} credits</span>
                 </div>
               </Tooltip>
