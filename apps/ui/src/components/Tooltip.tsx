@@ -28,7 +28,7 @@ export const Tooltip: FC<TooltipProps> = ({ children, ...tooltipProps }) => {
 
   return (
     <>
-      <div ref={targetRef} style={{ all: 'unset', display: 'contents' }}>
+      <div ref={targetRef} style={{ display: 'contents' }}>
         {children}
       </div>
       <PRTooltip target={targetRef} {...mergedProps}></PRTooltip>

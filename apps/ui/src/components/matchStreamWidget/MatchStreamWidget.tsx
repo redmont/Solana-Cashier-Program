@@ -15,6 +15,7 @@ import { useEthWallet, useAppState } from '@/hooks';
 
 import { YouTubeStream } from './YoutubeStream';
 import Image from 'next/image';
+import { Tooltip } from '../Tooltip';
 
 // The Millicast SDK does not support SSR,
 // so we need to load it dynamically.
@@ -58,16 +59,6 @@ export const MatchStreamWidget: FC = () => {
         <YouTubeStream streamId={youTubeStreamId} />
       )}
 
-      {!isConnected && !youTubeStreamId && (
-        <Image
-          className="join-banner"
-          src="/join-banner.jpg"
-          onClick={handleBannerClick}
-          alt="Join the fight"
-          fill
-        />
-      )}
-
       {isConnected && streamSource === 'millicast' && <MillicastStream />}
 
       {isConnected && streamSource === 'cloudflare' && (
@@ -82,6 +73,20 @@ export const MatchStreamWidget: FC = () => {
           width="100%"
           height="100%"
         />
+      )}
+
+      {!isConnected && !youTubeStreamId ? (
+        <Image
+          className="join-banner"
+          src="/join-banner.jpg"
+          onClick={handleBannerClick}
+          alt="Join the fight"
+          fill
+        />
+      ) : (
+        <Tooltip content="24/7 Live Stream">
+          <div className="live-indicator pi pi-circle-on"></div>
+        </Tooltip>
       )}
     </div>
   );
