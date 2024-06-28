@@ -1,7 +1,16 @@
-# Brawlers
+# BRAWL3RS
 
 ## Prerequisites
 
+### Run front-end only
+
+* NodeJS
+* pnpm
+
+### Run entire project
+
+* NodeJS
+* pnpm
 * [Docker](https://www.docker.com/)
 * [AWS CLI (v2)](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 * [NestJS CLI](https://docs.nestjs.com/cli/overview)
@@ -16,9 +25,31 @@
     curl -sf https://binaries.nats.dev/nats-io/natscli/nats@latest | sh
     ```
 
-## Run project
+## Run front-end only
 
-Run infrastructure
+Create .env file:
+
+```sh
+cp apps/ui/.env.example apps/ui/.env
+```
+
+Update the .env file and set the server URL to the dev server:
+
+```
+NEXT_PUBLIC_SERVER_URL=https://ui-gateway.dev.brawlers.bltzr.gg:3333
+```
+
+Run the UI:
+
+```sh
+pnpm install
+cd apps/ui
+pnpm dev
+```
+
+## Run entire project project
+
+Run infrastructure:
 
 ```sh
 ./run-infra.sh
