@@ -93,7 +93,7 @@ export function useMatchState() {
         };
 
         // Add a decent offset so it will set prices once match state is set
-        const timestamp = dayjs(message.timestamp).add(5, 'minutes').toDate();
+        const timestamp = dayjs(message.timestamp).add(1, 'year').toDate();
 
         patchState(timestamp, {
           prices,
