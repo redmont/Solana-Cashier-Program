@@ -68,32 +68,3 @@ export const truncateEthAddress = (walletAddress: string) => {
 
   return walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
 };
-
-const subscriptMap: Record<string, string> = {
-  '0': '₀',
-  '1': '₁',
-  '2': '₂',
-  '3': '₃',
-  '4': '₄',
-  '5': '₅',
-  '6': '₆',
-  '7': '₇',
-  '8': '₈',
-  '9': '₉',
-};
-export const formatNumber = (args: {
-  number: number;
-  decimals: number;
-  prominentDigits?: number;
-}) => {
-  const { number, decimals, prominentDigits = 2 } = args;
-  let numStr = number.toFixed(decimals);
-  let chars = numStr.split('');
-
-  for (let i = 0; i < chars.length - prominentDigits; i++) {
-    if (subscriptMap[chars[i]]) {
-      chars[i] = subscriptMap[chars[i]];
-    }
-  }
-  return chars.join('');
-};

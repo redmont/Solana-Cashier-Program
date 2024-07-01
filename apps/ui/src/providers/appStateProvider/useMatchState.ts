@@ -18,7 +18,7 @@ import { LOCAL_PRICE_CACHE_PERIOD } from '@/config';
 interface Price {
   ticker: string;
   value: number;
-  change: { bps: number; absolute: number };
+  change: { ppm: number; absolute: number };
   event: TickerPriceEvent;
   pastEvents: TickerPriceEvent[];
 }
@@ -28,12 +28,12 @@ function getPriceChange(args: {
   prev: TickerPriceEvent;
 }): Price['change'] {
   const change = {
-    bps: 0,
+    ppm: 0,
     absolute: 0,
   };
 
   change.absolute = args.current.price - args.prev.price;
-  change.bps = (change.absolute / args.prev.price) * 100;
+  change.ppm = (change.absolute / args.prev.price) * 1_000_000;
   return change;
 }
 
