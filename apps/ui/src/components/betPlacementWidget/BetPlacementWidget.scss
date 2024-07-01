@@ -34,47 +34,59 @@
 
   .price-visualisation {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 1rem;
   }
 
-  .price-info {
+  .progress-bar-container {
     display: flex;
-    gap: 0.25rem;
-    align-items: center;
-
-    &.up {
-      .price-value,
-      .price-change-indicator {
-        color: var(--green-500);
-      }
-    }
-
-    &.down {
-      .price-value,
-      .price-change-indicator {
-        color: var(--red-500);
-      }
-    }
-
-    &.none {
-      .price-value,
-      .price-change-indicator {
-        color: var(--white-500);
-      }
-    }
+    background-color: var(--orange-500);
+    border-radius: 5px;
+    overflow: hidden;
   }
 
-  .price-change-indicator {
-    font-size: 0.75rem;
-    animation: flash 1s infinite;
+  .progress-bar {
+    height: 20px;
+    background-color: var(--green-500);
+    width: 0.2;
+    transition: width 0.3s ease-in-out;
   }
 
-  @keyframes flash {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0;
+  .price-info-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    .price-info {
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
+
+      &.up {
+        .price-value,
+        .price-change-indicator {
+          color: var(--green-500);
+        }
+      }
+
+      &.down {
+        .price-value,
+        .price-change-indicator {
+          color: var(--red-500);
+        }
+      }
+
+      &.none {
+        .price-value,
+        .price-change-indicator {
+          color: var(--white-500);
+        }
+      }
+
+      .price-change-indicator {
+        font-size: 0.75rem;
+        animation: flash 1s infinite;
+      }
     }
   }
 

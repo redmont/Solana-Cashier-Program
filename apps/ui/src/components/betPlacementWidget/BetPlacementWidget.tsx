@@ -129,7 +129,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
           <div className="fighter-selection">
             <div className="selection-title">Back your fighter</div>
 
-            <PriceVisualisation fighters={fighters} match={match} />
+            <PriceVisualisation fighters={fighters} prices={match?.prices} />
 
             <FighterSwitch
               fighters={fighters}
