@@ -3,14 +3,10 @@ import { useAppState } from '@/hooks';
 import { Tooltip } from '../Tooltip';
 
 export interface StakeWidgetProps {
-  currentBet: number;
   currentFighter: number;
 }
 
-export const StakeWidget: FC<StakeWidgetProps> = ({
-  currentFighter,
-  currentBet,
-}) => {
+export const StakeWidget: FC<StakeWidgetProps> = ({ currentFighter }) => {
   const { match } = useAppState();
   const { fighters = [] } = match ?? {};
 
@@ -23,7 +19,6 @@ export const StakeWidget: FC<StakeWidgetProps> = ({
     return {
       ...bet,
       stake,
-      projectedWinRate: bet?.projectWinRate(currentBet, isOpponent),
     };
   });
 
@@ -50,15 +45,6 @@ export const StakeWidget: FC<StakeWidgetProps> = ({
                 <span>Current win rate:</span>
                 <span>{bets[i]?.winRate ?? 0}x</span>
               </div>
-
-              <Tooltip
-                content={`Your projected win rate once you confirm your stake`}
-              >
-                <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
-                  <span>Projected win rate:</span>
-                  <span>{bets[i]?.projectedWinRate ?? 0}x</span>
-                </div>
-              </Tooltip>
             </div>
             {i % 2 === 0 && (
               <div className="spacer">

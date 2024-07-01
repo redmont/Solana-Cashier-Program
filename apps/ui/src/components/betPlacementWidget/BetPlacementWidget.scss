@@ -13,6 +13,11 @@
     flex-grow: 1;
   }
 
+  .separator {
+    border-top: 1px solid rgba(11, 209, 138, 0.1);
+    width: 100%;
+  }
+
   .match-timer {
     font-weight: bold;
     font-size: 1rem;
@@ -88,6 +93,12 @@
         animation: flash 1s infinite;
       }
     }
+  }
+
+  .projected-win-rate {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
   }
 
   .fighter-switch {

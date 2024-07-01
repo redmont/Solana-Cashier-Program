@@ -66,12 +66,7 @@ export default function Home() {
           />
         )}
 
-        {!matchResult && (
-          <StakeWidget
-            currentBet={currentBet}
-            currentFighter={currentFighter}
-          />
-        )}
+        {!matchResult && <StakeWidget currentFighter={currentFighter} />}
 
         <ActivityStreamWidget />
       </div>

@@ -10,6 +10,7 @@ import { useSocket, useAppState, usePostHog, useEthWallet } from '@/hooks';
 import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { FighterSwitch } from './FighterSwitch';
 import { PriceVisualisation } from './PriceVisualisation';
+import { Tooltip } from '../Tooltip';
 
 export interface BetPlacementWidgetProps {
   fighter: number; // 0 or 1
@@ -122,6 +123,19 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
     return isLoading ? 'Processing' : 'Confirm';
   }, [isLoading, isAuthenticated, isBalanceReady]);
 
+  const bets = fighters.map((fighter) => {
+    const bet = match?.bets[fighter?.codeName];
+    const stake = bet?.stake ?? 0;
+
+    const isOpponent = fighter.codeName !== selectedFighter?.codeName;
+
+    return {
+      ...bet,
+      stake,
+      projectedWinRate: bet?.projectWinRate(betAmount, isOpponent),
+    };
+  });
+
   return (
     <div className="widget bet-placement-widget">
       <div className="widget-body framed">
@@ -130,12 +144,24 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
             <div className="selection-title">Back your fighter</div>
 
             <PriceVisualisation fighters={fighters} prices={match?.prices} />
-
+            <div className="spacer">
+              <div className="separator"></div>
+            </div>
             <FighterSwitch
               fighters={fighters}
               selectedFighter={selectedFighter}
               handleFighterChange={handleFighterChange}
             />
+
+            <Tooltip
+              content={`Your projected win rate once you confirm your stake`}
+            >
+              <div className="projected-win-rate">
+                <span>{bets.at(0)?.projectedWinRate ?? 0}x</span>
+                <span>WIN RATE</span>
+                <span>{bets.at(1)?.projectedWinRate ?? 0}x</span>
+              </div>
+            </Tooltip>
           </div>
 
           <div className="credits-selection">
