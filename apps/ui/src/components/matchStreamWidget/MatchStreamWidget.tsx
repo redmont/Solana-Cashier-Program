@@ -50,7 +50,7 @@ export const MatchStreamWidget: FC = () => {
     <div className="match-stream-widget">
       {match?.status === MatchStatus.InProgress &&
         fighters.map((fighter, i) => (
-          <div className="fighter-image">
+          <div className="fighter-image" key={i}>
             <img src={fighter.imageUrl} alt={fighter.displayName} />
           </div>
         ))}

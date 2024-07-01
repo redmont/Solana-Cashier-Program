@@ -12,7 +12,7 @@ interface Props {
 
 export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
   const [progress, setProgress] = useState(0.5);
-  const deltasRef = useRef<number[]>([]);
+  const deltasRef = useRef<number[]>([0.5, 0.5]);
   useEffect(() => {
     const tickers = fighters.map((fighter) => fighter.ticker);
     let deltas = tickers.map((ticker) => prices?.get(ticker)?.change.ppm ?? 0);
@@ -29,17 +29,17 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
       deltas = deltas.map((d) => d + diff);
     }
 
-    if (deltas[0] * deltas[1] === 0) {
+    if (deltas[0] === 0 || deltas[1] === 0) {
       // one positive, one zero
       deltas = deltas.map((d, i) => (d + diff) * deltasRef.current[i]);
     }
 
     const total = deltas[0] + deltas[1];
-    deltas = deltas.map((d) => d / total);
+    deltas = deltas.map((d) => d / total || 0.5);
     deltasRef.current = deltas;
     const progress = deltas[0];
 
-    setProgress(Number.isNaN(progress) ? 0.5 : progress);
+    setProgress(progress || 0.5);
   }, [prices]);
 
   return (
