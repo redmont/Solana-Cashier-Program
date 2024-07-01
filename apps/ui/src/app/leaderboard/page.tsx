@@ -25,6 +25,7 @@ interface RecordProps {
   rank: number;
   highlighted?: boolean;
   winAmount?: string;
+  xp?: string;
 }
 
 export default function Leaderboard() {
@@ -48,7 +49,7 @@ export default function Leaderboard() {
     async (query: string) => {
       if (!connected) return;
 
-      const resp = await send(new GetTournamentMessage(100, 1, query));
+      const resp = await send(new GetTournamentMessage('xp', 100, 1, query));
 
       const {
         displayName,
@@ -208,6 +209,7 @@ export default function Leaderboard() {
                 <div className="rank">Rank</div>
                 <div className="player">Player</div>
                 <div className="credits">Credit Balance</div>
+                <div className="xp">XP</div>
                 <div className="wins">Winnings</div>
               </div>
 
@@ -261,6 +263,7 @@ const TableRow: FC<RecordProps> = (props) => (
     </div>
     <div className="player">{truncateEthAddress(props.walletAddress)}</div>
     <div className="credits">{Math.floor(+props.balance).toLocaleString()}</div>
+    <div className="xp">{props.xp}</div>
     <div className="wins">{props.winAmount}</div>
   </div>
 );

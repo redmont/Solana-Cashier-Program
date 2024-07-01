@@ -135,6 +135,11 @@ resource "aws_dynamodb_table" "query_store_table" {
     type = "N"
   }
 
+  attribute {
+    name = "xp"
+    type = "N"
+  }
+
   global_secondary_index {
     name            = "pkStartDate"
     hash_key        = "pk"
@@ -161,6 +166,21 @@ resource "aws_dynamodb_table" "query_store_table" {
       "tournamentEntryWinAmount",
       "balance",
     ]
+  }
+
+  global_secondary_index {
+    name            = "pkTournamentEntryXp"
+    hash_key        = "pk"
+    range_key       = "xp"
+    projection_type = "INCLUDE"
+    non_key_attributes = [
+      "sk",
+      "primaryWalletAddress",
+      "tournamentEntryWinAmount",
+      "balance",
+      "xp",
+    ]
+
   }
 }
 

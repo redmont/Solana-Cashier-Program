@@ -62,6 +62,17 @@ pnpm install
 pnpm dev
 ```
 
+Run with debug of a particular service:
+
+```sh
+pnpm dev -F '!core'
+```
+
+```sh
+cd apps/core
+pnpm start:debug
+```
+
 ### Set up the series
 
 You need to set up the series before you can start the game.
@@ -144,7 +155,7 @@ curl --location 'http://localhost:8080/admin/tournaments' \
   "codeName": "chicken-dinner",
   "displayName": "Chicken dinner",
   "startDate": "'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'",
-  "endDate": "'"$(date -d "+7 days" -u +"%Y-%m-%dT%H:%M:%SZ")"'",
+  "rounds": 7,
   "prizes": [
     {
       "title": "$300",

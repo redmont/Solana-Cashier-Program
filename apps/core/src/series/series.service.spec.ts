@@ -55,6 +55,7 @@ describe('SeriesService', () => {
       null,
       null,
       null,
+      null,
     );
     seriesService.initSeries = jest.fn();
     seriesService.sendEvent = jest.fn();

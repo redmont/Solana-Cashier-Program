@@ -40,6 +40,8 @@ export const TournamentSchema = new Schema({
       },
     ],
   },
+  rounds: Number,
+  currentRound: Number,
   createdAt: String,
   updatedAt: String,
 });

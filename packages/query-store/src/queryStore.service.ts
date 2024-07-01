@@ -493,12 +493,14 @@ export class QueryStoreService implements OnModuleInit {
     primaryWalletAddress,
     tournamentEntryWinAmount,
     balance,
+    xp,
   }: {
     tournament: string;
     userId: string;
     primaryWalletAddress: string;
     tournamentEntryWinAmount: number;
     balance: string;
+    xp: number;
   }) {
     await this.tournamentEntryModel.create(
       {
@@ -507,6 +509,7 @@ export class QueryStoreService implements OnModuleInit {
         primaryWalletAddress,
         tournamentEntryWinAmount,
         balance,
+        xp,
       },
       {
         overwrite: true,
@@ -517,6 +520,7 @@ export class QueryStoreService implements OnModuleInit {
 
   async getCurrentTournamentLeaderboard(
     date: string,
+    sortBy: 'winAmount' | 'xp' = 'xp',
     pageSize: number = 50,
     pageNumber: number = 1,
     userId: string = null,
@@ -535,6 +539,7 @@ export class QueryStoreService implements OnModuleInit {
       walletAddress: string;
       winAmount: string;
       balance: string;
+      xp: string;
     }[];
     totalCount?: number;
     currentUserItem?: {
@@ -542,6 +547,7 @@ export class QueryStoreService implements OnModuleInit {
       walletAddress: string;
       winAmount: string;
       balance: string;
+      xp: string;
     };
   }> {
     const tournament = await this.getCurrentTournament(date);
@@ -563,38 +569,78 @@ export class QueryStoreService implements OnModuleInit {
 
     let currentPage = 1;
     let rank = 1;
-    let lastKey;
     let currentUserItem;
 
-    do {
-      const query = this.tournamentEntryModel
-        .query({
-          pk: `tournamentEntry#${codeName}`,
-        })
-        .using('pkTournamentEntryWinAmount')
-        .limit(pageSize)
-        .sort(SortOrder.descending);
-      if (lastKey) {
-        query.startAt(lastKey);
+    const index = sortBy === 'winAmount' ? 'pkTournamentEntryWinAmount' : 'pkTournamentEntryXp';
+
+    const response = await this.tournamentEntryModel
+      .query({
+        pk: `tournamentEntry#${codeName}`,
+      })
+      .using(index)
+      .limit(pageSize)
+      .sort(SortOrder.descending)
+      .all(10)
+      .exec();
+
+    //const response = await query.exec();
+    currentPage += 1;
+
+    if (searchQuery) {
+      const matches: (TournamentEntry & { rank: number })[] = [];
+      for (const item of response) {
+        let walletAddress = item.primaryWalletAddress;
+        if (
+          walletAddress &&
+          walletAddress.toLowerCase().includes(searchQuery.toLowerCase())
+        ) {
+          matches.push({ ...item, rank });
+        }
+
+        rank++;
       }
 
-      const response = await query.exec();
-      lastKey = response.lastKey;
-      currentPage += 1;
-
-      if (searchQuery) {
-        const matches: (TournamentEntry & { rank: number })[] = [];
-        for (const item of response) {
-          let walletAddress = item.primaryWalletAddress;
-          if (
-            walletAddress &&
-            walletAddress.toLowerCase().includes(searchQuery.toLowerCase())
-          ) {
-            matches.push({ ...item, rank });
-          }
-
-          rank++;
+      return {
+        displayName,
+        description,
+        prizes,
+        startDate,
+        endDate,
+        items: matches.map(
+          ({
+            rank,
+            primaryWalletAddress,
+            tournamentEntryWinAmount,
+            balance,
+            xp,
+          }) => ({
+            rank,
+            walletAddress: primaryWalletAddress,
+            winAmount: tournamentEntryWinAmount?.toString() ?? '0',
+            balance,
+            xp: xp.toString(),
+          }),
+        ),
+      };
+    } else {
+      if (userId) {
+        const userItemIndex = response.findIndex(
+          (x) => x.sk === `account#${userId}`,
+        );
+        if (userItemIndex !== -1) {
+          const userItem = response[userItemIndex];
+          const userRank = rank + userItemIndex;
+          currentUserItem = {
+            rank: userRank,
+            walletAddress: userItem.primaryWalletAddress,
+            balance: userItem.balance,
+            xp: userItem.xp.toString(),
+          };
         }
+      }
+
+      if (currentPage > pageNumber) {
+        const totalCount = 0; // todo
 
         return {
           displayName,
@@ -602,59 +648,20 @@ export class QueryStoreService implements OnModuleInit {
           prizes,
           startDate,
           endDate,
-          items: matches.map(
-            ({
-              rank,
-              primaryWalletAddress,
-              tournamentEntryWinAmount,
-              balance,
-            }) => ({
-              rank,
-              walletAddress: primaryWalletAddress,
-              winAmount: tournamentEntryWinAmount.toString(),
-              balance,
-            }),
-          ),
+          totalCount,
+          currentUserItem,
+          items: response.map((item) => ({
+            rank: rank++,
+            walletAddress: item.primaryWalletAddress,
+            balance: item.balance,
+            winAmount: item.tournamentEntryWinAmount?.toString() ?? '0',
+            xp: item.xp.toString(),
+          })),
         };
       } else {
-        if (userId) {
-          const userItemIndex = response.findIndex(
-            (x) => x.sk === `account#${userId}`,
-          );
-          if (userItemIndex !== -1) {
-            const userItem = response[userItemIndex];
-            const userRank = rank + userItemIndex;
-            currentUserItem = {
-              rank: userRank,
-              walletAddress: userItem.primaryWalletAddress,
-              balance: userItem.balance,
-            };
-          }
-        }
-
-        if (currentPage > pageNumber) {
-          const totalCount = 0; // todo
-
-          return {
-            displayName,
-            description,
-            prizes,
-            startDate,
-            endDate,
-            totalCount,
-            currentUserItem,
-            items: response.map((item) => ({
-              rank: rank++,
-              walletAddress: item.primaryWalletAddress,
-              balance: item.balance,
-              winAmount: item.tournamentEntryWinAmount.toString(),
-            })),
-          };
-        } else {
-          rank += response.length;
-        }
+        rank += response.length;
       }
-    } while (lastKey);
+    }
 
     return {
       displayName,
