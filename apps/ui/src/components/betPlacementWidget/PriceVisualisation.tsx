@@ -52,7 +52,7 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
       </div>
 
       <div className="price-info-container">
-        {fighters.map((fighter) => {
+        {fighters.map((fighter, i) => {
           const price = prices?.get(fighter.ticker);
           let direction =
             !price || price.change.absolute === 0
@@ -66,7 +66,10 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
               content={`[LIVE] ${fighter.ticker} price change over ${LOCAL_PRICE_CACHE_PERIOD / 1000}s \n ppm = 0.0001%`}
               key={fighter.ticker}
             >
-              <div className={classNames('price-info', direction)}>
+              <div
+                className={classNames('price-info', direction)}
+                style={{ flexDirection: `row${i === 1 ? '-reverse' : ''}` }}
+              >
                 <span className="price-ticker">${fighter.ticker}</span>
                 <span className="price-value">{`${displayPrice}`}</span>
                 <i
