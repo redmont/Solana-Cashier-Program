@@ -1,7 +1,16 @@
-# Brawlers
+# BRAWL3RS
 
 ## Prerequisites
 
+### Run front-end only
+
+* NodeJS
+* pnpm
+
+### Run entire project
+
+* NodeJS
+* pnpm
 * [Docker](https://www.docker.com/)
 * [AWS CLI (v2)](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 * [NestJS CLI](https://docs.nestjs.com/cli/overview)
@@ -16,9 +25,31 @@
     curl -sf https://binaries.nats.dev/nats-io/natscli/nats@latest | sh
     ```
 
-## Run project
+## Run front-end only
 
-Run infrastructure
+Create .env file:
+
+```sh
+cp apps/ui/.env.example apps/ui/.env
+```
+
+Update the .env file and set the server URL to the dev server:
+
+```
+NEXT_PUBLIC_SERVER_URL=https://ui-gateway.dev.brawlers.bltzr.gg:3333
+```
+
+Run the UI:
+
+```sh
+pnpm install
+cd apps/ui
+pnpm dev
+```
+
+## Run entire project project
+
+Run infrastructure:
 
 ```sh
 ./run-infra.sh
@@ -29,6 +60,17 @@ Run project:
 ```sh
 pnpm install
 pnpm dev
+```
+
+Run with debug of a particular service:
+
+```sh
+pnpm dev -F '!core'
+```
+
+```sh
+cd apps/core
+pnpm start:debug
 ```
 
 ### Set up the series
@@ -113,7 +155,7 @@ curl --location 'http://localhost:8080/admin/tournaments' \
   "codeName": "chicken-dinner",
   "displayName": "Chicken dinner",
   "startDate": "'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'",
-  "endDate": "'"$(date -d "+7 days" -u +"%Y-%m-%dT%H:%M:%SZ")"'",
+  "rounds": 7,
   "prizes": [
     {
       "title": "$300",

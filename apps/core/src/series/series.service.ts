@@ -18,6 +18,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Series } from './series.interface';
 import { FightType } from './seriesConfig.model';
 import { FighterProfilesService } from '@/fighterProfiles/fighterProfiles.service';
+import { TournamentService } from '@/tournament/tournament.service';
 
 @Injectable()
 export class SeriesService {
@@ -39,6 +40,7 @@ export class SeriesService {
     private readonly matchManagementService: MatchManagementService,
     private readonly gatewayManagerService: GatewayManagerService,
     private readonly fighterProfilesService: FighterProfilesService,
+    private readonly tournamentService: TournamentService,
     private readonly eventEmitter: EventEmitter2,
     private readonly broker: NatsJetStreamClientProxy,
   ) {}
@@ -368,6 +370,13 @@ export class SeriesService {
       amount.toString(), // todo
       fighter,
     );
+
+    await this.tournamentService.trackBetPlaced({
+      userId,
+      walletAddress,
+      timestamp: dayjs.utc().toISOString(),
+      betAmount: amount,
+    });
 
     this.gatewayManagerService.handleBetPlaced(
       userId,

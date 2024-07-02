@@ -339,7 +339,8 @@ export class Gateway
 
   @SubscribeMessage(GetTournamentMessage.messageType)
   public async getTournament(
-    @MessageBody() { pageSize, page, searchQuery }: GetTournamentMessage,
+    @MessageBody()
+    { sortBy, pageSize, page, searchQuery }: GetTournamentMessage,
     @ConnectedSocket() client: Socket,
   ): Promise<GetTournamentMessageResponse> {
     const userId = this.clientUserIdMap.get(client?.id);
@@ -357,6 +358,7 @@ export class Gateway
       currentUserItem,
     } = await this.query.getCurrentTournamentLeaderboard(
       now,
+      sortBy,
       pageSize,
       page,
       userId,

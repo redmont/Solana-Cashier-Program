@@ -1,5 +1,6 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { GlobalClientsModule } from './globalClientsModule';
 import { SeriesModule } from './series/series.module';
@@ -23,6 +24,7 @@ import { MediaLibraryModule } from './mediaLibrary/mediaLibrary.module';
       isGlobal: true,
       load: [configuration],
     }),
+    ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     RedisCacheModule.registerAsync({
       imports: [ConfigModule],

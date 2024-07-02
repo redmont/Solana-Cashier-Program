@@ -26,6 +26,7 @@ interface RecordProps {
   rank: number;
   highlighted?: boolean;
   winAmount?: string;
+  xp?: string;
 }
 
 const leaderboardPrizeOrder = ['2', '1', '3'] as const;
@@ -51,7 +52,7 @@ export default function Leaderboard() {
     async (query: string) => {
       if (!connected) return;
 
-      const resp = await send(new GetTournamentMessage(100, 1, query));
+      const resp = await send(new GetTournamentMessage('xp', 100, 1, query));
 
       const {
         displayName,
@@ -207,6 +208,7 @@ export default function Leaderboard() {
                 <Tooltip content="Last recorded credit balance in this tournament">
                   <div className="credits">Credit Balance</div>
                 </Tooltip>
+                <div className="xp">XP</div>
                 <Tooltip
                   content={`Sum of net earnings from each match played in this tournament`}
                 >
@@ -264,6 +266,7 @@ const TableRow: FC<RecordProps> = (props) => (
     </div>
     <div className="player">{truncateEthAddress(props.walletAddress)}</div>
     <div className="credits">{Math.floor(+props.balance).toLocaleString()}</div>
+    <div className="xp">{props.xp}</div>
     <div className="wins">{props.winAmount}</div>
   </div>
 );

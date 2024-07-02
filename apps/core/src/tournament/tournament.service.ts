@@ -5,6 +5,9 @@ import { Key } from '@/interfaces/key';
 import dayjs from '@/dayjs';
 import { QueryStoreService } from 'query-store';
 import { TournamentEntry } from './interfaces/tournamentEntry.interface';
+import { TournamentWinnings } from './interfaces/tournamentWinnings.interface';
+import { transaction } from 'dynamoose';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class TournamentService {
@@ -13,6 +16,8 @@ export class TournamentService {
     private readonly tournamentModel: Model<Tournament, Key>,
     @InjectModel('tournamentEntry')
     private readonly tournamentEntryModel: Model<TournamentEntry, Key>,
+    @InjectModel('tournamentWinnings')
+    private readonly tournamentWinningsModel: Model<TournamentWinnings, Key>,
     private readonly queryStore: QueryStoreService,
   ) {}
 
@@ -51,6 +56,31 @@ export class TournamentService {
     return tournaments.length > 0 ? tournaments[0].sk : null;
   }
 
+  async trackBetPlaced({
+    userId,
+    walletAddress,
+    timestamp,
+    betAmount,
+  }: {
+    userId: string;
+    walletAddress: string;
+    timestamp: string;
+    betAmount: number;
+  }) {
+    const currentTournamentCodeName =
+      await this.getTournamentCodeName(timestamp);
+
+    if (currentTournamentCodeName) {
+      await this.updateTournamentEntry({
+        timestamp: timestamp,
+        tournament: currentTournamentCodeName,
+        userId: userId,
+        primaryWalletAddress: walletAddress,
+        betAmount,
+      });
+    }
+  }
+
   async trackWin({
     userId,
     timestamp,
@@ -79,6 +109,7 @@ export class TournamentService {
     userId,
     primaryWalletAddress,
     winAmount,
+    betAmount,
     balance,
   }: {
     timestamp: string;
@@ -86,6 +117,7 @@ export class TournamentService {
     userId: string;
     primaryWalletAddress?: string;
     winAmount?: number;
+    betAmount?: number;
     balance?: string;
   }) {
     let updateRecord: UpdatePartial<TournamentEntry> = {
@@ -109,7 +141,16 @@ export class TournamentService {
       };
     }
 
-    const item = await this.tournamentEntryModel.update(
+    if (betAmount) {
+      updateRecord = {
+        ...updateRecord,
+        $ADD: {
+          entryBetAmount: betAmount,
+        },
+      };
+    }
+
+    let item = await this.tournamentEntryModel.update(
       {
         pk: `tournamentEntry#${tournament}`,
         sk: userId,
@@ -117,6 +158,42 @@ export class TournamentService {
       updateRecord,
       { return: 'item', returnValues: 'ALL_NEW' },
     );
+
+    if (winAmount) {
+      await this.tournamentWinningsModel.create({
+        pk: `tournamentWinnings#${tournament}`,
+        sk: `${userId}#${timestamp}`,
+        tournament,
+        userId,
+        primaryWalletAddress: item.primaryWalletAddress,
+        winAmount,
+        createdAt: timestamp,
+      });
+    }
+
+    // Allocate 1 XP per 100 betAmount
+    if (betAmount) {
+      const unprocessedBetAmount =
+        item.entryBetAmount - (item.entryBetAmountCreditedXp ?? 0);
+      if (unprocessedBetAmount > 0) {
+        const xp = Math.floor(unprocessedBetAmount / 100);
+        if (xp > 0) {
+          item = await this.tournamentEntryModel.update(
+            {
+              pk: `tournamentEntry#${tournament}`,
+              sk: userId,
+            },
+            {
+              $ADD: {
+                xp,
+                entryBetAmountCreditedXp: xp * 100,
+              },
+            },
+            { return: 'item', returnValues: 'ALL_NEW' },
+          );
+        }
+      }
+    }
 
     await this.queryStore.updateTournamentEntry({
       tournament,
@@ -126,6 +203,7 @@ export class TournamentService {
       // as it will have the final amount
       tournamentEntryWinAmount: item.winAmount,
       balance: item.balance,
+      xp: item.xp,
     });
   }
 
@@ -134,24 +212,29 @@ export class TournamentService {
     displayName,
     description,
     startDate,
-    endDate,
+    rounds,
     prizes,
   }: {
     codeName: string;
     displayName: string;
     description: string;
     startDate: string;
-    endDate: string;
+    rounds: number;
     prizes: {
       title: string;
       description: string;
     }[];
   }) {
+    // Calculate endDate
+    const endDate = dayjs.utc(startDate).add(rounds, 'day').toISOString();
+
     await this.tournamentModel.create({
       pk: 'tournament',
       sk: codeName,
       startDate,
       endDate,
+      rounds,
+      currentRound: 1,
       displayName,
       description,
       prizes,
@@ -167,6 +250,18 @@ export class TournamentService {
       endDate,
       prizes,
     });
+  }
+
+  async getCurrentTournament() {
+    const currentTournamentCodeName = await this.getTournamentCodeName(
+      dayjs.utc().toISOString(),
+    );
+
+    if (!currentTournamentCodeName) {
+      return null;
+    }
+
+    return this.getTournament(currentTournamentCodeName);
   }
 
   async getTournament(codeName: string) {
@@ -192,19 +287,22 @@ export class TournamentService {
     displayName,
     description,
     startDate,
-    endDate,
+    rounds,
     prizes,
   }: {
     codeName: string;
     displayName: string;
     description: string;
     startDate: string;
-    endDate: string;
+    rounds: number;
     prizes: {
       title: string;
       description: string;
     }[];
   }) {
+    // Calculate endDate
+    const endDate = dayjs.utc(startDate).add(rounds, 'day').toISOString();
+
     await this.tournamentModel.update(
       {
         pk: 'tournament',
@@ -215,6 +313,7 @@ export class TournamentService {
         description,
         startDate,
         endDate,
+        rounds,
         createdAt: dayjs.utc().toISOString(),
         updatedAt: dayjs.utc().toISOString(),
       },
@@ -228,5 +327,120 @@ export class TournamentService {
       endDate,
       prizes,
     });
+  }
+
+  @Cron('0 * * * * *')
+  async processRoundChange() {
+    const currentTournament = await this.getCurrentTournament();
+
+    if (!currentTournament) {
+      return;
+    }
+
+    const { currentRound } = currentTournament;
+    const now = dayjs.utc();
+    const startDate = dayjs.utc(currentTournament.startDate);
+
+    const expectedRound = now.diff(startDate, 'day') + 1;
+    if (
+      expectedRound === currentTournament.currentRound ||
+      expectedRound > currentTournament.rounds
+    ) {
+      return;
+    }
+
+    await this.tournamentModel.update(
+      {
+        pk: 'tournament',
+        sk: currentTournament.codeName,
+      },
+      {
+        currentRound: expectedRound,
+      },
+    );
+
+    // Get all winnings for currentRound
+    const roundStart = startDate.add(currentRound - 1, 'day');
+    const roundEnd = startDate.add(currentRound, 'day');
+    const winnings = await this.tournamentWinningsModel
+      .query({
+        pk: `tournamentWinnings#${currentTournament.codeName}`,
+        createdAt: {
+          between: [roundStart.toISOString(), roundEnd.toISOString()],
+        },
+      })
+      .using('pkCreatedAt')
+      .all(10)
+      .exec();
+
+    // Group winnings by user
+    const winningsByUser = winnings.reduce(
+      (acc, curr) => {
+        if (!acc[curr.userId]) {
+          acc[curr.userId] = 0;
+        }
+
+        acc[curr.userId] += curr.winAmount;
+
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+    // Get top 100 winners
+    const topWinners = Object.entries(winningsByUser)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 100);
+
+    // Reduce tournamentEntry win amounts by winnings for the round.
+    // This ensures that any winnings from the next round are retained.
+    for (const [userId, winAmount] of Object.entries(winningsByUser)) {
+      let updateExpression: {
+        $ADD: {
+          winAmount: number;
+          xp?: number;
+        };
+      } = {
+        $ADD: {
+          winAmount: -winAmount,
+        },
+      };
+
+      // 1st place = 150 XP
+      // 2nd place = 100 XP
+      // 3rd place = 50 XP
+      // 4th - 100th place = 25 XP
+
+      let xp = 0;
+      if (topWinners.length > 0 && userId === topWinners[0][0]) {
+        xp = 150;
+      } else if (topWinners.length > 1 && userId === topWinners[1][0]) {
+        xp = 100;
+      } else if (topWinners.length > 2 && userId === topWinners[2][0]) {
+        xp = 50;
+      } else if (topWinners.map(([id]) => id).includes(userId)) {
+        xp = 25;
+      }
+
+      if (xp > 0) {
+        updateExpression.$ADD.xp = xp;
+      }
+
+      const item = await this.tournamentEntryModel.update(
+        {
+          pk: `tournamentEntry#${currentTournament.codeName}`,
+          sk: userId,
+        },
+        updateExpression,
+      );
+
+      await this.queryStore.updateTournamentEntry({
+        tournament: item.tournament,
+        userId,
+        primaryWalletAddress: item.primaryWalletAddress,
+        tournamentEntryWinAmount: item.winAmount,
+        balance: item.balance,
+        xp: item.xp,
+      });
+    }
   }
 }

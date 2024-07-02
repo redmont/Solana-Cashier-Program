@@ -1,9 +1,15 @@
 import { Schema } from 'dynamoose';
 
-export const TournamentEntrySchema = new Schema({
+export const TournamentWinningsSchema = new Schema({
   pk: {
     type: String,
     hashKey: true,
+    index: {
+      name: 'pkCreatedAt',
+      rangeKey: 'createdAt',
+      type: 'global',
+      project: ['sk', 'userId'],
+    },
   },
   sk: {
     type: String,
@@ -13,9 +19,5 @@ export const TournamentEntrySchema = new Schema({
   userId: String,
   primaryWalletAddress: String,
   winAmount: Number,
-  entryBetAmount: Number,
-  entryBetAmountCreditedXp: Number,
-  balance: String,
-  xp: Number,
-  updatedAt: String,
+  createdAt: String,
 });

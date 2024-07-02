@@ -23,6 +23,7 @@ import {
   GetAllBalancesMessage,
   GetAllBalancesMessageResponse,
 } from 'cashier-messages';
+import dayjs from '@/dayjs';
 import { GameServerConfigService } from '@/gameServerConfig/gameServerConfig.service';
 import { SeriesService } from 'src/series/series.service';
 import { AdminService } from './admin.service';
@@ -34,13 +35,14 @@ import {
   CreateGameServerConfigRequest,
   UpdateGameServerConfigRequest,
   UpdateRosterRequest,
+  CreateTournamentRequest,
+  UpdateTournamentRequest,
 } from './models';
 import { ConfigService } from '@nestjs/config';
 import { TournamentService } from '@/tournament/tournament.service';
-import { CreateTournamentRequest } from './models/createTournamentRequest';
-import { UpdateTournamentRequest } from './models/updateTournamentRequest';
 import { AdminAuthGuard } from '@/auth/adminAuthGuard';
 import { FighterProfilesService } from '@/fighterProfiles/fighterProfiles.service';
+import { Tournament } from '@/tournament/interfaces/tournament.interface';
 
 @Controller('admin')
 export class AdminController {
@@ -222,8 +224,12 @@ export class AdminController {
 
   @UseGuards(AdminAuthGuard)
   @Get('/tournaments')
-  async listTournaments() {
-    return { tournaments: await this.tournamentService.getTournaments() };
+  async listTournaments(): Promise<{
+    tournaments: Omit<Tournament, 'pk' | 'sk'>[];
+  }> {
+    const tournamentsResult = await this.tournamentService.getTournaments();
+
+    return { tournaments: tournamentsResult };
   }
 
   @UseGuards(AdminAuthGuard)
@@ -244,13 +250,13 @@ export class AdminController {
     @Param('codeName') codeName: string,
     @Body() body: UpdateTournamentRequest,
   ) {
-    const { displayName, description, startDate, endDate, prizes } = body;
+    const { displayName, description, startDate, rounds, prizes } = body;
     return this.tournamentService.updateTournament({
       codeName,
       displayName,
       description,
       startDate,
-      endDate,
+      rounds,
       prizes,
     });
   }
