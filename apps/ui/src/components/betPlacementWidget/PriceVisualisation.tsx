@@ -53,7 +53,8 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
 
       <div className="price-info-container">
         {fighters.map((fighter, i) => {
-          const price = prices?.get(fighter.ticker);
+          const ticker = fighter.ticker;
+          const price = prices?.get(ticker);
           let direction =
             !price || price.change.absolute === 0
               ? 'none'
@@ -62,26 +63,31 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
                 : 'down';
           const displayPrice = `${Math.abs(price ? price.change.ppm : 0).toFixed(2)}ppm`;
           return (
-            <Tooltip
-              content={`[LIVE] ${fighter.ticker} price change over ${LOCAL_PRICE_CACHE_PERIOD / 1000}s \n ppm = 0.0001%`}
-              key={fighter.ticker}
-            >
-              <div
-                className={classNames('price-info', direction)}
-                style={{ flexDirection: `row${i === 1 ? '-reverse' : ''}` }}
+            <>
+              <Tooltip
+                content={`[LIVE] ${ticker} price change over ${LOCAL_PRICE_CACHE_PERIOD / 1000}s \n ppm = 0.0001%`}
+                key={ticker}
               >
-                <span className="price-ticker">${fighter.ticker}</span>
-                <span className="price-value">{`${displayPrice}`}</span>
-                <i
-                  className={classNames(
-                    'price-change-indicator pi',
-                    direction === 'none'
-                      ? 'pi-wave-pulse'
-                      : `pi-sort-${direction}-fill`,
-                  )}
-                ></i>
-              </div>
-            </Tooltip>
+                <div
+                  className={classNames('price-info', direction)}
+                  style={{ flexDirection: `row${i === 1 ? '-reverse' : ''}` }}
+                >
+                  <span className="price-ticker">{`${ticker}`}</span>
+                  <span className="price-value">{`${displayPrice}`}</span>
+                  <i
+                    className={classNames(
+                      'price-change-indicator pi',
+                      direction === 'none'
+                        ? 'pi-minus'
+                        : `pi-sort-${direction}-fill`,
+                    )}
+                  ></i>
+                </div>
+              </Tooltip>
+              {i === 0 && (
+                <div className="price-info-indicator pi pi-wave-pulse"></div>
+              )}
+            </>
           );
         })}
       </div>

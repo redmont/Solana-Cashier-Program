@@ -26,8 +26,8 @@ export const StakeWidget: FC<StakeWidgetProps> = ({ currentFighter }) => {
     <div className="widget stake-widget">
       <div className="widget-body framed">
         {fighters.map((fighter, i) => (
-          <>
-            <div className="fighter-bet" key={fighter.codeName}>
+          <Fragment key={fighter.codeName}>
+            <div className="fighter-bet">
               <div className="fighter-tile">
                 <img src={fighter.imageUrl} />
                 {fighter.displayName}
@@ -51,7 +51,7 @@ export const StakeWidget: FC<StakeWidgetProps> = ({ currentFighter }) => {
                 <div className="separator"></div>
               </div>
             )}
-          </>
+          </Fragment>
         ))}
       </div>
     </div>
