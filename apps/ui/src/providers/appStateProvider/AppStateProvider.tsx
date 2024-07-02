@@ -8,7 +8,7 @@ export type { MatchInfo };
 export interface AppStateContextValue {
   balance: number;
   isBalanceReady: boolean;
-  match?: MatchInfo | null;
+  match: MatchInfo | null;
 }
 
 export const AppStateContext = createContext<AppStateContextValue>({

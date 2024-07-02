@@ -18,6 +18,7 @@ import {
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { useSocket } from '@/hooks';
 import { truncateEthAddress } from '@/utils';
+import { Tooltip } from '@/components/Tooltip';
 
 interface RecordProps {
   walletAddress: string;
@@ -27,6 +28,8 @@ interface RecordProps {
   winAmount?: string;
   xp?: string;
 }
+
+const leaderboardPrizeOrder = ['2', '1', '3'] as const;
 
 export default function Leaderboard() {
   const coundownTimer = useRef<NodeJS.Timeout>();
@@ -138,36 +141,28 @@ export default function Leaderboard() {
       <div className="tournament-info">
         <div className="tournament-name">{tournamentName}</div>
 
-        <div className="tournament-countdown">
-          <span>{countdownDays}d</span>
-          <span>{countdownHours}h</span>
-          <span>{countdownMinutes}m</span>
-          <span>{countdownSeconds}s</span>
-        </div>
+        <Tooltip content={`Time left until the tournament ends`}>
+          <div className="tournament-countdown">
+            <span>{countdownDays}d</span>
+            <span>{countdownHours}h</span>
+            <span>{countdownMinutes}m</span>
+            <span>{countdownSeconds}s</span>
+          </div>
+        </Tooltip>
       </div>
 
       <div
         className={classNames('prize-carousel', { loading: !isReady })}
         ref={carouselRef}
       >
-        <PrizeTile
-          place="2"
-          value={prizes[1]?.title}
-          description={prizes[1]?.description}
-        />
-
-        <PrizeTile
-          large
-          place="1"
-          value={prizes[0]?.title}
-          description={prizes[0]?.description}
-        />
-
-        <PrizeTile
-          place="3"
-          value={prizes[2]?.title}
-          description={prizes[2]?.description}
-        />
+        {leaderboardPrizeOrder.map((place) => (
+          <PrizeTile
+            large={place === '1'}
+            place={place}
+            value={prizes[+place - 1]?.title}
+            description={prizes[+place - 1]?.description}
+          />
+        ))}
       </div>
 
       <div className="leaderboard">
@@ -206,11 +201,19 @@ export default function Leaderboard() {
           {records.length > 0 && (
             <div className="table">
               <div className="table-header">
-                <div className="rank">Rank</div>
+                <Tooltip content="Rank in this tournament">
+                  <div className="rank">Rank</div>
+                </Tooltip>
                 <div className="player">Player</div>
-                <div className="credits">Credit Balance</div>
+                <Tooltip content="Last recorded credit balance in this tournament">
+                  <div className="credits">Credit Balance</div>
+                </Tooltip>
                 <div className="xp">XP</div>
-                <div className="wins">Winnings</div>
+                <Tooltip
+                  content={`Sum of net earnings from each match played in this tournament`}
+                >
+                  <div className="wins">Winnings</div>
+                </Tooltip>
               </div>
 
               <div className="table-body">

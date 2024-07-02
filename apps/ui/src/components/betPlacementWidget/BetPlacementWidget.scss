@@ -13,6 +13,11 @@
     flex-grow: 1;
   }
 
+  .separator {
+    border-top: 1px solid rgba(11, 209, 138, 0.1);
+    width: 100%;
+  }
+
   .match-timer {
     font-weight: bold;
     font-size: 1rem;
@@ -32,33 +37,72 @@
     gap: 1rem;
   }
 
-  .current-prices {
+  .price-visualisation {
     display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .progress-bar-container {
+    border: 2px solid $primary500;
+    display: flex;
+    background-color: rgba(13,61,44,255);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 20px;
+    border-right: 2px solid $primary500;
+    background-color: var(--orange-300);
+    width: 0.2;
+    transition: width 0.3s ease-in-out;
+  }
+
+  .price-info-container {
+    display: flex;
+    flex-direction: row;
     justify-content: space-between;
+
+    .price-info {
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
+
+      &.up {
+        .price-value,
+        .price-change-indicator {
+          color: var(--green-500);
+        }
+      }
+
+      &.down {
+        .price-value,
+        .price-change-indicator {
+          color: var(--red-500);
+        }
+      }
+
+      &.none {
+        .price-value,
+        .price-change-indicator {
+          color: var(--white-500);
+        }
+      }
+
+      .price-change-indicator {
+        font-size: 0.75rem;
+      }
+    }
+    .price-info-indicator {
+      animation: flash 1s infinite;
+    }
   }
 
-  .price-info {
+  .projected-win-rate {
     display: flex;
-    gap: 0.25rem;
-    align-items: center;
-
-    &.up {
-      .price-value,
-      .price-change-indicator {
-        color: var(--green-500);
-      }
-    }
-
-    &.down {
-      .price-value,
-      .price-change-indicator {
-        color: var(--red-500);
-      }
-    }
-  }
-
-  .price-change-indicator {
-    font-size: 0.75rem;
+    flex-direction: row;
+    justify-content: space-between;
   }
 
   .fighter-switch {
