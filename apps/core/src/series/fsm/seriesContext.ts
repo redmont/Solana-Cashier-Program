@@ -5,6 +5,7 @@ export interface SeriesContext {
   codeName: string;
   displayName: string;
   config: SeriesConfig;
+  poolOpenStartTime: string;
   startTime: string;
   matchId: string;
   serverId: string;

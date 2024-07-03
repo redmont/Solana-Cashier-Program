@@ -1,7 +1,7 @@
 import { useCallback, useReducer, useRef } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 
-export function useDeferredState<S extends Object>(
+export function useDeferredState<S extends object>(
   initialState: S,
 ): [
   S,

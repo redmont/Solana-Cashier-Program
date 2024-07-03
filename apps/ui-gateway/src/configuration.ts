@@ -12,6 +12,7 @@ export default () => ({
   natsUri: process.env.NATS_URI,
   redisHost: process.env.REDIS_HOST,
   redisPort: parseInt(process.env.REDIS_PORT, 10),
+  corsOrigins: process.env.CORS_ORIGINS?.split(',') ?? ['*'],
   websocketPort: parseInt(process.env.WEBSOCKET_PORT || '3333', 10),
   nonceTtl: parseInt(process.env.NONCE_TTL, 10) || 10 * 60 * 1000, // 10 minutes
   tableName: process.env.TABLE_NAME,

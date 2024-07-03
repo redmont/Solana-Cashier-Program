@@ -55,7 +55,9 @@ describe('TournamentService', () => {
         TournamentService,
         {
           provide: QueryStoreService,
-          useValue: null,
+          useValue: {
+            updateTournamentEntry: jest.fn(),
+          },
         },
       ],
     }).compile();

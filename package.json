@@ -9,7 +9,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "publish-packages": "turbo run build && changeset version && changeset publish",
     "coverage:per-package": "turbo run coverage",
-    "coverage:total": "yarn coverage:per-package && node coverage-total.js"
+    "coverage:total": "pnpm coverage:per-package && node coverage-total.js"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

@@ -52,3 +52,8 @@ variable "public_assets_cors_origins" {
   description = "CORS origins for public assets"
   type        = list(string)
 }
+
+variable "cors_origins" {
+  description = "CORS origins"
+  type        = list(string)
+}

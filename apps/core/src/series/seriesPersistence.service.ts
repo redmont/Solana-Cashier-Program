@@ -102,6 +102,7 @@ export class SeriesPersistenceService {
     }[],
     state: any,
     preMatchVideoPath: string,
+    poolOpenStartTime?: string,
     startTime?: string,
     winner?: string,
   ) {
@@ -111,6 +112,7 @@ export class SeriesPersistenceService {
       fighters,
       state,
       preMatchVideoPath,
+      poolOpenStartTime,
       startTime,
       winner,
     );

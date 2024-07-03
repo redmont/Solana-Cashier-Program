@@ -56,8 +56,8 @@ module "ecs" {
   cashier_read_model_table_arn  = aws_dynamodb_table.cashier_read_model_table.arn
   cashier_events_table_name     = aws_dynamodb_table.cashier_events_table.name
   cashier_events_table_arn      = aws_dynamodb_table.cashier_events_table.arn
-  oracle_indexer_table_name     = "brawl-oracle-indexer-dev"
-  oracle_indexer_table_arn      = "arn:aws:dynamodb:ap-southeast-1:875278257729:table/brawl-oracle-indexer-dev"
+  oracle_indexer_table_name     = var.environment == "dev" ? "brawl-oracle-indexer-dev" : "brawl-oracle-indexer-prod"
+  oracle_indexer_table_arn      = var.environment == "dev" ? "arn:aws:dynamodb:ap-southeast-1:875278257729:table/brawl-oracle-indexer-dev" : "arn:aws:dynamodb:ap-southeast-1:767397714894:table/brawl-oracle-indexer-prod"
 
   service_discovery_namespace_id  = aws_service_discovery_private_dns_namespace.discovery_namespace.id
   service_discovery_namespace_arn = aws_service_discovery_private_dns_namespace.discovery_namespace.arn
@@ -74,6 +74,8 @@ module "ecs" {
   millicast_parent_subscribe_token    = var.millicast_parent_subscribe_token
   millicast_parent_subscribe_token_id = var.millicast_parent_subscribe_token_id
   millicast_allowed_origins           = var.millicast_allowed_origins
+
+  cors_origins = var.cors_origins
 }
 
 module "cashier_webhook_listener" {

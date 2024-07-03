@@ -157,3 +157,8 @@ variable "millicast_allowed_origins" {
   description = "Millicast allowed origins"
   type        = string
 }
+
+variable "cors_origins" {
+  description = "CORS origins"
+  type        = list(string)
+}

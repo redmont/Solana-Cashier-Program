@@ -50,6 +50,7 @@ export function createSeriesFSM(
       },
       matchId: null,
       serverId: null,
+      poolOpenStartTime: null,
       startTime: null,
       samplingStartTime: null,
       capabilities: null,
@@ -156,7 +157,8 @@ export function createSeriesFSM(
                   onDone: {
                     target: 'onStateChange',
                     actions: assign({
-                      startTime: ({ event }) => event.output,
+                      startTime: ({ event }) => event.output.startTime,
+                      poolOpenStartTime: ({ event }) => event.output.poolOpenStartTime
                     }),
                   },
                 },
@@ -196,7 +198,7 @@ export function createSeriesFSM(
                   },
                 },
                 after: {
-                  5_000: 'setMatchInProgress',
+                  10_000: 'setMatchInProgress',
                 },
               },
               setMatchInProgress: {

@@ -46,6 +46,7 @@ export class GatewayManagerService implements OnModuleInit {
     }[],
     state: string,
     preMatchVideoPath: string,
+    poolOpenStartTime: string,
     startTime: string,
     winner: string,
   ) {
@@ -60,6 +61,7 @@ export class GatewayManagerService implements OnModuleInit {
         fighters,
         state,
         preMatchVideoPath,
+        poolOpenStartTime,
         startTime,
         winner,
       ),

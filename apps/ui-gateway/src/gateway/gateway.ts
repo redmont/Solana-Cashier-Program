@@ -4,10 +4,12 @@ import {
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { instrument } from '@socket.io/admin-ui';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Server } from 'socket.io';
 import { sendBrokerCommand } from 'broker-comms';
@@ -29,6 +31,7 @@ import {
   GetUserIdMessage,
   GetStreamTokenMessage,
   GetStreamTokenMessageResponse,
+  GetMatchStatusMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
@@ -49,13 +52,13 @@ import dayjs from '@/dayjs';
 import { StreamTokenService } from '@/streamToken/streamToken.service';
 import { emitInternalEvent, UserConnectedEvent } from '@/internalEvents';
 
-@WebSocketGateway({
-  cors: {
-    origin: '*',
-  },
-})
+@WebSocketGateway()
 export class Gateway
-  implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect
+  implements
+    OnModuleInit,
+    OnGatewayInit,
+    OnGatewayConnection,
+    OnGatewayDisconnect
 {
   private readonly logger: Logger = new Logger(Gateway.name);
   private readonly mediaUri: string;
@@ -77,6 +80,13 @@ export class Gateway
     private readonly eventEmitter: EventEmitter2,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
+  }
+
+  afterInit() {
+    instrument(this.server, {
+      auth: false,
+      mode: 'development',
+    });
   }
 
   onModuleInit() {
@@ -163,13 +173,14 @@ export class Gateway
   }
 
   @SubscribeMessage(GetMatchStatusMessage.messageType)
-  public async getMatchStatus() {
+  public async getMatchStatus(): Promise<GetMatchStatusMessageResponse> {
     const {
       matchId,
       seriesCodeName,
       fighters,
       state,
       bets,
+      poolOpenStartTime,
       startTime,
       winner,
       preMatchVideoPath,
@@ -188,6 +199,7 @@ export class Gateway
       state,
       preMatchVideoUrl,
       bets,
+      poolOpenStartTime,
       startTime,
       winner,
       success: true,

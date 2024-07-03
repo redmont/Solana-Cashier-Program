@@ -200,6 +200,7 @@ export class SeriesService {
             fighters,
             state,
             context.config.preMatchVideoPath,
+            context.poolOpenStartTime,
             context.startTime,
           );
 
@@ -209,6 +210,7 @@ export class SeriesService {
             fighters,
             state,
             context.config.preMatchVideoPath,
+            context.poolOpenStartTime,
             context.startTime,
             context.winningFighter?.codeName,
           );

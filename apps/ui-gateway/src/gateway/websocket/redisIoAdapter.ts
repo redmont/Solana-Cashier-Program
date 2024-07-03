@@ -9,6 +9,7 @@ export class RedisIoAdapter extends IoAdapter {
   constructor(
     app: any,
     private readonly redisOptions: { host: string; port: number },
+    private readonly corsOrigins: string[],
   ) {
     super(app);
   }
@@ -25,7 +26,13 @@ export class RedisIoAdapter extends IoAdapter {
   }
 
   createIOServer(port: number, options?: ServerOptions): any {
-    const server = super.createIOServer(port, options);
+    const server = super.createIOServer(port, {
+      ...options,
+      cors: {
+        origin: this.corsOrigins ?? '*',
+        credentials: true,
+      },
+    });
     server.adapter(this.adapterConstructor);
     return server;
   }

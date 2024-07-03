@@ -1,5 +1,5 @@
 import { Bet, Fighter } from '@/types';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useSocket } from '../../providers/SocketProvider';
 
 import {
@@ -45,6 +45,7 @@ export interface MatchState {
   series: string;
   state: string;
   preMatchVideoUrl: string;
+  poolOpenStartTime?: string;
   startTime?: string;
   winner?: string;
   winAmount?: string;
@@ -138,6 +139,7 @@ export function useMatchState() {
           matchId,
           series,
           state,
+          poolOpenStartTime,
           startTime,
           winner,
           timestamp,
@@ -148,6 +150,7 @@ export function useMatchState() {
           matchId,
           series,
           state,
+          poolOpenStartTime,
           startTime,
           winner,
           fighters,
@@ -181,6 +184,7 @@ export function useMatchState() {
         series,
         state: messageState,
         preMatchVideoUrl,
+        poolOpenStartTime,
         startTime,
         winner,
         bets,
@@ -199,6 +203,7 @@ export function useMatchState() {
         series,
         state: messageState,
         preMatchVideoUrl,
+        poolOpenStartTime,
         startTime,
         winner,
         bets,

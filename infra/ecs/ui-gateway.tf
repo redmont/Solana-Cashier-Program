@@ -110,6 +110,9 @@ locals {
       },
       {
         name = "MILLICAST_ALLOWED_ORIGINS", value = var.millicast_allowed_origins
+      },
+      {
+        name = "CORS_ORIGINS", value = join(",", var.cors_origins)
       }
     ]
   }

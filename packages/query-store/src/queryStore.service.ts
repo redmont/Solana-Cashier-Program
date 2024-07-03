@@ -160,6 +160,7 @@ export class QueryStoreService implements OnModuleInit {
     }[],
     state: string,
     preMatchVideoPath: string,
+    poolOpenStartTime?: string,
     startTime?: string,
     winner?: string,
   ) {
@@ -174,6 +175,7 @@ export class QueryStoreService implements OnModuleInit {
         state,
         preMatchVideoPath,
         matchId: matchId ?? undefined,
+        poolOpenStartTime: poolOpenStartTime ?? undefined,
         startTime: startTime ?? undefined,
         winner: winner ?? undefined,
       },

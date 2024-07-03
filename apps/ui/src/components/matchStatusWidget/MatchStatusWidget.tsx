@@ -18,7 +18,7 @@ export const MatchStatusWidget: FC = () => {
   const widgetBodyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!match?.startTime) return;
+    if (!match?.startTime || !match?.poolOpenStartTime) return;
 
     timer.current = setInterval(() => {
       const startTime = dayjs(match.startTime);
@@ -29,7 +29,8 @@ export const MatchStatusWidget: FC = () => {
 
         if (startTimeDiff < 0) millisLeft = 0;
 
-        const durationMs = startTime.diff(statusTimestamp);
+        const poolOpenStartTime = dayjs(match.poolOpenStartTime);
+        const durationMs = startTime.diff(poolOpenStartTime);
 
         const progress = Math.floor((1 - millisLeft / durationMs) * 100);
 
@@ -57,7 +58,12 @@ export const MatchStatusWidget: FC = () => {
     }, 1000);
 
     return () => clearInterval(timer.current);
-  }, [match?.startTime, match?.status, statusTimestamp]);
+  }, [
+    match?.poolOpenStartTime,
+    match?.startTime,
+    match?.status,
+    statusTimestamp,
+  ]);
 
   useEffect(() => {
     const timestamp = dayjs().valueOf();

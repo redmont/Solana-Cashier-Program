@@ -79,10 +79,13 @@ export const getActors = ({
       input.samplingStartTime,
     );
   }),
-  setStartTime: fromPromise<string, number>(
-    async ({ input: betPlacementTime }) =>
-      dayjs.utc().add(betPlacementTime, 'seconds').toISOString(),
-  ),
+  setStartTime: fromPromise<
+    { poolOpenStartTime: string; startTime: string },
+    number
+  >(async ({ input: betPlacementTime }) => ({
+    poolOpenStartTime: dayjs.utc().toISOString(),
+    startTime: dayjs.utc().add(betPlacementTime, 'seconds').toISOString(),
+  })),
   distributeWinnings: fromPromise<
     void,
     {
