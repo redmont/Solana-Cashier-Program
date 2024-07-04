@@ -34,13 +34,18 @@ export class QueryStoreService implements OnModuleInit {
     @InjectModel('tournament')
     private readonly tournamentModel: Model<Tournament, Key>,
     @InjectModel('tournamentEntry')
-    private readonly tournamentEntryModel: Model<TournamentEntry, Key>,
+    private readonly tournamentEntryModel: Model<TournamentEntry, Key>
   ) { }
 
   private async getCurrentTournament(date: string): Promise<
     Pick<
       Tournament,
-      'displayName' | 'description' | 'startDate' | 'endDate' | 'prizes' | 'currentRound'
+      | 'displayName'
+      | 'description'
+      | 'startDate'
+      | 'endDate'
+      | 'prizes'
+      | 'currentRound'
     > & {
       codeName: string;
     }
@@ -57,8 +62,15 @@ export class QueryStoreService implements OnModuleInit {
       return null;
     }
 
-    const { sk, displayName, description, startDate, endDate, currentRound, prizes } =
-      tournaments[tournaments.length - 1];
+    const {
+      sk,
+      displayName,
+      description,
+      startDate,
+      endDate,
+      currentRound,
+      prizes,
+    } = tournaments[tournaments.length - 1];
 
     return {
       codeName: sk,
@@ -125,7 +137,7 @@ export class QueryStoreService implements OnModuleInit {
       {
         overwrite: true,
         return: 'item',
-      },
+      }
     );
   }
 
@@ -134,7 +146,7 @@ export class QueryStoreService implements OnModuleInit {
     matchId: string,
     state: string,
     startTime?: string,
-    winner?: string,
+    winner?: string
   ) {
     await this.seriesModel.update(
       {
@@ -146,7 +158,7 @@ export class QueryStoreService implements OnModuleInit {
         matchId: matchId ?? undefined,
         startTime: startTime ?? undefined,
         winner: winner ?? undefined,
-      },
+      }
     );
   }
 
@@ -163,7 +175,7 @@ export class QueryStoreService implements OnModuleInit {
     preMatchVideoPath: string,
     poolOpenStartTime?: string,
     startTime?: string,
-    winner?: string,
+    winner?: string
   ) {
     await this.currentMatchModel.update(
       {
@@ -179,7 +191,7 @@ export class QueryStoreService implements OnModuleInit {
         poolOpenStartTime: poolOpenStartTime ?? undefined,
         startTime: startTime ?? undefined,
         winner: winner ?? undefined,
-      },
+      }
     );
   }
 
@@ -187,7 +199,7 @@ export class QueryStoreService implements OnModuleInit {
     seriesCodeName: string,
     matchId: string,
     state: string,
-    startTime?: string,
+    startTime?: string
   ) {
     await this.currentMatchModel.update(
       {
@@ -199,7 +211,7 @@ export class QueryStoreService implements OnModuleInit {
         matchId,
         state,
         startTime,
-      },
+      }
     );
   }
 
@@ -207,7 +219,7 @@ export class QueryStoreService implements OnModuleInit {
     seriesCodeName: string,
     walletAddress: string,
     amount: string,
-    fighter: string,
+    fighter: string
   ) {
     await this.seriesModel.update(
       {
@@ -224,7 +236,7 @@ export class QueryStoreService implements OnModuleInit {
             },
           ],
         },
-      },
+      }
     );
 
     await this.currentMatchModel.update(
@@ -242,7 +254,7 @@ export class QueryStoreService implements OnModuleInit {
             },
           ],
         },
-      },
+      }
     );
   }
 
@@ -254,7 +266,7 @@ export class QueryStoreService implements OnModuleInit {
       },
       {
         bets,
-      },
+      }
     );
   }
 
@@ -268,7 +280,7 @@ export class QueryStoreService implements OnModuleInit {
         state: 'idle',
         winner: '',
         bets: [],
-      },
+      }
     );
   }
 
@@ -277,7 +289,7 @@ export class QueryStoreService implements OnModuleInit {
     timestamp: string,
     matchId: string,
     message: string,
-    userId?: string,
+    userId?: string
   ) {
     let pk = `activityStream#${seriesCodeName}#${matchId}`;
     if (userId) {
@@ -294,7 +306,7 @@ export class QueryStoreService implements OnModuleInit {
   async getActivityStream(
     seriesCodeName: string,
     matchId: string,
-    userId?: string,
+    userId?: string
   ) {
     let pk = `activityStream#${seriesCodeName}#${matchId}`;
     if (userId) {
@@ -401,7 +413,7 @@ export class QueryStoreService implements OnModuleInit {
       {
         return: 'item',
         overwrite: true,
-      },
+      }
     );
   }
 
@@ -415,7 +427,11 @@ export class QueryStoreService implements OnModuleInit {
   }
 
   async getMatches(): Promise<GetMatchResult[]> {
-    const matches = await this.matchModel.query({ pk: 'match' }).exec();
+    const matches = await this.matchModel
+      .query({ pk: 'match' })
+      .limit(20)
+      .sort(SortOrder.descending)
+      .exec();
 
     return matches.map(({ pk, sk, ...rest }) => rest);
   }
@@ -423,6 +439,8 @@ export class QueryStoreService implements OnModuleInit {
   async getUserMatches(userId: string): Promise<GetUserMatchResult[]> {
     const matches = await this.userMatchModel
       .query({ pk: `match#${userId}` })
+      .limit(20)
+      .sort(SortOrder.descending)
       .exec();
 
     return matches.map(({ pk, sk, userId, ...rest }) => rest);
@@ -490,7 +508,7 @@ export class QueryStoreService implements OnModuleInit {
         endDate,
         currentRound,
         prizes,
-      },
+      }
     );
   }
 
@@ -521,7 +539,7 @@ export class QueryStoreService implements OnModuleInit {
       {
         overwrite: true,
         return: 'item',
-      },
+      }
     );
   }
 
@@ -531,7 +549,7 @@ export class QueryStoreService implements OnModuleInit {
     pageSize: number = 50,
     pageNumber: number = 1,
     userId: string = null,
-    searchQuery: string = null,
+    searchQuery: string = null
   ): Promise<{
     displayName: string;
     description: string;
@@ -573,8 +591,15 @@ export class QueryStoreService implements OnModuleInit {
       };
     }
 
-    const { codeName, displayName, description, prizes, startDate, endDate, currentRound } =
-      tournament;
+    const {
+      codeName,
+      displayName,
+      description,
+      prizes,
+      startDate,
+      endDate,
+      currentRound,
+    } = tournament;
 
     let currentPage = 1;
     let rank = 1;
@@ -634,13 +659,13 @@ export class QueryStoreService implements OnModuleInit {
               winAmount: tournamentEntryWinAmount?.toString() ?? '0',
               balance,
               xp: xp?.toString() ?? '0',
-            }),
+            })
           ),
         };
       } else {
         if (userId) {
           const userItemIndex = response.findIndex(
-            (x) => x.sk === `account#${userId}`,
+            (x) => x.sk === `account#${userId}`
           );
           if (userItemIndex !== -1) {
             const userItem = response[userItemIndex];
