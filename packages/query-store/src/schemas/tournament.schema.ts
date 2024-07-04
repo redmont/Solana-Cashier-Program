@@ -26,6 +26,7 @@ export const TournamentSchema = new Schema({
   description: String,
   startDate: String,
   endDate: String,
+  currentRound: Number,
   prizes: {
     type: Array,
     schema: [

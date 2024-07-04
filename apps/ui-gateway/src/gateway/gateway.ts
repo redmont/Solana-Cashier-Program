@@ -55,11 +55,10 @@ import { emitInternalEvent, UserConnectedEvent } from '@/internalEvents';
 @WebSocketGateway()
 export class Gateway
   implements
-    OnModuleInit,
-    OnGatewayInit,
-    OnGatewayConnection,
-    OnGatewayDisconnect
-{
+  OnModuleInit,
+  OnGatewayInit,
+  OnGatewayConnection,
+  OnGatewayDisconnect {
   private readonly logger: Logger = new Logger(Gateway.name);
   private readonly mediaUri: string;
 
@@ -364,6 +363,7 @@ export class Gateway
       description,
       startDate,
       endDate,
+      currentRound,
       prizes,
       totalCount,
       items,
@@ -377,12 +377,19 @@ export class Gateway
       searchQuery,
     );
 
+    let roundEndDate = null;
+    if (startDate) {
+      roundEndDate = dayjs.utc(startDate).add(currentRound, 'day').toISOString();
+    }
+
     return {
       success: true,
       displayName,
       description,
       startDate,
       endDate,
+      currentRound,
+      roundEndDate,
       prizes,
       totalCount,
       items,

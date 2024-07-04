@@ -9,7 +9,6 @@ import {
   Body,
   Controller,
   Get,
-  Inject,
   Param,
   Patch,
   Post,
@@ -23,7 +22,6 @@ import {
   GetAllBalancesMessage,
   GetAllBalancesMessageResponse,
 } from 'cashier-messages';
-import dayjs from '@/dayjs';
 import { GameServerConfigService } from '@/gameServerConfig/gameServerConfig.service';
 import { SeriesService } from 'src/series/series.service';
 import { AdminService } from './admin.service';
@@ -157,7 +155,7 @@ export class AdminController {
   async updateGameServerConfig(
     @Param('id') id: string,
     @Body() body: UpdateGameServerConfigRequest,
-  ) {}
+  ) { }
 
   @UseGuards(AdminAuthGuard)
   @Get('/game-server-capabilities')
@@ -250,12 +248,12 @@ export class AdminController {
     @Param('codeName') codeName: string,
     @Body() body: UpdateTournamentRequest,
   ) {
-    const { displayName, description, startDate, rounds, prizes } = body;
-    return this.tournamentService.updateTournament({
-      codeName,
+    const { displayName, description, startDate, rounds, currentRound, prizes } = body;
+    return this.tournamentService.updateTournament(codeName, {
       displayName,
       description,
       startDate,
+      currentRound,
       rounds,
       prizes,
     });

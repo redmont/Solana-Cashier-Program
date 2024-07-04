@@ -3,6 +3,7 @@ export interface UpdateTournamentRequest {
   description: string;
   startDate: string;
   rounds: number;
+  currentRound: number;
   prizes: {
     title: string;
     description: string;

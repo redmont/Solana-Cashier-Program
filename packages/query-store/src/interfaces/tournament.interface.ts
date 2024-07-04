@@ -5,6 +5,7 @@ export interface Tournament extends Key {
   description: string;
   startDate: string;
   endDate: string;
+  currentRound: number;
   prizes: {
     title: string;
     description: string;

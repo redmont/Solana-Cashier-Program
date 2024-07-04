@@ -13,6 +13,8 @@ export interface GetTournamentMessageResponse extends Message {
   description: string;
   startDate: string;
   endDate: string;
+  currentRound: number;
+  roundEndDate: string;
   prizes: {
     title: string;
     description: string;

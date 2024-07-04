@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel, Model, UpdatePartial } from 'nestjs-dynamoose';
 import { Tournament } from './interfaces/tournament.interface';
 import { Key } from '@/interfaces/key';
@@ -6,11 +6,12 @@ import dayjs from '@/dayjs';
 import { QueryStoreService } from 'query-store';
 import { TournamentEntry } from './interfaces/tournamentEntry.interface';
 import { TournamentWinnings } from './interfaces/tournamentWinnings.interface';
-import { transaction } from 'dynamoose';
 import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class TournamentService {
+  private readonly logger = new Logger(TournamentService.name);
+
   constructor(
     @InjectModel('tournament')
     private readonly tournamentModel: Model<Tournament, Key>,
@@ -18,8 +19,8 @@ export class TournamentService {
     private readonly tournamentEntryModel: Model<TournamentEntry, Key>,
     @InjectModel('tournamentWinnings')
     private readonly tournamentWinningsModel: Model<TournamentWinnings, Key>,
-    private readonly queryStore: QueryStoreService,
-  ) {}
+    private readonly queryStore: QueryStoreService
+  ) { }
 
   /**
    * Get all tournaments.
@@ -156,7 +157,7 @@ export class TournamentService {
         sk: userId,
       },
       updateRecord,
-      { return: 'item', returnValues: 'ALL_NEW' },
+      { return: 'item', returnValues: 'ALL_NEW' }
     );
 
     if (winAmount) {
@@ -189,7 +190,7 @@ export class TournamentService {
                 entryBetAmountCreditedXp: xp * 100,
               },
             },
-            { return: 'item', returnValues: 'ALL_NEW' },
+            { return: 'item', returnValues: 'ALL_NEW' }
           );
         }
       }
@@ -254,7 +255,7 @@ export class TournamentService {
 
   async getCurrentTournament() {
     const currentTournamentCodeName = await this.getTournamentCodeName(
-      dayjs.utc().toISOString(),
+      dayjs.utc().toISOString()
     );
 
     if (!currentTournamentCodeName) {
@@ -282,28 +283,34 @@ export class TournamentService {
     };
   }
 
-  async updateTournament({
-    codeName,
-    displayName,
-    description,
-    startDate,
-    rounds,
-    prizes,
-  }: {
-    codeName: string;
-    displayName: string;
-    description: string;
-    startDate: string;
-    rounds: number;
-    prizes: {
-      title: string;
+  async updateTournament(
+    codeName: string,
+    {
+      displayName,
+      description,
+      startDate,
+      currentRound,
+      rounds,
+      prizes,
+    }: Partial<{
+      displayName: string;
       description: string;
-    }[];
-  }) {
+      startDate: string;
+      currentRound: number;
+      rounds: number;
+      prizes: {
+        title: string;
+        description: string;
+      }[];
+    }>
+  ) {
     // Calculate endDate
-    const endDate = dayjs.utc(startDate).add(rounds, 'day').toISOString();
+    let endDate: string | undefined;
+    if (startDate && rounds) {
+      endDate = dayjs.utc(startDate).add(rounds, 'day').toISOString();
+    }
 
-    await this.tournamentModel.update(
+    const item = await this.tournamentModel.update(
       {
         pk: 'tournament',
         sk: codeName,
@@ -313,19 +320,25 @@ export class TournamentService {
         description,
         startDate,
         endDate,
+        currentRound,
         rounds,
-        createdAt: dayjs.utc().toISOString(),
+        prizes,
         updatedAt: dayjs.utc().toISOString(),
       },
+      {
+        return: 'item',
+        returnValues: 'ALL_NEW',
+      }
     );
 
     await this.queryStore.updateTournament({
       codeName,
-      displayName,
-      description,
-      startDate,
-      endDate,
-      prizes,
+      displayName: item.displayName,
+      description: item.description,
+      startDate: item.startDate,
+      endDate: item.endDate,
+      currentRound: item.currentRound,
+      prizes: item.prizes,
     });
   }
 
@@ -349,15 +362,11 @@ export class TournamentService {
       return;
     }
 
-    await this.tournamentModel.update(
-      {
-        pk: 'tournament',
-        sk: currentTournament.codeName,
-      },
-      {
-        currentRound: expectedRound,
-      },
-    );
+    this.logger.log(`Processing round change for ${currentTournament.codeName} from round ${currentRound} to round ${expectedRound}`);
+
+    await this.updateTournament(currentTournament.codeName, {
+      currentRound: expectedRound,
+    });
 
     // Get all winnings for currentRound
     const roundStart = startDate.add(currentRound - 1, 'day');
@@ -384,7 +393,7 @@ export class TournamentService {
 
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     );
     // Get top 100 winners
     const topWinners = Object.entries(winningsByUser)
@@ -431,10 +440,14 @@ export class TournamentService {
           sk: userId,
         },
         updateExpression,
+        {
+          return: 'item',
+          returnValues: 'ALL_NEW',
+        }
       );
 
       await this.queryStore.updateTournamentEntry({
-        tournament: item.tournament,
+        tournament: currentTournament.codeName,
         userId,
         primaryWalletAddress: item.primaryWalletAddress,
         tournamentEntryWinAmount: item.winAmount,

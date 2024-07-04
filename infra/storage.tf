@@ -89,6 +89,11 @@ resource "aws_dynamodb_table" "core_table" {
   }
 
   attribute {
+    name = "createdAt"
+    type = "S"
+  }
+
+  attribute {
     name = "startDate"
     type = "S"
   }
@@ -105,6 +110,18 @@ resource "aws_dynamodb_table" "core_table" {
       "startDate",
       "endDate",
       "prizes",
+    ]
+  }
+
+  global_secondary_index {
+    name            = "pkCreatedAt"
+    hash_key        = "pk"
+    range_key       = "createdAt"
+    projection_type = "INCLUDE"
+    non_key_attributes = [
+      "sk",
+      "userId",
+      "winAmount"
     ]
   }
 }
@@ -151,6 +168,7 @@ resource "aws_dynamodb_table" "query_store_table" {
       "description",
       "startDate",
       "endDate",
+      "currentRound",
       "prizes",
     ]
   }
@@ -165,6 +183,7 @@ resource "aws_dynamodb_table" "query_store_table" {
       "primaryWalletAddress",
       "tournamentEntryWinAmount",
       "balance",
+      "xp"
     ]
   }
 

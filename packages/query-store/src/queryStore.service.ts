@@ -35,12 +35,12 @@ export class QueryStoreService implements OnModuleInit {
     private readonly tournamentModel: Model<Tournament, Key>,
     @InjectModel('tournamentEntry')
     private readonly tournamentEntryModel: Model<TournamentEntry, Key>,
-  ) {}
+  ) { }
 
   private async getCurrentTournament(date: string): Promise<
     Pick<
       Tournament,
-      'displayName' | 'description' | 'startDate' | 'endDate' | 'prizes'
+      'displayName' | 'description' | 'startDate' | 'endDate' | 'prizes' | 'currentRound'
     > & {
       codeName: string;
     }
@@ -57,7 +57,7 @@ export class QueryStoreService implements OnModuleInit {
       return null;
     }
 
-    const { sk, displayName, description, startDate, endDate, prizes } =
+    const { sk, displayName, description, startDate, endDate, currentRound, prizes } =
       tournaments[tournaments.length - 1];
 
     return {
@@ -66,6 +66,7 @@ export class QueryStoreService implements OnModuleInit {
       description,
       startDate,
       endDate,
+      currentRound,
       prizes,
     };
   }
@@ -452,6 +453,7 @@ export class QueryStoreService implements OnModuleInit {
       description,
       startDate,
       endDate,
+      currentRound: 1,
       prizes,
     });
   }
@@ -462,6 +464,7 @@ export class QueryStoreService implements OnModuleInit {
     description,
     startDate,
     endDate,
+    currentRound,
     prizes,
   }: {
     codeName: string;
@@ -469,6 +472,7 @@ export class QueryStoreService implements OnModuleInit {
     description: string;
     startDate: string;
     endDate: string;
+    currentRound: number;
     prizes: {
       title: string;
       description: string;
@@ -484,6 +488,7 @@ export class QueryStoreService implements OnModuleInit {
         description,
         startDate,
         endDate,
+        currentRound,
         prizes,
       },
     );
@@ -536,6 +541,7 @@ export class QueryStoreService implements OnModuleInit {
     }[];
     startDate: string;
     endDate: string;
+    currentRound: number;
     items: {
       rank: number;
       walletAddress: string;
@@ -561,88 +567,52 @@ export class QueryStoreService implements OnModuleInit {
         prizes: [],
         startDate: null,
         endDate: null,
+        currentRound: 0,
         totalCount: 0,
         items: [],
       };
     }
 
-    const { codeName, displayName, description, prizes, startDate, endDate } =
+    const { codeName, displayName, description, prizes, startDate, endDate, currentRound } =
       tournament;
 
     let currentPage = 1;
     let rank = 1;
+    let lastKey;
     let currentUserItem;
 
-    const index = sortBy === 'winAmount' ? 'pkTournamentEntryWinAmount' : 'pkTournamentEntryXp';
+    const index = 'pkTournamentEntryWinAmount';
 
-    const response = await this.tournamentEntryModel
-      .query({
-        pk: `tournamentEntry#${codeName}`,
-      })
-      .using(index)
-      .limit(pageSize)
-      .sort(SortOrder.descending)
-      .all(10)
-      .exec();
+    do {
+      const query = this.tournamentEntryModel
+        .query({
+          pk: `tournamentEntry#${codeName}`,
+        })
+        .using(index)
+        .limit(pageSize)
+        .sort(SortOrder.descending);
 
-    //const response = await query.exec();
-    currentPage += 1;
-
-    if (searchQuery) {
-      const matches: (TournamentEntry & { rank: number })[] = [];
-      for (const item of response) {
-        let walletAddress = item.primaryWalletAddress;
-        if (
-          walletAddress &&
-          walletAddress.toLowerCase().includes(searchQuery.toLowerCase())
-        ) {
-          matches.push({ ...item, rank });
-        }
-
-        rank++;
+      if (lastKey) {
+        query.startAt(lastKey);
       }
 
-      return {
-        displayName,
-        description,
-        prizes,
-        startDate,
-        endDate,
-        items: matches.map(
-          ({
-            rank,
-            primaryWalletAddress,
-            tournamentEntryWinAmount,
-            balance,
-            xp,
-          }) => ({
-            rank,
-            walletAddress: primaryWalletAddress,
-            winAmount: tournamentEntryWinAmount?.toString() ?? '0',
-            balance,
-            xp: xp.toString(),
-          }),
-        ),
-      };
-    } else {
-      if (userId) {
-        const userItemIndex = response.findIndex(
-          (x) => x.sk === `account#${userId}`,
-        );
-        if (userItemIndex !== -1) {
-          const userItem = response[userItemIndex];
-          const userRank = rank + userItemIndex;
-          currentUserItem = {
-            rank: userRank,
-            walletAddress: userItem.primaryWalletAddress,
-            balance: userItem.balance,
-            xp: userItem.xp.toString(),
-          };
-        }
-      }
+      const response = await query.exec();
+      lastKey = response.lastKey;
+      currentPage += 1;
 
-      if (currentPage > pageNumber) {
-        const totalCount = 0; // todo
+      if (searchQuery) {
+        const matches: (TournamentEntry & { rank: number })[] = [];
+        for (const item of response) {
+          let walletAddress = item.primaryWalletAddress;
+          if (
+            walletAddress &&
+            walletAddress.toLowerCase().includes(searchQuery.toLowerCase())
+          ) {
+            matches.push({ ...item, rank });
+          }
+
+          rank++;
+        }
 
         return {
           displayName,
@@ -650,26 +620,72 @@ export class QueryStoreService implements OnModuleInit {
           prizes,
           startDate,
           endDate,
-          totalCount,
-          currentUserItem,
-          items: response.map((item) => ({
-            rank: rank++,
-            walletAddress: item.primaryWalletAddress,
-            balance: item.balance,
-            winAmount: item.tournamentEntryWinAmount?.toString() ?? '0',
-            xp: item.xp.toString(),
-          })),
+          currentRound,
+          items: matches.map(
+            ({
+              rank,
+              primaryWalletAddress,
+              tournamentEntryWinAmount,
+              balance,
+              xp,
+            }) => ({
+              rank,
+              walletAddress: primaryWalletAddress,
+              winAmount: tournamentEntryWinAmount?.toString() ?? '0',
+              balance,
+              xp: xp?.toString() ?? '0',
+            }),
+          ),
         };
       } else {
-        rank += response.length;
+        if (userId) {
+          const userItemIndex = response.findIndex(
+            (x) => x.sk === `account#${userId}`,
+          );
+          if (userItemIndex !== -1) {
+            const userItem = response[userItemIndex];
+            const userRank = rank + userItemIndex;
+            currentUserItem = {
+              rank: userRank,
+              walletAddress: userItem.primaryWalletAddress,
+              balance: userItem.balance,
+              xp: userItem.xp?.toString() ?? '0',
+            };
+          }
+        }
+
+        if (currentPage > pageNumber) {
+          const totalCount = 0; // todo
+
+          return {
+            displayName,
+            description,
+            prizes,
+            startDate,
+            endDate,
+            currentRound,
+            totalCount,
+            currentUserItem,
+            items: response.map((item) => ({
+              rank: rank++,
+              walletAddress: item.primaryWalletAddress,
+              balance: item.balance,
+              winAmount: item.tournamentEntryWinAmount?.toString() ?? '0',
+              xp: item.xp?.toString() ?? '0',
+            })),
+          };
+        } else {
+          rank += response.length;
+        }
       }
-    }
+    } while (lastKey);
 
     return {
       displayName,
       description,
       prizes,
       startDate,
+      currentRound,
       endDate,
       totalCount: 0,
       items: [],
