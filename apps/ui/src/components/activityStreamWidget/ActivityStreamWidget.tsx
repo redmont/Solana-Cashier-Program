@@ -36,7 +36,7 @@ export const ActivityStreamWidget: FC = () => {
         // have to use timeout to make it working with Scrollable
 
         setTimeout(() => {
-          lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' });
+          lastMessageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
         }, 100);
       }
 
