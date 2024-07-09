@@ -1,0 +1,71 @@
+@use 'sass:color';
+
+.xp-quests-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  border: 1px solid var(--surface-50);
+  align-self: stretch;
+  flex-shrink: 0;
+
+  &.widget {
+    padding: 1rem;
+    height: auto;
+  }
+
+  .widget-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .xp-quest-tile {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    width: 100%;
+    background: rgba($primaryColor, 0.08);
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover {
+      background: rgba($primaryColor, 0.15);
+    }
+  }
+
+  .xp-quest-tile-head,
+  .xp-quest-tile-tail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+
+    i {
+      font-size: 1.25rem;
+    }
+  }
+
+  .xp-quest-tile-body {
+    display: flex;
+    gap: 0.25rem;
+    flex-direction: column;
+    flex: 1 1 auto;
+  }
+
+  .xp-quest-tile-title {
+    font-size: 0.875rem;
+    font-weight: bold;
+  }
+
+  .xp-quest-tile-xp {
+    font-size: 0.75rem;
+    color: $primaryColor;
+  }
+
+  .xp-quest-tile-tail {
+    color: var(--gray-300);
+  }
+}

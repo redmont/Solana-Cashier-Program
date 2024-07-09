@@ -66,5 +66,5 @@ export function toBase26(num: number): string {
 export const truncateEthAddress = (walletAddress: string) => {
   if (!walletAddress || walletAddress.length < 10) return walletAddress;
 
-  return walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
+  return walletAddress.slice(0, 8) + '...' + walletAddress.slice(-4);
 };

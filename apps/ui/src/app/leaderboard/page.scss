@@ -4,6 +4,31 @@
   max-width: 36rem;
   width: 100vw;
   margin: 0 auto;
+
+  .prize-carousel {
+    grid-row: 2 / 3;
+
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    width: 100%;
+    overflow-x: auto;
+    padding: 1rem 0;
+    scroll-snap-type: x mandatory;
+    scroll-snap-stop: always;
+    flex-shrink: 0;
+
+    &.loading {
+      display: flex;
+      overflow-x: hidden;
+      height: 0;
+
+      .prize-tile {
+        opacity: 0;
+      }
+    }
+  }
 }
 
 .tournament-info {
@@ -31,31 +56,6 @@
     color: white;
     padding: 0 0.5rem;
     border-radius: 3px;
-  }
-}
-
-.prize-carousel {
-  grid-row: 2 / 3;
-
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  gap: 1rem;
-  width: 100%;
-  overflow-x: auto;
-  padding: 1rem 0;
-  scroll-snap-type: x mandatory;
-  scroll-snap-stop: always;
-  flex-shrink: 0;
-
-  &.loading {
-    display: flex;
-    overflow-x: hidden;
-    height: 0;
-
-    .prize-tile {
-      opacity: 0;
-    }
   }
 }
 

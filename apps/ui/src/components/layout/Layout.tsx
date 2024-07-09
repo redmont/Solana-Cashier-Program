@@ -39,9 +39,9 @@ export const Layout = (props: ChildContainerProps) => {
         </div>
 
         <div className="topnav">
-          <Link className="nav-link" href="/leaderboard">
+          <Link className="nav-link" href="/tournament">
             <i className="pi pi-trophy"></i>
-            Leaderboard
+            Tournament
           </Link>
 
           <span className="nav-link" onClick={() => setTutorialVisible(true)}>
@@ -63,7 +63,7 @@ export const Layout = (props: ChildContainerProps) => {
             </>
           )}
 
-          <Link href="/leaderboard" className="p-button-link md:hidden">
+          <Link href="/tournament" className="p-button-link md:hidden">
             <i className="pi pi-trophy"></i>
           </Link>
 
