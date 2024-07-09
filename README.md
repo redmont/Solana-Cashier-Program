@@ -47,7 +47,17 @@ cd apps/ui
 pnpm dev
 ```
 
-## Run entire project project
+## Run entire project
+
+Create .env files:
+
+```sh
+cp apps/admin/.env.example apps/admin/.env
+cp apps/ui/.env.example apps/ui/.env
+cp apps/cashier/.env.example apps/cashier/.env
+cp apps/core/.env.example apps/core/.env
+cp apps/ui-gateway/.env.example apps/ui-gateway/.env
+```
 
 Run infrastructure:
 
@@ -55,14 +65,25 @@ Run infrastructure:
 ./run-infra.sh
 ```
 
+Set up oracle indexer NATS subject:
+
+```sh
+nats --server localhost:4222 stream add oracleIndexer --subjects='oracleIndexer.>' --retention='workq' --max-msgs=-1 --max-bytes=-1 --max-
+age='1h' --storage='file' --discard='old' --replicas=1 --defaults
+```
+
 Run project:
 
 ```sh
+# Install dependencies
 pnpm install
+# Build packages
+pnpm build
+# Run
 pnpm dev
 ```
 
-Run with debug of a particular service:
+### (Optional) Run with debug of a particular service
 
 ```sh
 pnpm dev -F '!core'
@@ -146,6 +167,8 @@ curl -X PATCH --location 'http://localhost:8080/admin/roster' \
 }'
 ```
 
+#### (Optional) Set up tournament
+
 Create a 7 day tournament:
 
 ```sh
@@ -179,7 +202,7 @@ curl --location 'http://localhost:8080/admin/tournaments' \
 ./mock-ws-client.js
 ```
 
-### Run roster of 3 series
+### (Optional) Run roster of 3 series
 
 ```sh
 curl --location 'http://localhost:8080/admin/series' \
