@@ -63,6 +63,18 @@ export function toBase26(num: number): string {
   return result;
 }
 
+export function toScientificParts(num: number) {
+  if (num === 0) {
+    return { base: 0, exponent: 0 };
+  }
+
+  let [base, exponent] = num.toExponential().split('e');
+  return {
+    base: parseFloat(base),
+    exponent: parseInt(exponent, 10),
+  };
+}
+
 export const truncateEthAddress = (walletAddress: string) => {
   if (!walletAddress || walletAddress.length < 10) return walletAddress;
 

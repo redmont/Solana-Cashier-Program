@@ -4,6 +4,7 @@ import { classNames } from 'primereact/utils';
 import { FC, useEffect, useRef, useState } from 'react';
 import { Tooltip } from '../Tooltip';
 import { LOCAL_PRICE_CACHE_PERIOD } from '@/config';
+import { toScientificParts } from '@/utils';
 
 interface Props {
   fighters: Fighter[];
@@ -61,11 +62,25 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
               : price.change.absolute > 0
                 ? 'up'
                 : 'down';
-          const displayPrice = `${Math.abs(price ? price.change.ppm : 0).toFixed(2)}ppm`;
+          const displayPriceChange = `${Math.abs(price ? price.change.ppm : 0).toFixed(2)}ppm`;
+
+          const priceInScientificNotation = toScientificParts(
+            price?.event.price ?? 0,
+          );
+          const displayPrice = `${priceInScientificNotation.base.toFixed(5)}`;
           return (
             <>
               <Tooltip
-                content={`[LIVE] ${ticker} price change over ${LOCAL_PRICE_CACHE_PERIOD / 1000}s \n ppm = 0.0001%`}
+                content={
+                  <div>
+                    <span>
+                      Price is scaled by 10
+                      <sup>{priceInScientificNotation.exponent * -1}</sup>
+                    </span>
+                    <br />
+                    <span>Source: MEXC</span>
+                  </div>
+                }
                 key={ticker}
               >
                 <div
@@ -85,7 +100,9 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
                 </div>
               </Tooltip>
               {i === 0 && (
-                <div className="price-info-indicator pi pi-wave-pulse"></div>
+                <Tooltip content={`LIVE PRICE`}>
+                  <div className="price-info-indicator pi pi-wave-pulse"></div>
+                </Tooltip>
               )}
             </>
           );
