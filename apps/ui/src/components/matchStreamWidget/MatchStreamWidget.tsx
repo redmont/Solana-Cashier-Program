@@ -16,6 +16,7 @@ import { useEthWallet, useAppState } from '@/hooks';
 import { YouTubeStream } from './YoutubeStream';
 import Image from 'next/image';
 import { Tooltip } from '../Tooltip';
+import { BroadcastIcon } from '@/icons';
 
 // The Millicast SDK does not support SSR,
 // so we need to load it dynamically.
@@ -85,7 +86,12 @@ export const MatchStreamWidget: FC = () => {
         />
       ) : (
         <Tooltip content="24/7 Live Stream">
-          <div className="live-indicator pi pi-circle-on"></div>
+          <div className="live-indicator">
+            <div className="broadcast-icon">
+              <BroadcastIcon />
+            </div>
+            <span>LIVE</span>
+          </div>
         </Tooltip>
       )}
     </div>
