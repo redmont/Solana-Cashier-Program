@@ -9,6 +9,7 @@ export interface SeriesContext {
   startTime: string;
   matchId: string;
   serverId: string;
+  streamId: string;
   capabilities: ServerCapabilities;
   samplingStartTime: string;
   winningFighter?: {

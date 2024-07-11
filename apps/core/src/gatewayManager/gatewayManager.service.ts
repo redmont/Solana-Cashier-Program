@@ -35,21 +35,32 @@ export class GatewayManagerService implements OnModuleInit {
     }
   }
 
-  handleMatchUpdated(
-    seriesCodeName: string,
-    matchId: string,
+  handleMatchUpdated({
+    seriesCodeName,
+    matchId,
+    fighters,
+    state,
+    preMatchVideoPath,
+    streamId,
+    poolOpenStartTime,
+    startTime,
+    winner,
+  }: {
+    seriesCodeName: string;
+    matchId: string;
     fighters: {
       displayName: string;
       codeName: string;
       ticker: string;
       imagePath: string;
-    }[],
-    state: string,
-    preMatchVideoPath: string,
-    poolOpenStartTime: string,
-    startTime: string,
-    winner: string,
-  ) {
+    }[];
+    state: string;
+    preMatchVideoPath: string;
+    streamId: string;
+    poolOpenStartTime: string;
+    startTime: string;
+    winner: string;
+  }) {
     const timestamp = dayjs.utc().toISOString();
 
     this.emitToAll(
@@ -61,6 +72,7 @@ export class GatewayManagerService implements OnModuleInit {
         fighters,
         state,
         preMatchVideoPath,
+        streamId,
         poolOpenStartTime,
         startTime,
         winner,

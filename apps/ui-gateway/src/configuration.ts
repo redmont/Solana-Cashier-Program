@@ -27,4 +27,6 @@ export default () => ({
   millicastParentSubscribeTokenId:
     process.env.MILLICAST_PARENT_SUBSCRIBE_TOKEN_ID,
   millicastAllowedOrigins: process.env.MILLICAST_ALLOWED_ORIGINS,
+  streamAuthParentTokenId: process.env.STREAM_AUTH_PARENT_TOKEN_ID,
+  streamAuthParentTokenSecret: process.env.STREAM_AUTH_PARENT_TOKEN_SECRET,
 });

@@ -45,6 +45,7 @@ export interface MatchState {
   series: string;
   state: string;
   preMatchVideoUrl: string;
+  streamId?: string;
   poolOpenStartTime?: string;
   startTime?: string;
   winner?: string;
@@ -184,6 +185,7 @@ export function useMatchState() {
         series,
         state: messageState,
         preMatchVideoUrl,
+        streamId,
         poolOpenStartTime,
         startTime,
         winner,
@@ -203,6 +205,7 @@ export function useMatchState() {
         series,
         state: messageState,
         preMatchVideoUrl,
+        streamId,
         poolOpenStartTime,
         startTime,
         winner,

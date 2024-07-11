@@ -17,7 +17,7 @@ import { IoPencil } from 'react-icons/io5';
 
 const GameServerConfigs = () => {
   const { isPending, error, data } = useQuery<{
-    serverConfigs: { serverId: string; streamUrl: string }[];
+    serverConfigs: { serverId: string; streamId: string }[];
   }>({
     queryKey: ['game-server-configs'],
   });
@@ -30,7 +30,7 @@ const GameServerConfigs = () => {
             <Tr>
               <Th></Th>
               <Th>Server ID</Th>
-              <Th>Stream URL</Th>
+              <Th>Stream ID</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -40,7 +40,7 @@ const GameServerConfigs = () => {
                   <IconButton size="sm" icon={<IoPencil />} aria-label="Edit" />
                 </Td>
                 <Td>{serverConfig.serverId}</Td>
-                <Td>{serverConfig.streamUrl}</Td>
+                <Td>{serverConfig.streamId}</Td>
               </Tr>
             ))}
             {isPending && (

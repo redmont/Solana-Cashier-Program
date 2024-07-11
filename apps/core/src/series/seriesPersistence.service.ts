@@ -91,30 +91,42 @@ export class SeriesPersistenceService {
     );
   }
 
-  async savePublicState(
-    codeName: string,
-    matchId: string,
+  async savePublicState({
+    codeName,
+    matchId,
+    fighters,
+    state,
+    preMatchVideoPath,
+    streamId,
+    poolOpenStartTime,
+    startTime,
+    winner,
+  }: {
+    codeName: string;
+    matchId: string;
     fighters: {
       codeName: string;
       displayName: string;
       ticker: string;
       imagePath: string;
-    }[],
-    state: any,
-    preMatchVideoPath: string,
-    poolOpenStartTime?: string,
-    startTime?: string,
-    winner?: string,
-  ) {
-    await this.queryStore.updateCurrentMatch(
-      codeName,
+    }[];
+    state: any;
+    preMatchVideoPath: string;
+    streamId: string;
+    poolOpenStartTime?: string;
+    startTime?: string;
+    winner?: string;
+  }) {
+    await this.queryStore.updateCurrentMatch({
+      seriesCodeName: codeName,
       matchId,
       fighters,
       state,
       preMatchVideoPath,
+      streamId,
       poolOpenStartTime,
       startTime,
       winner,
-    );
+    });
   }
 }

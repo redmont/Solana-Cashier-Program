@@ -32,6 +32,8 @@ import {
   GetStreamTokenMessage,
   GetStreamTokenMessageResponse,
   GetMatchStatusMessageResponse,
+  GetStreamAuthTokenMessage,
+  GetStreamAuthTokenMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
@@ -51,14 +53,16 @@ import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-
 import dayjs from '@/dayjs';
 import { StreamTokenService } from '@/streamToken/streamToken.service';
 import { emitInternalEvent, UserConnectedEvent } from '@/internalEvents';
+import { StreamAuthService } from '@/streamAuth/streamAuth.service';
 
 @WebSocketGateway()
 export class Gateway
   implements
-  OnModuleInit,
-  OnGatewayInit,
-  OnGatewayConnection,
-  OnGatewayDisconnect {
+    OnModuleInit,
+    OnGatewayInit,
+    OnGatewayConnection,
+    OnGatewayDisconnect
+{
   private readonly logger: Logger = new Logger(Gateway.name);
   private readonly mediaUri: string;
 
@@ -76,6 +80,7 @@ export class Gateway
     private readonly jwtAuthService: IJwtAuthService,
     private readonly cashierReadModelService: ReadModelService,
     private readonly streamTokenService: StreamTokenService,
+    private readonly streamAuthService: StreamAuthService,
     private readonly eventEmitter: EventEmitter2,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
@@ -183,6 +188,7 @@ export class Gateway
       startTime,
       winner,
       preMatchVideoPath,
+      streamId,
     } = await this.query.getCurrentMatch();
 
     const preMatchVideoUrl =
@@ -197,6 +203,7 @@ export class Gateway
       })),
       state,
       preMatchVideoUrl,
+      streamId,
       bets,
       poolOpenStartTime,
       startTime,
@@ -379,7 +386,10 @@ export class Gateway
 
     let roundEndDate = null;
     if (startDate) {
-      roundEndDate = dayjs.utc(startDate).add(currentRound, 'day').toISOString();
+      roundEndDate = dayjs
+        .utc(startDate)
+        .add(currentRound, 'day')
+        .toISOString();
     }
 
     return {
@@ -426,6 +436,18 @@ export class Gateway
       userId,
       client.data.ipAddress,
     );
+
+    return {
+      success: true,
+      token,
+    };
+  }
+
+  @SubscribeMessage(GetStreamAuthTokenMessage.messageType)
+  public async getAuthStreamToken(
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetStreamAuthTokenMessageResponse> {
+    const token = this.streamAuthService.generateToken(client.id);
 
     return {
       success: true,

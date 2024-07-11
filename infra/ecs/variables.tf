@@ -162,3 +162,13 @@ variable "cors_origins" {
   description = "CORS origins"
   type        = list(string)
 }
+
+variable "stream_auth_parent_token_id" {
+  description = "Stream authentication parent token ID"
+  type        = string
+}
+
+variable "stream_auth_parent_token_secret" {
+  description = "Stream authentication parent token secret"
+  type        = string
+}

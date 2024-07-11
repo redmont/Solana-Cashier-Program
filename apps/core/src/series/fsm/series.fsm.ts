@@ -50,6 +50,7 @@ export function createSeriesFSM(
       },
       matchId: null,
       serverId: null,
+      streamId: null,
       poolOpenStartTime: null,
       startTime: null,
       samplingStartTime: null,
@@ -131,6 +132,7 @@ export function createSeriesFSM(
                 target: 'bettingOpen',
                 actions: assign({
                   serverId: ({ event }) => event.output.serverId,
+                  streamId: ({ event }) => event.output.streamId,
                   capabilities: ({ event }) => event.output.capabilities,
                 }),
               },
@@ -158,7 +160,8 @@ export function createSeriesFSM(
                     target: 'onStateChange',
                     actions: assign({
                       startTime: ({ event }) => event.output.startTime,
-                      poolOpenStartTime: ({ event }) => event.output.poolOpenStartTime
+                      poolOpenStartTime: ({ event }) =>
+                        event.output.poolOpenStartTime,
                     }),
                   },
                 },

@@ -39,7 +39,7 @@ export const getActors = ({
         };
         levels: string[];
       };
-      streamUrl: string;
+      streamId: string;
     },
     { matchId: string; config: SeriesConfig }
   >(async ({ input }) => {

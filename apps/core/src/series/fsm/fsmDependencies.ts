@@ -14,7 +14,7 @@ export interface FSMDependencies {
   ) => Promise<{
     serverId: string;
     capabilities: ServerCapabilities;
-    streamUrl: string;
+    streamId: string;
   } | null>;
   determineOutcome: (
     serverId: string,

@@ -30,7 +30,7 @@ describe('SeriesFsm', () => {
         },
         levels: [],
       },
-      streamUrl: '',
+      streamId: '',
     }),
     determineOutcome: async () => null,
     distributeWinnings: async () => null,

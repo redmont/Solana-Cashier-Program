@@ -1,3 +1,3 @@
 export interface UpdateGameServerConfigRequest {
-  streamUrl: string;
+  streamId: string;
 }

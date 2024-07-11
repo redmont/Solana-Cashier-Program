@@ -194,26 +194,28 @@ export class SeriesService {
             }),
           );
 
-          await this.seriesPersistenceService.savePublicState(
+          await this.seriesPersistenceService.savePublicState({
             codeName,
-            context.matchId,
+            matchId: context.matchId,
             fighters,
             state,
-            context.config.preMatchVideoPath,
-            context.poolOpenStartTime,
-            context.startTime,
-          );
+            preMatchVideoPath: context.config.preMatchVideoPath,
+            streamId: context.streamId,
+            poolOpenStartTime: context.poolOpenStartTime,
+            startTime: context.startTime,
+          });
 
-          this.gatewayManagerService.handleMatchUpdated(
-            codeName,
-            context.matchId,
+          this.gatewayManagerService.handleMatchUpdated({
+            seriesCodeName: codeName,
+            matchId: context.matchId,
             fighters,
             state,
-            context.config.preMatchVideoPath,
-            context.poolOpenStartTime,
-            context.startTime,
-            context.winningFighter?.codeName,
-          );
+            preMatchVideoPath: context.config.preMatchVideoPath,
+            streamId: context.streamId,
+            poolOpenStartTime: context.poolOpenStartTime,
+            startTime: context.startTime,
+            winner: context.winningFighter?.codeName,
+          });
         },
         matchCompleted: async () => {
           this.eventEmitter.emit('series.matchCompleted', codeName);

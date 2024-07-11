@@ -43,5 +43,10 @@
   align-items: center;
   justify-content: center;
   color: var(--red-500);
-  animation: flash 1.1s infinite
+  animation: flash 1.1s infinite;
+}
+
+.fight-starting-soon {
+  width: 100%;
+  height: auto;
 }

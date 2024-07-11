@@ -34,8 +34,8 @@ export class QueryStoreService implements OnModuleInit {
     @InjectModel('tournament')
     private readonly tournamentModel: Model<Tournament, Key>,
     @InjectModel('tournamentEntry')
-    private readonly tournamentEntryModel: Model<TournamentEntry, Key>
-  ) { }
+    private readonly tournamentEntryModel: Model<TournamentEntry, Key>,
+  ) {}
 
   private async getCurrentTournament(date: string): Promise<
     Pick<
@@ -100,6 +100,7 @@ export class QueryStoreService implements OnModuleInit {
         matchId: '',
         seriesCodeName: '',
         preMatchVideoPath: '',
+        streamId: '',
       });
     }
   }
@@ -137,7 +138,7 @@ export class QueryStoreService implements OnModuleInit {
       {
         overwrite: true,
         return: 'item',
-      }
+      },
     );
   }
 
@@ -146,7 +147,7 @@ export class QueryStoreService implements OnModuleInit {
     matchId: string,
     state: string,
     startTime?: string,
-    winner?: string
+    winner?: string,
   ) {
     await this.seriesModel.update(
       {
@@ -158,25 +159,36 @@ export class QueryStoreService implements OnModuleInit {
         matchId: matchId ?? undefined,
         startTime: startTime ?? undefined,
         winner: winner ?? undefined,
-      }
+      },
     );
   }
 
-  async updateCurrentMatch(
-    seriesCodeName: string,
-    matchId: string,
+  async updateCurrentMatch({
+    seriesCodeName,
+    matchId,
+    fighters,
+    state,
+    preMatchVideoPath,
+    streamId,
+    poolOpenStartTime,
+    startTime,
+    winner,
+  }: {
+    seriesCodeName: string;
+    matchId: string;
     fighters: {
       codeName: string;
       displayName: string;
       ticker: string;
       imagePath: string;
-    }[],
-    state: string,
-    preMatchVideoPath: string,
-    poolOpenStartTime?: string,
-    startTime?: string,
-    winner?: string
-  ) {
+    }[];
+    state: string;
+    preMatchVideoPath: string;
+    streamId?: string;
+    poolOpenStartTime?: string;
+    startTime?: string;
+    winner?: string;
+  }) {
     await this.currentMatchModel.update(
       {
         pk: `currentMatch`,
@@ -187,11 +199,12 @@ export class QueryStoreService implements OnModuleInit {
         fighters,
         state,
         preMatchVideoPath,
+        streamId: streamId ?? undefined,
         matchId: matchId ?? undefined,
         poolOpenStartTime: poolOpenStartTime ?? undefined,
         startTime: startTime ?? undefined,
         winner: winner ?? undefined,
-      }
+      },
     );
   }
 
@@ -199,7 +212,7 @@ export class QueryStoreService implements OnModuleInit {
     seriesCodeName: string,
     matchId: string,
     state: string,
-    startTime?: string
+    startTime?: string,
   ) {
     await this.currentMatchModel.update(
       {
@@ -211,7 +224,7 @@ export class QueryStoreService implements OnModuleInit {
         matchId,
         state,
         startTime,
-      }
+      },
     );
   }
 
@@ -219,7 +232,7 @@ export class QueryStoreService implements OnModuleInit {
     seriesCodeName: string,
     walletAddress: string,
     amount: string,
-    fighter: string
+    fighter: string,
   ) {
     await this.seriesModel.update(
       {
@@ -236,7 +249,7 @@ export class QueryStoreService implements OnModuleInit {
             },
           ],
         },
-      }
+      },
     );
 
     await this.currentMatchModel.update(
@@ -254,7 +267,7 @@ export class QueryStoreService implements OnModuleInit {
             },
           ],
         },
-      }
+      },
     );
   }
 
@@ -266,7 +279,7 @@ export class QueryStoreService implements OnModuleInit {
       },
       {
         bets,
-      }
+      },
     );
   }
 
@@ -280,7 +293,7 @@ export class QueryStoreService implements OnModuleInit {
         state: 'idle',
         winner: '',
         bets: [],
-      }
+      },
     );
   }
 
@@ -289,7 +302,7 @@ export class QueryStoreService implements OnModuleInit {
     timestamp: string,
     matchId: string,
     message: string,
-    userId?: string
+    userId?: string,
   ) {
     let pk = `activityStream#${seriesCodeName}#${matchId}`;
     if (userId) {
@@ -306,7 +319,7 @@ export class QueryStoreService implements OnModuleInit {
   async getActivityStream(
     seriesCodeName: string,
     matchId: string,
-    userId?: string
+    userId?: string,
   ) {
     let pk = `activityStream#${seriesCodeName}#${matchId}`;
     if (userId) {
@@ -413,7 +426,7 @@ export class QueryStoreService implements OnModuleInit {
       {
         return: 'item',
         overwrite: true,
-      }
+      },
     );
   }
 
@@ -508,7 +521,7 @@ export class QueryStoreService implements OnModuleInit {
         endDate,
         currentRound,
         prizes,
-      }
+      },
     );
   }
 
@@ -539,7 +552,7 @@ export class QueryStoreService implements OnModuleInit {
       {
         overwrite: true,
         return: 'item',
-      }
+      },
     );
   }
 
@@ -549,7 +562,7 @@ export class QueryStoreService implements OnModuleInit {
     pageSize: number = 50,
     pageNumber: number = 1,
     userId: string = null,
-    searchQuery: string = null
+    searchQuery: string = null,
   ): Promise<{
     displayName: string;
     description: string;
@@ -659,13 +672,13 @@ export class QueryStoreService implements OnModuleInit {
               winAmount: tournamentEntryWinAmount?.toString() ?? '0',
               balance,
               xp: xp?.toString() ?? '0',
-            })
+            }),
           ),
         };
       } else {
         if (userId) {
           const userItemIndex = response.findIndex(
-            (x) => x.sk === `account#${userId}`
+            (x) => x.sk === `account#${userId}`,
           );
           if (userItemIndex !== -1) {
             const userItem = response[userItemIndex];
