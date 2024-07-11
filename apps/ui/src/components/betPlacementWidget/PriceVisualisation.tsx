@@ -13,6 +13,7 @@ interface Props {
 
 export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
   const [progress, setProgress] = useState(0.5);
+  const [isWinner, setIsWinner] = useState([false, false]);
   const deltasRef = useRef<number[]>([0.5, 0.5]);
   useEffect(() => {
     const tickers = fighters.map((fighter) => fighter.ticker);
@@ -39,16 +40,18 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
     deltas = deltas.map((d) => d / total || 0.5);
     deltasRef.current = deltas;
     const progress = deltas[0];
+    setIsWinner([progress > 0.5, 1 - progress > 0.5]);
 
-    setProgress(progress || 0.5);
+    setProgress(progress);
   }, [prices]);
 
   return (
     <div className="price-visualisation">
-      <div className="progress-bar-container">
+      <div className="tow-container">
+        <div className="tow-line"></div>
         <div
-          className="progress-bar"
-          style={{ width: `${progress * 100}%` }}
+          className="tow-indicator"
+          style={{ left: `${10 + progress * 80}%` }}
         ></div>
       </div>
 
