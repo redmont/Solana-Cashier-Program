@@ -88,7 +88,10 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
               >
                 <div
                   className={classNames('price-info', direction)}
-                  style={{ flexDirection: `row${i === 1 ? '-reverse' : ''}` }}
+                  style={{
+                    flexDirection: `row${i === 1 ? '-reverse' : ''}`,
+                    fontWeight: isWinner[i] ? 'bold' : 'normal',
+                  }}
                 >
                   <span className="price-ticker">{`${ticker}`}</span>
                   <span className="price-value">{`${displayPrice}`}</span>
