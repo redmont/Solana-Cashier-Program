@@ -53,7 +53,7 @@ describe('SeriesFsm', () => {
 
     expect(snapshot.value).toBe('idle');
 
-    service.send({ type: 'RUN' });
+    service.send({ type: 'RUN', fighterCodeNames: ['fighter-a', 'fighter-b'] });
 
     await waitFor(
       service,
@@ -101,7 +101,7 @@ describe('SeriesFsm', () => {
 
     expect(snapshot.value).toBe('idle');
 
-    service.send({ type: 'RUN' });
+    service.send({ type: 'RUN', fighterCodeNames: ['fighter-a', 'fighter-b'] });
 
     await waitFor(
       service,

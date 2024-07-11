@@ -133,12 +133,6 @@ export class AdminController {
   }
 
   @UseGuards(AdminAuthGuard)
-  @Post('/series/run')
-  async runSeries(@Body() body: { codeName: string }) {
-    this.seriesService.sendEvent(body.codeName, 'RUN');
-  }
-
-  @UseGuards(AdminAuthGuard)
   @Get('/game-server-configs')
   async getGameServerConfigs() {
     return { serverConfigs: await this.gameServerConfigService.getAll() };

@@ -6,7 +6,10 @@ import { MatchState } from './matchState';
 
 export interface FSMDependencies {
   logger: Logger;
-  getSeriesConfig: (codeName: string) => Promise<SeriesConfig>;
+  getSeriesConfig: (
+    codeName: string,
+    fighterCodeNames: string[],
+  ) => Promise<SeriesConfig>;
   setCurrentMatchId: (codeName: string, matchId: string) => void;
   allocateServerForMatch: (
     matchId: string,

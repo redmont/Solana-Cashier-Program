@@ -4,15 +4,16 @@ import { getActors } from './actors';
 import { FSMDependencies } from './fsmDependencies';
 import { SeriesContext } from './seriesContext';
 
-export type SeriesEvent =
-  | 'RUN'
+type SeriesEventTypes =
   | 'RUN_MATCH.FINISH_MATCH'
   | 'MATCH_CREATED'
   | 'MATCH_COMPLETED'
   | 'RETRY_ALLOCATION'
   | 'REOPEN_BETTING';
 
-type InternalEvent = { type: SeriesEvent };
+export type SeriesEvent =
+  | { type: 'RUN'; fighterCodeNames: string[] }
+  | { type: SeriesEventTypes };
 
 export function createSeriesFSM(
   codeName: string,
@@ -22,7 +23,7 @@ export function createSeriesFSM(
   return setup({
     types: {} as {
       context: SeriesContext;
-      events: InternalEvent;
+      events: SeriesEvent;
     },
     actors: getActors(fsmDependencies),
     delays: {
@@ -39,6 +40,7 @@ export function createSeriesFSM(
     context: {
       codeName,
       displayName,
+      fighterCodeNames: [],
       config: {
         requiredCapabilities: {},
         betPlacementTime: 30,
@@ -60,13 +62,21 @@ export function createSeriesFSM(
     states: {
       idle: {
         on: {
-          RUN: 'getSeriesConfig',
+          RUN: {
+            target: 'getSeriesConfig',
+            actions: assign({
+              fighterCodeNames: ({ event }) => event.fighterCodeNames,
+            }),
+          },
         },
       },
       getSeriesConfig: {
         invoke: {
           src: 'getSeriesConfig',
-          input: ({ context }) => context.codeName,
+          input: ({ context: { codeName, fighterCodeNames } }) => ({
+            codeName,
+            fighterCodeNames,
+          }),
           onDone: {
             target: 'preMatchDelay',
             actions: assign({

@@ -13,6 +13,7 @@ import { GetUserMatchResult } from './models/getUserMatchResult';
 import { Tournament } from './interfaces/tournament.interface';
 import { TournamentEntry } from './interfaces/tournamentEntry.interface';
 import { SortOrder } from 'dynamoose/dist/General';
+import { IndexUtils } from './indexUtils';
 
 @Injectable()
 export class QueryStoreService implements OnModuleInit {
@@ -356,6 +357,10 @@ export class QueryStoreService implements OnModuleInit {
       codeName: string;
     };
   }) {
+    const matchFighters = IndexUtils.formatMatchFighters(
+      fighters.map((fighter) => fighter.codeName),
+    );
+
     await this.matchModel.create({
       pk: 'match',
       sk: `${startTime}#${seriesCodeName}`,
@@ -363,6 +368,7 @@ export class QueryStoreService implements OnModuleInit {
       matchId,
       startTime,
       fighters,
+      matchFighters,
       winner,
     });
   }
@@ -416,7 +422,15 @@ export class QueryStoreService implements OnModuleInit {
     });
   }
 
-  async updateRoster(roster: { codeName: string }[]) {
+  async updateRoster(
+    roster: {
+      codeName: string;
+      fighters: {
+        displayName: string;
+        imagePath: string;
+      }[];
+    }[],
+  ) {
     await this.rosterModel.create(
       {
         pk: 'roster',
@@ -437,6 +451,18 @@ export class QueryStoreService implements OnModuleInit {
     });
 
     return roster;
+  }
+
+  async getMatchHistory(fighterCodeNames: string[]): Promise<GetMatchResult[]> {
+    const matchFighters = IndexUtils.formatMatchFighters(fighterCodeNames);
+    const matches = await this.matchModel
+      .query({ matchFighters })
+      .using('matchFightersStartTime')
+      .limit(20)
+      .sort(SortOrder.descending)
+      .exec();
+
+    return matches.map(({ pk, sk, ...rest }) => rest);
   }
 
   async getMatches(): Promise<GetMatchResult[]> {

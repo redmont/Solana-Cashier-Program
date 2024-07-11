@@ -311,19 +311,27 @@ export class Gateway
 
     return {
       success: true,
-      roster: roster.map(({ codeName }) => ({ series: codeName })),
+      roster: roster.map(({ codeName, fighters }) => ({
+        series: codeName,
+        fighters: fighters.map(({ imagePath, ...rest }) => ({
+          ...rest,
+          imageUrl: this.getMediaUrl(imagePath),
+        })),
+      })),
     };
   }
 
   @SubscribeMessage(GetMatchHistoryMessage.messageType)
-  public async getMatchHistory(): Promise<GetMatchHistoryMessageResponse> {
-    const result = await this.query.getMatches();
+  public async getMatchHistory(
+    @MessageBody() { fighterCodeNames }: GetMatchHistoryMessage,
+  ): Promise<GetMatchHistoryMessageResponse> {
+    const result = await this.query.getMatchHistory(fighterCodeNames);
 
     const matches = result.map((match) => ({
       ...match,
-      fighters: match.fighters.map((fighter) => ({
-        ...fighter,
-        imageUrl: this.getMediaUrl(fighter.imagePath),
+      fighters: match.fighters.map(({ imagePath, ...rest }) => ({
+        ...rest,
+        imageUrl: this.getMediaUrl(imagePath),
       })),
     }));
 

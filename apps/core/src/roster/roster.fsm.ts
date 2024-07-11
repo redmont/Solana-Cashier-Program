@@ -2,29 +2,40 @@ import { setup, assign, fromPromise } from 'xstate';
 
 export type RosterScheduleType = 'linear' | 'random';
 
+interface SeriesFromSchedule {
+  codeName: string;
+  fighters: {
+    codeName: string;
+    displayName: string;
+    imagePath: string;
+  }[];
+}
+
 export function createRosterFSM({
   getSeriesFromSchedule,
   runSeries,
 }: {
-  getSeriesFromSchedule: () => Promise<string | null>;
-  runSeries: (seriesCodeName: string) => Promise<void>;
+  getSeriesFromSchedule: () => Promise<SeriesFromSchedule | null>;
+  runSeries: (series: SeriesFromSchedule) => Promise<void>;
 }) {
   return setup({
     types: {
-      context: {} as { nextSeriesCodeName: string },
+      context: {} as { nextSeries: SeriesFromSchedule },
       events: {} as
         | { type: 'run' }
         | { type: 'seriesMatchCompleted'; codeName: string },
     },
     actors: {
-      getSeriesFromSchedule: fromPromise<string | null, void>(() =>
+      getSeriesFromSchedule: fromPromise<SeriesFromSchedule | null, void>(() =>
         getSeriesFromSchedule(),
       ),
-      runSeries: fromPromise<void, string>(({ input }) => runSeries(input)),
+      runSeries: fromPromise<void, SeriesFromSchedule>(({ input }) =>
+        runSeries(input),
+      ),
     },
   }).createMachine({
     context: {
-      nextSeriesCodeName: null,
+      nextSeries: null,
     },
     id: 'roster',
     initial: 'idle',
@@ -44,7 +55,7 @@ export function createRosterFSM({
             {
               guard: ({ event }) => Boolean(event.output),
               actions: assign({
-                nextSeriesCodeName: ({ event }) => event.output,
+                nextSeries: ({ event }) => event.output,
               }),
               target: 'runSeries',
             },
@@ -57,14 +68,14 @@ export function createRosterFSM({
       runSeries: {
         description: 'Run the next series in the schedule.',
         invoke: {
-          input: ({ context }) => context.nextSeriesCodeName,
+          input: ({ context }) => context.nextSeries,
           src: 'runSeries',
         },
         on: {
           seriesMatchCompleted: {
             target: 'postMatchDelay',
             guard: ({ context, event }) =>
-              event.codeName === context.nextSeriesCodeName,
+              event.codeName === context.nextSeries.codeName,
           },
         },
       },

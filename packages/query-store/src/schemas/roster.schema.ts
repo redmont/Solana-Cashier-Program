@@ -16,6 +16,18 @@ export const RosterSchema = new Schema({
         type: Object,
         schema: {
           codeName: { type: String, required: true },
+          fighters: {
+            type: Array,
+            schema: [
+              {
+                type: Object,
+                schema: {
+                  displayName: { type: String, required: true },
+                  imagePath: { type: String, required: true },
+                },
+              },
+            ],
+          },
         },
       },
     ],
