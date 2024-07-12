@@ -34,6 +34,10 @@ import {
   GetMatchStatusMessageResponse,
   GetStreamAuthTokenMessage,
   GetStreamAuthTokenMessageResponse,
+  GetDailyClaimsMessage,
+  GetDailyClaimsMessageResponse,
+  ClaimDailyClaimMessage as ClaimDailyClaimUiGatewayMessage,
+  ClaimDailyClaimMessageResponse as ClaimDailyClaimUiGatewayMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
@@ -42,6 +46,8 @@ import {
   PlaceBetMessageResponse,
   EnsureUserIdMessage,
   EnsureUserIdMessageReturnType,
+  ClaimDailyClaimMessage,
+  ClaimDailyClaimMessageResponse,
 } from 'core-messages';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { Socket } from './websocket/socket';
@@ -460,6 +466,65 @@ export class Gateway
     return {
       success: true,
       token,
+    };
+  }
+
+  @SubscribeMessage(GetDailyClaimsMessage.messageType)
+  public async getDailyClaims(
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetDailyClaimsMessageResponse> {
+    const userId = this.clientUserIdMap.get(client?.id);
+
+    const {
+      dailyClaimAmounts,
+      dailyClaimStreak,
+      nextClaimDate,
+      claimExpiryDate,
+    } = await this.query.getDailyClaims(userId);
+
+    return {
+      success: true,
+      dailyClaimAmounts,
+      streak: dailyClaimStreak,
+      nextClaimDate,
+      claimExpiryDate,
+    };
+  }
+
+  @SubscribeMessage(ClaimDailyClaimUiGatewayMessage.messageType)
+  public async claimDailyClaim(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: ClaimDailyClaimUiGatewayMessage,
+  ): Promise<ClaimDailyClaimUiGatewayMessageResponse> {
+    const userId = this.clientUserIdMap.get(client?.id);
+
+    if (!userId) {
+      return {
+        success: false,
+        message: 'User not authorized',
+      };
+    }
+
+    const result = await sendBrokerCommand<
+      ClaimDailyClaimMessage,
+      ClaimDailyClaimMessageResponse
+    >(this.broker, new ClaimDailyClaimMessage(userId, body.amount));
+    if (!result.success) {
+      return {
+        success: false,
+        message: result.message,
+      };
+    }
+
+    const { streak, nextClaimDate, claimExpiryDate } = result.data;
+
+    return {
+      success: true,
+      data: {
+        streak,
+        nextClaimDate,
+        claimExpiryDate,
+      },
     };
   }
 

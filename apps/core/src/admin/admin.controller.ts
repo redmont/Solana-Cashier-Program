@@ -35,12 +35,14 @@ import {
   UpdateRosterRequest,
   CreateTournamentRequest,
   UpdateTournamentRequest,
+  SetDailyClaimAmountsRequest,
 } from './models';
 import { ConfigService } from '@nestjs/config';
 import { TournamentService } from '@/tournament/tournament.service';
 import { AdminAuthGuard } from '@/auth/adminAuthGuard';
 import { FighterProfilesService } from '@/fighterProfiles/fighterProfiles.service';
 import { Tournament } from '@/tournament/interfaces/tournament.interface';
+import { DailyClaimService } from '@/dailyClaim/dailyClaim.service';
 
 @Controller('admin')
 export class AdminController {
@@ -55,6 +57,7 @@ export class AdminController {
     private readonly rosterService: RosterService,
     private readonly tournamentService: TournamentService,
     private readonly fighterProfilesService: FighterProfilesService,
+    private readonly dailyClaimService: DailyClaimService,
     private readonly broker: NatsJetStreamClientProxy,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
@@ -294,5 +297,21 @@ export class AdminController {
     @Body() body: any,
   ) {
     return this.fighterProfilesService.update(codeName, body);
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Get('/daily-claim-amounts')
+  async getDailyClaimAmounts() {
+    const claimAmounts = await this.dailyClaimService.getDailyClaimAmounts();
+
+    const dailyClaimAmounts = claimAmounts?.dailyClaimAmounts ?? [];
+
+    return { dailyClaimAmounts };
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Put('/daily-claim-amounts')
+  async setDailyClaimAmounts(@Body() body: SetDailyClaimAmountsRequest) {
+    await this.dailyClaimService.setDailyClaimAmounts(body.dailyClaimAmounts);
   }
 }

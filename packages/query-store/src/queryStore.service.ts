@@ -14,6 +14,8 @@ import { Tournament } from './interfaces/tournament.interface';
 import { TournamentEntry } from './interfaces/tournamentEntry.interface';
 import { SortOrder } from 'dynamoose/dist/General';
 import { IndexUtils } from './indexUtils';
+import { DailyClaimStatus } from './interfaces/dailyClaimStatus.interface';
+import { DailyClaimAmounts } from './interfaces/dailyClaimAmounts.interface';
 
 @Injectable()
 export class QueryStoreService implements OnModuleInit {
@@ -36,6 +38,10 @@ export class QueryStoreService implements OnModuleInit {
     private readonly tournamentModel: Model<Tournament, Key>,
     @InjectModel('tournamentEntry')
     private readonly tournamentEntryModel: Model<TournamentEntry, Key>,
+    @InjectModel('dailyClaimAmounts')
+    private readonly dailyClaimAmountsModel: Model<DailyClaimAmounts, Key>,
+    @InjectModel('dailyClaimStatus')
+    private readonly dailyClaimStatusModel: Model<DailyClaimStatus, Key>,
   ) {}
 
   private async getCurrentTournament(date: string): Promise<
@@ -753,6 +759,84 @@ export class QueryStoreService implements OnModuleInit {
       endDate,
       totalCount: 0,
       items: [],
+    };
+  }
+
+  async setDailyClaimAmounts(dailyClaimAmounts: number[]) {
+    await this.dailyClaimAmountsModel.create(
+      {
+        pk: 'dailyClaimAmounts',
+        sk: 'dailyClaimAmounts',
+        dailyClaimAmounts,
+      },
+      {
+        return: 'item',
+        overwrite: true,
+      },
+    );
+  }
+
+  async setDailyClaimStatus(
+    userId: string,
+    {
+      dailyClaimStreak,
+      nextClaimDate,
+      claimExpiryDate,
+    }: Pick<
+      DailyClaimStatus,
+      'dailyClaimStreak' | 'nextClaimDate' | 'claimExpiryDate'
+    >,
+  ) {
+    await this.dailyClaimStatusModel.create(
+      {
+        pk: 'dailyClaimStatus',
+        sk: userId,
+        dailyClaimStreak,
+        nextClaimDate,
+        claimExpiryDate,
+      },
+      {
+        return: 'item',
+        overwrite: true,
+      },
+    );
+  }
+
+  async getDailyClaims(userId?: string) {
+    const claimAmounts = await this.dailyClaimAmountsModel.get({
+      pk: 'dailyClaimAmounts',
+      sk: 'dailyClaimAmounts',
+    });
+
+    if (!claimAmounts) {
+      return { dailyClaimAmounts: [] };
+    }
+
+    if (!userId) {
+      return { dailyClaimAmounts: claimAmounts.dailyClaimAmounts };
+    }
+
+    const dailyClaimStatusKey = {
+      pk: 'dailyClaimStatus',
+      sk: userId,
+    };
+
+    let dailyClaimStatus: DailyClaimStatus =
+      await this.dailyClaimStatusModel.get(dailyClaimStatusKey);
+    if (!dailyClaimStatus) {
+      dailyClaimStatus = {
+        ...dailyClaimStatusKey,
+        dailyClaimStreak: 0,
+      };
+    }
+
+    const { dailyClaimStreak, nextClaimDate, claimExpiryDate } =
+      dailyClaimStatus;
+    return {
+      dailyClaimAmounts: claimAmounts.dailyClaimAmounts,
+      dailyClaimStreak,
+      nextClaimDate,
+      claimExpiryDate,
     };
   }
 }

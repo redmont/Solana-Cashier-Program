@@ -16,18 +16,18 @@ describe('TournamentService', () => {
   const tournamentModel = dynamoose.model('tournament', TournamentSchema);
   const tournamentEntryModel = dynamoose.model(
     'tournamentEntry',
-    TournamentEntrySchema
+    TournamentEntrySchema,
   );
   const tournamentWinningsModel = dynamoose.model(
     'tournamentWinnings',
-    TournamentWinningsSchema
+    TournamentWinningsSchema,
   );
   const now = new Date();
 
   const queryStoreService = {
     updateTournament: jest.fn(),
     updateTournamentEntry: jest.fn(),
-  }
+  };
 
   beforeAll(async () => {
     jest.useFakeTimers({ now });
@@ -77,7 +77,7 @@ describe('TournamentService', () => {
 
   it('should not switch to next tournament round if too early', async () => {
     const startDate = '2024-06-25T01:32:33Z';
-    // A little bit after the next day
+    // A few hours later, less than 24h
     const now = '2024-06-25T11:32:33Z';
     MockDate.set(now);
 
@@ -98,12 +98,12 @@ describe('TournamentService', () => {
         where: jest.fn().mockReturnThis(),
         ge: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue([tournament]),
-      })
+      }),
     );
 
     const currentTournamentCodeName = await service.getTournamentCodeName(now);
     const currentTournament = await service.getTournament(
-      currentTournamentCodeName
+      currentTournamentCodeName,
     );
 
     expect(currentTournament.startDate).toBe(startDate);
@@ -112,7 +112,7 @@ describe('TournamentService', () => {
     await service.processRoundChange();
 
     const updatedTournament = await service.getTournament(
-      currentTournamentCodeName
+      currentTournamentCodeName,
     );
 
     expect(updatedTournament.currentRound).toBe(1);
@@ -169,7 +169,7 @@ describe('TournamentService', () => {
         where: jest.fn().mockReturnThis(),
         ge: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue([tournament]),
-      })
+      }),
     );
     jest.spyOn(tournamentModel, 'update').mockImplementation((_key, obj) => {
       tournament = { ...tournament, ...obj };
@@ -190,7 +190,7 @@ describe('TournamentService', () => {
           using: jest.fn().mockReturnThis(),
           all: jest.fn().mockReturnThis(),
           exec: jest.fn().mockResolvedValue(tournamentWinnings),
-        })
+        }),
       );
 
     let updateTournamentEntry = jest
@@ -202,7 +202,7 @@ describe('TournamentService', () => {
 
     const currentTournamentCodeName = await service.getTournamentCodeName(now);
     const currentTournament = await service.getTournament(
-      currentTournamentCodeName
+      currentTournamentCodeName,
     );
 
     expect(currentTournament.startDate).toBe(startDate);
@@ -222,7 +222,7 @@ describe('TournamentService', () => {
     });
 
     const updatedTournament = await service.getTournament(
-      currentTournamentCodeName
+      currentTournamentCodeName,
     );
 
     expect(updatedTournament.currentRound).toBe(2);
@@ -233,5 +233,5 @@ describe('TournamentService', () => {
       },
     });
     expect(queryStoreService.updateTournament).toHaveBeenCalledTimes(1);
-  })
+  });
 });

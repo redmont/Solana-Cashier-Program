@@ -5,3 +5,4 @@ export * from './getBalance';
 export * from './ensureUserId';
 export * from './registerGatewayInstance';
 export * from './gameServerDisconnected';
+export * from './claimDailyClaim';

@@ -17,6 +17,8 @@ import { RosterSchema } from './schemas/roster.schema';
 import { UserMatchSchema } from './schemas/userMatch.schema';
 import { TournamentSchema } from './schemas/tournament.schema';
 import { TournamentEntrySchema } from './schemas/tournamentEntry.schema';
+import { DailyClaimAmountsSchema } from './schemas/dailyClaimAmounts.schema';
+import { DailyClaimStatusSchema } from './schemas/dailyClaimStatus.schema';
 
 interface QueryStoreOptions {
   local?: string | boolean;
@@ -162,6 +164,34 @@ export class QueryStoreModule {
         useFactory: async (_: any, options: QueryStoreOptions) => {
           return {
             schema: TournamentEntrySchema,
+            options: {
+              tableName: options.tableName,
+              create: options.isDynamoDbLocal,
+            },
+          };
+        },
+        inject: ['QUERY_STORE_OPTIONS'],
+      },
+      {
+        name: 'dailyClaimAmounts',
+        imports: options.imports || [],
+        useFactory: async (_: any, options: QueryStoreOptions) => {
+          return {
+            schema: DailyClaimAmountsSchema,
+            options: {
+              tableName: options.tableName,
+              create: options.isDynamoDbLocal,
+            },
+          };
+        },
+        inject: ['QUERY_STORE_OPTIONS'],
+      },
+      {
+        name: 'dailyClaimStatus',
+        imports: options.imports || [],
+        useFactory: async (_: any, options: QueryStoreOptions) => {
+          return {
+            schema: DailyClaimStatusSchema,
             options: {
               tableName: options.tableName,
               create: options.isDynamoDbLocal,
