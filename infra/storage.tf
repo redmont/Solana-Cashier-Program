@@ -201,6 +201,18 @@ resource "aws_dynamodb_table" "query_store_table" {
     ]
 
   }
+
+  global_secondary_index {
+    name            = "matchFightersStartTime"
+    hash_key        = "matchFighters"
+    range_key       = "startTime"
+    projection_type = "INCLUDE"
+    non_key_attributes = [
+      "seriesCodeName",
+      "fighters",
+      "winner"
+    ]
+  }
 }
 
 resource "aws_dynamodb_table" "ui_gateway_table" {

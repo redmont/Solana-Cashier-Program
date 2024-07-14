@@ -9,5 +9,5 @@ export const GameServerConfigSchema = new Schema({
     type: String,
     rangeKey: true,
   },
-  streamUrl: String,
+  streamId: String,
 });

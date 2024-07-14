@@ -52,7 +52,7 @@ export class MatchManagementService {
   ): Promise<{
     serverId: string;
     capabilities: ServerCapabilities;
-    streamUrl: string;
+    streamId: string;
   }> {
     this.logger.log(`Allocating server for match ${matchId}...`);
 

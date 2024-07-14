@@ -105,7 +105,7 @@ curl --location 'http://localhost:8080/admin/game-server-configs' \
 --header 'Content-Type: application/json' \
 --data '{
     "codeName": "mock001",
-    "streamUrl": "https://viewer.millicast.com?streamId=WBYdQB/brawlers-dev-2&controls=false&showLabels=false"
+    "streamId": "brawlers_dev_1"
 }'
 ```
 
@@ -164,6 +164,16 @@ curl -X PATCH --location 'http://localhost:8080/admin/roster' \
 --data '{
     "scheduleType": "linear",
     "series": ["frogs-vs-dogs"]
+}'
+```
+
+#### (Optional) Add daily claims
+
+```sh
+curl -X PUT --location 'http://localhost:8080/admin/daily-claim-amounts' \
+--header 'Content-Type: application/json' \
+--data '{
+    "dailyClaimAmounts": [750, 1250, 1500, 1725, 1825, 1850]
 }'
 ```
 

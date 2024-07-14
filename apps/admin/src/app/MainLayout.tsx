@@ -13,6 +13,7 @@ import { BiMenu } from 'react-icons/bi';
 import { Aside } from '@/components/Aside';
 import {
   AiOutlineCrown,
+  AiOutlineDollar,
   AiOutlineDollarCircle,
   AiOutlineFileImage,
   AiOutlineHome,
@@ -36,6 +37,7 @@ const menuItems = [
   { text: 'Series', icon: AiOutlineCrown, path: '/series' },
   { text: 'Roster', icon: AiOutlineOrderedList, path: '/roster' },
   { text: 'Points', icon: AiOutlineDollarCircle, path: '/points' },
+  { text: 'Daily claim amounts', icon: AiOutlineDollar, path: '/daily-claim-amounts' },
   {
     text: 'Game server configs',
     icon: AiOutlineSetting,

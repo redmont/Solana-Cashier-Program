@@ -4,6 +4,7 @@ import { RosterService } from './roster.service';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { ConfigService } from '@nestjs/config';
 import { RosterSchema } from './roster.schema';
+import { FighterProfilesModule } from '@/fighterProfiles/fighterProfiles.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { RosterSchema } from './roster.schema';
       },
     ]),
     SeriesModule,
+    FighterProfilesModule,
   ],
   providers: [RosterService],
   exports: [RosterService],

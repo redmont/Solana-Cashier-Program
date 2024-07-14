@@ -35,12 +35,14 @@ import {
   UpdateRosterRequest,
   CreateTournamentRequest,
   UpdateTournamentRequest,
+  SetDailyClaimAmountsRequest,
 } from './models';
 import { ConfigService } from '@nestjs/config';
 import { TournamentService } from '@/tournament/tournament.service';
 import { AdminAuthGuard } from '@/auth/adminAuthGuard';
 import { FighterProfilesService } from '@/fighterProfiles/fighterProfiles.service';
 import { Tournament } from '@/tournament/interfaces/tournament.interface';
+import { DailyClaimService } from '@/dailyClaim/dailyClaim.service';
 
 @Controller('admin')
 export class AdminController {
@@ -55,6 +57,7 @@ export class AdminController {
     private readonly rosterService: RosterService,
     private readonly tournamentService: TournamentService,
     private readonly fighterProfilesService: FighterProfilesService,
+    private readonly dailyClaimService: DailyClaimService,
     private readonly broker: NatsJetStreamClientProxy,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
@@ -133,12 +136,6 @@ export class AdminController {
   }
 
   @UseGuards(AdminAuthGuard)
-  @Post('/series/run')
-  async runSeries(@Body() body: { codeName: string }) {
-    this.seriesService.sendEvent(body.codeName, 'RUN');
-  }
-
-  @UseGuards(AdminAuthGuard)
   @Get('/game-server-configs')
   async getGameServerConfigs() {
     return { serverConfigs: await this.gameServerConfigService.getAll() };
@@ -147,7 +144,7 @@ export class AdminController {
   @UseGuards(AdminAuthGuard)
   @Post('/game-server-configs')
   async createGameServerConfig(@Body() body: CreateGameServerConfigRequest) {
-    await this.gameServerConfigService.create(body.codeName, body.streamUrl);
+    await this.gameServerConfigService.create(body.codeName, body.streamId);
   }
 
   @UseGuards(AdminAuthGuard)
@@ -155,7 +152,9 @@ export class AdminController {
   async updateGameServerConfig(
     @Param('id') id: string,
     @Body() body: UpdateGameServerConfigRequest,
-  ) { }
+  ) {
+    await this.gameServerConfigService.update(id, body.streamId);
+  }
 
   @UseGuards(AdminAuthGuard)
   @Get('/game-server-capabilities')
@@ -248,7 +247,14 @@ export class AdminController {
     @Param('codeName') codeName: string,
     @Body() body: UpdateTournamentRequest,
   ) {
-    const { displayName, description, startDate, rounds, currentRound, prizes } = body;
+    const {
+      displayName,
+      description,
+      startDate,
+      rounds,
+      currentRound,
+      prizes,
+    } = body;
     return this.tournamentService.updateTournament(codeName, {
       displayName,
       description,
@@ -291,5 +297,21 @@ export class AdminController {
     @Body() body: any,
   ) {
     return this.fighterProfilesService.update(codeName, body);
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Get('/daily-claim-amounts')
+  async getDailyClaimAmounts() {
+    const claimAmounts = await this.dailyClaimService.getDailyClaimAmounts();
+
+    const dailyClaimAmounts = claimAmounts?.dailyClaimAmounts ?? [];
+
+    return { dailyClaimAmounts };
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Put('/daily-claim-amounts')
+  async setDailyClaimAmounts(@Body() body: SetDailyClaimAmountsRequest) {
+    await this.dailyClaimService.setDailyClaimAmounts(body.dailyClaimAmounts);
   }
 }

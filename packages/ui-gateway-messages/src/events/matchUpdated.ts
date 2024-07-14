@@ -15,6 +15,7 @@ export class MatchUpdatedEvent extends GatewayEvent {
     }[],
     public readonly state: string,
     public readonly preMatchVideoUrl: string,
+    public readonly streamId: string,
     public readonly poolOpenStartTime: string,
     public readonly startTime: string,
     public readonly winner: string,

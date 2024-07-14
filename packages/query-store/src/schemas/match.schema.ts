@@ -27,6 +27,16 @@ export const MatchSchema = new Schema({
       },
     ],
   },
+  matchFighters: {
+    type: String,
+    required: false,
+    index: {
+      name: 'matchFightersStartTime',
+      rangeKey: 'startTime',
+      type: 'global',
+      project: ['seriesCodeName', 'fighters', 'winner'],
+    },
+  },
   winner: {
     type: Object,
     schema: {

@@ -4,6 +4,7 @@ import { classNames } from 'primereact/utils';
 import { FC, useEffect, useRef, useState } from 'react';
 import { Tooltip } from '../Tooltip';
 import { LOCAL_PRICE_CACHE_PERIOD } from '@/config';
+import { toScientificParts } from '@/utils';
 
 interface Props {
   fighters: Fighter[];
@@ -12,6 +13,7 @@ interface Props {
 
 export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
   const [progress, setProgress] = useState(0.5);
+  const [isWinner, setIsWinner] = useState([false, false]);
   const deltasRef = useRef<number[]>([0.5, 0.5]);
   useEffect(() => {
     const tickers = fighters.map((fighter) => fighter.ticker);
@@ -38,16 +40,18 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
     deltas = deltas.map((d) => d / total || 0.5);
     deltasRef.current = deltas;
     const progress = deltas[0];
+    setIsWinner([progress > 0.5, 1 - progress > 0.5]);
 
-    setProgress(progress || 0.5);
+    setProgress(progress);
   }, [prices]);
 
   return (
     <div className="price-visualisation">
-      <div className="progress-bar-container">
+      <div className="tow-container">
+        <div className="tow-line"></div>
         <div
-          className="progress-bar"
-          style={{ width: `${progress * 100}%` }}
+          className="tow-indicator"
+          style={{ left: `${10 + progress * 80}%` }}
         ></div>
       </div>
 
@@ -61,16 +65,33 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
               : price.change.absolute > 0
                 ? 'up'
                 : 'down';
-          const displayPrice = `${Math.abs(price ? price.change.ppm : 0).toFixed(2)}ppm`;
+          const displayPriceChange = `${Math.abs(price ? price.change.ppm : 0).toFixed(2)}ppm`;
+
+          const priceInScientificNotation = toScientificParts(
+            price?.event.price ?? 0,
+          );
+          const displayPrice = `${priceInScientificNotation.base.toFixed(5)}`;
           return (
             <>
               <Tooltip
-                content={`[LIVE] ${ticker} price change over ${LOCAL_PRICE_CACHE_PERIOD / 1000}s \n ppm = 0.0001%`}
+                content={
+                  <div>
+                    <span>
+                      Price is scaled by 10
+                      <sup>{priceInScientificNotation.exponent * -1}</sup>
+                    </span>
+                    {/* <br /> TODO: implement price data source
+                    <span>Source: MEXC</span> */}
+                  </div>
+                }
                 key={ticker}
               >
                 <div
                   className={classNames('price-info', direction)}
-                  style={{ flexDirection: `row${i === 1 ? '-reverse' : ''}` }}
+                  style={{
+                    flexDirection: `row${i === 1 ? '-reverse' : ''}`,
+                    fontWeight: isWinner[i] ? 'bold' : 'normal',
+                  }}
                 >
                   <span className="price-ticker">{`${ticker}`}</span>
                   <span className="price-value">{`${displayPrice}`}</span>
@@ -85,7 +106,9 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
                 </div>
               </Tooltip>
               {i === 0 && (
-                <div className="price-info-indicator pi pi-wave-pulse"></div>
+                <Tooltip content={`LIVE PRICE`}>
+                  <div className="price-info-indicator pi pi-wave-pulse"></div>
+                </Tooltip>
               )}
             </>
           );

@@ -2,11 +2,27 @@ import { createActor, waitFor } from 'xstate';
 import { createRosterFSM } from './roster.fsm';
 
 describe('RosterFsm', () => {
+  // Mock getSeriesFromSchedule function
+  const getSeriesFromSchedule = jest.fn(() =>
+    Promise.resolve({
+      codeName: 'series1',
+      fighters: [
+        {
+          codeName: 'fighter1',
+          displayName: 'Fighter 1',
+          imagePath: 'image1.jpg',
+        },
+        {
+          codeName: 'fighter2',
+          displayName: 'Fighter 2',
+          imagePath: 'image2.jpg',
+        },
+      ],
+    }),
+  );
+
   it('should transition to runSeries when getSeriesFromSchedule is successful', async () => {
     let snapshot;
-
-    // Mock getSeriesFromSchedule function
-    const getSeriesFromSchedule = jest.fn(() => Promise.resolve('series1'));
 
     // Call createRosterFSM function
     const rosterFSM = createActor(
@@ -36,7 +52,7 @@ describe('RosterFsm', () => {
     snapshot = service.getSnapshot();
 
     expect(snapshot.value).toBe('runSeries');
-    expect(snapshot.context.nextSeriesCodeName).toBe('series1');
+    expect(snapshot.context.nextSeries.codeName).toBe('series1');
   });
 
   it('should transition to idle when getSeriesFromSchedule is not successful', async () => {
@@ -73,14 +89,11 @@ describe('RosterFsm', () => {
     snapshot = service.getSnapshot();
 
     expect(snapshot.value).toBe('idle');
-    expect(snapshot.context.nextSeriesCodeName).toBe(null);
+    expect(snapshot.context.nextSeries).toBe(null);
   });
 
   it('should transition to getNextSeriesFromSchedule when match is completed', async () => {
     let snapshot;
-
-    // Mock getSeriesFromSchedule function
-    const getSeriesFromSchedule = jest.fn(() => Promise.resolve('series1'));
 
     // Mock runSeries function
     const runSeries = jest.fn();
@@ -118,16 +131,17 @@ describe('RosterFsm', () => {
 
     expect(snapshot.value).toBe('postMatchDelay');
 
-    await waitFor(service, (state) => state.value === 'getNextSeriesFromSchedule', {
-      timeout: 15_000,
-    });
+    await waitFor(
+      service,
+      (state) => state.value === 'getNextSeriesFromSchedule',
+      {
+        timeout: 15_000,
+      },
+    );
   }, 30_000);
 
   it('should not transition when match is completed with an unknown series', async () => {
     let snapshot;
-
-    // Mock getSeriesFromSchedule function
-    const getSeriesFromSchedule = jest.fn(() => Promise.resolve('series1'));
 
     // Mock runSeries function
     const runSeries = jest.fn();

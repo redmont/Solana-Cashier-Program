@@ -73,6 +73,7 @@ export class AppController {
       startTime,
       winner,
       preMatchVideoPath,
+      streamId,
     } = data;
 
     const ts = dayjs(timestamp);
@@ -101,6 +102,7 @@ export class AppController {
         fighters,
         state,
         preMatchVideoUrl,
+        streamId,
         poolOpenStartTime,
         startTime,
         winner,

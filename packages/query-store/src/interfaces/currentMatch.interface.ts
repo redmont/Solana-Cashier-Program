@@ -11,6 +11,7 @@ export interface CurrentMatch extends Key {
   }[];
   state: string;
   preMatchVideoPath: string;
+  streamId?: string;
   poolOpenStartTime?: string;
   startTime?: string;
   winner?: string;

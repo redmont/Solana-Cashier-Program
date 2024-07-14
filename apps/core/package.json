@@ -49,6 +49,7 @@
     "mathjs": "^12.4.1",
     "nats": "^2.22.0",
     "nestjs-dynamoose": "^0.5.8",
+    "neverthrow": "^6.2.2",
     "pnpm": "^9.0.6",
     "query-store": "workspace:*",
     "reflect-metadata": "^0.2.2",

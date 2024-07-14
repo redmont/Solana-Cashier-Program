@@ -113,6 +113,12 @@ locals {
       },
       {
         name = "CORS_ORIGINS", value = join(",", var.cors_origins)
+      },
+      {
+        name = "STREAM_AUTH_PARENT_TOKEN_ID", value = var.stream_auth_parent_token_id
+      },
+      {
+        name = "STREAM_AUTH_PARENT_TOKEN_SECRET", value = var.stream_auth_parent_token_secret
       }
     ]
   }

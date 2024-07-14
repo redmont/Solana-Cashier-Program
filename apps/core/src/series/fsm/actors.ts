@@ -17,8 +17,12 @@ export const getActors = ({
   onStateChange,
   matchCompleted,
 }: FSMDependencies) => ({
-  getSeriesConfig: fromPromise<SeriesConfig, string>(async ({ input }) => {
-    return await getSeriesConfig(input);
+  getSeriesConfig: fromPromise<
+    SeriesConfig,
+    { codeName: string; fighterCodeNames: string[] }
+  >(async ({ input }) => {
+    const { codeName, fighterCodeNames } = input;
+    return await getSeriesConfig(codeName, fighterCodeNames);
   }),
   generateMatchId: fromPromise<string, string>(async ({ input: codeName }) => {
     const matchId = uuid();
@@ -39,7 +43,7 @@ export const getActors = ({
         };
         levels: string[];
       };
-      streamUrl: string;
+      streamId: string;
     },
     { matchId: string; config: SeriesConfig }
   >(async ({ input }) => {

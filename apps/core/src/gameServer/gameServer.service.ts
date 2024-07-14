@@ -166,7 +166,7 @@ export class GameServerService {
   async allocateServerForMatch(
     matchId: string,
     matchParameters: MatchParameters,
-  ): Promise<{ serverId: string; capabilities: any; streamUrl: string }> {
+  ): Promise<{ serverId: string; capabilities: any; streamId: string }> {
     // We're not checking server capabilities yet,
     // so we just return the first server that's ready.
 
@@ -189,10 +189,10 @@ export class GameServerService {
           params: { matchId, matchParameters },
         });
 
-        const { streamUrl } = serverConfig;
+        const { streamId } = serverConfig;
 
         const { capabilities } = snapshot.context;
-        return { serverId: key, capabilities, streamUrl };
+        return { serverId: key, capabilities, streamId };
       }
     }
 

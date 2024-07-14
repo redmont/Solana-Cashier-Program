@@ -60,11 +60,16 @@ cleanup() {
     docker stop $(docker ps -q --filter ancestor=redis) &>/dev/null
     echo "Stopping NATS..."
     docker stop $(docker ps -q --filter ancestor=nats) &>/dev/null
+
+    exit 0
 }
 
 trap cleanup INT
 
 sleep 5
+
+# Create an oracleIndexer.> stream if it doesn't exist
+nats --server localhost:4222 stream add oracleIndexer --subjects='oracleIndexer.>' --retention='workq' --max-msgs=-1 --max-bytes=-1 --max-age='1h' --storage='file' --discard='old' --replicas=1 --defaults 
 
 # Check if cashier-events-local exists
 aws dynamodb list-tables --endpoint-url http://localhost:8765 | grep cashier-events-local

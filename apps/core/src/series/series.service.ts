@@ -105,32 +105,13 @@ export class SeriesService {
     const fsmInstance = createActor(
       createSeriesFSM(codeName, displayName, {
         logger: this.logger,
-        getSeriesConfig: async (codeName) => {
+        getSeriesConfig: async (codeName, fighterCodeNames) => {
           const series = await this.seriesPersistenceService.getOne(codeName);
-
-          const fighterProfiles = await this.fighterProfilesService.list();
-
-          let fighters = [];
-          for (const fighterProfile of series.fighterProfiles) {
-            if (fighterProfile === '#RANDOM#') {
-              while (true) {
-                // Random fighter
-                const randomIndex = Math.floor(
-                  Math.random() * fighterProfiles.length,
-                );
-                const fighter = fighterProfiles[randomIndex];
-                // We can't use the same fighter twice
-                if (!fighters.includes(fighter)) {
-                  fighters.push(fighter);
-                  break;
-                }
-              }
-            } else {
-              const fighter = fighterProfiles.find(
-                (x) => x.codeName === fighterProfile,
-              );
-              fighters.push(fighter);
-            }
+          const fighters = [];
+          for (const fighterCodeName of fighterCodeNames) {
+            const fighter =
+              await this.fighterProfilesService.get(fighterCodeName);
+            fighters.push(fighter);
           }
 
           return {
@@ -194,26 +175,28 @@ export class SeriesService {
             }),
           );
 
-          await this.seriesPersistenceService.savePublicState(
+          await this.seriesPersistenceService.savePublicState({
             codeName,
-            context.matchId,
+            matchId: context.matchId,
             fighters,
             state,
-            context.config.preMatchVideoPath,
-            context.poolOpenStartTime,
-            context.startTime,
-          );
+            preMatchVideoPath: context.config.preMatchVideoPath,
+            streamId: context.streamId,
+            poolOpenStartTime: context.poolOpenStartTime,
+            startTime: context.startTime,
+          });
 
-          this.gatewayManagerService.handleMatchUpdated(
-            codeName,
-            context.matchId,
+          this.gatewayManagerService.handleMatchUpdated({
+            seriesCodeName: codeName,
+            matchId: context.matchId,
             fighters,
             state,
-            context.config.preMatchVideoPath,
-            context.poolOpenStartTime,
-            context.startTime,
-            context.winningFighter?.codeName,
-          );
+            preMatchVideoPath: context.config.preMatchVideoPath,
+            streamId: context.streamId,
+            poolOpenStartTime: context.poolOpenStartTime,
+            startTime: context.startTime,
+            winner: context.winningFighter?.codeName,
+          });
         },
         matchCompleted: async () => {
           this.eventEmitter.emit('series.matchCompleted', codeName);
@@ -301,7 +284,7 @@ export class SeriesService {
       throw new Error(`Series with codeName ${codeName} does not exist`);
     }
 
-    fsmInstance.fsm.send({ type: event });
+    fsmInstance.fsm.send(event);
   }
 
   listSeries() {

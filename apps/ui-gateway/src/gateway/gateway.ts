@@ -32,6 +32,12 @@ import {
   GetStreamTokenMessage,
   GetStreamTokenMessageResponse,
   GetMatchStatusMessageResponse,
+  GetStreamAuthTokenMessage,
+  GetStreamAuthTokenMessageResponse,
+  GetDailyClaimsMessage,
+  GetDailyClaimsMessageResponse,
+  ClaimDailyClaimMessage as ClaimDailyClaimUiGatewayMessage,
+  ClaimDailyClaimMessageResponse as ClaimDailyClaimUiGatewayMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
@@ -40,6 +46,8 @@ import {
   PlaceBetMessageResponse,
   EnsureUserIdMessage,
   EnsureUserIdMessageReturnType,
+  ClaimDailyClaimMessage,
+  ClaimDailyClaimMessageResponse,
 } from 'core-messages';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { Socket } from './websocket/socket';
@@ -51,14 +59,16 @@ import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-
 import dayjs from '@/dayjs';
 import { StreamTokenService } from '@/streamToken/streamToken.service';
 import { emitInternalEvent, UserConnectedEvent } from '@/internalEvents';
+import { StreamAuthService } from '@/streamAuth/streamAuth.service';
 
 @WebSocketGateway()
 export class Gateway
   implements
-  OnModuleInit,
-  OnGatewayInit,
-  OnGatewayConnection,
-  OnGatewayDisconnect {
+    OnModuleInit,
+    OnGatewayInit,
+    OnGatewayConnection,
+    OnGatewayDisconnect
+{
   private readonly logger: Logger = new Logger(Gateway.name);
   private readonly mediaUri: string;
 
@@ -76,6 +86,7 @@ export class Gateway
     private readonly jwtAuthService: IJwtAuthService,
     private readonly cashierReadModelService: ReadModelService,
     private readonly streamTokenService: StreamTokenService,
+    private readonly streamAuthService: StreamAuthService,
     private readonly eventEmitter: EventEmitter2,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
@@ -183,6 +194,7 @@ export class Gateway
       startTime,
       winner,
       preMatchVideoPath,
+      streamId,
     } = await this.query.getCurrentMatch();
 
     const preMatchVideoUrl =
@@ -197,6 +209,7 @@ export class Gateway
       })),
       state,
       preMatchVideoUrl,
+      streamId,
       bets,
       poolOpenStartTime,
       startTime,
@@ -304,19 +317,27 @@ export class Gateway
 
     return {
       success: true,
-      roster: roster.map(({ codeName }) => ({ series: codeName })),
+      roster: roster.map(({ codeName, fighters }) => ({
+        series: codeName,
+        fighters: fighters.map(({ imagePath, ...rest }) => ({
+          ...rest,
+          imageUrl: this.getMediaUrl(imagePath),
+        })),
+      })),
     };
   }
 
   @SubscribeMessage(GetMatchHistoryMessage.messageType)
-  public async getMatchHistory(): Promise<GetMatchHistoryMessageResponse> {
-    const result = await this.query.getMatches();
+  public async getMatchHistory(
+    @MessageBody() { fighterCodeNames }: GetMatchHistoryMessage,
+  ): Promise<GetMatchHistoryMessageResponse> {
+    const result = await this.query.getMatchHistory(fighterCodeNames);
 
     const matches = result.map((match) => ({
       ...match,
-      fighters: match.fighters.map((fighter) => ({
-        ...fighter,
-        imageUrl: this.getMediaUrl(fighter.imagePath),
+      fighters: match.fighters.map(({ imagePath, ...rest }) => ({
+        ...rest,
+        imageUrl: this.getMediaUrl(imagePath),
       })),
     }));
 
@@ -379,7 +400,10 @@ export class Gateway
 
     let roundEndDate = null;
     if (startDate) {
-      roundEndDate = dayjs.utc(startDate).add(currentRound, 'day').toISOString();
+      roundEndDate = dayjs
+        .utc(startDate)
+        .add(currentRound, 'day')
+        .toISOString();
     }
 
     return {
@@ -430,6 +454,77 @@ export class Gateway
     return {
       success: true,
       token,
+    };
+  }
+
+  @SubscribeMessage(GetStreamAuthTokenMessage.messageType)
+  public async getAuthStreamToken(
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetStreamAuthTokenMessageResponse> {
+    const token = this.streamAuthService.generateToken(client.id);
+
+    return {
+      success: true,
+      token,
+    };
+  }
+
+  @SubscribeMessage(GetDailyClaimsMessage.messageType)
+  public async getDailyClaims(
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetDailyClaimsMessageResponse> {
+    const userId = this.clientUserIdMap.get(client?.id);
+
+    const {
+      dailyClaimAmounts,
+      dailyClaimStreak,
+      nextClaimDate,
+      claimExpiryDate,
+    } = await this.query.getDailyClaims(userId);
+
+    return {
+      success: true,
+      dailyClaimAmounts,
+      streak: dailyClaimStreak,
+      nextClaimDate,
+      claimExpiryDate,
+    };
+  }
+
+  @SubscribeMessage(ClaimDailyClaimUiGatewayMessage.messageType)
+  public async claimDailyClaim(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: ClaimDailyClaimUiGatewayMessage,
+  ): Promise<ClaimDailyClaimUiGatewayMessageResponse> {
+    const userId = this.clientUserIdMap.get(client?.id);
+
+    if (!userId) {
+      return {
+        success: false,
+        message: 'User not authorized',
+      };
+    }
+
+    const result = await sendBrokerCommand<
+      ClaimDailyClaimMessage,
+      ClaimDailyClaimMessageResponse
+    >(this.broker, new ClaimDailyClaimMessage(userId, body.amount));
+    if (!result.success) {
+      return {
+        success: false,
+        message: result.message,
+      };
+    }
+
+    const { streak, nextClaimDate, claimExpiryDate } = result.data;
+
+    return {
+      success: true,
+      data: {
+        streak,
+        nextClaimDate,
+        claimExpiryDate,
+      },
     };
   }
 

@@ -19,9 +19,13 @@ export const CurrentMatchSchema = new Schema({
     type: String,
     required: false,
   },
+  streamId: {
+    type: String,
+    required: false,
+  },
   poolOpenStartTime: {
     type: String,
-    required: false
+    required: false,
   },
   startTime: {
     type: String,

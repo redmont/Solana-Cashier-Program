@@ -11,6 +11,10 @@ export interface Match extends Key {
     imagePath: string;
     betCount: number;
   }[];
+  /**
+   * Sorted concatenation of the codeNames of the fighters
+   */
+  matchFighters?: string;
   winner: {
     codeName: string;
   };

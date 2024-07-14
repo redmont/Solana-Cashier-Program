@@ -8,6 +8,7 @@ import { Actor, createActor } from 'xstate';
 import { OnEvent } from '@nestjs/event-emitter';
 import { QueryStoreService } from 'query-store';
 import dayjs from '@/dayjs';
+import { FighterProfilesService } from '@/fighterProfiles/fighterProfiles.service';
 
 @Injectable()
 export class RosterService {
@@ -23,6 +24,7 @@ export class RosterService {
     @InjectModel('roster') private readonly model: Model<Roster, Key>,
     private readonly seriesService: SeriesService,
     private readonly queryStore: QueryStoreService,
+    private readonly fighterProfilesService: FighterProfilesService,
   ) {}
 
   async initialise() {
@@ -33,7 +35,14 @@ export class RosterService {
     this.fsm = createActor(
       createRosterFSM({
         getSeriesFromSchedule: () => this.getSeriesFromSchedule(),
-        runSeries: (codeName: string) => this.runSeries(codeName),
+        runSeries: (series: {
+          codeName: string;
+          fighters: {
+            codeName: string;
+            displayName: string;
+            imagePath: string;
+          }[];
+        }) => this.runSeries(series),
       }),
     );
 
@@ -109,10 +118,16 @@ export class RosterService {
       // Order timed series by startTime, using linguistic comparison as the dates are in ISO 8601 format
       roster.timedSeries.sort((a, b) => a.startTime.localeCompare(b.startTime));
       const nextTimedSeries = roster.timedSeries[0];
+
       if (dayjs(nextTimedSeries.startTime).diff(dayjs.utc(), 'seconds') <= 90) {
         // This should be the next series to run
         const next = roster.timedSeries.shift();
-        roster.schedule.unshift(next);
+
+        // Remove it from the schedule
+        const scheduleItem = roster.schedule.find(
+          (item) => item.codeName === next.codeName,
+        );
+        roster.schedule.unshift(scheduleItem);
       }
     }
 
@@ -122,7 +137,10 @@ export class RosterService {
           // Populate the schedule with scheduleLength series, repeated if needed
           for (let i = 0; i < scheduleLength; i++) {
             const seriesIndex = i % roster.series.length;
-            roster.schedule.push(roster.series[seriesIndex]);
+            const series = await this.getSeriesWithFighters(
+              roster.series[seriesIndex].codeName,
+            );
+            roster.schedule.push(series);
           }
         } else {
           // Get last series in the schedule
@@ -139,7 +157,10 @@ export class RosterService {
           for (let i = 1; i <= numberOfSeries; i++) {
             const nextSeriesIndex =
               (lastSeriesIndex + i) % roster.series.length;
-            roster.schedule.push(roster.series[nextSeriesIndex]);
+            const series = await this.getSeriesWithFighters(
+              roster.series[nextSeriesIndex].codeName,
+            );
+            roster.schedule.push(series);
           }
         }
       }
@@ -148,7 +169,10 @@ export class RosterService {
         const numberOfSeries = scheduleLength - roster.schedule.length;
         for (let i = 1; i <= numberOfSeries; i++) {
           const randomIndex = Math.floor(Math.random() * roster.series.length);
-          roster.schedule.push(roster.series[randomIndex]);
+          const series = await this.getSeriesWithFighters(
+            roster.series[randomIndex].codeName,
+          );
+          roster.schedule.push(series);
         }
       }
     }
@@ -158,27 +182,55 @@ export class RosterService {
 
     await this.queryStore.updateRoster(roster.schedule);
 
-    return nextSeries.codeName;
+    return nextSeries;
   }
 
-  async runSeries(codeName: string) {
-    this.seriesService.sendEvent(codeName, 'RUN');
-  }
-
-  async setSeriesAsNext(codeName: string) {
-    const roster = await this.model.get(this.key);
-
-    if (!roster) {
-      return;
-    }
-
-    roster.schedule.unshift({ codeName });
-
-    await this.model.update(roster);
+  async runSeries(series: {
+    codeName: string;
+    fighters: { codeName: string }[];
+  }) {
+    const { codeName, fighters } = series;
+    this.seriesService.sendEvent(codeName, {
+      type: 'RUN',
+      fighterCodeNames: fighters.map((fighter) => fighter.codeName),
+    });
   }
 
   @OnEvent('series.matchCompleted')
   async handleSeriesMatchCompleted(codeName: string) {
     this.fsm.send({ type: 'seriesMatchCompleted', codeName });
+  }
+
+  async getSeriesWithFighters(seriesCodeName: string) {
+    const series = await this.seriesService.getSeries(seriesCodeName);
+    const fighterProfiles = await this.fighterProfilesService.list();
+
+    let fighters = [];
+    for (const fighterProfile of series.fighterProfiles) {
+      if (fighterProfile === '#RANDOM#') {
+        while (true) {
+          // Random fighter
+          const randomIndex = Math.floor(
+            Math.random() * fighterProfiles.length,
+          );
+          const fighter = fighterProfiles[randomIndex];
+          // We can't use the same fighter twice
+          if (!fighters.includes(fighter)) {
+            fighters.push(fighter);
+            break;
+          }
+        }
+      } else {
+        const { codeName, displayName, imagePath } = fighterProfiles.find(
+          (x) => x.codeName === fighterProfile,
+        );
+        fighters.push({ codeName, displayName, imagePath });
+      }
+    }
+
+    return {
+      codeName: series.codeName,
+      fighters,
+    };
   }
 }
