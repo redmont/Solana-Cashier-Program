@@ -80,8 +80,8 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
                       Price is scaled by 10
                       <sup>{priceInScientificNotation.exponent * -1}</sup>
                     </span>
-                    <br />
-                    <span>Source: MEXC</span>
+                    {/* <br /> TODO: implement price data source
+                    <span>Source: MEXC</span> */}
                   </div>
                 }
                 key={ticker}
