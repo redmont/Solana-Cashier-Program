@@ -2,7 +2,9 @@ import { FC } from 'react';
 import { useAppState, useEthWallet } from '@/hooks';
 import { truncateEthAddress } from '../../utils';
 import { classNames } from 'primereact/utils';
+import { TabView, TabPanel } from 'primereact/tabview';
 import { Scrollable } from '@/components/Scrollable';
+import { FightFixtures } from '@/components/betListWidget/fightFixtures';
 import { Tooltip } from '../Tooltip';
 
 export const BetListWidget: FC = () => {
@@ -17,40 +19,48 @@ export const BetListWidget: FC = () => {
   return (
     <div className="widget bet-list-widget">
       <div className="widget-body">
-        <div className="header">
-          {fighters.map((fighter, i) => (
-            <div className="column" key={fighter.codeName}>
-              <div className="fighter-name">{fighter.displayName}</div>
-              <Tooltip
-                content={`Total global stakes in ${fighter.displayName}'s pool`}
-              >
-                <div className="bet-total">{bets[i]?.total || 0} Credits</div>
-              </Tooltip>
-            </div>
-          ))}
-        </div>
-
         <Scrollable className="bet-list-viewport">
-          <div className="bet-list">
-            {bets.map((bet, i) => {
-              const list = bet?.list;
-              return (
-                <div className="column" key={i}>
-                  {list?.map(({ amount, walletAddress }, index) => (
-                    <div
-                      key={index}
-                      className={classNames('row', {
-                        highlighted: walletAddress === address,
-                      })}
+          <TabView className="tab-view" activeIndex={0}>
+            <TabPanel header="Depth">
+              <div className="header">
+                {fighters.map((fighter, i) => (
+                  <div className="column" key={fighter.codeName}>
+                    <div className="fighter-name">{fighter.displayName}</div>
+                    <Tooltip
+                      content={`Total global stakes in ${fighter.displayName}'s pool`}
                     >
-                      <span>{truncateEthAddress(walletAddress)}</span>
-                      <span>{amount.toLocaleString()}</span>
+                      <div className="bet-total">
+                        {bets[i]?.total || 0} Credits
+                      </div>
+                    </Tooltip>
+                  </div>
+                ))}
+              </div>
+              <div className="bet-list">
+                {bets.map((bet, i) => {
+                  const list = bet?.list;
+                  return (
+                    <div className="column" key={i}>
+                      {list?.map(({ amount, walletAddress }, index) => (
+                        <div
+                          key={index}
+                          className={classNames('row', {
+                            highlighted: walletAddress === address,
+                          })}
+                        >
+                          <span>{truncateEthAddress(walletAddress)}</span>
+                          <span>{amount.toLocaleString()}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </div>
+            </TabPanel>
+            <TabPanel header="Fight card">
+              <FightFixtures />
+            </TabPanel>
+          </TabView>
         </Scrollable>
       </div>
     </div>

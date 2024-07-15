@@ -60,4 +60,15 @@
       color: $primary500;
     }
   }
+
+  .tab-view {
+    .p-tabview-nav {
+      display: flex;
+      justify-content: center;
+    }
+
+    .p-tabview-nav-link {
+      padding: $tabviewHeaderSpacing;
+    }
+  }
 }
