@@ -94,7 +94,7 @@ const EditTournamentPage = ({ params }: { params: { codename: string } }) => {
 
   const updateTournamentMutation = useMutation({
     mutationFn: (data: UpdateTournamentRequest) => {
-      return axios.put(`${baseUrl}/series/${params.codename}`, data, {
+      return axios.put(`${baseUrl}/tournaments/${params.codename}`, data, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
