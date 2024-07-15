@@ -147,6 +147,11 @@ export class DailyClaimService {
       claimStatus.claimExpiryDate = claimExpiryDate;
 
       await this.dailyClaimStatusModel.update(claimStatus);
+      await this.query.setDailyClaimStatus(userId, {
+        dailyClaimStreak: claimStatus.dailyClaimStreak,
+        nextClaimDate,
+        claimExpiryDate
+      });
     }
 
     const { dailyClaimStreak, nextClaimDate, claimExpiryDate } = claimStatus;

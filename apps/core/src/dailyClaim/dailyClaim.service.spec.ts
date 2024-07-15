@@ -24,6 +24,7 @@ describe('DailyClaimService', () => {
   const queryStoreService = {
     updateTournament: jest.fn(),
     updateTournamentEntry: jest.fn(),
+    setDailyClaimStatus: jest.fn(),
   };
 
   beforeAll(async () => {
@@ -107,6 +108,8 @@ describe('DailyClaimService', () => {
       expect(streak).toBe(1);
       expect(nextClaimDate).toBe('2024-06-02T00:00:00.000Z');
       expect(claimExpiryDate).toBe('2024-06-03T00:00:00.000Z');
+
+      expect(queryStoreService.setDailyClaimStatus).toHaveBeenCalled();
     });
 
     it('should return a valid nextClaim timestamp after second claim', async () => {
