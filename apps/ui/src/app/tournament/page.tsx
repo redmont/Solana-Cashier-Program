@@ -1,26 +1,14 @@
 'use client';
 
-import {
-  ChangeEvent,
-  FC,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import dayjs from 'dayjs';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   GetTournamentMessage,
   GetTournamentMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { useSocket } from '@/hooks';
 
-import {
-  LeaderboardWidget,
-  LeaderboardWidgetProps,
-} from '@/components/leaderboardWidget';
-import { PrizesWidget, PrizesWidgetProps } from '@/components/prizesWidget';
+import { LeaderboardWidget } from '@/components/leaderboardWidget';
+import { PrizesWidget } from '@/components/prizesWidget';
 import { ZealyWidget } from '@/components/zealyWidget';
 import { XpQuestsWidget } from '@/components/xpQuestsWidget';
 import { CreditClaimWidget } from '@/components/creditClaimWidget';
@@ -43,7 +31,6 @@ export default function Tournament() {
     useState<TournamentTabName>('leaderboard');
 
   const { send, connected } = useSocket();
-  const [isLoading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [tournament, setTournament] = useState<GetTournamentMessageResponse>();
 
@@ -61,7 +48,7 @@ export default function Tournament() {
   );
 
   useEffect(() => {
-    getData('').then(() => setLoading(false));
+    getData('');
   }, [getData]);
 
   const leaderboardWidgetProps = useMemo(() => {
@@ -104,7 +91,7 @@ export default function Tournament() {
     };
   }, [tournament]);
 
-  if (isLoading) return null;
+  if (!tournament) return null;
 
   return (
     <main className={classNames('tournament-page', `tab-${currentTab}`)}>
@@ -117,7 +104,7 @@ export default function Tournament() {
       <Scrollable className="tournament-page-section rewards-section">
         {prizesWidgetProps && <PrizesWidget {...prizesWidgetProps} />}
 
-        {/* <CreditClaimWidget /> */}
+        <CreditClaimWidget />
 
         <div className="tournament-page-section-inner">
           <ZealyWidget />

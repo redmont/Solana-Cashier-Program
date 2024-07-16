@@ -16,16 +16,53 @@
   }
 
   .widget-info {
+    font-size: 0.875rem;
     line-height: 1.5;
   }
 
   .widget-body {
-    display: flex;
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 0.75rem;
-    align-items: center;
+    position: relative;
   }
+
+  .claim-scroll-button {
+    display: none;
+    border: 1px solid rgba($primaryColor, 0.2);
+    height: 1.5rem;
+    width: 1.5rem;
+    position: absolute;
+    top: calc(50% - 0.75rem);
+    z-index: 1;
+    background-color: #0e0d15;
+    border-radius: 0.25rem;
+    align-items: center;
+    justify-content: center;
+
+    .pi {
+      font-size: 0.875rem;
+    }
+
+    &.left {
+      left: 0;
+      margin-left: -0.5rem;
+    }
+
+    &.right {
+      right: 0;
+      margin-right: -0.5rem;
+    }
+  }
+}
+
+.credit-claims-viewport {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  overflow-x: auto;
+  gap: 0.75rem;
+  width: 100%;
+  height: 100%;
+  scroll-snap-type: x mandatory;
+  scroll-snap-stop: always;
 }
 
 .credit-claim-card {
@@ -38,6 +75,7 @@
   font-size: 0.875rem;
   border-radius: 0.25rem;
   background: rgba($primaryColor, 0.1);
+  scroll-snap-align: end;
 
   &.claimed {
     background: rgba($primaryColor, 0.04);
@@ -65,8 +103,9 @@
     font-size: 0.75rem;
   }
 
-  .claim-expiry {
+  .claim-countdown {
     font-size: 0.75rem;
     text-align: center;
+    line-height: 1.5;
   }
 }

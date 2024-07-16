@@ -399,10 +399,11 @@ export class Gateway
     );
 
     let roundEndDate = null;
+    console.log(startDate, currentRound);
     if (startDate) {
       roundEndDate = dayjs
         .utc(startDate)
-        .add(currentRound, 'day')
+        .add(currentRound ?? 1, 'day')
         .toISOString();
     }
 

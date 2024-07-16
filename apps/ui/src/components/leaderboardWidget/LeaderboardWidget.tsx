@@ -1,27 +1,11 @@
 'use client';
 
-import {
-  ChangeEvent,
-  FC,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-import dayjs from 'dayjs';
-import { InputText } from 'primereact/inputtext';
-import { classNames } from 'primereact/utils';
-import { Button } from 'primereact/button';
-import {
-  GetTournamentMessage,
-  GetTournamentMessageResponse,
-} from '@bltzr-gg/brawlers-ui-gateway-messages';
-import { useSocket } from '@/hooks';
+import { FC } from 'react';
 
 import { LeaderboardSearchInput } from './LeaderboardSearchInput';
 import { LeaderboardRecordList } from './leaderboardRecordList/LeaderboardRecordList';
 
-import { LeaderboardRecord, LeaderboardWidgetProps } from './leaderboardTypes';
+import { LeaderboardWidgetProps } from './leaderboardTypes';
 import { LeaderboardTable } from './leaderboardTable/LeaderboardTable';
 import { WidgetCountdown } from '../widgetCountdown';
 

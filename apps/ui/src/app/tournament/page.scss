@@ -92,6 +92,14 @@ $nav-height: 5rem;
       }
     }
 
+    .credit-claims-viewport {
+      overflow-x: hidden;
+    }
+
+    .claim-scroll-button {
+      display: flex;
+    }
+
     .tournament-page-nav {
       display: none;
     }

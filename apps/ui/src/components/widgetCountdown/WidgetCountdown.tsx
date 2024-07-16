@@ -1,42 +1,20 @@
-import { FC, useMemo, useState, useEffect, useRef } from 'react';
+import { FC } from 'react';
 import dayjs from 'dayjs';
+import { useCountdown } from '@/hooks';
 
 export interface CountdownProps {
   targetDateTime: number | string;
 }
 
 export const WidgetCountdown: FC<CountdownProps> = ({ targetDateTime }) => {
-  const [countdownValue, setCountdownValue] = useState<number>(0);
-  const coundownTimer = useRef<NodeJS.Timeout>();
+  const msLeft = useCountdown(targetDateTime);
 
-  const targetDate = useMemo(
-    () => dayjs(targetDateTime).valueOf(),
-    [targetDateTime],
-  );
+  const duration = dayjs.duration(msLeft, 'milliseconds');
 
-  useEffect(() => {
-    let timer = coundownTimer.current;
-
-    if (timer) return;
-
-    timer = coundownTimer.current = setInterval(() => {
-      let timeLeft = targetDate ? dayjs(targetDate).diff().valueOf() : 0;
-
-      if (timeLeft < 0) timeLeft = 0;
-
-      setCountdownValue(Math.floor(timeLeft / 1000));
-    }, 1000);
-
-    return () => {
-      timer && clearInterval(timer);
-      coundownTimer.current = undefined;
-    };
-  }, [targetDate]);
-
-  const countdownSeconds = countdownValue % 60;
-  const countdownMinutes = Math.floor(countdownValue / 60) % 60;
-  const countdownHours = Math.floor(countdownValue / 60 / 60) % 24;
-  const countdownDays = Math.floor(countdownValue / 60 / 60 / 24);
+  const countdownSeconds = duration.get('seconds');
+  const countdownMinutes = duration.get('minutes');
+  const countdownHours = duration.get('hours');
+  const countdownDays = duration.get('days');
 
   return (
     <div className="widget-countdown">

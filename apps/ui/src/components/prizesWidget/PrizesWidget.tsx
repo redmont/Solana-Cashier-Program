@@ -50,7 +50,7 @@ export const PrizesWidget: FC<PrizesWidgetProps> = ({
           <WidgetCountdown targetDateTime={endDateTime} />
         </div>
 
-        <p className="intro">
+        <p className="widget-info">
           Gain XP for more entries to win major tournament prizes
         </p>
       </div>
