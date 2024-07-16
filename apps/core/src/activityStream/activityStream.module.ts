@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { ActivityStreamService } from './activityStream.service';
 import { ActivityStreamItemSchema } from './activityStreamItem.schema';
 import { GatewayManagerModule } from '@/gatewayManager/gatewayManager.module';
+import { ChatModule } from '@/chat/chat.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { GatewayManagerModule } from '@/gatewayManager/gatewayManager.module';
       },
     ]),
     GatewayManagerModule,
+    ChatModule,
   ],
   providers: [ActivityStreamService],
   exports: [ActivityStreamService],

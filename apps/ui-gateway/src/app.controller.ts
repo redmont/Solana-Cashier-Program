@@ -12,9 +12,9 @@ import {
   BetPlacedEvent as BetPlacedUiGatewayEvent,
   MatchUpdatedEvent as MatchUpdatedUiGatewayEvent,
   BalanceUpdatedEvent as BalanceUpdatedUiGatewayEvent,
-  ActivityStreamEvent as ActivityStreamUiGatewayEvent,
   BetsUpdatedEvent as BetsUpdatedUiGatewayEvent,
   MatchResultEvent as MatchResultUiGatewayEvent,
+  ActivityStreamEvent as ActivityStreamUiGatewayEvent,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { Dayjs } from 'dayjs';
 import dayjs from '@/dayjs';

@@ -157,6 +157,16 @@ resource "aws_dynamodb_table" "query_store_table" {
     type = "N"
   }
 
+  attribute {
+    name = "matchFighters"
+    type = "S"
+  }
+
+  attribute {
+    name = "startTime"
+    type = "S"
+  }
+
   global_secondary_index {
     name            = "pkStartDate"
     hash_key        = "pk"

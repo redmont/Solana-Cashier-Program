@@ -15,4 +15,8 @@ export default () => ({
   mediaUri: process.env.MEDIA_URI,
   dynamicPublicKey: process.env.DYNAMIC_PUBLIC_KEY,
   bypassAdminAuth: process.env.BYPASS_ADMIN_AUTH,
+  pubNubPublishKey: process.env.PUBNUB_PUBLISH_KEY,
+  pubNubSubscribeKey: process.env.PUBNUB_SUBSCRIBE_KEY,
+  pubNubSecretKey: process.env.PUBNUB_SECRET_KEY,
+  pubNubUserId: process.env.PUBNUB_USER_ID,
 });

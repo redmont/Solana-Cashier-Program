@@ -38,6 +38,8 @@ import {
   GetDailyClaimsMessageResponse,
   ClaimDailyClaimMessage as ClaimDailyClaimUiGatewayMessage,
   ClaimDailyClaimMessageResponse as ClaimDailyClaimUiGatewayMessageResponse,
+  ChatAuthMessage,
+  ChatAuthMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
@@ -60,6 +62,7 @@ import dayjs from '@/dayjs';
 import { StreamTokenService } from '@/streamToken/streamToken.service';
 import { emitInternalEvent, UserConnectedEvent } from '@/internalEvents';
 import { StreamAuthService } from '@/streamAuth/streamAuth.service';
+import { ChatAuthService } from '@/chatAuth/chatAuth.service';
 
 @WebSocketGateway()
 export class Gateway
@@ -88,6 +91,7 @@ export class Gateway
     private readonly streamTokenService: StreamTokenService,
     private readonly streamAuthService: StreamAuthService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly chatAuthService: ChatAuthService,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
   }
@@ -127,6 +131,7 @@ export class Gateway
           decodedToken.verified_credentials.length > 0
         ) {
           // Token from dynamic.xyz
+          const { username } = decodedToken;
           const { address } = decodedToken.verified_credentials[0];
 
           const { userId } = await sendBrokerCommand<
@@ -137,12 +142,14 @@ export class Gateway
           client.data.authorizedUser = {
             userId,
             walletAddress: address,
+            username,
           };
         } else {
           // Token from our own auth service
           client.data.authorizedUser = {
             userId: decodedToken.sub,
             walletAddress: decodedToken.claims.walletAddress,
+            username: '', // todo
           };
         }
 
@@ -526,6 +533,24 @@ export class Gateway
         nextClaimDate,
         claimExpiryDate,
       },
+    };
+  }
+
+  @SubscribeMessage(ChatAuthMessage.messageType)
+  public async chatAuth(
+    @ConnectedSocket() client: Socket,
+  ): Promise<ChatAuthMessageResponse> {
+    const userId = this.clientUserIdMap.get(client?.id);
+    const username = client?.data.authorizedUser?.username;
+
+    const { token, authorizedUuid, channels } =
+      await this.chatAuthService.getAuthToken(userId, username);
+
+    return {
+      success: true,
+      token,
+      authorizedUuid,
+      channels,
     };
   }
 

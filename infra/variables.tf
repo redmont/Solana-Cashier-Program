@@ -67,3 +67,18 @@ variable "stream_auth_parent_token_secret" {
   description = "Stream authentication parent token secret"
   type        = string
 }
+
+variable "pubnub_publish_key" {
+  description = "PubNub publish key"
+  type        = string
+}
+
+variable "pubnub_subscribe_key" {
+  description = "PubNub subscribe key"
+  type        = string
+}
+
+variable "pubnub_secret_key" {
+  description = "PubNub secret key"
+  type        = string
+}

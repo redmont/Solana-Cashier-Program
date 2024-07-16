@@ -116,6 +116,18 @@ locals {
       {
         name = "DYNAMIC_PUBLIC_KEY", value = var.dynamic_public_key
       },
+      {
+        name = "PUBNUB_PUBLISH_KEY", value = var.pubnub_publish_key
+      },
+      {
+        name = "PUBNUB_SUBSCRIBE_KEY", value = var.pubnub_subscribe_key
+      },
+      {
+        name = "PUBNUB_SECRET_KEY", value = var.pubnub_secret_key
+      },
+      {
+        name = "PUBNUB_USER_ID", value = "system"
+      }
     ]
   }
 

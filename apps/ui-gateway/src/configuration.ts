@@ -29,4 +29,8 @@ export default () => ({
   millicastAllowedOrigins: process.env.MILLICAST_ALLOWED_ORIGINS,
   streamAuthParentTokenId: process.env.STREAM_AUTH_PARENT_TOKEN_ID,
   streamAuthParentTokenSecret: process.env.STREAM_AUTH_PARENT_TOKEN_SECRET,
+  pubNubPublishKey: process.env.PUBNUB_PUBLISH_KEY,
+  pubNubSubscribeKey: process.env.PUBNUB_SUBSCRIBE_KEY,
+  pubNubSecretKey: process.env.PUBNUB_SECRET_KEY,
+  pubNubUserId: process.env.PUBNUB_USER_ID,
 });

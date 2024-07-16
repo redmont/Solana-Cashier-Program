@@ -119,6 +119,18 @@ locals {
       },
       {
         name = "STREAM_AUTH_PARENT_TOKEN_SECRET", value = var.stream_auth_parent_token_secret
+      },
+      {
+        name = "PUBNUB_PUBLISH_KEY", value = var.pubnub_publish_key
+      },
+      {
+        name = "PUBNUB_SUBSCRIBE_KEY", value = var.pubnub_subscribe_key
+      },
+      {
+        name = "PUBNUB_SECRET_KEY", value = var.pubnub_secret_key
+      },
+      {
+        name = "PUBNUB_USER_ID", value = "system"
       }
     ]
   }

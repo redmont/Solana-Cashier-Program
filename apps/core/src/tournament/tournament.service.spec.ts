@@ -77,8 +77,8 @@ describe('TournamentService', () => {
 
   it('should not switch to next tournament round if too early', async () => {
     const startDate = '2024-06-25T01:32:33Z';
-    // A few hours later, less than 24h
-    const now = '2024-06-25T11:32:33Z';
+    // A bit more than a day later
+    const now = '2024-06-26T11:32:33Z';
     MockDate.set(now);
 
     let tournament = {
@@ -120,8 +120,8 @@ describe('TournamentService', () => {
 
   it('should switch to next tournament round if the time is right', async () => {
     const startDate = '2024-06-25T01:32:33Z';
-    // A little bit after the next day
-    const now = '2024-06-26T02:01:02Z';
+    // A little bit after 2 days
+    const now = '2024-06-27T02:01:02Z';
     MockDate.set(now);
 
     let tournament = {
@@ -135,7 +135,7 @@ describe('TournamentService', () => {
     let tournamentWinnings: TournamentWinnings[] = [
       {
         pk: 'tournamentWinnings#tournament1',
-        sk: 'user1234#2024-06-25T01:32:33Z',
+        sk: 'user1234#2024-06-25T02:32:33Z',
         tournament: 'tournament1',
         userId: 'user1234',
         primaryWalletAddress: '0x1234',
@@ -171,15 +171,12 @@ describe('TournamentService', () => {
         exec: jest.fn().mockResolvedValue([tournament]),
       }),
     );
-    jest.spyOn(tournamentModel, 'update').mockImplementation((_key, obj) => {
-      tournament = { ...tournament, ...obj };
-      return Promise.resolve(tournament);
-    });
 
     let updateTournament = jest
       .spyOn(tournamentModel, 'update')
       .mockImplementation((key, obj) => {
-        tournament = { ...tournament, ...obj };
+        const changes = obj['$SET'];
+        tournament = { ...tournament, ...changes };
         return Promise.resolve(tournament);
       });
 
@@ -213,11 +210,13 @@ describe('TournamentService', () => {
     // allocate XP
     await service.processRoundChange();
 
+    expect(updateTournament).toHaveBeenCalledTimes(1);
+
     // The correct dates should be queried
     expect(queryTournamentWinnings.mock.lastCall[0]).toEqual({
       pk: 'tournamentWinnings#tournament1',
       createdAt: {
-        between: ['2024-06-25T01:32:33.000Z', '2024-06-26T01:32:33.000Z'],
+        between: ['2024-06-26T01:32:33.000Z', '2024-06-27T01:32:33.000Z'],
       },
     });
 

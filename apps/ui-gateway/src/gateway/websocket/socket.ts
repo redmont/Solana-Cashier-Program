@@ -5,6 +5,7 @@ export class SocketData {
   authorizedUser?: {
     userId: string;
     walletAddress: string;
+    username: string;
   };
 }
 

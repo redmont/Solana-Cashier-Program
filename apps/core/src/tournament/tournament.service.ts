@@ -19,8 +19,8 @@ export class TournamentService {
     private readonly tournamentEntryModel: Model<TournamentEntry, Key>,
     @InjectModel('tournamentWinnings')
     private readonly tournamentWinningsModel: Model<TournamentWinnings, Key>,
-    private readonly queryStore: QueryStoreService
-  ) { }
+    private readonly queryStore: QueryStoreService,
+  ) {}
 
   /**
    * Get all tournaments.
@@ -157,7 +157,7 @@ export class TournamentService {
         sk: userId,
       },
       updateRecord,
-      { return: 'item', returnValues: 'ALL_NEW' }
+      { return: 'item', returnValues: 'ALL_NEW' },
     );
 
     if (winAmount) {
@@ -190,7 +190,7 @@ export class TournamentService {
                 entryBetAmountCreditedXp: xp * 100,
               },
             },
-            { return: 'item', returnValues: 'ALL_NEW' }
+            { return: 'item', returnValues: 'ALL_NEW' },
           );
         }
       }
@@ -255,7 +255,7 @@ export class TournamentService {
 
   async getCurrentTournament() {
     const currentTournamentCodeName = await this.getTournamentCodeName(
-      dayjs.utc().toISOString()
+      dayjs.utc().toISOString(),
     );
 
     if (!currentTournamentCodeName) {
@@ -285,14 +285,7 @@ export class TournamentService {
 
   async updateTournament(
     codeName: string,
-    {
-      displayName,
-      description,
-      startDate,
-      currentRound,
-      rounds,
-      prizes,
-    }: Partial<{
+    data: Partial<{
       displayName: string;
       description: string;
       startDate: string;
@@ -302,12 +295,24 @@ export class TournamentService {
         title: string;
         description: string;
       }[];
-    }>
+    }>,
   ) {
+    const { startDate, rounds } = data;
     // Calculate endDate
     let endDate: string | undefined;
     if (startDate && rounds) {
       endDate = dayjs.utc(startDate).add(rounds, 'day').toISOString();
+    }
+
+    const update: UpdatePartial<Tournament> = { $SET: {} };
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        update['$SET'][key] = value;
+      }
+    }
+
+    if (endDate) {
+      update['$SET'].endDate = endDate;
     }
 
     const item = await this.tournamentModel.update(
@@ -315,20 +320,11 @@ export class TournamentService {
         pk: 'tournament',
         sk: codeName,
       },
-      {
-        displayName,
-        description,
-        startDate,
-        endDate,
-        currentRound,
-        rounds,
-        prizes,
-        updatedAt: dayjs.utc().toISOString(),
-      },
+      update,
       {
         return: 'item',
         returnValues: 'ALL_NEW',
-      }
+      },
     );
 
     await this.queryStore.updateTournament({
@@ -354,7 +350,7 @@ export class TournamentService {
     const now = dayjs.utc();
     const startDate = dayjs.utc(currentTournament.startDate);
 
-    const expectedRound = now.diff(startDate, 'day') + 1;
+    let expectedRound = now.diff(startDate, 'day');
     if (
       expectedRound === currentTournament.currentRound ||
       expectedRound > currentTournament.rounds
@@ -362,15 +358,20 @@ export class TournamentService {
       return;
     }
 
-    this.logger.log(`Processing round change for ${currentTournament.codeName} from round ${currentRound} to round ${expectedRound}`);
+    // We only process one round change at a time
+    expectedRound = currentRound + 1;
+
+    this.logger.log(
+      `Processing round change for ${currentTournament.codeName} from round ${currentRound} to round ${expectedRound}`,
+    );
 
     await this.updateTournament(currentTournament.codeName, {
       currentRound: expectedRound,
     });
 
     // Get all winnings for currentRound
-    const roundStart = startDate.add(currentRound - 1, 'day');
-    const roundEnd = startDate.add(currentRound, 'day');
+    const roundStart = startDate.add(currentRound, 'day');
+    const roundEnd = startDate.add(expectedRound, 'day');
     const winnings = await this.tournamentWinningsModel
       .query({
         pk: `tournamentWinnings#${currentTournament.codeName}`,
@@ -393,7 +394,7 @@ export class TournamentService {
 
         return acc;
       },
-      {} as Record<string, number>
+      {} as Record<string, number>,
     );
     // Get top 100 winners
     const topWinners = Object.entries(winningsByUser)
@@ -443,7 +444,7 @@ export class TournamentService {
         {
           return: 'item',
           returnValues: 'ALL_NEW',
-        }
+        },
       );
 
       await this.queryStore.updateTournamentEntry({

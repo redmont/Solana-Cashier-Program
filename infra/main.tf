@@ -76,6 +76,13 @@ module "ecs" {
   millicast_allowed_origins           = var.millicast_allowed_origins
 
   cors_origins = var.cors_origins
+
+  stream_auth_parent_token_id     = var.stream_auth_parent_token_id
+  stream_auth_parent_token_secret = var.stream_auth_parent_token_secret
+
+  pubnub_publish_key   = var.pubnub_publish_key
+  pubnub_subscribe_key = var.pubnub_subscribe_key
+  pubnub_secret_key    = var.pubnub_secret_key
 }
 
 module "cashier_webhook_listener" {

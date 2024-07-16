@@ -12,6 +12,7 @@ import { PriceFeedModule } from './priceFeed/priceFeed.module';
 import { GatewayModule } from './gateway';
 import { GatewayInstanceDecoratorProcessorService } from './nats/gatewayInstanceDecoratorProcessorService';
 import { StreamAuthModule } from './streamAuth/streamAuth.module';
+import { ChatAuthModule } from './chatAuth/chatAuth.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { StreamAuthModule } from './streamAuth/streamAuth.module';
     PriceFeedModule,
     GatewayModule,
     StreamAuthModule,
+    ChatAuthModule,
   ],
   providers: [GatewayInstanceDecoratorProcessorService],
   controllers: [AppController],

@@ -5,6 +5,7 @@ import { Dayjs } from 'dayjs';
 import { ActivityStreamItem } from './interfaces/activityStreamItem.interface';
 import { Key } from 'src/interfaces/key';
 import { GatewayManagerService } from '@/gatewayManager/gatewayManager.service';
+import { ChatService } from '@/chat/chat.service';
 
 export type Activity = 'betPlaced' | 'win' | 'loss';
 
@@ -20,6 +21,7 @@ export class ActivityStreamService {
     private readonly activityStreamItemModel: Model<ActivityStreamItem, Key>,
     private readonly queryStore: QueryStoreService,
     private readonly gatewayManager: GatewayManagerService,
+    private readonly chatService: ChatService,
   ) {}
 
   private generateMessage(activity: Activity, data: any) {
@@ -73,6 +75,10 @@ export class ActivityStreamService {
       userId,
     );
 
+    await this.chatService.sendSystemMessage({
+      userId,
+      message,
+    });
     this.gatewayManager.handleActivityStreamItem(userId, sk, message);
   }
 }
