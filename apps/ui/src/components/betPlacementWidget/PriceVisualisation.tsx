@@ -39,21 +39,23 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
     const total = deltas[0] + deltas[1];
     deltas = deltas.map((d) => d / total || 0.5);
     deltasRef.current = deltas;
-    const progress = deltas[0];
-    setIsWinner([progress > 0.5, 1 - progress > 0.5]);
+    const progress = deltas[1];
+    setIsWinner([progress < 0.5, progress > 0.5]);
 
     setProgress(progress);
   }, [prices]);
 
   return (
     <div className="price-visualisation">
-      <div className="tow-container">
-        <div className="tow-line"></div>
-        <div
-          className="tow-indicator"
-          style={{ left: `${10 + progress * 80}%` }}
-        ></div>
-      </div>
+      <Tooltip content={'Trailing 10s price Δ'}>
+        <div className="tow-container">
+          <div className="tow-line"></div>
+          <div
+            className="tow-indicator"
+            style={{ left: `${10 + progress * 80}%` }}
+          ></div>
+        </div>
+      </Tooltip>
 
       <div className="price-info-container">
         {fighters.map((fighter, i) => {
@@ -93,7 +95,7 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
                     fontWeight: isWinner[i] ? 'bold' : 'normal',
                   }}
                 >
-                  <span className="price-ticker">{`${ticker}`}</span>
+                  <span className="price-ticker">{`$${ticker}`}</span>
                   <span className="price-value">{`${displayPrice}`}</span>
                   <i
                     className={classNames(
