@@ -38,6 +38,8 @@ $solidSurfaceColor: #010101 !default;
 
 $hoverBg: rgba(255, 255, 255, 0.03) !default;
 
+$greenshade400: #4CDC88;
+
 //global
 $fontFamily:
   var(--font-plus-jakarta-sans),
@@ -187,6 +189,7 @@ $outlinedButtonBorder: 1px solid !default;
 $plainButtonTextColor: $textSecondaryColor !default;
 $plainButtonHoverBgColor: $shade500 !default;
 $plainButtonActiveBgColor: rgba(255, 255, 255, 0.16) !default;
+$outlinedButtonGreenBorder: 1px solid $greenshade400 !default;
 
 $secondaryButtonBg: white !default;
 $secondaryButtonTextColor: #111 !default;
@@ -407,6 +410,7 @@ $panelHeaderTextColor: $shade000 !default;
 $panelHeaderFontWeight: 500 !default;
 $panelHeaderPadding: 0.714rem 1.143rem !default;
 $panelToggleableHeaderPadding: 0.429rem 0.571rem !default;
+$panelHeaderBackground: #0E0D15;
 
 $panelHeaderHoverBg: $shade500 !default;
 $panelHeaderHoverBorderColor: $shade700 !default;

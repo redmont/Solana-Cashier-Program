@@ -231,18 +231,18 @@
     &.p-button-outlined {
         background-color: transparent;
         color: $secondaryButtonBg;
-        border: $outlinedButtonBorder;
+        border: $outlinedButtonGreenBorder;
 
         &:not(:disabled):hover {
             background: rgba($secondaryButtonBg, $textButtonHoverBgOpacity);
             color: $secondaryButtonBg;
-            border: $outlinedButtonBorder;
+            border: $outlinedButtonGreenBorder;
         }
 
         &:not(:disabled):active {
             background: rgba($secondaryButtonBg, $textButtonActiveBgOpacity);
             color: $secondaryButtonBg;
-            border: $outlinedButtonBorder;
+            border: $outlinedButtonGreenBorder;
         }
     }
 

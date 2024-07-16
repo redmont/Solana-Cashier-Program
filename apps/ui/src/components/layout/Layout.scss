@@ -10,6 +10,15 @@ $topbar-height: 5rem;
 .topbar {
   display: flex;
   width: 100%;
+  background-color: $panelHeaderBackground;
+  border-radius: 9px;
+  margin: 12px 0 16px 0;
+
+  .spacer {
+    clip-path: polygon(84% 0, 100% 0, 15% 100%, 0 100%);
+    background-color: black !important;
+    width: 80px;
+  }
 }
 
 .topnav {
@@ -19,7 +28,7 @@ $topbar-height: 5rem;
 }
 
 .nav-link {
-  color: $primaryColor;
+  color: $secondaryButtonHoverBg;
   text-transform: uppercase;
   font-weight: bold;
   display: flex;
@@ -28,7 +37,11 @@ $topbar-height: 5rem;
   cursor: pointer;
 
   &:hover {
-    text-shadow: 0 0 4px $primaryColor;
+    color: $primaryColor;
+  }
+
+  &.active {
+    color: $primaryColor;
   }
 }
 
@@ -82,10 +95,6 @@ $topbar-height: 5rem;
   i {
     font-size: 1.25rem;
   }
-}
-
-.balance-desktop {
-  display: none;
 }
 
 main {
@@ -150,4 +159,23 @@ main {
     align-self: center;
     justify-self: right;
   }
+}
+
+.balance-desktop {
+  display: none;
+  align-items: center;
+  background-color: $successButtonActiveBg;
+  padding: 8px 1rem 6px 1rem;
+  border-radius: 8px;
+  gap: 8px;
+  color: white;
+  font-weight: bold;
+}
+
+.balance-cashier-desktop {
+  background-color: $primary500;
+  padding: 3px 16px;
+  border-radius: 4px;
+  gap: 8px;
+  color: black;
 }
