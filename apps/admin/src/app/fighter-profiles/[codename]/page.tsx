@@ -180,7 +180,7 @@ const EditFighterProfile = ({ params }: { params: { codename: string } }) => {
       })
       router.push('/fighter-profiles');
     } else {
-      const { codeName, ...rest } = formData;
+      const { pk, sk, codeName, ...rest } = formData;
       updateFighterProfileMutation.mutateAsync(rest);
       toast({
         title: 'Fighter profile updated',
