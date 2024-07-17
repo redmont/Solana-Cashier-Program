@@ -37,7 +37,7 @@ export const MatchStreamWidget: FC = () => {
     streamSource = 'red5';
   }
 
-  const streamViewExpected = useMemo(() => match?.status === MatchStatus.BetsOpen || match?.status === MatchStatus.PollingPrices || match?.status === MatchStatus.InProgress, [match?.status]);
+  const streamViewExpected = useMemo(() => match?.status !== MatchStatus.PendingStart, [match?.status]);
 
   return (
     <div className="match-stream-widget">
