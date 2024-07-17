@@ -178,8 +178,7 @@ interface CreditClaimCard {
 const CreditClaimCard: FC<CreditClaimCard> = (props) => {
   const { isAuthenticated, isConnected } = useEthWallet();
 
-  const { setShowAuthFlow, setShowDynamicUserProfile, user } =
-    useDynamicContext();
+  const { setShowAuthFlow, setShowDynamicUserProfile } = useDynamicContext();
 
   const availableIn = props.availableInMs
     ? dayjs.duration(props.availableInMs).format('HH[h] mm[m]')

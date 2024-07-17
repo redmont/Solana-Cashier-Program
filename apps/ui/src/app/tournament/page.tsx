@@ -106,11 +106,11 @@ export default function Tournament() {
 
         <CreditClaimWidget />
 
-        <div className="tournament-page-section-inner">
+        {/* <div className="tournament-page-section-inner">
           <ZealyWidget />
 
           <XpQuestsWidget />
-        </div>
+        </div> */}
       </Scrollable>
 
       <ul className="tournament-page-nav">
