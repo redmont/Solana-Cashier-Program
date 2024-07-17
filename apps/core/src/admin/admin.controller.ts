@@ -43,6 +43,8 @@ import { AdminAuthGuard } from '@/auth/adminAuthGuard';
 import { FighterProfilesService } from '@/fighterProfiles/fighterProfiles.service';
 import { Tournament } from '@/tournament/interfaces/tournament.interface';
 import { DailyClaimService } from '@/dailyClaim/dailyClaim.service';
+import { CreateFighterProfileRequest } from './models/createFighterProfileRequest';
+import { UpdateFighterProfileRequest } from './models/updateFighterProfileRequest';
 
 @Controller('admin')
 export class AdminController {
@@ -247,19 +249,11 @@ export class AdminController {
     @Param('codeName') codeName: string,
     @Body() body: UpdateTournamentRequest,
   ) {
-    const {
-      displayName,
-      description,
-      startDate,
-      rounds,
-      currentRound,
-      prizes,
-    } = body;
+    const { displayName, description, startDate, rounds, prizes } = body;
     return this.tournamentService.updateTournament(codeName, {
       displayName,
       description,
       startDate,
-      currentRound,
       rounds,
       prizes,
     });
@@ -286,15 +280,15 @@ export class AdminController {
 
   @UseGuards(AdminAuthGuard)
   @Post('/fighter-profiles')
-  async createFighterProfile(@Body() body: any) {
-    return this.fighterProfilesService.create(body);
+  async createFighterProfile(@Body() item: CreateFighterProfileRequest) {
+    return this.fighterProfilesService.create(item);
   }
 
   @UseGuards(AdminAuthGuard)
   @Put('/fighter-profiles/:codeName')
   async updateFighterProfile(
     @Param('codeName') codeName: string,
-    @Body() body: any,
+    @Body() body: UpdateFighterProfileRequest,
   ) {
     return this.fighterProfilesService.update(codeName, body);
   }
