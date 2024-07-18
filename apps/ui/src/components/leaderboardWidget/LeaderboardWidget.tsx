@@ -19,16 +19,22 @@ export const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
     <div className="widget leaderboard-widget">
       <div className="widget-header">
         <div className="widget-header-section">
-          <div className="widget-title">Daily Leaderboard</div>
+          <div className="widget-title">Leaderboard</div>
 
           <WidgetCountdown targetDateTime={resetDateTime} />
         </div>
 
         <div className="widget-header-section">
-          <p className="widget-info">
-            Every game played earns <span className="xp">+1 XP</span>. Compete
-            to daily win XP bonuses.
-          </p>
+          <div className="widget-info">
+            <p>100 Credits bet = <span className="xp">1 XP</span>.</p>
+            <p>
+              Daily bonus XP for most 24hr net Credits won:<br />
+              1st: <span className="xp">150 XP</span>,
+              2nd: <span className="xp">100 XP</span>,
+              3rd: <span className="xp">50 XP</span>,
+              Top 100: <span className="xp">25 XP</span>
+            </p>
+          </div>
 
           <LeaderboardSearchInput query={searchQuery} onSearch={onSearch} />
         </div>

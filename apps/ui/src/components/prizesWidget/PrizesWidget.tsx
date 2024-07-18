@@ -45,40 +45,55 @@ export const PrizesWidget: FC<PrizesWidgetProps> = ({
     <div className="widget prizes-widget">
       <div className="widget-header">
         <div className="widget-header-section">
-          <div className="widget-title">{title} Prizes</div>
+          <div className="widget-title">Tournament Prizes</div>
 
           <WidgetCountdown targetDateTime={endDateTime} />
         </div>
 
         <p className="widget-info">
-          Gain XP for more entries to win major tournament prizes
+        Top 3 by XP win main prizes. All players enter raffle (1 XP = 1 entry). XP resets each tournament. 
         </p>
       </div>
 
       <div className="widget-body">
-        <div
-          className={classNames('prize-carousel', { loading: !isReady })}
-          ref={carouselRef}
-        >
-          <PrizeTile
-            place="1"
-            size="large"
-            imageSrc="/main-prize.png"
-            value={prizes[0]?.title}
-            description={prizes[0]?.description}
-          />
+        <div>
+          <div
+            className={classNames('prize-carousel', 'layout', { loading: !isReady })}
+            ref={carouselRef}
+          >
+            <PrizeTile
+              place="1"
+              size="large"
+              imageSrc="/1st.svg"
+              value={prizes[0]?.title}
+              description={prizes[0]?.description}
+              className="prize-tile"
+            />
 
-          <PrizeTile
-            place="2"
-            size="medium"
-            value={prizes[1]?.title}
-            description={prizes[1]?.description}
-          />
+            <PrizeTile
+              place="2"
+              size="medium"
+              imageSrc="/2nd.svg"
+              value={prizes[1]?.title}
+              description={prizes[1]?.description}
+              className="prize-tile"
+            />
 
+            <PrizeTile
+              place="3"
+              size="small"
+              imageSrc="/3rd.svg"
+              value={prizes[2]?.title}
+              description={prizes[2]?.description}
+              className="prize-tile"
+            />
+          </div>
           <PrizeTile
-            place="3"
-            value={prizes[2]?.title}
-            description={prizes[2]?.description}
+            place="4"
+            imageSrc="/raffle.svg"
+            // value={prizes[3]?.title}
+            description={prizes[3]?.description}
+            className="prize-tile"
           />
         </div>
       </div>
@@ -87,20 +102,25 @@ export const PrizesWidget: FC<PrizesWidgetProps> = ({
 };
 
 interface PrizeTileProps {
-  place: '1' | '2' | '3';
+  place: '1' | '2' | '3' | '4';
   value?: string;
   description?: string;
   imageSrc?: string;
-  size?: 'large' | 'medium';
+  size?: 'large' | 'medium' | 'small';
+  className?: string;
 }
 
 const PrizeTile: FC<PrizeTileProps> = (props) => {
   return (
     <div
-      className={classNames('prize-tile', `prize-${props.place}`, props.size)}
+      className={classNames(
+        `${props.className}`,
+        `prize-${props.place}`,
+        props.size,
+      )}
     >
       {props.imageSrc && (
-        <div className="prize-icon">
+        <div className={classNames('prize-icon', `prize-${props.place}`)}>
           <img src={props.imageSrc} />
         </div>
       )}
