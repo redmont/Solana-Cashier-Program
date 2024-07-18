@@ -37,7 +37,7 @@ export const Layout = (props: ChildContainerProps) => {
     <div className="layout">
       <div className="topbar">
         <div className="logo-container">
-          <Link href="/" prefetch={false}>
+          <Link href="/" prefetch={false} shallow>
             <img className="logo-mobile" src="/logo-mobile.png" alt="Logo" />
             <img className="logo" src="/logo.png" alt="Logo" />
           </Link>
@@ -49,6 +49,7 @@ export const Layout = (props: ChildContainerProps) => {
             className={`nav-link ${isActive('/') ? 'active' : ''}`}
             href="/"
             prefetch={false}
+            shallow
           >
             Play
           </Link>
@@ -57,6 +58,7 @@ export const Layout = (props: ChildContainerProps) => {
             className={`nav-link ${isActive('/tournament') ? 'active' : ''}`}
             href="/tournament"
             prefetch={false}
+            shallow
           >
             Tournament
           </Link>
