@@ -9,8 +9,8 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ records }) => {
       <div className="table-header">
         <div className="col-rank">Rank</div>
         <div className="col-player">Player</div>
-        <div className="col-wins">24h Net Wins</div>
-        <div className="col-xp">Total XP</div>
+        <div className="col-wins">24h Net Credit Wins</div>
+        <div className="col-xp">Tournament XP</div>
       </div>
 
       <div className="table-body">

@@ -51,7 +51,7 @@ export const PrizesWidget: FC<PrizesWidgetProps> = ({
         </div>
 
         <p className="widget-info">
-          Gain XP for more entries to win major tournament prizes
+        Top 3 by XP win main prizes. All players enter raffle (1 XP = 1 entry). XP resets each tournament. 
         </p>
       </div>
 
