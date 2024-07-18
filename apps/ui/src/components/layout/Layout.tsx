@@ -37,31 +37,24 @@ export const Layout = (props: ChildContainerProps) => {
     <div className="layout">
       <div className="topbar">
         <div className="logo-container">
-          <Link href="/" prefetch={false} shallow>
+          <a href="/">
             <img className="logo-mobile" src="/logo-mobile.png" alt="Logo" />
             <img className="logo" src="/logo.png" alt="Logo" />
-          </Link>
+          </a>
         </div>
 
         <div className="spacer" />
         <div className="topnav">
-          <Link
-            className={`nav-link ${isActive('/') ? 'active' : ''}`}
-            href="/"
-            prefetch={false}
-            shallow
-          >
+          <a className={`nav-link ${isActive('/') ? 'active' : ''}`} href="/">
             Play
-          </Link>
+          </a>
 
-          <Link
+          <a
             className={`nav-link ${isActive('/tournament') ? 'active' : ''}`}
             href="/tournament"
-            prefetch={false}
-            shallow
           >
             Tournament
-          </Link>
+          </a>
 
           <span
             className={`nav-link ${isActive('/how-to-play') ? 'active' : ''}`}
