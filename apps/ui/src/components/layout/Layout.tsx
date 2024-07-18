@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { JoinButton, MobileJoinButton } from '@/components/JoinButton';
@@ -78,12 +77,12 @@ export const Layout = (props: ChildContainerProps) => {
             </>
           )}
 
-          <Link
+          <a
             href="/tournament"
             className={`p-button-link md:hidden ${isActive('/tournament') ? 'active' : ''}`}
           >
             <i className="pi pi-trophy"></i>
-          </Link>
+          </a>
 
           <span
             className={`p-button-link md:hidden ${isActive('/how-to-play') ? 'active' : ''}`}
