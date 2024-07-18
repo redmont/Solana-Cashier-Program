@@ -46,11 +46,7 @@ export const StakeWidget: FC<StakeWidgetProps> = ({ currentFighter }) => {
                 <span>{bets[i]?.winRate ?? 0}x</span>
               </div>
             </div>
-            {i % 2 === 0 && (
-              <div className="spacer">
-                <div className="separator"></div>
-              </div>
-            )}
+            {i % 2 === 0 && <div className="separator"></div>}
           </Fragment>
         ))}
       </div>
