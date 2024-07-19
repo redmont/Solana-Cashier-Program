@@ -2,6 +2,7 @@ import { Message } from './message';
 
 export interface LeaderboardItem {
   rank: number;
+  username: string;
   walletAddress: string;
   balance: string;
 }

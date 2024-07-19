@@ -53,7 +53,11 @@ import {
 } from 'core-messages';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { Socket } from './websocket/socket';
-import { QueryStoreService } from 'query-store';
+import {
+  QueryStoreService,
+  UserProfilesQueryStoreService,
+  TournamentQueryStoreService,
+} from 'query-store';
 import { IJwtAuthService } from '@/jwtAuth/jwtAuth.interface';
 import { ConfigService } from '@nestjs/config';
 import { ReadModelService } from 'cashier-read-model';
@@ -92,6 +96,8 @@ export class Gateway
     private readonly streamAuthService: StreamAuthService,
     private readonly eventEmitter: EventEmitter2,
     private readonly chatAuthService: ChatAuthService,
+    private readonly tournamentQueryStore: TournamentQueryStoreService,
+    private readonly userProfilesQueryStore: UserProfilesQueryStoreService,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
   }
@@ -138,6 +144,10 @@ export class Gateway
             EnsureUserIdMessage,
             EnsureUserIdMessageReturnType
           >(this.broker, new EnsureUserIdMessage(address));
+
+          await this.userProfilesQueryStore.setUserProfile(userId, {
+            username,
+          });
 
           client.data.authorizedUser = {
             userId,
@@ -396,7 +406,7 @@ export class Gateway
       totalCount,
       items,
       currentUserItem,
-    } = await this.query.getCurrentTournamentLeaderboard(
+    } = await this.tournamentQueryStore.getCurrentTournamentLeaderboard(
       now,
       sortBy,
       pageSize,

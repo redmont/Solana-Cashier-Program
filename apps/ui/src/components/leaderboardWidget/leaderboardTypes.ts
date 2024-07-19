@@ -9,6 +9,7 @@ export interface LeaderboardWidgetProps extends LeaderboardProps {
 }
 
 export interface LeaderboardRecord {
+  username?: string;
   walletAddress: string;
   xp?: string;
   rank: number;

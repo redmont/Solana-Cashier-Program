@@ -3,7 +3,7 @@ import { InjectModel, Model, UpdatePartial } from 'nestjs-dynamoose';
 import { Tournament } from './interfaces/tournament.interface';
 import { Key } from '@/interfaces/key';
 import dayjs from '@/dayjs';
-import { QueryStoreService } from 'query-store';
+import { TournamentQueryStoreService } from 'query-store';
 import { TournamentEntry } from './interfaces/tournamentEntry.interface';
 import { TournamentWinnings } from './interfaces/tournamentWinnings.interface';
 import { Cron } from '@nestjs/schedule';
@@ -19,7 +19,7 @@ export class TournamentService {
     private readonly tournamentEntryModel: Model<TournamentEntry, Key>,
     @InjectModel('tournamentWinnings')
     private readonly tournamentWinningsModel: Model<TournamentWinnings, Key>,
-    private readonly queryStore: QueryStoreService,
+    private readonly tournamentQueryStore: TournamentQueryStoreService,
   ) {}
 
   /**
@@ -196,7 +196,7 @@ export class TournamentService {
       }
     }
 
-    await this.queryStore.updateTournamentEntry({
+    await this.tournamentQueryStore.updateTournamentEntry({
       tournament,
       userId,
       primaryWalletAddress: item.primaryWalletAddress,
@@ -243,7 +243,7 @@ export class TournamentService {
       updatedAt: dayjs.utc().toISOString(),
     });
 
-    await this.queryStore.createTournament({
+    await this.tournamentQueryStore.createTournament({
       codeName,
       displayName,
       description,
@@ -327,7 +327,7 @@ export class TournamentService {
       },
     );
 
-    await this.queryStore.updateTournament({
+    await this.tournamentQueryStore.updateTournament({
       codeName,
       displayName: item.displayName,
       description: item.description,
@@ -350,7 +350,7 @@ export class TournamentService {
     const now = dayjs.utc();
     const startDate = dayjs.utc(currentTournament.startDate);
 
-    let expectedRound = now.diff(startDate, 'day');
+    let expectedRound = now.diff(startDate, 'day') + 1;
     if (
       expectedRound === currentTournament.currentRound ||
       expectedRound > currentTournament.rounds
@@ -370,8 +370,8 @@ export class TournamentService {
     });
 
     // Get all winnings for currentRound
-    const roundStart = startDate.add(currentRound, 'day');
-    const roundEnd = startDate.add(expectedRound, 'day');
+    const roundStart = startDate.add(currentRound - 1, 'day');
+    const roundEnd = startDate.add(currentRound, 'day');
     const winnings = await this.tournamentWinningsModel
       .query({
         pk: `tournamentWinnings#${currentTournament.codeName}`,
@@ -447,7 +447,7 @@ export class TournamentService {
         },
       );
 
-      await this.queryStore.updateTournamentEntry({
+      await this.tournamentQueryStore.updateTournamentEntry({
         tournament: currentTournament.codeName,
         userId,
         primaryWalletAddress: item.primaryWalletAddress,
