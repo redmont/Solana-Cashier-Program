@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 import { JoinButton, MobileJoinButton } from '@/components/JoinButton';
 import { ChildContainerProps } from '@/types';
@@ -36,24 +37,27 @@ export const Layout = (props: ChildContainerProps) => {
     <div className="layout">
       <div className="topbar">
         <div className="logo-container">
-          <a href="/">
+          <Link href="/">
             <img className="logo-mobile" src="/logo-mobile.png" alt="Logo" />
             <img className="logo" src="/logo.png" alt="Logo" />
-          </a>
+          </Link>
         </div>
 
         <div className="spacer" />
         <div className="topnav">
-          <a className={`nav-link ${isActive('/') ? 'active' : ''}`} href="/">
+          <Link
+            className={`nav-link ${isActive('/') ? 'active' : ''}`}
+            href="/"
+          >
             Play
-          </a>
+          </Link>
 
-          <a
+          <Link
             className={`nav-link ${isActive('/tournament') ? 'active' : ''}`}
             href="/tournament"
           >
             Tournament
-          </a>
+          </Link>
 
           <span
             className={`nav-link ${isActive('/how-to-play') ? 'active' : ''}`}
@@ -77,12 +81,12 @@ export const Layout = (props: ChildContainerProps) => {
             </>
           )}
 
-          <a
+          <Link
             href="/tournament"
             className={`p-button-link md:hidden ${isActive('/tournament') ? 'active' : ''}`}
           >
             <i className="pi pi-trophy"></i>
-          </a>
+          </Link>
 
           <span
             className={`p-button-link md:hidden ${isActive('/how-to-play') ? 'active' : ''}`}
