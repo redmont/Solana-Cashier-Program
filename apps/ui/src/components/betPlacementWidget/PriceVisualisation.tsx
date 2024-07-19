@@ -61,13 +61,13 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
         {fighters.map((fighter, i) => {
           const ticker = fighter.ticker;
           const price = prices?.get(ticker);
-          let direction =
+          const direction =
             !price || price.change.absolute === 0
               ? 'none'
               : price.change.absolute > 0
                 ? 'up'
                 : 'down';
-          const displayPriceChange = `${Math.abs(price ? price.change.ppm : 0).toFixed(2)}ppm`;
+          // const displayPriceChange = `${Math.abs(price ? price.change.ppm : 0).toFixed(2)}ppm`;
 
           const priceInScientificNotation = toScientificParts(
             price?.event.price ?? 0,
@@ -95,8 +95,8 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
                     fontWeight: isWinner[i] ? 'bold' : 'normal',
                   }}
                 >
-                  <span className="price-ticker">{`$${ticker}`}</span>
-                  <span className="price-value">{`${displayPrice}`}</span>
+                  <span className="price-ticker">{`${ticker}`}</span>
+                  <span className="price-value">{`$${displayPrice}`}</span>
                   <i
                     className={classNames(
                       'price-change-indicator pi',

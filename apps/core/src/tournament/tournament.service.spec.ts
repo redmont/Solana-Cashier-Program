@@ -4,7 +4,7 @@ import * as dynamoose from 'dynamoose';
 import { TournamentSchema } from './schemas/tournament.schema';
 import { TournamentService } from './tournament.service';
 import { TournamentEntrySchema } from './schemas/tournamentEntry.schema';
-import { QueryStoreService } from 'query-store';
+import { TournamentQueryStoreService } from 'query-store';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { TournamentWinningsSchema } from './schemas/tournamentWinnings.schema';
 import { TournamentEntry } from './interfaces/tournamentEntry.interface';
@@ -59,7 +59,7 @@ describe('TournamentService', () => {
         },
         TournamentService,
         {
-          provide: QueryStoreService,
+          provide: TournamentQueryStoreService,
           useValue: queryStoreService,
         },
       ],
@@ -77,8 +77,8 @@ describe('TournamentService', () => {
 
   it('should not switch to next tournament round if too early', async () => {
     const startDate = '2024-06-25T01:32:33Z';
-    // A bit more than a day later
-    const now = '2024-06-26T11:32:33Z';
+    // A few hours later
+    const now = '2024-06-25T11:32:33Z';
     MockDate.set(now);
 
     let tournament = {
@@ -216,7 +216,7 @@ describe('TournamentService', () => {
     expect(queryTournamentWinnings.mock.lastCall[0]).toEqual({
       pk: 'tournamentWinnings#tournament1',
       createdAt: {
-        between: ['2024-06-26T01:32:33.000Z', '2024-06-27T01:32:33.000Z'],
+        between: ['2024-06-25T01:32:33.000Z', '2024-06-26T01:32:33.000Z'],
       },
     });
 

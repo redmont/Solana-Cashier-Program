@@ -9,9 +9,12 @@
     "dev": "pnpm run build -- --watch"
   },
   "dependencies": {
+    "@nestjs/cache-manager": "^2.2.2",
     "@nestjs/common": "^10.3.7",
+    "cache-manager": "^5.7.3",
     "dynamoose": "^4.0.1",
-    "nestjs-dynamoose": "^0.5.8"
+    "nestjs-dynamoose": "^0.5.8",
+    "global-cache": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",

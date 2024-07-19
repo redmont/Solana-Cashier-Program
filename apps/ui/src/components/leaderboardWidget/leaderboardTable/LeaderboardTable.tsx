@@ -17,6 +17,7 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ records }) => {
         {records.map((rec, i) => (
           <LeaderboardTableRow
             key={i}
+            username={rec.username}
             walletAddress={rec.walletAddress}
             xp={rec.xp}
             rank={i + 1}
@@ -46,7 +47,7 @@ export const LeaderboardTableRow: FC<LeaderboardRecord> = (props) => (
       )}
     </div>
 
-    <div className="col-player">{truncateEthAddress(props.walletAddress)}</div>
+    <div className="col-player">{props.username ?? truncateEthAddress(props.walletAddress)}</div>
     <div className="col-wins">{props.winAmount}</div>
     <div className="col-xp">{props.xp}</div>
   </div>

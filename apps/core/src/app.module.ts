@@ -30,8 +30,8 @@ import { MediaLibraryModule } from './mediaLibrary/mediaLibrary.module';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
         return {
-          host: configService.get<string>('redisHost'),
-          port: parseInt(configService.get<string>('redisPort')),
+          redisHost: configService.get<string>('redisHost'),
+          redisPort: parseInt(configService.get<string>('redisPort')),
         };
       },
       inject: [ConfigService],
@@ -49,11 +49,13 @@ import { MediaLibraryModule } from './mediaLibrary/mediaLibrary.module';
     QueryStoreModule.registerAsync({
       useFactory: (configService: ConfigService) => {
         return {
-          local:  configService.get<boolean>('isDynamoDbLocal')
-          ? 'http://localhost:8765'
-          : false,
+          local: configService.get<boolean>('isDynamoDbLocal')
+            ? 'http://localhost:8765'
+            : false,
           tableName: configService.get<string>('queryStoreTableName'),
           isDynamoDbLocal: configService.get<boolean>('isDynamoDbLocal'),
+          redisHost: configService.get<string>('redisHost'),
+          redisPort: parseInt(configService.get<string>('redisPort')),
         };
       },
       inject: [ConfigService],

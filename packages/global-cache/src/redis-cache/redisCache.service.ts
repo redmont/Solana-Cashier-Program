@@ -4,14 +4,21 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-import { Redis, RedisOptions } from 'ioredis';
+import { Redis } from 'ioredis';
+import { MODULE_OPTIONS_TOKEN } from './redisCache.module-definition';
+import { RedisCacheModuleOptions } from './interfaces/redisCacheModuleOptions.interface';
 
 @Injectable()
 export class RedisCacheService implements OnModuleInit, OnModuleDestroy {
   private client: Redis;
 
-  constructor(@Inject('REDIS_OPTIONS') private options: RedisOptions) {
-    this.client = new Redis(options);
+  constructor(
+    @Inject(MODULE_OPTIONS_TOKEN) readonly options: RedisCacheModuleOptions,
+  ) {
+    this.client = new Redis({
+      host: options.redisHost,
+      port: options.redisPort,
+    });
   }
 
   onModuleInit() {
@@ -31,8 +38,19 @@ export class RedisCacheService implements OnModuleInit, OnModuleDestroy {
     await this.client.set(key, value);
   }
 
+  async hmset(key: string, value: any): Promise<void> {
+    await this.client.hmset(key, value);
+  }
+
   async sadd(setKey: string, value: string) {
     await this.client.sadd(setKey, value);
+  }
+
+  async hmgetBatch(keys: string[], fields: string[]): Promise<any[]> {
+    const pipeline = this.client.pipeline();
+    keys.forEach((key) => pipeline.hmget(key, ...fields));
+
+    return await pipeline.exec();
   }
 
   async getAllItems(prefix: string): Promise<any[]> {
