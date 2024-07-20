@@ -58,7 +58,11 @@ export const getActors = ({
     return serverDetails;
   }),
   determineOutcome: fromPromise<
-    { displayName: string; codeName: string },
+    {
+      displayName: string;
+      codeName: string;
+      priceDelta: Record<string, { relative: number; absolute: number }>;
+    },
     {
       serverId: string;
       capabilities: {
@@ -99,17 +103,32 @@ export const getActors = ({
         displayName: string;
         codeName: string;
       };
+      priceDelta: Record<
+        string,
+        {
+          relative: number;
+          absolute: number;
+        }
+      >;
       config: SeriesConfig;
       startTime: string;
     }
   >(
     async ({
-      input: { codeName, matchId, winningFighter, config, startTime },
+      input: {
+        codeName,
+        matchId,
+        winningFighter,
+        priceDelta,
+        config,
+        startTime,
+      },
     }) => {
       await distributeWinnings(
         codeName,
         matchId,
         winningFighter,
+        priceDelta,
         config,
         startTime,
       );

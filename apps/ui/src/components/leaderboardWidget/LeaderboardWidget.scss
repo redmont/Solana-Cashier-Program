@@ -44,6 +44,12 @@
     gap: 1rem;
   }
 
+  .widget-header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
   .widget-title {
     font-size: 1.5rem;
     font-weight: 500;
@@ -51,6 +57,7 @@
 
   .widget-info {
     line-height: 1.5;
+    font-size: 0.875rem;
 
     .xp {
       color: $primaryColor;

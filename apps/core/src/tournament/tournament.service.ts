@@ -7,6 +7,7 @@ import { TournamentQueryStoreService } from 'query-store';
 import { TournamentEntry } from './interfaces/tournamentEntry.interface';
 import { TournamentWinnings } from './interfaces/tournamentWinnings.interface';
 import { Cron } from '@nestjs/schedule';
+import { ActivityStreamService, BetXpActivityEvent } from '@/activityStream';
 
 @Injectable()
 export class TournamentService {
@@ -20,6 +21,7 @@ export class TournamentService {
     @InjectModel('tournamentWinnings')
     private readonly tournamentWinningsModel: Model<TournamentWinnings, Key>,
     private readonly tournamentQueryStore: TournamentQueryStoreService,
+    private readonly activityStreamService: ActivityStreamService,
   ) {}
 
   /**
@@ -192,6 +194,8 @@ export class TournamentService {
             },
             { return: 'item', returnValues: 'ALL_NEW' },
           );
+
+          this.activityStreamService.track(new BetXpActivityEvent(userId, xp));
         }
       }
     }

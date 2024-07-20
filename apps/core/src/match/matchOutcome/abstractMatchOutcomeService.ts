@@ -5,7 +5,16 @@ export abstract class AbstractMatchOutcomeService {
     tsFrom: number,
     tsTo: number,
     pools: Pools,
-  ): Promise<string> {
+  ): Promise<{
+    winner: string;
+    priceDelta: Record<
+      string,
+      {
+        relative: number;
+        absolute: number;
+      }
+    >;
+  }> {
     throw new Error('Not implemented');
   }
 }

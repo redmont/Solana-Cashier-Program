@@ -19,6 +19,11 @@ import { Series } from './series.interface';
 import { FightType } from './seriesConfig.model';
 import { FighterProfilesService } from '@/fighterProfiles/fighterProfiles.service';
 import { TournamentService } from '@/tournament/tournament.service';
+import {
+  BetPlacedActivityEvent,
+  PoolClosedActivityEvent,
+  PoolOpenActivityEvent,
+} from '@/activityStream/events';
 
 @Injectable()
 export class SeriesService {
@@ -148,6 +153,7 @@ export class SeriesService {
           codeName,
           matchId,
           fighter,
+          priceDelta,
           config,
           startTime,
         ) => {
@@ -155,6 +161,7 @@ export class SeriesService {
             codeName,
             matchId,
             fighter,
+            priceDelta,
             config,
             startTime,
           );
@@ -197,6 +204,15 @@ export class SeriesService {
             startTime: context.startTime,
             winner: context.winningFighter?.codeName,
           });
+
+          if (state === 'bettingOpen') {
+            this.activityStreamService.track(
+              new PoolOpenActivityEvent(fighters[0], fighters[1]),
+            );
+          }
+          if (state === 'pollingPrices') {
+            this.activityStreamService.track(new PoolClosedActivityEvent());
+          }
         },
         matchCompleted: async () => {
           this.eventEmitter.emit('series.matchCompleted', codeName);
@@ -305,7 +321,7 @@ export class SeriesService {
     userId: string,
     walletAddress: string,
     amount: number,
-    fighter: string,
+    fighterCodeName: string,
   ): Promise<{ success: boolean; message?: string }> {
     const fsmInstance = this.fsmInstances.get(codeName);
     if (!fsmInstance) {
@@ -324,10 +340,11 @@ export class SeriesService {
 
     const { matchId, config } = currentState.context;
 
-    if (!config.fighters.find((x) => x.codeName === fighter)) {
+    const fighter = config.fighters.find((x) => x.codeName === fighterCodeName);
+    if (!fighter) {
       return {
         success: false,
-        message: `Fighter '${fighter}' is not in the match`,
+        message: `Fighter '${fighterCodeName}' is not in the match`,
       };
     }
 
@@ -346,42 +363,35 @@ export class SeriesService {
       matchId,
       userId,
       amount,
-      fighter,
+      fighterCodeName,
     );
 
     await this.queryStore.createBet(
       currentState.context.codeName,
       walletAddress,
       amount.toString(), // todo
-      fighter,
+      fighterCodeName,
     );
 
-    await this.tournamentService.trackBetPlaced({
-      userId,
-      walletAddress,
-      timestamp: dayjs.utc().toISOString(),
-      betAmount: amount,
-    });
+    await Promise.all([
+      this.tournamentService.trackBetPlaced({
+        userId,
+        walletAddress,
+        timestamp: dayjs.utc().toISOString(),
+        betAmount: amount,
+      }),
+      this.gatewayManagerService.handleBetPlaced(
+        userId,
+        dayjs.utc().toISOString(),
+        currentState.context.codeName,
+        walletAddress,
+        amount.toString(),
+        fighterCodeName,
+      ),
+    ]);
 
-    this.gatewayManagerService.handleBetPlaced(
-      userId,
-      dayjs.utc().toISOString(),
-      currentState.context.codeName,
-      walletAddress,
-      amount.toString(),
-      fighter,
-    );
-
-    await this.activityStreamService.track(
-      currentState.context.codeName,
-      matchId,
-      dayjs.utc(),
-      'betPlaced',
-      {
-        amount: amount.toString(),
-        fighter,
-      },
-      userId,
+    this.activityStreamService.track(
+      new BetPlacedActivityEvent(userId, amount, fighter.displayName),
     );
 
     return { success: true };

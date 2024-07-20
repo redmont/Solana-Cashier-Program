@@ -16,9 +16,9 @@ import { sendBrokerCommand } from 'broker-comms';
 import {
   PlaceBetMessage as PlaceBetUiGatewayMessage,
   GetBalanceMessage as GetBalanceUiGatewayMessage,
+  GetBalanceMessageResponse as GetBalanceUiGatewayMessageResponse,
   GetActivityStreamMessage as GetActivityStreamUiGatewayMessage,
   GetMatchStatusMessage,
-  GetLeaderboardMessage,
   GatewayEvent,
   GetRosterMessage,
   GetMatchHistoryMessage,
@@ -43,8 +43,6 @@ import {
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
-  GetBalanceMessage,
-  GetBalanceMessageResponse,
   PlaceBetMessageResponse,
   EnsureUserIdMessage,
   EnsureUserIdMessageReturnType,
@@ -60,13 +58,13 @@ import {
 } from 'query-store';
 import { IJwtAuthService } from '@/jwtAuth/jwtAuth.interface';
 import { ConfigService } from '@nestjs/config';
-import { ReadModelService } from 'cashier-read-model';
 import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import dayjs from '@/dayjs';
 import { StreamTokenService } from '@/streamToken/streamToken.service';
 import { emitInternalEvent, UserConnectedEvent } from '@/internalEvents';
 import { StreamAuthService } from '@/streamAuth/streamAuth.service';
 import { ChatAuthService } from '@/chatAuth/chatAuth.service';
+import { GatewayService } from './gateway.service';
 
 @WebSocketGateway()
 export class Gateway
@@ -86,12 +84,12 @@ export class Gateway
   private clientUserIdMap: Map<string, string> = new Map();
 
   constructor(
+    private readonly gatewayService: GatewayService,
     private readonly configService: ConfigService,
     private readonly broker: NatsJetStreamClientProxy,
     private readonly query: QueryStoreService,
     @Inject('JWT_AUTH_SERVICE')
     private readonly jwtAuthService: IJwtAuthService,
-    private readonly cashierReadModelService: ReadModelService,
     private readonly streamTokenService: StreamTokenService,
     private readonly streamAuthService: StreamAuthService,
     private readonly eventEmitter: EventEmitter2,
@@ -266,21 +264,20 @@ export class Gateway
 
       return { success, error };
     } catch (e) {
-      console.log('Place bet error', JSON.stringify(e));
       return { success: false, error: { message: e.message } };
     }
   }
 
   @UseGuards(JwtAuthGuard)
   @SubscribeMessage(GetBalanceUiGatewayMessage.messageType)
-  public async getBalance(@ConnectedSocket() client: Socket) {
+  public async getBalance(
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetBalanceUiGatewayMessageResponse> {
     const { userId } = client.data.authorizedUser;
-    const result = await sendBrokerCommand<
-      GetBalanceMessage,
-      GetBalanceMessageResponse
-    >(this.broker, new GetBalanceMessage(userId));
 
-    return { ...result, success: true };
+    const balance = await this.gatewayService.getBalance(userId);
+
+    return { balance, success: true };
   }
 
   @SubscribeMessage(GetActivityStreamUiGatewayMessage.messageType)
@@ -302,29 +299,6 @@ export class Gateway
         timestamp: item.sk,
         message: item.message,
       })),
-    };
-  }
-
-  @SubscribeMessage(GetLeaderboardMessage.messageType)
-  public async getLeaderboard(
-    @MessageBody() { pageSize, page, searchQuery }: GetLeaderboardMessage,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const userId = this.clientUserIdMap.get(client?.id);
-
-    const { totalCount, items, currentUserItem } =
-      await this.cashierReadModelService.getLeaderboard(
-        pageSize,
-        page,
-        userId,
-        searchQuery,
-      );
-
-    return {
-      success: true,
-      totalCount,
-      items,
-      currentUserItem,
     };
   }
 
@@ -416,7 +390,6 @@ export class Gateway
     );
 
     let roundEndDate = null;
-    console.log(startDate, currentRound);
     if (startDate) {
       roundEndDate = dayjs
         .utc(startDate)

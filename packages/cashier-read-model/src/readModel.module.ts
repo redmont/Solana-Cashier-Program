@@ -13,9 +13,12 @@ import { AccountSchema } from './schemas/account.schema';
 import { AccountCount } from './interfaces/accountCount.interface';
 import { ReadModelKey } from './interfaces/key.interface';
 import { AccountCountSchema } from './schemas/accountCount.schema';
+import { RedisCacheModule } from 'global-cache';
 
 interface ReadModelOptions {
   tableName: string;
+  redisHost: string;
+  redisPort: number;
 }
 
 export interface ReadModelModuleAsyncOptions
@@ -73,6 +76,15 @@ export class ReadModelModule implements OnModuleInit {
       module: ReadModelModule,
       imports: [
         DynamooseModule.forFeatureAsync(models),
+        RedisCacheModule.registerAsync({
+          useFactory: async ({ redisHost, redisPort }: ReadModelOptions) => {
+            return {
+              redisHost,
+              redisPort,
+            };
+          },
+          inject: ['READ_MODEL_OPTIONS'],
+        }),
         ...(options.imports || []),
       ],
       providers: [...this.createAsyncProviders(options), ReadModelService],

@@ -71,6 +71,8 @@ import { CacheModule } from '@nestjs/cache-manager';
       useFactory: async (configService: ConfigService) => {
         return {
           tableName: configService.get<string>('cashierReadModelTableName'),
+          redisHost: configService.get<string>('redisHost'),
+          redisPort: parseInt(configService.get<string>('redisPort')),
         };
       },
       inject: [ConfigService],

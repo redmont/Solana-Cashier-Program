@@ -7,6 +7,7 @@ import { StreamAuthModule } from '@/streamAuth/streamAuth.module';
 import { ChatAuthModule } from '@/chatAuth/chatAuth.module';
 import { QueryStoreModule } from 'query-store';
 import { ConfigService } from '@nestjs/config';
+import { GatewayService } from './gateway.service';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { ConfigService } from '@nestjs/config';
       inject: [ConfigService],
     }),
   ],
-  providers: [Gateway],
+  providers: [Gateway, GatewayService],
   exports: [Gateway],
 })
 export class GatewayModule {}

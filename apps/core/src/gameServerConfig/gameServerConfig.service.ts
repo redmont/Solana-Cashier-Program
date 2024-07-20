@@ -15,13 +15,14 @@ export class GameServerConfigService {
       pk: 'gameServerConfig',
       sk: serverId,
       streamId,
+      enabled: false,
     });
   }
 
-  async update(serverId: string, streamId: string) {
+  async update(serverId: string, streamId: string, enabled: boolean) {
     await this.gameServerConfig.update(
       { pk: 'gameServerConfig', sk: serverId },
-      { streamId },
+      { streamId, enabled },
     );
   }
 

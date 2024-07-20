@@ -9,6 +9,7 @@ import { DynamooseModule } from 'nestjs-dynamoose';
 import { TournamentWinningsSchema } from './schemas/tournamentWinnings.schema';
 import { TournamentEntry } from './interfaces/tournamentEntry.interface';
 import { TournamentWinnings } from './interfaces/tournamentWinnings.interface';
+import { ActivityStreamService } from '@/activityStream';
 
 describe('TournamentService', () => {
   let service: TournamentService;
@@ -27,6 +28,10 @@ describe('TournamentService', () => {
   const queryStoreService = {
     updateTournament: jest.fn(),
     updateTournamentEntry: jest.fn(),
+  };
+
+  const activityStreamService = {
+    track: jest.fn(),
   };
 
   beforeAll(async () => {
@@ -61,6 +66,10 @@ describe('TournamentService', () => {
         {
           provide: TournamentQueryStoreService,
           useValue: queryStoreService,
+        },
+        {
+          provide: ActivityStreamService,
+          useValue: activityStreamService,
         },
       ],
     }).compile();

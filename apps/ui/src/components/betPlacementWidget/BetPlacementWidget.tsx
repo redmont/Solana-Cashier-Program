@@ -1,3 +1,5 @@
+'use client';
+
 import { FC, useState, useCallback, useEffect, useMemo, Fragment } from 'react';
 import { classNames } from 'primereact/utils';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';

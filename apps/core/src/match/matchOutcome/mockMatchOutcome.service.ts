@@ -6,7 +6,16 @@ export class MockMatchOutcomeService extends MatchOutcomeService {
     tsFrom: number,
     tsTo: number,
     pools: Pools,
-  ): Promise<string> {
-    return super.determineOutcome(1713830315000, 1713830325000, pools);
+  ): Promise<{
+    winner: string;
+    priceDelta: Record<
+      string,
+      {
+        relative: number;
+        absolute: number;
+      }
+    >;
+  }> {
+    return super.determineOutcome(1713830316000, 1713830320000, pools);
   }
 }

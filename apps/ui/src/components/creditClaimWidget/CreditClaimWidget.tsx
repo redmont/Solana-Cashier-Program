@@ -124,7 +124,7 @@ export const CreditClaimWidget: FC = () => {
         <div className="widget-title">Daily Credits Claim</div>
 
         <p className="widget-info">
-          If you don't claim a day, your streak resets to day 1.
+          Boost your rewards daily! Claim credits to grow your streak - miss a day, and it resets.
         </p>
       </div>
       <div className="widget-body">

@@ -32,7 +32,16 @@ describe('SeriesFsm', () => {
       },
       streamId: '',
     }),
-    determineOutcome: async () => null,
+    determineOutcome: async () => ({
+      displayName: 'test fighter',
+      codeName: 'test-fighter',
+      priceDelta: {
+        'test-fighter': {
+          absolute: 1,
+          relative: 1,
+        },
+      },
+    }),
     distributeWinnings: async () => null,
     resetBets: async () => null,
     onStateChange,

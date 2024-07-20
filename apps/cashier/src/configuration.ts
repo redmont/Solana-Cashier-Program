@@ -6,4 +6,6 @@ export default () => ({
   readModelTableName: process.env.READ_MODEL_TABLE_NAME,
   isDynamoDbLocal: process.env.IS_DDB_LOCAL,
   websocketPort: parseInt(process.env.WS_PORT, 10),
+  redisHost: process.env.REDIS_HOST,
+  redisPort: process.env.REDIS_PORT,
 });

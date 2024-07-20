@@ -17,4 +17,11 @@ export interface SeriesContext {
     displayName: string;
     codeName: string;
   };
+  priceDelta: Record<
+    string,
+    {
+      relative: number;
+      absolute: number;
+    }
+  >;
 }

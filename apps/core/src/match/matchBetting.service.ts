@@ -9,6 +9,10 @@ import { GatewayManagerService } from '@/gatewayManager/gatewayManager.service';
 import { MatchResultEvent } from 'core-messages';
 import { MatchPersistenceService } from './matchPersistence.service';
 import { TournamentService } from '@/tournament/tournament.service';
+import {
+  MatchCompletedActivityEvent,
+  WinActivityEvent,
+} from '@/activityStream';
 
 @Injectable()
 export class MatchBettingService {
@@ -30,11 +34,21 @@ export class MatchBettingService {
     seriesCodeName: string,
     matchId: string,
     winningFighter: { displayName: string; codeName: string },
+    priceDelta: Record<
+      string,
+      {
+        relative: number;
+        absolute: number;
+      }
+    >,
     seriesConfig: SeriesConfig,
     startTime: string,
   ) {
     this.logger.log(
       `Distributing winnings, winning fighter is '${winningFighter}'`,
+    );
+    const losingFighter = seriesConfig.fighters.find(
+      (fighter) => fighter.codeName !== winningFighter.codeName,
     );
     const bets = await this.matchPersistenceService.getBets(matchId);
 
@@ -103,18 +117,6 @@ export class MatchBettingService {
         new CreditMessage(userId, amount, 'WIN'),
       );
 
-      await this.activityStreamService.track(
-        seriesCodeName,
-        matchId,
-        dayjs.utc(),
-        'win',
-        {
-          amount: Math.floor(amount),
-          winningFighter: winningFighter?.displayName,
-        },
-        userId,
-      );
-
       const betAmount = bets
         .filter((x) => x.userId === userId)
         .reduce((acc, bet) => acc + bet.amount, 0);
@@ -122,11 +124,10 @@ export class MatchBettingService {
       // Calculate net winnings
       const netWinAmount = Math.floor(amount - betAmount);
       if (netWinAmount > 0) {
-        await this.tournamentService.trackWin({
+        this.tournamentService.trackWin({
           userId,
           timestamp: dayjs.utc().toISOString(),
           netWinAmount,
-
         });
       }
 
@@ -137,7 +138,7 @@ export class MatchBettingService {
           Math.floor(amount),
         );
 
-      this.gatewayManagerService.emitToClient(
+      await this.gatewayManagerService.emitToClient(
         userId,
         MatchResultEvent.messageType,
         new MatchResultEvent(
@@ -161,20 +162,17 @@ export class MatchBettingService {
         winner: winningFighter,
         fighters: fightersWithBetCounts,
       });
+
+      this.activityStreamService.track(
+        new WinActivityEvent(
+          userId,
+          Math.floor(amount),
+          winningFighter!.displayName,
+        ),
+      );
     }
 
     for (const loserUserId of losers) {
-      await this.activityStreamService.track(
-        seriesCodeName,
-        matchId,
-        dayjs.utc(),
-        'loss',
-        {
-          winningFighter: winningFighter?.displayName,
-        },
-        loserUserId,
-      );
-
       const betAmount = Math.floor(
         bets
           .filter((x) => x.userId === loserUserId)
@@ -188,7 +186,7 @@ export class MatchBettingService {
           0,
         );
 
-      this.gatewayManagerService.emitToClient(
+      await this.gatewayManagerService.emitToClient(
         loserUserId,
         MatchResultEvent.messageType,
         new MatchResultEvent(
@@ -222,5 +220,18 @@ export class MatchBettingService {
       winner: winningFighter,
       fighters: fightersWithBetCounts,
     });
+
+    const winnerTokenPriceDelta = priceDelta[winningFighter.codeName];
+    const loserTokenPriceDelta = priceDelta[losingFighter.codeName];
+
+    this.activityStreamService.track(
+      new MatchCompletedActivityEvent(
+        winningFighter.displayName,
+        losingFighter.displayName,
+        winnerTokenPriceDelta.relative,
+        loserTokenPriceDelta.relative,
+        totalWinPool,
+      ),
+    );
   }
 }

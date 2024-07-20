@@ -25,7 +25,17 @@ export interface FSMDependencies {
     matchId: string,
     config: SeriesConfig,
     samplingStartTime: string,
-  ) => Promise<{ codeName: string; displayName: string }>;
+  ) => Promise<{
+    codeName: string;
+    displayName: string;
+    priceDelta: Record<
+      string,
+      {
+        relative: number;
+        absolute: number;
+      }
+    >;
+  }>;
   distributeWinnings: (
     codeName: string,
     matchId: string,
@@ -33,6 +43,13 @@ export interface FSMDependencies {
       displayName: string;
       codeName: string;
     },
+    priceDelta: Record<
+      string,
+      {
+        relative: number;
+        absolute: number;
+      }
+    >,
     config: SeriesConfig,
     startTime: string,
   ) => Promise<void>;

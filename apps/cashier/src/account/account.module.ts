@@ -26,6 +26,8 @@ import { NatsJetStreamTransport } from '@nestjs-plugins/nestjs-nats-jetstream-tr
       useFactory: async (configService: ConfigService) => {
         return {
           tableName: configService.get<string>('readModelTableName'),
+          redisHost: configService.get<string>('redisHost'),
+          redisPort: parseInt(configService.get<string>('redisPort')),
         };
       },
       inject: [ConfigService],

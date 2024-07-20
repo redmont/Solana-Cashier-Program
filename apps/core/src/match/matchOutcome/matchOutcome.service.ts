@@ -23,7 +23,16 @@ export class MatchOutcomeService implements AbstractMatchOutcomeService {
     tsFrom: number,
     tsTo: number,
     pools: Pools,
-  ): Promise<string> {
+  ): Promise<{
+    winner: string;
+    priceDelta: Record<
+      string,
+      {
+        relative: number;
+        absolute: number;
+      }
+    >;
+  }> {
     const from = new Decimal(tsFrom);
     const to = new Decimal(tsTo);
 
@@ -44,6 +53,9 @@ export class MatchOutcomeService implements AbstractMatchOutcomeService {
       },
     });
 
-    return ticket.winner;
+    return {
+      winner: ticket.winner,
+      priceDelta: ticket.data.priceDelta,
+    };
   }
 }

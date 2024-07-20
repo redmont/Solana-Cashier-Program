@@ -8,19 +8,19 @@ const prizes: {
   title: string;
   description: string;
 }[] = [
-  {
-    title: 'NFT name',
-    description: 'Raffled to the top 20,000 XP Players',
-  },
-  {
-    title: 'NFT name',
-    description: 'Raffled to the top 20,000 XP Players',
-  },
-  {
-    title: 'NFT name',
-    description: 'Raffled to the top 20,000 XP Players',
-  },
-];
+    {
+      title: 'NFT name',
+      description: 'Raffled to the top 20,000 XP Players',
+    },
+    {
+      title: 'NFT name',
+      description: 'Raffled to the top 20,000 XP Players',
+    },
+    {
+      title: 'NFT name',
+      description: 'Raffled to the top 20,000 XP Players',
+    },
+  ];
 
 export interface PrizesWidgetProps {
   title: string;
@@ -47,11 +47,14 @@ export const PrizesWidget: FC<PrizesWidgetProps> = ({
         <div className="widget-header-section">
           <div className="widget-title">Tournament Prizes</div>
 
-          <WidgetCountdown targetDateTime={endDateTime} />
+          <div className="widget-header-right">
+            <div>Tournament ends:</div>
+            <WidgetCountdown targetDateTime={endDateTime} />
+          </div>
         </div>
 
         <p className="widget-info">
-        Top 3 by XP win main prizes. All players enter raffle (1 XP = 1 entry). XP resets each tournament. 
+          Top 3 by XP win main prizes. All players enter raffle (1 XP = 1 entry). XP resets each tournament.
         </p>
       </div>
 
@@ -126,7 +129,7 @@ const PrizeTile: FC<PrizeTileProps> = (props) => {
       )}
 
       <div className="prize-info">
-        <div className="prize-value">{props.value}</div>
+        {props.value && (<div className="prize-value">{props.value}</div>)}
         <div className="prize-description">{props.description}</div>
       </div>
     </div>

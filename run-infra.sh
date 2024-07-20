@@ -4,7 +4,11 @@ trap cleanup INT TERM EXIT
 
 # Function to convert CSV to JSON format expected by DynamoDB
 convert_to_dynamodb_json() {
-    IFS=',' read -r -a array <<< "$1"
+    local d="$1"
+    shift
+    local h=("$@")
+
+    IFS=',' read -r -a array <<< "$d"
     printf '{"PutRequest":{"Item":{'
     first=true
     for index in "${!array[@]}"
@@ -16,17 +20,18 @@ convert_to_dynamodb_json() {
         fi
 
         # Escape internal double quotes for strings and format properly in JSON
-        value=$(echo "${array[index]}")
+        value=$(echo "${array[$index]}")
 
-        #echo "Header is " ${headers[index]}
+        local h_clean=$(echo "${h[$index]}" | tr -d '\r')
 
-        if [[ "${headers[index]}" == "\"timestamp\"" || "${headers[index]}" == "\"confidence\"" || "${headers[index]}" == "\"price\"" ]]; then
-            # These fields are numbers; we output them without internal quotes
-            printf "${headers[index]}:{\"N\":%s}" "${array[index]}"
+        if [[ "$h_clean" == '"pk"' || "$h_clean" == '"quote"' || "$h_clean" == '"provider"' || "$h_clean" == '"exchange"' ]]; then
+            # This field is a string; we escape internal quotes and wrap in double quotes
+            printf "${h[$index]}:{\"S\":%s}" "${value}"
         else
-            # Other fields are strings; we escape internal quotes and wrap in double quotes
-            printf "${headers[index]}:{\"S\":%s}" "${value}"
+            # Other fields are numbers; we output them without internal quotes
+            printf "${h[$index]}:{\"N\":%s}" "${array[$index]}"
         fi
+
     done
     printf '}}}'
 }
@@ -49,7 +54,7 @@ docker run -p 4515:6379 -d --rm redis
 REDIS_PID=$!
 
 # run NATS
-docker run -d -p 4222:4222 -p 6222:6222 -p 8222:8222 --rm nats -js
+docker run -d -p 4222:4222 -p 6222:6222 -p 8222:8222 --rm nats -js -V
 
 NATS_PID=$!
 
@@ -129,7 +134,7 @@ if [ $? -ne 0 ]; then
         # Processing each line, skipping the header
         tail -n +2 $CSV_FILE | while IFS= read -r line
         do
-            JSON_ITEM=$(convert_to_dynamodb_json "$line")
+            JSON_ITEM=$(convert_to_dynamodb_json "$line" "${headers[@]}")
             JSON_BATCH+=("$JSON_ITEM")
 
             # Check if we have collected enough items for a batch write

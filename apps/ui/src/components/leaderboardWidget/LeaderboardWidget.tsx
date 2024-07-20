@@ -21,7 +21,10 @@ export const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
         <div className="widget-header-section">
           <div className="widget-title">Leaderboard</div>
 
-          <WidgetCountdown targetDateTime={resetDateTime} />
+          <div className="widget-header-right">
+            <div>Daily Round ends:</div>
+            <WidgetCountdown targetDateTime={resetDateTime} />
+          </div>
         </div>
 
         <div className="widget-header-section">

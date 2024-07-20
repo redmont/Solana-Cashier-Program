@@ -10,4 +10,5 @@ export const GameServerConfigSchema = new Schema({
     rangeKey: true,
   },
   streamId: String,
+  enabled: Boolean,
 });

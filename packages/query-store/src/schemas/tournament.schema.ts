@@ -14,6 +14,7 @@ export const TournamentSchema = new Schema({
         'description',
         'startDate',
         'endDate',
+        'currentRound',
         'prizes',
       ],
     },

@@ -58,6 +58,7 @@ export function createSeriesFSM(
       samplingStartTime: null,
       capabilities: null,
       winningFighter: null,
+      priceDelta: null,
     },
     states: {
       idle: {
@@ -247,7 +248,12 @@ export function createSeriesFSM(
                   onDone: {
                     target: 'done',
                     actions: assign({
-                      winningFighter: ({ event }) => event.output,
+                      winningFighter: ({
+                        event: {
+                          output: { codeName, displayName },
+                        },
+                      }) => ({ codeName, displayName }),
+                      priceDelta: ({ event }) => event.output.priceDelta,
                     }),
                   },
                 },
@@ -293,6 +299,7 @@ export function createSeriesFSM(
                       codeName,
                       matchId,
                       winningFighter,
+                      priceDelta,
                       config,
                       startTime,
                     },
@@ -300,6 +307,7 @@ export function createSeriesFSM(
                     codeName,
                     matchId,
                     winningFighter,
+                    priceDelta,
                     config,
                     startTime,
                   }),

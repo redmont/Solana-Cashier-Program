@@ -35,6 +35,12 @@
     gap: 1rem;
   }
 
+  .widget-header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
   .widget-title {
     font-size: 1.5rem;
     font-weight: 500;
@@ -122,6 +128,10 @@
       gap: 2rem;
       padding-left: 2rem;
       border-radius: 8px;
+
+      .prize-description {
+        font-weight: 600;
+      }
     }
 
     &.large {

@@ -150,12 +150,22 @@ export class AdminController {
   }
 
   @UseGuards(AdminAuthGuard)
+  @Get('/game-server-configs/:id')
+  async getGameServerConfig(@Param('id') id: string) {
+    const config = await this.gameServerConfigService.get(id);
+
+    const { pk, sk, ...rest } = config;
+
+    return { ...rest, serverId: sk };
+  }
+
+  @UseGuards(AdminAuthGuard)
   @Patch('/game-server-configs/:id')
   async updateGameServerConfig(
     @Param('id') id: string,
     @Body() body: UpdateGameServerConfigRequest,
   ) {
-    await this.gameServerConfigService.update(id, body.streamId);
+    await this.gameServerConfigService.update(id, body.streamId, body.enabled);
   }
 
   @UseGuards(AdminAuthGuard)

@@ -181,7 +181,12 @@ export class GameServerService {
         const serverConfig = await this.gameServerConfigService.get(key);
         if (!serverConfig) {
           this.logger.error(`No config found for server ${key}`);
-          return null;
+          continue;
+        }
+
+        if (!serverConfig.enabled) {
+          this.logger.warn(`Server ${key} is not enabled`);
+          continue;
         }
 
         fsm.send({

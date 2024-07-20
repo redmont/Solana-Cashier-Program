@@ -107,6 +107,13 @@ curl --location 'http://localhost:8080/admin/game-server-configs' \
     "codeName": "mock001",
     "streamId": "brawlers_dev_1"
 }'
+
+curl -X PATCH --location 'http://localhost:8080/admin/game-server-configs/mock001' \
+--header 'Content-Type: application/json' \
+--data '{
+    "streamId": "brawlers_dev_1",
+    "enabled": true
+}'
 ```
 
 Create fighter profiles:

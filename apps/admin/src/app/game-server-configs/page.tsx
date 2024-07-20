@@ -13,9 +13,11 @@ import {
   Tr,
 } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { IoPencil } from 'react-icons/io5';
 
 const GameServerConfigs = () => {
+  const router = useRouter();
   const { isPending, error, data } = useQuery<{
     serverConfigs: { serverId: string; streamId: string }[];
   }>({
@@ -37,7 +39,13 @@ const GameServerConfigs = () => {
             {data?.serverConfigs.map((serverConfig) => (
               <Tr key={serverConfig.serverId}>
                 <Td>
-                  <IconButton size="sm" icon={<IoPencil />} aria-label="Edit" />
+                  <IconButton size="sm" icon={<IoPencil />} aria-label="Edit"
+                    onClick={() =>
+                      router.push(
+                        `/game-server-configs/${serverConfig.serverId}`,
+                      )
+                    }
+                  />
                 </Td>
                 <Td>{serverConfig.serverId}</Td>
                 <Td>{serverConfig.streamId}</Td>

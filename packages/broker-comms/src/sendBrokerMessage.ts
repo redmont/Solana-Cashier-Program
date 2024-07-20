@@ -1,4 +1,7 @@
-import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
+import {
+  NatsJetStreamClientProxy,
+  NatsRequestOptionsBuilder,
+} from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { catchError, firstValueFrom, retry, timeout, timer } from 'rxjs';
 import { BrokerMessage } from './brokerMessage';
 import { BaseResponse } from './baseResponse';
@@ -36,8 +39,15 @@ export async function sendBrokerCommand<
   const messageType = (message.constructor as any).messageType;
 
   try {
+    const requestBuilder = new NatsRequestOptionsBuilder();
+    requestBuilder.setTimeout(20_000);
+    requestBuilder.setPayload(message);
+    const request = requestBuilder.build();
+
     return await firstValueFrom(
-      clientProxy.send<TResponse>({ cmd: messageType }, message),
+      clientProxy
+        .send<TResponse>({ cmd: messageType }, request)
+        .pipe(timeout(30000)),
     );
   } catch (error) {
     console.log(

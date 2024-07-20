@@ -1,84 +1,99 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel, Model } from 'nestjs-dynamoose';
-import { QueryStoreService } from 'query-store';
-import { Dayjs } from 'dayjs';
-import { ActivityStreamItem } from './interfaces/activityStreamItem.interface';
-import { Key } from 'src/interfaces/key';
-import { GatewayManagerService } from '@/gatewayManager/gatewayManager.service';
+import { Logger } from '@nestjs/common';
+import { ActivityEvent } from './events/activityEvent';
+import { MessageConverter } from './messages/messageConverter';
+import {
+  MatchCompletedMessage,
+  PlayerXpUnlockedMessage,
+  PoolClosedMessage,
+  PoolOpenMessage,
+  WhaleWatchMessage,
+} from './messages';
+import {
+  BetPlacedActivityEvent,
+  BetXpActivityEvent,
+  MatchCompletedActivityEvent,
+  PoolClosedActivityEvent,
+  PoolOpenActivityEvent,
+  WinActivityEvent,
+} from './events';
+import { PlayerWinMessage } from './messages/playerWin.message';
+import { PlayerBetPlacedMessage } from './messages/playerBetPlaced.message';
+import { ModuleRef } from '@nestjs/core';
 import { ChatService } from '@/chat/chat.service';
 
 export type Activity = 'betPlaced' | 'win' | 'loss';
 
-const pascalCase = (str: string) =>
-  str.replace(/(\w)(\w*)/g, (_, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
-const pluralise = (amount: string, singular: string, plural: string) =>
-  amount === '1' ? singular : plural;
+type ActivityEventConstructor<T extends ActivityEvent> = new (
+  ...args: any[]
+) => T;
+
+const eventToConverter = new Map<
+  ActivityEventConstructor<ActivityEvent>,
+  Array<new (...args: any[]) => MessageConverter<ActivityEvent>>
+>([
+  [BetPlacedActivityEvent, [WhaleWatchMessage, PlayerBetPlacedMessage]],
+  [BetXpActivityEvent, [PlayerXpUnlockedMessage]],
+  [WinActivityEvent, [PlayerWinMessage]],
+  [PoolOpenActivityEvent, [PoolOpenMessage]],
+  [PoolClosedActivityEvent, [PoolClosedMessage]],
+  [MatchCompletedActivityEvent, [MatchCompletedMessage]],
+]);
 
 @Injectable()
 export class ActivityStreamService {
+  private readonly logger = new Logger(ActivityStreamService.name);
+  o;
+  private eventConverterMap: Map<
+    ActivityEventConstructor<ActivityEvent>,
+    MessageConverter<ActivityEvent>[]
+  >;
+
   constructor(
-    @InjectModel('activityStreamItem')
-    private readonly activityStreamItemModel: Model<ActivityStreamItem, Key>,
-    private readonly queryStore: QueryStoreService,
-    private readonly gatewayManager: GatewayManagerService,
+    private readonly moduleRef: ModuleRef,
     private readonly chatService: ChatService,
   ) {}
 
-  private generateMessage(activity: Activity, data: any) {
-    switch (activity) {
-      case 'betPlaced':
-        return `Stake confirmed: ${data.amount} ${pluralise(data.amount, 'credit', 'credits')} on ${pascalCase(data.fighter)}.`;
-      case 'win': {
-        return `${data.winningFighter} wins! You won ${data.amount} ${pluralise(data.amount, 'credit', 'credits')}! Check the leaderboard to see your latest rank.`;
-      }
-      case 'loss': {
-        if (data.winningFighter) {
-          return `${data.winningFighter} wins! Better luck next time.`;
-        } else {
-          return `Draw! Better luck next time.`;
-        }
-      }
+  onModuleInit() {
+    this.mapConverters();
+  }
 
-      default:
-        return '';
+  async mapConverters() {
+    this.eventConverterMap = new Map();
+    for (const [event, converters] of eventToConverter) {
+      const instances = converters.map((converter) =>
+        this.moduleRef.get(converter),
+      );
+      this.eventConverterMap.set(event, instances);
     }
   }
 
-  async track(
-    seriesCodeName: string,
-    matchId: string,
-    timestamp: Dayjs,
-    activity: Activity,
-    data: any,
-    userId?: string,
-  ) {
-    let pk = `activityStream#${matchId}`;
-    if (userId) {
-      pk += `#${userId}`;
-    }
-    const sk = timestamp.toJSON();
-
-    await this.activityStreamItemModel.create({
-      pk,
-      sk,
-      activity,
-      data,
-    });
-
-    const message = this.generateMessage(activity, data);
-
-    await this.queryStore.createActivityStreamItem(
-      seriesCodeName,
-      sk,
-      matchId,
-      message,
-      userId,
+  getConverters<T extends ActivityEvent>(
+    activityEvent: T,
+  ): MessageConverter<T>[] {
+    const converters = this.eventConverterMap.get(
+      activityEvent.constructor as ActivityEventConstructor<ActivityEvent>,
     );
+    if (!converters) {
+      return [];
+    }
+    return converters as MessageConverter<T>[];
+  }
 
-    await this.chatService.sendSystemMessage({
-      userId,
-      message,
-    });
-    this.gatewayManager.handleActivityStreamItem(userId, sk, message);
+  async track(event: ActivityEvent) {
+    try {
+      const converters = this.getConverters(event);
+
+      for (const converter of converters) {
+        const chatMessage = await converter.convert(event);
+        if (chatMessage) {
+          const { userId, message } = chatMessage;
+
+          await this.chatService.sendSystemMessage({ userId, message });
+        }
+      }
+    } catch (e) {
+      this.logger.error('Error tracking activity stream event', e);
+    }
   }
 }

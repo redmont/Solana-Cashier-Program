@@ -72,7 +72,17 @@ export class MatchManagementService {
     matchId: string,
     seriesConfig: SeriesConfig,
     samplingStartTime: string,
-  ): Promise<{ codeName: string; displayName: string }> {
+  ): Promise<{
+    codeName: string;
+    displayName: string;
+    priceDelta: Record<
+      string,
+      {
+        relative: number;
+        absolute: number;
+      }
+    >;
+  }> {
     const bets = await this.matchBettingService.getBets(matchId);
 
     const pools = seriesConfig.fighters.map((fighter) => ({
@@ -91,9 +101,9 @@ export class MatchManagementService {
       }
     }
 
-    /*const startTime = dayjs(samplingStartTime);
-    const from = new Decimal(startTime.valueOf());
-    const to = new Decimal(startTime.add(10, 'seconds').valueOf());*/
+    // const startTime = dayjs(samplingStartTime);
+    // const from = new Decimal(startTime.valueOf());
+    // const to = new Decimal(startTime.add(10, 'seconds').valueOf());
 
     const from = dayjs().utc().add(-10, 'seconds').valueOf();
     const to = dayjs().utc().valueOf();
@@ -102,7 +112,7 @@ export class MatchManagementService {
       `Generating ticket for timestamps between ${from} and ${to} for pools ${pools[0].symbol} and ${pools[1].symbol}...`,
     );
 
-    const winner = await this.matchOutcomeService.determineOutcome(
+    const oracleOutcome = await this.matchOutcomeService.determineOutcome(
       from,
       to,
       pools,
@@ -119,7 +129,7 @@ export class MatchManagementService {
       let health = 0;
 
       const symbol = formatSymbol(fighter.ticker);
-      const win = winner === symbol;
+      const win = oracleOutcome.winner === symbol;
 
       if (win) {
         // Health is a random, 1 decimal place number, between 0.1 and 0.5 (inclusive)
@@ -160,6 +170,6 @@ export class MatchManagementService {
 
     const { codeName, displayName } = seriesConfig.fighters[winningFighter.id];
 
-    return { codeName, displayName };
+    return { codeName, displayName, priceDelta: oracleOutcome.priceDelta };
   }
 }

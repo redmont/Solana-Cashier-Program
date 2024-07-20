@@ -12,6 +12,9 @@ import { NatsJetStreamTransport } from '@nestjs-plugins/nestjs-nats-jetstream-tr
           connectionOptions: {
             servers: [configService.get<string>('natsUri')],
           },
+          jetStreamOption: {
+            timeout: 20_000,
+          },
         };
       },
       inject: [ConfigService],
