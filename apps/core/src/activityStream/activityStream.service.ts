@@ -43,7 +43,7 @@ const eventToConverter = new Map<
 @Injectable()
 export class ActivityStreamService {
   private readonly logger = new Logger(ActivityStreamService.name);
-  o;
+
   private eventConverterMap: Map<
     ActivityEventConstructor<ActivityEvent>,
     MessageConverter<ActivityEvent>[]

@@ -13,10 +13,22 @@ export class MatchCompletedMessage
     loserPriceChange,
     prizePool,
   }: MatchCompletedActivityEvent) {
+    const prizePoolFormatted = Intl.NumberFormat('en-US').format(
+      Math.round(prizePool),
+    );
+
+    if (!winnerPriceChange || !loserPriceChange) {
+      return {
+        message: `${winnerDisplayName} beats ${loserDisplayName} for the win! 🥊  
+  
+Total prize pool won is ${prizePoolFormatted} 🏦`,
+      };
+    }
+
     return {
       message: `${winnerDisplayName} ${Math.sign(winnerPriceChange)}% beats ${loserDisplayName} ${Math.sign(loserPriceChange)}% for the win! 🥊  
   
-Total prize pool won is ${prizePool} 🏦`,
+Total prize pool won is ${prizePoolFormatted} 🏦`,
     };
   }
 }
