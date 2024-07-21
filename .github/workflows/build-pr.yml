@@ -52,3 +52,6 @@ jobs:
           cp apps/admin/.env.example apps/admin/.env
           cp apps/ui/.env.example apps/ui/.env
           pnpm build
+
+      - name: Run tests
+        run: pnpm coverage:total

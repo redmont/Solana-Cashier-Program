@@ -12,6 +12,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           connectionOptions: {
             servers: [configService.get<string>('natsUri')],
           },
+          jetStreamOption: {
+            timeout: 20_000,
+          },
         };
       },
       inject: [ConfigService],

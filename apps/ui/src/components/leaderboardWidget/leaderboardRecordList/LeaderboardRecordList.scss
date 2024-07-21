@@ -1,0 +1,75 @@
+@use 'sass:color';
+
+.leaderboard-record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.leaderboard-record-card {
+  padding-bottom: 1rem;
+  border: 1px solid rgba($primaryColor, 0.18);
+  border-radius: $borderRadius;
+
+  &.winning {
+    background: rgba($primaryColor, 0.05);
+    border: 1px solid rgba($primaryColor, 0.08);
+
+    .card-rank {
+      display: none;
+    }
+
+    .card-top-rank {
+      display: block;
+    }
+
+    .card-header {
+      height: 4rem;
+      padding: 0 0.5rem;
+      gap: 1rem;
+    }
+  }
+
+  &.highlighted {
+    border: 1px solid $primaryColor;
+    color: $primaryColor;
+    background: rgba($primaryColor, 0.15);
+  }
+
+  .card-header {
+    display: flex;
+    font-size: 0.875rem;
+    height: 3rem;
+    align-items: center;
+  }
+
+  .card-rank {
+    display: flex;
+    width: 3rem;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }
+
+  .card-top-rank {
+    display: none;
+  }
+
+  .card-stat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .card-stat {
+    font-size: 0.75rem;
+    display: flex;
+    padding: 0 1rem;
+  }
+
+  .card-stat-label {
+    font-weight: bold;
+    width: 6rem;
+  }
+}

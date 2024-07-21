@@ -12,9 +12,9 @@ import {
   BetPlacedEvent as BetPlacedUiGatewayEvent,
   MatchUpdatedEvent as MatchUpdatedUiGatewayEvent,
   BalanceUpdatedEvent as BalanceUpdatedUiGatewayEvent,
-  ActivityStreamEvent as ActivityStreamUiGatewayEvent,
   BetsUpdatedEvent as BetsUpdatedUiGatewayEvent,
   MatchResultEvent as MatchResultUiGatewayEvent,
+  ActivityStreamEvent as ActivityStreamUiGatewayEvent,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { Dayjs } from 'dayjs';
 import dayjs from '@/dayjs';
@@ -69,9 +69,11 @@ export class AppController {
       seriesCodeName,
       matchId,
       state,
+      poolOpenStartTime,
       startTime,
       winner,
       preMatchVideoPath,
+      streamId,
     } = data;
 
     const ts = dayjs(timestamp);
@@ -100,6 +102,8 @@ export class AppController {
         fighters,
         state,
         preMatchVideoUrl,
+        streamId,
+        poolOpenStartTime,
         startTime,
         winner,
       ),

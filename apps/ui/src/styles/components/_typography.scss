@@ -1,0 +1,12 @@
+.typography {
+  margin: 0;
+  padding: 0;
+  color: $shade000;
+  font-size: $scale;
+
+  &.header-secondary {
+    font-weight: 600;
+    color: $shade100;
+    font-size: 0.875rem;
+  }
+}

@@ -8,6 +8,7 @@ import { SeriesSchema } from './series.schema';
 import { MatchModule } from 'src/match/match.module';
 import { GatewayManagerModule } from '@/gatewayManager/gatewayManager.module';
 import { FighterProfilesModule } from '@/fighterProfiles/fighterProfiles.module';
+import { TournamentModule } from '@/tournament/tournament.module';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { FighterProfilesModule } from '@/fighterProfiles/fighterProfiles.module'
     ]),
     MatchModule,
     GatewayManagerModule,
-    FighterProfilesModule
+    FighterProfilesModule,
+    TournamentModule,
   ],
   providers: [SeriesService, SeriesPersistenceService],
   controllers: [SeriesController],

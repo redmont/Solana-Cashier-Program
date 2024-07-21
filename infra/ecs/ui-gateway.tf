@@ -110,6 +110,27 @@ locals {
       },
       {
         name = "MILLICAST_ALLOWED_ORIGINS", value = var.millicast_allowed_origins
+      },
+      {
+        name = "CORS_ORIGINS", value = join(",", var.cors_origins)
+      },
+      {
+        name = "STREAM_AUTH_PARENT_TOKEN_ID", value = var.stream_auth_parent_token_id
+      },
+      {
+        name = "STREAM_AUTH_PARENT_TOKEN_SECRET", value = var.stream_auth_parent_token_secret
+      },
+      {
+        name = "PUBNUB_PUBLISH_KEY", value = var.pubnub_publish_key
+      },
+      {
+        name = "PUBNUB_SUBSCRIBE_KEY", value = var.pubnub_subscribe_key
+      },
+      {
+        name = "PUBNUB_SECRET_KEY", value = var.pubnub_secret_key
+      },
+      {
+        name = "PUBNUB_USER_ID", value = "system"
       }
     ]
   }

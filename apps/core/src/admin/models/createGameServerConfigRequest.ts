@@ -1,4 +1,4 @@
 export interface CreateGameServerConfigRequest {
   codeName: string;
-  streamUrl: string;
+  streamId: string;
 }

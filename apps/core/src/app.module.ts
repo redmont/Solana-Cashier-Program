@@ -1,5 +1,6 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { DynamooseModule } from 'nestjs-dynamoose';
 import { GlobalClientsModule } from './globalClientsModule';
 import { SeriesModule } from './series/series.module';
@@ -23,13 +24,14 @@ import { MediaLibraryModule } from './mediaLibrary/mediaLibrary.module';
       isGlobal: true,
       load: [configuration],
     }),
+    ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     RedisCacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
         return {
-          host: configService.get<string>('redisHost'),
-          port: parseInt(configService.get<string>('redisPort')),
+          redisHost: configService.get<string>('redisHost'),
+          redisPort: parseInt(configService.get<string>('redisPort')),
         };
       },
       inject: [ConfigService],
@@ -47,11 +49,13 @@ import { MediaLibraryModule } from './mediaLibrary/mediaLibrary.module';
     QueryStoreModule.registerAsync({
       useFactory: (configService: ConfigService) => {
         return {
-          local:  configService.get<boolean>('isDynamoDbLocal')
-          ? 'http://localhost:8765'
-          : false,
+          local: configService.get<boolean>('isDynamoDbLocal')
+            ? 'http://localhost:8765'
+            : false,
           tableName: configService.get<string>('queryStoreTableName'),
           isDynamoDbLocal: configService.get<boolean>('isDynamoDbLocal'),
+          redisHost: configService.get<string>('redisHost'),
+          redisPort: parseInt(configService.get<string>('redisPort')),
         };
       },
       inject: [ConfigService],

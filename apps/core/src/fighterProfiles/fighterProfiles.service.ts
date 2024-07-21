@@ -16,11 +16,18 @@ export class FighterProfilesService {
     return this.persistence.get(codeName);
   }
 
-  async create(item: FighterProfile) {
-    return this.persistence.create(item);
+  async create(item: Omit<FighterProfile, 'pk' | 'sk'>) {
+    return this.persistence.create({
+      ...item,
+      pk: 'fighterProfile',
+      sk: item.codeName,
+    });
   }
 
-  async update(codeName: string, item: Omit<FighterProfile, 'codeName'>) {
+  async update(
+    codeName: string,
+    item: Omit<FighterProfile, 'pk' | 'sk' | 'codeName'>,
+  ) {
     return this.persistence.update(codeName, item);
   }
 }

@@ -17,8 +17,12 @@ export const getActors = ({
   onStateChange,
   matchCompleted,
 }: FSMDependencies) => ({
-  getSeriesConfig: fromPromise<SeriesConfig, string>(async ({ input }) => {
-    return await getSeriesConfig(input);
+  getSeriesConfig: fromPromise<
+    SeriesConfig,
+    { codeName: string; fighterCodeNames: string[] }
+  >(async ({ input }) => {
+    const { codeName, fighterCodeNames } = input;
+    return await getSeriesConfig(codeName, fighterCodeNames);
   }),
   generateMatchId: fromPromise<string, string>(async ({ input: codeName }) => {
     const matchId = uuid();
@@ -39,7 +43,7 @@ export const getActors = ({
         };
         levels: string[];
       };
-      streamUrl: string;
+      streamId: string;
     },
     { matchId: string; config: SeriesConfig }
   >(async ({ input }) => {
@@ -54,7 +58,11 @@ export const getActors = ({
     return serverDetails;
   }),
   determineOutcome: fromPromise<
-    { displayName: string; codeName: string },
+    {
+      displayName: string;
+      codeName: string;
+      priceDelta: Record<string, { relative: number; absolute: number }>;
+    },
     {
       serverId: string;
       capabilities: {
@@ -79,10 +87,13 @@ export const getActors = ({
       input.samplingStartTime,
     );
   }),
-  setStartTime: fromPromise<string, number>(
-    async ({ input: betPlacementTime }) =>
-      dayjs.utc().add(betPlacementTime, 'seconds').toISOString(),
-  ),
+  setStartTime: fromPromise<
+    { poolOpenStartTime: string; startTime: string },
+    number
+  >(async ({ input: betPlacementTime }) => ({
+    poolOpenStartTime: dayjs.utc().toISOString(),
+    startTime: dayjs.utc().add(betPlacementTime, 'seconds').toISOString(),
+  })),
   distributeWinnings: fromPromise<
     void,
     {
@@ -92,17 +103,32 @@ export const getActors = ({
         displayName: string;
         codeName: string;
       };
+      priceDelta: Record<
+        string,
+        {
+          relative: number;
+          absolute: number;
+        }
+      >;
       config: SeriesConfig;
       startTime: string;
     }
   >(
     async ({
-      input: { codeName, matchId, winningFighter, config, startTime },
+      input: {
+        codeName,
+        matchId,
+        winningFighter,
+        priceDelta,
+        config,
+        startTime,
+      },
     }) => {
       await distributeWinnings(
         codeName,
         matchId,
         winningFighter,
+        priceDelta,
         config,
         startTime,
       );

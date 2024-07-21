@@ -4,19 +4,21 @@ import {
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { instrument } from '@socket.io/admin-ui';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Server } from 'socket.io';
 import { sendBrokerCommand } from 'broker-comms';
 import {
   PlaceBetMessage as PlaceBetUiGatewayMessage,
   GetBalanceMessage as GetBalanceUiGatewayMessage,
+  GetBalanceMessageResponse as GetBalanceUiGatewayMessageResponse,
   GetActivityStreamMessage as GetActivityStreamUiGatewayMessage,
   GetMatchStatusMessage,
-  GetLeaderboardMessage,
   GatewayEvent,
   GetRosterMessage,
   GetMatchHistoryMessage,
@@ -29,33 +31,48 @@ import {
   GetUserIdMessage,
   GetStreamTokenMessage,
   GetStreamTokenMessageResponse,
+  GetMatchStatusMessageResponse,
+  GetStreamAuthTokenMessage,
+  GetStreamAuthTokenMessageResponse,
+  GetDailyClaimsMessage,
+  GetDailyClaimsMessageResponse,
+  ClaimDailyClaimMessage as ClaimDailyClaimUiGatewayMessage,
+  ClaimDailyClaimMessageResponse as ClaimDailyClaimUiGatewayMessageResponse,
+  ChatAuthMessage,
+  ChatAuthMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
-  GetBalanceMessage,
-  GetBalanceMessageResponse,
   PlaceBetMessageResponse,
   EnsureUserIdMessage,
   EnsureUserIdMessageReturnType,
+  ClaimDailyClaimMessage,
+  ClaimDailyClaimMessageResponse,
 } from 'core-messages';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { Socket } from './websocket/socket';
-import { QueryStoreService } from 'query-store';
+import {
+  QueryStoreService,
+  UserProfilesQueryStoreService,
+  TournamentQueryStoreService,
+} from 'query-store';
 import { IJwtAuthService } from '@/jwtAuth/jwtAuth.interface';
 import { ConfigService } from '@nestjs/config';
-import { ReadModelService } from 'cashier-read-model';
 import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import dayjs from '@/dayjs';
 import { StreamTokenService } from '@/streamToken/streamToken.service';
 import { emitInternalEvent, UserConnectedEvent } from '@/internalEvents';
+import { StreamAuthService } from '@/streamAuth/streamAuth.service';
+import { ChatAuthService } from '@/chatAuth/chatAuth.service';
+import { GatewayService } from './gateway.service';
 
-@WebSocketGateway({
-  cors: {
-    origin: '*',
-  },
-})
+@WebSocketGateway()
 export class Gateway
-  implements OnModuleInit, OnGatewayConnection, OnGatewayDisconnect
+  implements
+    OnModuleInit,
+    OnGatewayInit,
+    OnGatewayConnection,
+    OnGatewayDisconnect
 {
   private readonly logger: Logger = new Logger(Gateway.name);
   private readonly mediaUri: string;
@@ -67,16 +84,27 @@ export class Gateway
   private clientUserIdMap: Map<string, string> = new Map();
 
   constructor(
+    private readonly gatewayService: GatewayService,
     private readonly configService: ConfigService,
     private readonly broker: NatsJetStreamClientProxy,
     private readonly query: QueryStoreService,
     @Inject('JWT_AUTH_SERVICE')
     private readonly jwtAuthService: IJwtAuthService,
-    private readonly cashierReadModelService: ReadModelService,
     private readonly streamTokenService: StreamTokenService,
+    private readonly streamAuthService: StreamAuthService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly chatAuthService: ChatAuthService,
+    private readonly tournamentQueryStore: TournamentQueryStoreService,
+    private readonly userProfilesQueryStore: UserProfilesQueryStoreService,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
+  }
+
+  afterInit() {
+    instrument(this.server, {
+      auth: false,
+      mode: 'development',
+    });
   }
 
   onModuleInit() {
@@ -107,6 +135,7 @@ export class Gateway
           decodedToken.verified_credentials.length > 0
         ) {
           // Token from dynamic.xyz
+          const { username } = decodedToken;
           const { address } = decodedToken.verified_credentials[0];
 
           const { userId } = await sendBrokerCommand<
@@ -114,15 +143,21 @@ export class Gateway
             EnsureUserIdMessageReturnType
           >(this.broker, new EnsureUserIdMessage(address));
 
+          await this.userProfilesQueryStore.setUserProfile(userId, {
+            username,
+          });
+
           client.data.authorizedUser = {
             userId,
             walletAddress: address,
+            username,
           };
         } else {
           // Token from our own auth service
           client.data.authorizedUser = {
             userId: decodedToken.sub,
             walletAddress: decodedToken.claims.walletAddress,
+            username: '', // todo
           };
         }
 
@@ -163,16 +198,18 @@ export class Gateway
   }
 
   @SubscribeMessage(GetMatchStatusMessage.messageType)
-  public async getMatchStatus() {
+  public async getMatchStatus(): Promise<GetMatchStatusMessageResponse> {
     const {
       matchId,
       seriesCodeName,
       fighters,
       state,
       bets,
+      poolOpenStartTime,
       startTime,
       winner,
       preMatchVideoPath,
+      streamId,
     } = await this.query.getCurrentMatch();
 
     const preMatchVideoUrl =
@@ -187,7 +224,9 @@ export class Gateway
       })),
       state,
       preMatchVideoUrl,
+      streamId,
       bets,
+      poolOpenStartTime,
       startTime,
       winner,
       success: true,
@@ -225,21 +264,20 @@ export class Gateway
 
       return { success, error };
     } catch (e) {
-      console.log('Place bet error', JSON.stringify(e));
       return { success: false, error: { message: e.message } };
     }
   }
 
   @UseGuards(JwtAuthGuard)
   @SubscribeMessage(GetBalanceUiGatewayMessage.messageType)
-  public async getBalance(@ConnectedSocket() client: Socket) {
+  public async getBalance(
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetBalanceUiGatewayMessageResponse> {
     const { userId } = client.data.authorizedUser;
-    const result = await sendBrokerCommand<
-      GetBalanceMessage,
-      GetBalanceMessageResponse
-    >(this.broker, new GetBalanceMessage(userId));
 
-    return { ...result, success: true };
+    const balance = await this.gatewayService.getBalance(userId);
+
+    return { balance, success: true };
   }
 
   @SubscribeMessage(GetActivityStreamUiGatewayMessage.messageType)
@@ -264,48 +302,33 @@ export class Gateway
     };
   }
 
-  @SubscribeMessage(GetLeaderboardMessage.messageType)
-  public async getLeaderboard(
-    @MessageBody() { pageSize, page, searchQuery }: GetLeaderboardMessage,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const userId = this.clientUserIdMap.get(client?.id);
-
-    const { totalCount, items, currentUserItem } =
-      await this.cashierReadModelService.getLeaderboard(
-        pageSize,
-        page,
-        userId,
-        searchQuery,
-      );
-
-    return {
-      success: true,
-      totalCount,
-      items,
-      currentUserItem,
-    };
-  }
-
   @SubscribeMessage(GetRosterMessage.messageType)
   public async getRoster() {
     const { roster } = await this.query.getRoster();
 
     return {
       success: true,
-      roster: roster.map(({ codeName }) => ({ series: codeName })),
+      roster: roster.map(({ codeName, fighters }) => ({
+        series: codeName,
+        fighters: fighters.map(({ imagePath, ...rest }) => ({
+          ...rest,
+          imageUrl: this.getMediaUrl(imagePath),
+        })),
+      })),
     };
   }
 
   @SubscribeMessage(GetMatchHistoryMessage.messageType)
-  public async getMatchHistory(): Promise<GetMatchHistoryMessageResponse> {
-    const result = await this.query.getMatches();
+  public async getMatchHistory(
+    @MessageBody() { fighterCodeNames }: GetMatchHistoryMessage,
+  ): Promise<GetMatchHistoryMessageResponse> {
+    const result = await this.query.getMatchHistory(fighterCodeNames);
 
     const matches = result.map((match) => ({
       ...match,
-      fighters: match.fighters.map((fighter) => ({
-        ...fighter,
-        imageUrl: this.getMediaUrl(fighter.imagePath),
+      fighters: match.fighters.map(({ imagePath, ...rest }) => ({
+        ...rest,
+        imageUrl: this.getMediaUrl(imagePath),
       })),
     }));
 
@@ -339,7 +362,8 @@ export class Gateway
 
   @SubscribeMessage(GetTournamentMessage.messageType)
   public async getTournament(
-    @MessageBody() { pageSize, page, searchQuery }: GetTournamentMessage,
+    @MessageBody()
+    { sortBy, pageSize, page, searchQuery }: GetTournamentMessage,
     @ConnectedSocket() client: Socket,
   ): Promise<GetTournamentMessageResponse> {
     const userId = this.clientUserIdMap.get(client?.id);
@@ -351,17 +375,27 @@ export class Gateway
       description,
       startDate,
       endDate,
+      currentRound,
       prizes,
       totalCount,
       items,
       currentUserItem,
-    } = await this.query.getCurrentTournamentLeaderboard(
+    } = await this.tournamentQueryStore.getCurrentTournamentLeaderboard(
       now,
+      sortBy,
       pageSize,
       page,
       userId,
       searchQuery,
     );
+
+    let roundEndDate = null;
+    if (startDate) {
+      roundEndDate = dayjs
+        .utc(startDate)
+        .add(currentRound ?? 1, 'day')
+        .toISOString();
+    }
 
     return {
       success: true,
@@ -369,6 +403,8 @@ export class Gateway
       description,
       startDate,
       endDate,
+      currentRound,
+      roundEndDate,
       prizes,
       totalCount,
       items,
@@ -409,6 +445,95 @@ export class Gateway
     return {
       success: true,
       token,
+    };
+  }
+
+  @SubscribeMessage(GetStreamAuthTokenMessage.messageType)
+  public async getAuthStreamToken(
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetStreamAuthTokenMessageResponse> {
+    const token = this.streamAuthService.generateToken(client.id);
+
+    return {
+      success: true,
+      token,
+    };
+  }
+
+  @SubscribeMessage(GetDailyClaimsMessage.messageType)
+  public async getDailyClaims(
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetDailyClaimsMessageResponse> {
+    const userId = this.clientUserIdMap.get(client?.id);
+
+    const {
+      dailyClaimAmounts,
+      dailyClaimStreak,
+      nextClaimDate,
+      claimExpiryDate,
+    } = await this.query.getDailyClaims(userId);
+
+    return {
+      success: true,
+      dailyClaimAmounts,
+      streak: dailyClaimStreak,
+      nextClaimDate,
+      claimExpiryDate,
+    };
+  }
+
+  @SubscribeMessage(ClaimDailyClaimUiGatewayMessage.messageType)
+  public async claimDailyClaim(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: ClaimDailyClaimUiGatewayMessage,
+  ): Promise<ClaimDailyClaimUiGatewayMessageResponse> {
+    const userId = this.clientUserIdMap.get(client?.id);
+
+    if (!userId) {
+      return {
+        success: false,
+        message: 'User not authorized',
+      };
+    }
+
+    const result = await sendBrokerCommand<
+      ClaimDailyClaimMessage,
+      ClaimDailyClaimMessageResponse
+    >(this.broker, new ClaimDailyClaimMessage(userId, body.amount));
+    if (!result.success) {
+      return {
+        success: false,
+        message: result.message,
+      };
+    }
+
+    const { streak, nextClaimDate, claimExpiryDate } = result.data;
+
+    return {
+      success: true,
+      data: {
+        streak,
+        nextClaimDate,
+        claimExpiryDate,
+      },
+    };
+  }
+
+  @SubscribeMessage(ChatAuthMessage.messageType)
+  public async chatAuth(
+    @ConnectedSocket() client: Socket,
+  ): Promise<ChatAuthMessageResponse> {
+    const userId = this.clientUserIdMap.get(client?.id);
+    const username = client?.data.authorizedUser?.username;
+
+    const { token, authorizedUuid, channels } =
+      await this.chatAuthService.getAuthToken(userId, username);
+
+    return {
+      success: true,
+      token,
+      authorizedUuid,
+      channels,
     };
   }
 

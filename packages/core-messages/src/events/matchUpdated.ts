@@ -16,6 +16,8 @@ export class MatchUpdatedEvent extends BrokerEvent {
     }[],
     public readonly state: string,
     public readonly preMatchVideoPath: string,
+    public readonly streamId: string,
+    public readonly poolOpenStartTime: string,
     public readonly startTime: string,
     public readonly winner: string,
   ) {

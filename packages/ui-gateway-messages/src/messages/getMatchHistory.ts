@@ -24,7 +24,7 @@ export class GetMatchHistoryMessage extends Message<GetMatchHistoryMessageRespon
 
   static responseType: GetMatchHistoryMessageResponse;
 
-  constructor() {
+  constructor(readonly fighterCodeNames: string[]) {
     super();
   }
 }

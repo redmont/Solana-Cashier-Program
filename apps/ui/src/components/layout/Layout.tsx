@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 import { JoinButton, MobileJoinButton } from '@/components/JoinButton';
@@ -21,6 +22,10 @@ export const Layout = (props: ChildContainerProps) => {
   const { balance, isBalanceReady } = useAppState();
   const { isConnected } = useEthWallet();
 
+  const currentPath = usePathname();
+
+  const isActive = (path: string) => currentPath === path;
+
   useEffect(() => {
     setReady(true);
     setTutorialVisible(shouldShowTutorial());
@@ -38,14 +43,26 @@ export const Layout = (props: ChildContainerProps) => {
           </Link>
         </div>
 
+        <div className="spacer" />
         <div className="topnav">
-          <Link className="nav-link" href="/leaderboard">
-            <i className="pi pi-trophy"></i>
-            Leaderboard
+          <Link
+            className={`nav-link ${isActive('/') ? 'active' : ''}`}
+            href="/"
+          >
+            Play
           </Link>
 
-          <span className="nav-link" onClick={() => setTutorialVisible(true)}>
-            <i className="pi pi-book"></i>
+          <Link
+            className={`nav-link ${isActive('/tournament') ? 'active' : ''}`}
+            href="/tournament"
+          >
+            Tournament
+          </Link>
+
+          <span
+            className={`nav-link ${isActive('/how-to-play') ? 'active' : ''}`}
+            onClick={() => setTutorialVisible(true)}
+          >
             How To Play
           </span>
         </div>
@@ -57,18 +74,22 @@ export const Layout = (props: ChildContainerProps) => {
                 {Math.floor(balance)} CR
               </div>
 
-              <div className="balance-desktop md:block">
-                Credits: {Math.floor(balance)}
+              <div className="balance-desktop md:flex">
+                {/* <div className="balance-cashier-desktop">Cashier</div> */}
+                <div>Credits: {Math.floor(balance)}</div>
               </div>
             </>
           )}
 
-          <Link href="/leaderboard" className="p-button-link md:hidden">
+          <Link
+            href="/tournament"
+            className={`p-button-link md:hidden ${isActive('/tournament') ? 'active' : ''}`}
+          >
             <i className="pi pi-trophy"></i>
           </Link>
 
           <span
-            className="p-button-link md:hidden"
+            className={`p-button-link md:hidden ${isActive('/how-to-play') ? 'active' : ''}`}
             onClick={() => setTutorialVisible(true)}
           >
             <i className="pi pi-book"></i>

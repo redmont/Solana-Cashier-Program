@@ -18,6 +18,12 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Series } from './series.interface';
 import { FightType } from './seriesConfig.model';
 import { FighterProfilesService } from '@/fighterProfiles/fighterProfiles.service';
+import { TournamentService } from '@/tournament/tournament.service';
+import {
+  BetPlacedActivityEvent,
+  PoolClosedActivityEvent,
+  PoolOpenActivityEvent,
+} from '@/activityStream/events';
 
 @Injectable()
 export class SeriesService {
@@ -39,6 +45,7 @@ export class SeriesService {
     private readonly matchManagementService: MatchManagementService,
     private readonly gatewayManagerService: GatewayManagerService,
     private readonly fighterProfilesService: FighterProfilesService,
+    private readonly tournamentService: TournamentService,
     private readonly eventEmitter: EventEmitter2,
     private readonly broker: NatsJetStreamClientProxy,
   ) {}
@@ -103,32 +110,13 @@ export class SeriesService {
     const fsmInstance = createActor(
       createSeriesFSM(codeName, displayName, {
         logger: this.logger,
-        getSeriesConfig: async (codeName) => {
+        getSeriesConfig: async (codeName, fighterCodeNames) => {
           const series = await this.seriesPersistenceService.getOne(codeName);
-
-          const fighterProfiles = await this.fighterProfilesService.list();
-
-          let fighters = [];
-          for (const fighterProfile of series.fighterProfiles) {
-            if (fighterProfile === '#RANDOM#') {
-              while (true) {
-                // Random fighter
-                const randomIndex = Math.floor(
-                  Math.random() * fighterProfiles.length,
-                );
-                const fighter = fighterProfiles[randomIndex];
-                // We can't use the same fighter twice
-                if (!fighters.includes(fighter)) {
-                  fighters.push(fighter);
-                  break;
-                }
-              }
-            } else {
-              const fighter = fighterProfiles.find(
-                (x) => x.codeName === fighterProfile,
-              );
-              fighters.push(fighter);
-            }
+          const fighters = [];
+          for (const fighterCodeName of fighterCodeNames) {
+            const fighter =
+              await this.fighterProfilesService.get(fighterCodeName);
+            fighters.push(fighter);
           }
 
           return {
@@ -165,6 +153,7 @@ export class SeriesService {
           codeName,
           matchId,
           fighter,
+          priceDelta,
           config,
           startTime,
         ) => {
@@ -172,6 +161,7 @@ export class SeriesService {
             codeName,
             matchId,
             fighter,
+            priceDelta,
             config,
             startTime,
           );
@@ -192,24 +182,37 @@ export class SeriesService {
             }),
           );
 
-          await this.seriesPersistenceService.savePublicState(
+          await this.seriesPersistenceService.savePublicState({
             codeName,
-            context.matchId,
+            matchId: context.matchId,
             fighters,
             state,
-            context.config.preMatchVideoPath,
-            context.startTime,
-          );
+            preMatchVideoPath: context.config.preMatchVideoPath,
+            streamId: context.streamId,
+            poolOpenStartTime: context.poolOpenStartTime,
+            startTime: context.startTime,
+          });
 
-          this.gatewayManagerService.handleMatchUpdated(
-            codeName,
-            context.matchId,
+          this.gatewayManagerService.handleMatchUpdated({
+            seriesCodeName: codeName,
+            matchId: context.matchId,
             fighters,
             state,
-            context.config.preMatchVideoPath,
-            context.startTime,
-            context.winningFighter?.codeName,
-          );
+            preMatchVideoPath: context.config.preMatchVideoPath,
+            streamId: context.streamId,
+            poolOpenStartTime: context.poolOpenStartTime,
+            startTime: context.startTime,
+            winner: context.winningFighter?.codeName,
+          });
+
+          if (state === 'bettingOpen') {
+            this.activityStreamService.track(
+              new PoolOpenActivityEvent(fighters[0], fighters[1]),
+            );
+          }
+          if (state === 'pollingPrices') {
+            this.activityStreamService.track(new PoolClosedActivityEvent());
+          }
         },
         matchCompleted: async () => {
           this.eventEmitter.emit('series.matchCompleted', codeName);
@@ -297,7 +300,7 @@ export class SeriesService {
       throw new Error(`Series with codeName ${codeName} does not exist`);
     }
 
-    fsmInstance.fsm.send({ type: event });
+    fsmInstance.fsm.send(event);
   }
 
   listSeries() {
@@ -318,7 +321,7 @@ export class SeriesService {
     userId: string,
     walletAddress: string,
     amount: number,
-    fighter: string,
+    fighterCodeName: string,
   ): Promise<{ success: boolean; message?: string }> {
     const fsmInstance = this.fsmInstances.get(codeName);
     if (!fsmInstance) {
@@ -337,10 +340,11 @@ export class SeriesService {
 
     const { matchId, config } = currentState.context;
 
-    if (!config.fighters.find((x) => x.codeName === fighter)) {
+    const fighter = config.fighters.find((x) => x.codeName === fighterCodeName);
+    if (!fighter) {
       return {
         success: false,
-        message: `Fighter '${fighter}' is not in the match`,
+        message: `Fighter '${fighterCodeName}' is not in the match`,
       };
     }
 
@@ -359,35 +363,35 @@ export class SeriesService {
       matchId,
       userId,
       amount,
-      fighter,
+      fighterCodeName,
     );
 
     await this.queryStore.createBet(
       currentState.context.codeName,
       walletAddress,
       amount.toString(), // todo
-      fighter,
+      fighterCodeName,
     );
 
-    this.gatewayManagerService.handleBetPlaced(
-      userId,
-      dayjs.utc().toISOString(),
-      currentState.context.codeName,
-      walletAddress,
-      amount.toString(),
-      fighter,
-    );
+    await Promise.all([
+      this.tournamentService.trackBetPlaced({
+        userId,
+        walletAddress,
+        timestamp: dayjs.utc().toISOString(),
+        betAmount: amount,
+      }),
+      this.gatewayManagerService.handleBetPlaced(
+        userId,
+        dayjs.utc().toISOString(),
+        currentState.context.codeName,
+        walletAddress,
+        amount.toString(),
+        fighterCodeName,
+      ),
+    ]);
 
-    await this.activityStreamService.track(
-      currentState.context.codeName,
-      matchId,
-      dayjs.utc(),
-      'betPlaced',
-      {
-        amount: amount.toString(),
-        fighter,
-      },
-      userId,
+    this.activityStreamService.track(
+      new BetPlacedActivityEvent(userId, amount, fighter.displayName),
     );
 
     return { success: true };

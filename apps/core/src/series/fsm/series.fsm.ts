@@ -4,15 +4,16 @@ import { getActors } from './actors';
 import { FSMDependencies } from './fsmDependencies';
 import { SeriesContext } from './seriesContext';
 
-export type SeriesEvent =
-  | 'RUN'
+type SeriesEventTypes =
   | 'RUN_MATCH.FINISH_MATCH'
   | 'MATCH_CREATED'
   | 'MATCH_COMPLETED'
   | 'RETRY_ALLOCATION'
   | 'REOPEN_BETTING';
 
-type InternalEvent = { type: SeriesEvent };
+export type SeriesEvent =
+  | { type: 'RUN'; fighterCodeNames: string[] }
+  | { type: SeriesEventTypes };
 
 export function createSeriesFSM(
   codeName: string,
@@ -22,7 +23,7 @@ export function createSeriesFSM(
   return setup({
     types: {} as {
       context: SeriesContext;
-      events: InternalEvent;
+      events: SeriesEvent;
     },
     actors: getActors(fsmDependencies),
     delays: {
@@ -39,6 +40,7 @@ export function createSeriesFSM(
     context: {
       codeName,
       displayName,
+      fighterCodeNames: [],
       config: {
         requiredCapabilities: {},
         betPlacementTime: 30,
@@ -50,21 +52,32 @@ export function createSeriesFSM(
       },
       matchId: null,
       serverId: null,
+      streamId: null,
+      poolOpenStartTime: null,
       startTime: null,
       samplingStartTime: null,
       capabilities: null,
       winningFighter: null,
+      priceDelta: null,
     },
     states: {
       idle: {
         on: {
-          RUN: 'getSeriesConfig',
+          RUN: {
+            target: 'getSeriesConfig',
+            actions: assign({
+              fighterCodeNames: ({ event }) => event.fighterCodeNames,
+            }),
+          },
         },
       },
       getSeriesConfig: {
         invoke: {
           src: 'getSeriesConfig',
-          input: ({ context }) => context.codeName,
+          input: ({ context: { codeName, fighterCodeNames } }) => ({
+            codeName,
+            fighterCodeNames,
+          }),
           onDone: {
             target: 'preMatchDelay',
             actions: assign({
@@ -130,6 +143,7 @@ export function createSeriesFSM(
                 target: 'bettingOpen',
                 actions: assign({
                   serverId: ({ event }) => event.output.serverId,
+                  streamId: ({ event }) => event.output.streamId,
                   capabilities: ({ event }) => event.output.capabilities,
                 }),
               },
@@ -156,7 +170,9 @@ export function createSeriesFSM(
                   onDone: {
                     target: 'onStateChange',
                     actions: assign({
-                      startTime: ({ event }) => event.output,
+                      startTime: ({ event }) => event.output.startTime,
+                      poolOpenStartTime: ({ event }) =>
+                        event.output.poolOpenStartTime,
                     }),
                   },
                 },
@@ -196,7 +212,7 @@ export function createSeriesFSM(
                   },
                 },
                 after: {
-                  5_000: 'setMatchInProgress',
+                  10_000: 'setMatchInProgress',
                 },
               },
               setMatchInProgress: {
@@ -232,7 +248,12 @@ export function createSeriesFSM(
                   onDone: {
                     target: 'done',
                     actions: assign({
-                      winningFighter: ({ event }) => event.output,
+                      winningFighter: ({
+                        event: {
+                          output: { codeName, displayName },
+                        },
+                      }) => ({ codeName, displayName }),
+                      priceDelta: ({ event }) => event.output.priceDelta,
                     }),
                   },
                 },
@@ -278,6 +299,7 @@ export function createSeriesFSM(
                       codeName,
                       matchId,
                       winningFighter,
+                      priceDelta,
                       config,
                       startTime,
                     },
@@ -285,6 +307,7 @@ export function createSeriesFSM(
                     codeName,
                     matchId,
                     winningFighter,
+                    priceDelta,
                     config,
                     startTime,
                   }),

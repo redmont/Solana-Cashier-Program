@@ -3,7 +3,7 @@ export interface CreateTournamentRequest {
   displayName: string;
   description: string;
   startDate: string;
-  endDate: string;
+  rounds: number;
   prizes: {
     title: string;
     description: string;

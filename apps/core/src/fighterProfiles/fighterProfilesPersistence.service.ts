@@ -32,7 +32,10 @@ export class FighterProfilesPersistenceService {
     );
   }
 
-  async update(codeName: string, item: Omit<FighterProfile, 'codeName'>) {
+  async update(
+    codeName: string,
+    item: Omit<FighterProfile, 'pk' | 'sk' | 'codeName'>,
+  ) {
     await this.fighterProfileModel.update(
       { pk: 'fighterProfile', sk: codeName },
       item,

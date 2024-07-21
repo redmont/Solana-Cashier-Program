@@ -1,5 +1,6 @@
 import { classNames } from 'primereact/utils';
 import React, { FC, useCallback, useMemo, useRef, useEffect } from 'react';
+import { Tooltip } from '../Tooltip';
 
 export interface SliderProps {
   min?: number;
@@ -188,7 +189,9 @@ export const Slider: FC<SliderProps> = ({
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
-          <div className="slider-handle-clickarea"></div>
+          <Tooltip content={`${value}%`} at="top" showDelay={0}>
+            <div className="slider-handle-clickarea"></div>
+          </Tooltip>
         </div>
       </div>
     </div>

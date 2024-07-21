@@ -4,6 +4,26 @@ import { ConfigService } from '@nestjs/config';
 import { ActivityStreamService } from './activityStream.service';
 import { ActivityStreamItemSchema } from './activityStreamItem.schema';
 import { GatewayManagerModule } from '@/gatewayManager/gatewayManager.module';
+import { ChatModule } from '@/chat/chat.module';
+import {
+  MatchCompletedMessage,
+  PlayerBetPlacedMessage,
+  PlayerWinMessage,
+  PlayerXpUnlockedMessage,
+  PoolClosedMessage,
+  PoolOpenMessage,
+  WhaleWatchMessage,
+} from './messages';
+
+const messageConverters = [
+  MatchCompletedMessage,
+  PlayerBetPlacedMessage,
+  PlayerWinMessage,
+  PlayerXpUnlockedMessage,
+  PoolOpenMessage,
+  PoolClosedMessage,
+  WhaleWatchMessage,
+];
 
 @Module({
   imports: [
@@ -23,8 +43,9 @@ import { GatewayManagerModule } from '@/gatewayManager/gatewayManager.module';
       },
     ]),
     GatewayManagerModule,
+    ChatModule,
   ],
-  providers: [ActivityStreamService],
+  providers: [ActivityStreamService, ...messageConverters],
   exports: [ActivityStreamService],
 })
 export class ActivityStreamModule {}

@@ -10,9 +10,10 @@ import { Roster } from './interfaces/roster.interface';
 import { UserMatch } from './interfaces/userMatch.interface';
 import { GetMatchResult } from './models/getMatchResult';
 import { GetUserMatchResult } from './models/getUserMatchResult';
-import { Tournament } from './interfaces/tournament.interface';
-import { TournamentEntry } from './interfaces/tournamentEntry.interface';
 import { SortOrder } from 'dynamoose/dist/General';
+import { IndexUtils } from './indexUtils';
+import { DailyClaimStatus } from './interfaces/dailyClaimStatus.interface';
+import { DailyClaimAmounts } from './interfaces/dailyClaimAmounts.interface';
 
 @Injectable()
 export class QueryStoreService implements OnModuleInit {
@@ -31,44 +32,11 @@ export class QueryStoreService implements OnModuleInit {
     private readonly userMatchResultModel: Model<UserMatchResult, Key>,
     @InjectModel('roster')
     private readonly rosterModel: Model<Roster, Key>,
-    @InjectModel('tournament')
-    private readonly tournamentModel: Model<Tournament, Key>,
-    @InjectModel('tournamentEntry')
-    private readonly tournamentEntryModel: Model<TournamentEntry, Key>,
+    @InjectModel('dailyClaimAmounts')
+    private readonly dailyClaimAmountsModel: Model<DailyClaimAmounts, Key>,
+    @InjectModel('dailyClaimStatus')
+    private readonly dailyClaimStatusModel: Model<DailyClaimStatus, Key>,
   ) {}
-
-  private async getCurrentTournament(date: string): Promise<
-    Pick<
-      Tournament,
-      'displayName' | 'description' | 'startDate' | 'endDate' | 'prizes'
-    > & {
-      codeName: string;
-    }
-  > {
-    const tournaments = await this.tournamentModel
-      .query({
-        pk: 'tournament',
-        startDate: { le: date },
-      })
-      .using('pkStartDate')
-      .exec();
-
-    if (tournaments.length === 0) {
-      return null;
-    }
-
-    const { sk, displayName, description, startDate, endDate, prizes } =
-      tournaments[tournaments.length - 1];
-
-    return {
-      codeName: sk,
-      displayName,
-      description,
-      startDate,
-      endDate,
-      prizes,
-    };
-  }
 
   async onModuleInit() {
     // Ensure there is a current match item
@@ -87,6 +55,7 @@ export class QueryStoreService implements OnModuleInit {
         matchId: '',
         seriesCodeName: '',
         preMatchVideoPath: '',
+        streamId: '',
       });
     }
   }
@@ -149,20 +118,32 @@ export class QueryStoreService implements OnModuleInit {
     );
   }
 
-  async updateCurrentMatch(
-    seriesCodeName: string,
-    matchId: string,
+  async updateCurrentMatch({
+    seriesCodeName,
+    matchId,
+    fighters,
+    state,
+    preMatchVideoPath,
+    streamId,
+    poolOpenStartTime,
+    startTime,
+    winner,
+  }: {
+    seriesCodeName: string;
+    matchId: string;
     fighters: {
       codeName: string;
       displayName: string;
       ticker: string;
       imagePath: string;
-    }[],
-    state: string,
-    preMatchVideoPath: string,
-    startTime?: string,
-    winner?: string,
-  ) {
+    }[];
+    state: string;
+    preMatchVideoPath: string;
+    streamId?: string;
+    poolOpenStartTime?: string;
+    startTime?: string;
+    winner?: string;
+  }) {
     await this.currentMatchModel.update(
       {
         pk: `currentMatch`,
@@ -173,7 +154,9 @@ export class QueryStoreService implements OnModuleInit {
         fighters,
         state,
         preMatchVideoPath,
+        streamId: streamId ?? undefined,
         matchId: matchId ?? undefined,
+        poolOpenStartTime: poolOpenStartTime ?? undefined,
         startTime: startTime ?? undefined,
         winner: winner ?? undefined,
       },
@@ -328,6 +311,10 @@ export class QueryStoreService implements OnModuleInit {
       codeName: string;
     };
   }) {
+    const matchFighters = IndexUtils.formatMatchFighters(
+      fighters.map((fighter) => fighter.codeName),
+    );
+
     await this.matchModel.create({
       pk: 'match',
       sk: `${startTime}#${seriesCodeName}`,
@@ -335,6 +322,7 @@ export class QueryStoreService implements OnModuleInit {
       matchId,
       startTime,
       fighters,
+      matchFighters,
       winner,
     });
   }
@@ -388,7 +376,15 @@ export class QueryStoreService implements OnModuleInit {
     });
   }
 
-  async updateRoster(roster: { codeName: string }[]) {
+  async updateRoster(
+    roster: {
+      codeName: string;
+      fighters: {
+        displayName: string;
+        imagePath: string;
+      }[];
+    }[],
+  ) {
     await this.rosterModel.create(
       {
         pk: 'roster',
@@ -411,8 +407,24 @@ export class QueryStoreService implements OnModuleInit {
     return roster;
   }
 
+  async getMatchHistory(fighterCodeNames: string[]): Promise<GetMatchResult[]> {
+    const matchFighters = IndexUtils.formatMatchFighters(fighterCodeNames);
+    const matches = await this.matchModel
+      .query({ matchFighters })
+      .using('matchFightersStartTime')
+      .limit(20)
+      .sort(SortOrder.descending)
+      .exec();
+
+    return matches.map(({ pk, sk, ...rest }) => rest);
+  }
+
   async getMatches(): Promise<GetMatchResult[]> {
-    const matches = await this.matchModel.query({ pk: 'match' }).exec();
+    const matches = await this.matchModel
+      .query({ pk: 'match' })
+      .limit(20)
+      .sort(SortOrder.descending)
+      .exec();
 
     return matches.map(({ pk, sk, ...rest }) => rest);
   }
@@ -420,250 +432,88 @@ export class QueryStoreService implements OnModuleInit {
   async getUserMatches(userId: string): Promise<GetUserMatchResult[]> {
     const matches = await this.userMatchModel
       .query({ pk: `match#${userId}` })
+      .limit(20)
+      .sort(SortOrder.descending)
       .exec();
 
     return matches.map(({ pk, sk, userId, ...rest }) => rest);
   }
 
-  async createTournament({
-    codeName,
-    displayName,
-    description,
-    startDate,
-    endDate,
-    prizes,
-  }: {
-    codeName: string;
-    displayName: string;
-    description: string;
-    startDate: string;
-    endDate: string;
-    prizes: {
-      title: string;
-      description: string;
-    }[];
-  }) {
-    await this.tournamentModel.create({
-      pk: 'tournament',
-      sk: codeName,
-      displayName,
-      description,
-      startDate,
-      endDate,
-      prizes,
-    });
-  }
-
-  async updateTournament({
-    codeName,
-    displayName,
-    description,
-    startDate,
-    endDate,
-    prizes,
-  }: {
-    codeName: string;
-    displayName: string;
-    description: string;
-    startDate: string;
-    endDate: string;
-    prizes: {
-      title: string;
-      description: string;
-    }[];
-  }) {
-    await this.tournamentModel.update(
+  async setDailyClaimAmounts(dailyClaimAmounts: number[]) {
+    await this.dailyClaimAmountsModel.create(
       {
-        pk: 'tournament',
-        sk: codeName,
+        pk: 'dailyClaimAmounts',
+        sk: 'dailyClaimAmounts',
+        dailyClaimAmounts,
       },
       {
-        displayName,
-        description,
-        startDate,
-        endDate,
-        prizes,
-      },
-    );
-  }
-
-  async updateTournamentEntry({
-    tournament,
-    userId,
-    primaryWalletAddress,
-    tournamentEntryWinAmount,
-    balance,
-  }: {
-    tournament: string;
-    userId: string;
-    primaryWalletAddress: string;
-    tournamentEntryWinAmount: number;
-    balance: string;
-  }) {
-    await this.tournamentEntryModel.create(
-      {
-        pk: `tournamentEntry#${tournament}`,
-        sk: userId,
-        primaryWalletAddress,
-        tournamentEntryWinAmount,
-        balance,
-      },
-      {
-        overwrite: true,
         return: 'item',
+        overwrite: true,
       },
     );
   }
 
-  async getCurrentTournamentLeaderboard(
-    date: string,
-    pageSize: number = 50,
-    pageNumber: number = 1,
-    userId: string = null,
-    searchQuery: string = null,
-  ): Promise<{
-    displayName: string;
-    description: string;
-    prizes: {
-      title: string;
-      description: string;
-    }[];
-    startDate: string;
-    endDate: string;
-    items: {
-      rank: number;
-      walletAddress: string;
-      winAmount: string;
-      balance: string;
-    }[];
-    totalCount?: number;
-    currentUserItem?: {
-      rank: number;
-      walletAddress: string;
-      winAmount: string;
-      balance: string;
-    };
-  }> {
-    const tournament = await this.getCurrentTournament(date);
+  async setDailyClaimStatus(
+    userId: string,
+    {
+      dailyClaimStreak,
+      nextClaimDate,
+      claimExpiryDate,
+    }: Pick<
+      DailyClaimStatus,
+      'dailyClaimStreak' | 'nextClaimDate' | 'claimExpiryDate'
+    >,
+  ) {
+    await this.dailyClaimStatusModel.create(
+      {
+        pk: 'dailyClaimStatus',
+        sk: userId,
+        dailyClaimStreak,
+        nextClaimDate,
+        claimExpiryDate,
+      },
+      {
+        return: 'item',
+        overwrite: true,
+      },
+    );
+  }
 
-    if (!tournament) {
-      return {
-        displayName: null,
-        description: null,
-        prizes: [],
-        startDate: null,
-        endDate: null,
-        totalCount: 0,
-        items: [],
+  async getDailyClaims(userId?: string) {
+    const claimAmounts = await this.dailyClaimAmountsModel.get({
+      pk: 'dailyClaimAmounts',
+      sk: 'dailyClaimAmounts',
+    });
+
+    if (!claimAmounts) {
+      return { dailyClaimAmounts: [] };
+    }
+
+    if (!userId) {
+      return { dailyClaimAmounts: claimAmounts.dailyClaimAmounts };
+    }
+
+    const dailyClaimStatusKey = {
+      pk: 'dailyClaimStatus',
+      sk: userId,
+    };
+
+    let dailyClaimStatus: DailyClaimStatus =
+      await this.dailyClaimStatusModel.get(dailyClaimStatusKey);
+    if (!dailyClaimStatus) {
+      dailyClaimStatus = {
+        ...dailyClaimStatusKey,
+        dailyClaimStreak: 0,
       };
     }
 
-    const { codeName, displayName, description, prizes, startDate, endDate } =
-      tournament;
-
-    let currentPage = 1;
-    let rank = 1;
-    let lastKey;
-    let currentUserItem;
-
-    do {
-      const query = this.tournamentEntryModel
-        .query({
-          pk: `tournamentEntry#${codeName}`,
-        })
-        .using('pkTournamentEntryWinAmount')
-        .limit(pageSize)
-        .sort(SortOrder.descending);
-      if (lastKey) {
-        query.startAt(lastKey);
-      }
-
-      const response = await query.exec();
-      lastKey = response.lastKey;
-      currentPage += 1;
-
-      if (searchQuery) {
-        const matches: (TournamentEntry & { rank: number })[] = [];
-        for (const item of response) {
-          let walletAddress = item.primaryWalletAddress;
-          if (
-            walletAddress &&
-            walletAddress.toLowerCase().includes(searchQuery.toLowerCase())
-          ) {
-            matches.push({ ...item, rank });
-          }
-
-          rank++;
-        }
-
-        return {
-          displayName,
-          description,
-          prizes,
-          startDate,
-          endDate,
-          items: matches.map(
-            ({
-              rank,
-              primaryWalletAddress,
-              tournamentEntryWinAmount,
-              balance,
-            }) => ({
-              rank,
-              walletAddress: primaryWalletAddress,
-              winAmount: tournamentEntryWinAmount.toString(),
-              balance,
-            }),
-          ),
-        };
-      } else {
-        if (userId) {
-          const userItemIndex = response.findIndex(
-            (x) => x.sk === `account#${userId}`,
-          );
-          if (userItemIndex !== -1) {
-            const userItem = response[userItemIndex];
-            const userRank = rank + userItemIndex;
-            currentUserItem = {
-              rank: userRank,
-              walletAddress: userItem.primaryWalletAddress,
-              balance: userItem.balance,
-            };
-          }
-        }
-
-        if (currentPage > pageNumber) {
-          const totalCount = 0; // todo
-
-          return {
-            displayName,
-            description,
-            prizes,
-            startDate,
-            endDate,
-            totalCount,
-            currentUserItem,
-            items: response.map((item) => ({
-              rank: rank++,
-              walletAddress: item.primaryWalletAddress,
-              balance: item.balance,
-              winAmount: item.tournamentEntryWinAmount.toString(),
-            })),
-          };
-        } else {
-          rank += response.length;
-        }
-      }
-    } while (lastKey);
-
+    const { dailyClaimStreak, nextClaimDate, claimExpiryDate } =
+      dailyClaimStatus;
     return {
-      displayName,
-      description,
-      prizes,
-      startDate,
-      endDate,
-      totalCount: 0,
-      items: [],
+      dailyClaimAmounts: claimAmounts.dailyClaimAmounts,
+      dailyClaimStreak,
+      nextClaimDate,
+      claimExpiryDate,
     };
   }
 }

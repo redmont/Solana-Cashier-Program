@@ -1,0 +1,90 @@
+@use 'sass:color';
+
+.leaderboard-table {
+  display: none;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+
+  .col-rank {
+    text-align: center;
+    font-weight: bold;
+    width: 5rem;
+  }
+
+  .rank-image {
+    display: none;
+
+    img {
+      height: 2.5rem;
+      width: auto;
+    }
+  }
+
+  .col-player {
+    width: 14rem;
+    text-align: left;
+  }
+
+  .col-wins {
+    width: 8rem;
+  }
+
+  .col-xp {
+    flex-grow: 1;
+    text-align: right;
+    padding: 0 1rem;
+    font-weight: 700;
+  }
+
+  %table-row {
+    display: flex;
+    flex-direction: row;
+    height: 3rem;
+    align-items: center;
+  }
+
+  .table-header {
+    @extend %table-row;
+
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+    background-color: #0e0e10;
+  }
+
+  .table-row {
+    @extend %table-row;
+
+    margin: 0.5rem 0;
+    border-radius: $borderRadius;
+    border: 1px solid rgba($primaryColor, 0.18);
+
+    &.highlighted {
+      color: $primaryColor;
+      border: 1px solid rgba($primaryColor, 0.6);
+      background: rgba($primaryColor, 0.04);
+    }
+
+    &.winning {
+      background: rgba($primaryColor, 0.05);
+      border: 1px solid rgba($primaryColor, 0.08);
+
+      .rank-image {
+        display: block;
+      }
+
+      .rank-value {
+        display: none;
+      }
+    }
+
+    &.highlighted {
+      border: 1px solid $primaryColor;
+      color: $primaryColor;
+      background: rgba($primaryColor, 0.15);
+    }
+  }
+}

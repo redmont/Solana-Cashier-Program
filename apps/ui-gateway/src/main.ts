@@ -20,10 +20,14 @@ async function bootstrap() {
     .get(GatewayInstanceDecoratorProcessorService)
     .processNatsDecorators([AppController]);
 
-  const redisIoAdapter = new RedisIoAdapter(app.getHttpServer(), {
-    host: config.redisHost,
-    port: config.redisPort,
-  });
+  const redisIoAdapter = new RedisIoAdapter(
+    app.getHttpServer(),
+    {
+      host: config.redisHost,
+      port: config.redisPort,
+    },
+    config.corsOrigins,
+  );
   await redisIoAdapter.connectToRedis();
 
   app.useWebSocketAdapter(redisIoAdapter);
@@ -45,13 +49,6 @@ async function bootstrap() {
         {
           name: 'gateway',
           subjects: ['gateway.>'],
-        },
-        {
-          name: 'oracleIndexer',
-          subjects: ['oracleIndexer.>'],
-          no_ack: true,
-          max_age: nanos(60_000),
-          duplicate_window: nanos(30_000),
         },
       ],
     }),

@@ -16,7 +16,7 @@ interface CreateTournamentRequest {
   displayName: string;
   description: string;
   startDate: string;
-  endDate: string;
+  rounds: number;
   prizes: {
     title: string;
     description: string;
@@ -27,7 +27,7 @@ interface UpdateTournamentRequest {
   displayName: string;
   description: string;
   startDate: string;
-  endDate: string;
+  rounds: number;
   prizes: {
     title: string;
     description: string;
@@ -44,7 +44,7 @@ const schema: RJSFSchema = {
     displayName: { type: 'string', title: 'Display name' },
     description: { type: 'string', title: 'Description' },
     startDate: { type: 'string', format: 'datetime', title: 'Start date' },
-    endDate: { type: 'string', format: 'datetime', title: 'End date' },
+    rounds: { type: 'number', title: 'Rounds' },
     prizes: {
       type: 'array',
       title: 'Prizes',
@@ -94,7 +94,7 @@ const EditTournamentPage = ({ params }: { params: { codename: string } }) => {
 
   const updateTournamentMutation = useMutation({
     mutationFn: (data: UpdateTournamentRequest) => {
-      return axios.put(`${baseUrl}/series/${params.codename}`, data, {
+      return axios.put(`${baseUrl}/tournaments/${params.codename}`, data, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },

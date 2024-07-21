@@ -1,7 +1,7 @@
+import '@/dayjs';
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
-
 import { Layout } from '../components/layout';
 import { Scrollable } from '../components/Scrollable';
 import { PrimeReactProvider } from 'primereact/api';

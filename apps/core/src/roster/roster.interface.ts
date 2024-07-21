@@ -7,6 +7,11 @@ export interface Roster extends Key {
   }[];
   schedule: {
     codeName: string;
+    fighters: {
+      codeName: string;
+      displayName: string;
+      imagePath: string;
+    }[];
   }[];
   timedSeries: {
     codeName: string;

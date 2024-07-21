@@ -13,6 +13,8 @@ export interface GetMatchStatusMessageResponse {
   bets: any[];
   state: string;
   preMatchVideoUrl: string;
+  streamId: string;
+  poolOpenStartTime?: string;
   startTime?: string;
   winner?: string;
 }

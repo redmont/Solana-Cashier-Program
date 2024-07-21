@@ -1,6 +1,14 @@
 import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
-import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
+import {
+  Ctx,
+  MessagePattern,
+  Payload,
+  RpcException,
+} from '@nestjs/microservices';
+import {
+  NatsJetStreamClientProxy,
+  NatsJetStreamContext,
+} from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import {
   PlaceBetMessage,
   MatchCompletedMessage,

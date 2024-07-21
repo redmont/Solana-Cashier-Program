@@ -19,8 +19,11 @@ export class PriceFeedService {
   async handlePriceFeedEvent(symbol: string, price: number, timestamp: number) {
     const symbolLower = symbol.toLowerCase();
 
+    const now = dayjs.utc();
+    const ts = dayjs.utc(timestamp);
+
     // Discard timestamps older than 5 minutes
-    if (Date.now() - timestamp > 5 * 60 * 1000) {
+    if (now.diff(ts, 'minute') > 5) {
       return;
     }
 
@@ -46,7 +49,7 @@ export class PriceFeedService {
 
     this.gateway.publish(
       new TickerPriceEvent(
-        dayjs.utc(timestamp).toISOString(),
+        ts.toISOString(),
         trackedTicker.fighter,
         trackedTicker.ticker,
         price,

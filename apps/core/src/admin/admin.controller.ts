@@ -9,7 +9,6 @@ import {
   Body,
   Controller,
   Get,
-  Inject,
   Param,
   Patch,
   Post,
@@ -34,13 +33,18 @@ import {
   CreateGameServerConfigRequest,
   UpdateGameServerConfigRequest,
   UpdateRosterRequest,
+  CreateTournamentRequest,
+  UpdateTournamentRequest,
+  SetDailyClaimAmountsRequest,
 } from './models';
 import { ConfigService } from '@nestjs/config';
 import { TournamentService } from '@/tournament/tournament.service';
-import { CreateTournamentRequest } from './models/createTournamentRequest';
-import { UpdateTournamentRequest } from './models/updateTournamentRequest';
 import { AdminAuthGuard } from '@/auth/adminAuthGuard';
 import { FighterProfilesService } from '@/fighterProfiles/fighterProfiles.service';
+import { Tournament } from '@/tournament/interfaces/tournament.interface';
+import { DailyClaimService } from '@/dailyClaim/dailyClaim.service';
+import { CreateFighterProfileRequest } from './models/createFighterProfileRequest';
+import { UpdateFighterProfileRequest } from './models/updateFighterProfileRequest';
 
 @Controller('admin')
 export class AdminController {
@@ -55,6 +59,7 @@ export class AdminController {
     private readonly rosterService: RosterService,
     private readonly tournamentService: TournamentService,
     private readonly fighterProfilesService: FighterProfilesService,
+    private readonly dailyClaimService: DailyClaimService,
     private readonly broker: NatsJetStreamClientProxy,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
@@ -133,12 +138,6 @@ export class AdminController {
   }
 
   @UseGuards(AdminAuthGuard)
-  @Post('/series/run')
-  async runSeries(@Body() body: { codeName: string }) {
-    this.seriesService.sendEvent(body.codeName, 'RUN');
-  }
-
-  @UseGuards(AdminAuthGuard)
   @Get('/game-server-configs')
   async getGameServerConfigs() {
     return { serverConfigs: await this.gameServerConfigService.getAll() };
@@ -147,7 +146,17 @@ export class AdminController {
   @UseGuards(AdminAuthGuard)
   @Post('/game-server-configs')
   async createGameServerConfig(@Body() body: CreateGameServerConfigRequest) {
-    await this.gameServerConfigService.create(body.codeName, body.streamUrl);
+    await this.gameServerConfigService.create(body.codeName, body.streamId);
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Get('/game-server-configs/:id')
+  async getGameServerConfig(@Param('id') id: string) {
+    const config = await this.gameServerConfigService.get(id);
+
+    const { pk, sk, ...rest } = config;
+
+    return { ...rest, serverId: sk };
   }
 
   @UseGuards(AdminAuthGuard)
@@ -155,7 +164,9 @@ export class AdminController {
   async updateGameServerConfig(
     @Param('id') id: string,
     @Body() body: UpdateGameServerConfigRequest,
-  ) {}
+  ) {
+    await this.gameServerConfigService.update(id, body.streamId, body.enabled);
+  }
 
   @UseGuards(AdminAuthGuard)
   @Get('/game-server-capabilities')
@@ -222,8 +233,12 @@ export class AdminController {
 
   @UseGuards(AdminAuthGuard)
   @Get('/tournaments')
-  async listTournaments() {
-    return { tournaments: await this.tournamentService.getTournaments() };
+  async listTournaments(): Promise<{
+    tournaments: Omit<Tournament, 'pk' | 'sk'>[];
+  }> {
+    const tournamentsResult = await this.tournamentService.getTournaments();
+
+    return { tournaments: tournamentsResult };
   }
 
   @UseGuards(AdminAuthGuard)
@@ -244,13 +259,12 @@ export class AdminController {
     @Param('codeName') codeName: string,
     @Body() body: UpdateTournamentRequest,
   ) {
-    const { displayName, description, startDate, endDate, prizes } = body;
-    return this.tournamentService.updateTournament({
-      codeName,
+    const { displayName, description, startDate, rounds, prizes } = body;
+    return this.tournamentService.updateTournament(codeName, {
       displayName,
       description,
       startDate,
-      endDate,
+      rounds,
       prizes,
     });
   }
@@ -276,16 +290,32 @@ export class AdminController {
 
   @UseGuards(AdminAuthGuard)
   @Post('/fighter-profiles')
-  async createFighterProfile(@Body() body: any) {
-    return this.fighterProfilesService.create(body);
+  async createFighterProfile(@Body() item: CreateFighterProfileRequest) {
+    return this.fighterProfilesService.create(item);
   }
 
   @UseGuards(AdminAuthGuard)
   @Put('/fighter-profiles/:codeName')
   async updateFighterProfile(
     @Param('codeName') codeName: string,
-    @Body() body: any,
+    @Body() body: UpdateFighterProfileRequest,
   ) {
     return this.fighterProfilesService.update(codeName, body);
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Get('/daily-claim-amounts')
+  async getDailyClaimAmounts() {
+    const claimAmounts = await this.dailyClaimService.getDailyClaimAmounts();
+
+    const dailyClaimAmounts = claimAmounts?.dailyClaimAmounts ?? [];
+
+    return { dailyClaimAmounts };
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Put('/daily-claim-amounts')
+  async setDailyClaimAmounts(@Body() body: SetDailyClaimAmountsRequest) {
+    await this.dailyClaimService.setDailyClaimAmounts(body.dailyClaimAmounts);
   }
 }

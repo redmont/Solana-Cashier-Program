@@ -10,12 +10,20 @@ export class GameServerConfigService {
     private readonly gameServerConfig: Model<GameServerConfig, Key>,
   ) {}
 
-  async create(serverId: string, streamUrl: string) {
+  async create(serverId: string, streamId: string) {
     await this.gameServerConfig.create({
       pk: 'gameServerConfig',
       sk: serverId,
-      streamUrl,
+      streamId,
+      enabled: false,
     });
+  }
+
+  async update(serverId: string, streamId: string, enabled: boolean) {
+    await this.gameServerConfig.update(
+      { pk: 'gameServerConfig', sk: serverId },
+      { streamId, enabled },
+    );
   }
 
   async get(serverId: string) {

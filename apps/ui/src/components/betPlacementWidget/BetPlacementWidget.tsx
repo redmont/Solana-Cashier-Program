@@ -1,13 +1,18 @@
-import { FC, useState, useCallback, useEffect, useMemo } from 'react';
+'use client';
+
+import { FC, useState, useCallback, useEffect, useMemo, Fragment } from 'react';
 import { classNames } from 'primereact/utils';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 
-import { MatchStatus } from '@/types';
+import { Fighter, MatchStatus } from '@/types';
 import { Slider } from '../slider';
 import { useSocket, useAppState, usePostHog, useEthWallet } from '@/hooks';
 import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
+import { FighterSwitch } from './FighterSwitch';
+import { PriceVisualisation } from './PriceVisualisation';
+import { Tooltip } from '../Tooltip';
 
 export interface BetPlacementWidgetProps {
   fighter: number; // 0 or 1
@@ -33,8 +38,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
   const posthog = usePostHog();
 
   const betAmount = props.betAmount ?? 0;
-  const selectedFighter = fighters[props.fighter];
-  const prices = fighters.map((f) => match?.prices?.[f.ticker]);
+  const selectedFighter = fighters.at(props.fighter);
 
   useEffect(() => {
     if (balance < betAmount) {
@@ -121,6 +125,19 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
     return isLoading ? 'Processing' : 'Confirm';
   }, [isLoading, isAuthenticated, isBalanceReady]);
 
+  const bets = fighters.map((fighter) => {
+    const bet = match?.bets[fighter?.codeName];
+    const stake = bet?.stake ?? 0;
+
+    const isOpponent = fighter.codeName !== selectedFighter?.codeName;
+
+    return {
+      ...bet,
+      stake,
+      projectedWinRate: bet?.projectWinRate(betAmount, isOpponent),
+    };
+  });
+
   return (
     <div className="widget bet-placement-widget">
       <div className="widget-body framed">
@@ -128,57 +145,25 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
           <div className="fighter-selection">
             <div className="selection-title">Back your fighter</div>
 
-            <div>
-              <div className="current-prices">
-                <div className={classNames('price-info', prices[0]?.change)}>
-                  <span className="price-ticker">${prices[0]?.ticker}</span>
-                  <span className="price-value">{prices[0]?.value}</span>
-                  <i
-                    className={classNames('price-change-indicator pi', {
-                      'pi-sort-down-fill': prices[0]?.change === 'down',
-                      'pi-sort-up-fill': prices[0]?.change === 'up',
-                    })}
-                  ></i>
-                </div>
-
-                <div className={classNames('price-info', prices[1]?.change)}>
-                  <i
-                    className={classNames('price-change-indicator pi', {
-                      'pi-sort-down-fill': prices[1]?.change === 'down',
-                      'pi-sort-up-fill': prices[1]?.change === 'up',
-                    })}
-                  ></i>
-                  <span className="price-value">{prices[1]?.value}</span>
-                  <span className="price-ticker">${prices[1]?.ticker}</span>
-                </div>
-              </div>
-
-              <div className="fighter-switch">
-                <div
-                  className={classNames('fighter-tile', {
-                    selected:
-                      selectedFighter?.codeName === fighters[0]?.codeName,
-                  })}
-                  onClick={() => handleFighterChange(0)}
-                >
-                  <img src={fighters[0]?.imageUrl} />
-                  {fighters[0]?.displayName}
-                </div>
-
-                <span>VS</span>
-
-                <div
-                  className={classNames('fighter-tile', {
-                    selected:
-                      selectedFighter?.codeName === fighters[1]?.codeName,
-                  })}
-                  onClick={() => handleFighterChange(1)}
-                >
-                  {fighters[1]?.displayName}
-                  <img src={fighters[1]?.imageUrl} />
-                </div>
-              </div>
+            <PriceVisualisation fighters={fighters} prices={match?.prices} />
+            <div className="spacer">
+              <div className="separator"></div>
             </div>
+            <FighterSwitch
+              fighters={fighters}
+              selectedFighter={selectedFighter}
+              handleFighterChange={handleFighterChange}
+            />
+
+            <Tooltip
+              content={`Your projected win rate once you confirm your stake`}
+            >
+              <div className="projected-win-rate">
+                <span>{bets.at(0)?.projectedWinRate ?? 0}x</span>
+                <span>WIN RATE</span>
+                <span>{bets.at(1)?.projectedWinRate ?? 0}x</span>
+              </div>
+            </Tooltip>
           </div>
 
           <div className="credits-selection">
@@ -206,13 +191,15 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
               <span className="p-inputgroup-addon credits-label">Credits</span>
             </div>
 
-            {!error && (
-              <div className="text-sm text-600 mt-2">
-                Stakes are locked until the end of the fight.
-              </div>
-            )}
-
-            {error && <div className="text-sm mt-2 text-red-500">{error}</div>}
+            <div className="text-sm mt-2">
+              {error ? (
+                <span className="text-red-500">{error}</span>
+              ) : (
+                <span className="text-600">
+                  Stakes are locked until the end of the fight.
+                </span>
+              )}
+            </div>
 
             <Button
               loading={isLoading}

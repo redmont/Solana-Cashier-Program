@@ -13,6 +13,9 @@ export const TournamentEntrySchema = new Schema({
   userId: String,
   primaryWalletAddress: String,
   winAmount: Number,
+  entryBetAmount: Number,
+  entryBetAmountCreditedXp: Number,
   balance: String,
+  xp: Number,
   updatedAt: String,
 });

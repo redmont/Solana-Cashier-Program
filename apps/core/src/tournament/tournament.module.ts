@@ -5,6 +5,9 @@ import { TournamentSchema } from './schemas/tournament.schema';
 import { TournamentEntrySchema } from './schemas/tournamentEntry.schema';
 import { TournamentService } from './tournament.service';
 import { TournamentController } from './tournament.controller';
+import { TournamentWinningsSchema } from './schemas/tournamentWinnings.schema';
+import { QueryStoreModule, TournamentQueryStoreService } from 'query-store';
+import { ActivityStreamModule } from '@/activityStream/activityStream.module';
 
 @Module({
   imports: [
@@ -27,6 +30,19 @@ import { TournamentController } from './tournament.controller';
         useFactory: (_, configService: ConfigService) => {
           return {
             schema: TournamentEntrySchema,
+            options: {
+              tableName: configService.get<string>('tableName'),
+              create: configService.get<boolean>('isDynamoDbLocal'),
+            },
+          };
+        },
+        inject: [ConfigService],
+      },
+      {
+        name: 'tournamentWinnings',
+        useFactory: (_, configService: ConfigService) => {
+          return {
+            schema: TournamentWinningsSchema,
             options: {
               tableName: configService.get<string>('tableName'),
               create: configService.get<boolean>('isDynamoDbLocal'),

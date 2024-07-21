@@ -1,10 +1,11 @@
 import { Controller } from '@nestjs/common';
-import { EventPattern, Payload } from '@nestjs/microservices';
+import { Ctx, EventPattern, Payload } from '@nestjs/microservices';
 import { OnEvent } from '@nestjs/event-emitter';
 import { MatchUpdatedEvent } from 'core-messages';
 import { PriceFeedEventPayload } from './interfaces/priceFeedEventPayload.interface';
 import { PriceFeedService } from './priceFeed.service';
 import { UserConnectedEvent } from '@/internalEvents';
+import { NatsJetStreamContext } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 
 @Controller()
 export class PriceFeedController {
@@ -15,11 +16,15 @@ export class PriceFeedController {
     oracleIndexer.price.2.pyth.pyth.doge.usd
   */
   @EventPattern(`oracleIndexer.price.*.*.*.*.*`)
-  async onPriceFeedEvent(@Payload() data: PriceFeedEventPayload) {
+  async onPriceFeedEvent(
+    @Payload() data: PriceFeedEventPayload,
+    @Ctx() ctx: NatsJetStreamContext,
+  ) {
     const { symbol, price, timestamp } = data;
 
     // Discard timestamps older than 60 seconds
     if (Date.now() - timestamp > 60 * 1000) {
+      ctx.message.ack();
       return;
     }
 
@@ -28,6 +33,8 @@ export class PriceFeedController {
       price,
       timestamp,
     );
+
+    ctx.message.ack();
   }
 
   @EventPattern(`${MatchUpdatedEvent.messageType}`)

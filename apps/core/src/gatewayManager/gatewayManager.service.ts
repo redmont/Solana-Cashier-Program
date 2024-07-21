@@ -23,32 +23,46 @@ export class GatewayManagerService implements OnModuleInit {
     this.clientDiscovery = new ClientDiscovery(this.broker);
   }
 
-  emitToAll(event: string, data: any) {
-    this.clientDiscovery.emitToAll(event, data);
+  async emitToAll(event: string, data: any) {
+    await this.clientDiscovery.emitToAll(event, data);
   }
 
-  emitToClient(userId: string, event: string, data: any) {
+  async emitToClient(userId: string, event: string, data: any) {
     if (this.userIdInstances[userId]) {
-      this.userIdInstances[userId].forEach((instanceId) => {
-        this.clientDiscovery.emitToClient(instanceId, event, data);
-      });
+      await Promise.all(
+        this.userIdInstances[userId].map((instanceId) =>
+          this.clientDiscovery.emitToClient(instanceId, event, data),
+        ),
+      );
     }
   }
 
-  handleMatchUpdated(
-    seriesCodeName: string,
-    matchId: string,
+  handleMatchUpdated({
+    seriesCodeName,
+    matchId,
+    fighters,
+    state,
+    preMatchVideoPath,
+    streamId,
+    poolOpenStartTime,
+    startTime,
+    winner,
+  }: {
+    seriesCodeName: string;
+    matchId: string;
     fighters: {
       displayName: string;
       codeName: string;
       ticker: string;
       imagePath: string;
-    }[],
-    state: string,
-    preMatchVideoPath: string,
-    startTime: string,
-    winner: string,
-  ) {
+    }[];
+    state: string;
+    preMatchVideoPath: string;
+    streamId: string;
+    poolOpenStartTime: string;
+    startTime: string;
+    winner: string;
+  }) {
     const timestamp = dayjs.utc().toISOString();
 
     this.emitToAll(
@@ -60,13 +74,15 @@ export class GatewayManagerService implements OnModuleInit {
         fighters,
         state,
         preMatchVideoPath,
+        streamId,
+        poolOpenStartTime,
         startTime,
         winner,
       ),
     );
   }
 
-  handleBetPlaced(
+  async handleBetPlaced(
     userId: string,
     timestamp: string,
     seriesCodeName: string,
@@ -74,7 +90,7 @@ export class GatewayManagerService implements OnModuleInit {
     amount: string,
     fighter: string,
   ) {
-    this.emitToClient(
+    await this.emitToClient(
       userId,
       BetPlacedEvent.messageType,
       new BetPlacedEvent(
@@ -87,8 +103,8 @@ export class GatewayManagerService implements OnModuleInit {
     );
   }
 
-  handleBalanceUpdated(userId: string, balance: string) {
-    this.emitToClient(
+  async handleBalanceUpdated(userId: string, balance: string) {
+    await this.emitToClient(
       userId,
       BalanceUpdatedEvent.messageType,
       new BalanceUpdatedEvent(dayjs.utc().toISOString(), userId, balance),
@@ -113,16 +129,20 @@ export class GatewayManagerService implements OnModuleInit {
     }
   }
 
-  handleActivityStreamItem(userId: string, timestamp: string, message: string) {
-    this.emitToClient(
+  async handleActivityStreamItem(
+    userId: string,
+    timestamp: string,
+    message: string,
+  ) {
+    await this.emitToClient(
       userId,
       ActivityStreamEvent.messageType,
       new ActivityStreamEvent(timestamp, userId, message),
     );
   }
 
-  handleBetsUpdated(seriesCodeName: string, bets: any[]) {
-    this.emitToAll(BetsUpdatedEvent.messageType, {
+  async handleBetsUpdated(seriesCodeName: string, bets: any[]) {
+    await this.emitToAll(BetsUpdatedEvent.messageType, {
       timestamp: dayjs.utc().toISOString(),
       seriesCodeName,
       bets,

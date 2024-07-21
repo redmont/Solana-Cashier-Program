@@ -45,6 +45,10 @@ export const SocketProvider: FC<PropsWithChildren> = ({ children }) => {
   useEffect(() => {
     socket.auth = { token: authToken ?? null };
     socket.disconnect().connect();
+
+    return () => {
+      socket.disconnect();
+    };
   }, [authToken]);
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { MicroserviceOptions } from '@nestjs/microservices';
 import { NatsJetStreamServer } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { AppModule } from './app.module';
 import configuration from './configuration';
@@ -10,7 +10,9 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {
     cors: true,
+    forceCloseConnections: true,
   });
+  app.enableShutdownHooks();
 
   app.connectMicroservice<MicroserviceOptions>({
     strategy: new NatsJetStreamServer({

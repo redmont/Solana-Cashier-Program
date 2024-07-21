@@ -8,6 +8,7 @@ import { RosterModule } from '@/roster/roster.module';
 import { TournamentModule } from '@/tournament/tournament.module';
 import { AuthModule } from '@/auth/auth.module';
 import { FighterProfilesModule } from '@/fighterProfiles/fighterProfiles.module';
+import { DailyClaimModule } from '@/dailyClaim/dailyClaim.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { FighterProfilesModule } from '@/fighterProfiles/fighterProfiles.module'
     GameServerCapabilitiesModule,
     RosterModule,
     TournamentModule,
-    FighterProfilesModule
+    FighterProfilesModule,
+    DailyClaimModule,
   ],
   providers: [AdminService],
   controllers: [AdminController],

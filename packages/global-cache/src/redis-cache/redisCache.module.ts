@@ -1,84 +1,27 @@
-import {
-  DynamicModule,
-  Global,
-  Module,
-  ModuleMetadata,
-  Provider,
-  Type,
-} from '@nestjs/common';
+import { DynamicModule, Global, Module } from '@nestjs/common';
 import { RedisCacheService } from './redisCache.service';
-import { RedisOptions } from 'ioredis';
+import {
+  ASYNC_OPTIONS_TYPE,
+  ConfigurableModuleClass,
+  MODULE_OPTIONS_TOKEN,
+} from './redisCache.module-definition';
+import { RedisCacheModuleOptions } from './interfaces/redisCacheModuleOptions.interface';
 
-export interface RedisCacheModuleAsyncOptions
-  extends Pick<ModuleMetadata, 'imports'> {
-  useExisting?: Type<RedisCacheOptionsFactory>;
-  useClass?: Type<RedisCacheOptionsFactory>;
-  useFactory?: (...args: any[]) => RedisOptions | Promise<RedisOptions>;
-  inject?: any[];
-  extraProviders?: Provider[];
-}
-
-export interface RedisCacheOptionsFactory {
-  createRedisCacheOptions(): RedisOptions | Promise<RedisOptions>;
-}
-
-@Global()
 @Module({})
-export class RedisCacheModule {
-  static register(options: RedisOptions): DynamicModule {
+export class RedisCacheModule extends ConfigurableModuleClass {
+  static registerAsync(options: typeof ASYNC_OPTIONS_TYPE): DynamicModule {
     return {
       module: RedisCacheModule,
+      imports: options.imports || [],
       providers: [
         {
-          provide: 'REDIS_OPTIONS',
-          useValue: options,
+          provide: MODULE_OPTIONS_TOKEN,
+          useFactory: options.useFactory,
+          inject: options.inject || [],
         },
         RedisCacheService,
       ],
       exports: [RedisCacheService],
-    };
-  }
-  static registerAsync(options: RedisCacheModuleAsyncOptions): DynamicModule {
-    return {
-      module: RedisCacheModule,
-      imports: options.imports || [],
-      providers: [...this.createAsyncProviders(options), RedisCacheService],
-      exports: [RedisCacheService],
-    };
-  }
-
-  private static createAsyncProviders(
-    options: RedisCacheModuleAsyncOptions,
-  ): Provider[] {
-    if (options.useExisting || options.useFactory) {
-      return [this.createAsyncOptionsProvider(options)];
-    }
-    // For useClass
-    return [
-      this.createAsyncOptionsProvider(options),
-      {
-        provide: options.useClass,
-        useClass: options.useClass,
-      },
-    ];
-  }
-
-  private static createAsyncOptionsProvider(
-    options: RedisCacheModuleAsyncOptions,
-  ): Provider {
-    if (options.useFactory) {
-      return {
-        provide: 'REDIS_OPTIONS',
-        useFactory: options.useFactory,
-        inject: options.inject || [],
-      };
-    }
-    // For useClass or useExisting
-    return {
-      provide: 'REDIS_OPTIONS',
-      useFactory: async (optionsFactory: RedisCacheOptionsFactory) =>
-        optionsFactory.createRedisCacheOptions(),
-      inject: [options.useExisting || options.useClass],
     };
   }
 }

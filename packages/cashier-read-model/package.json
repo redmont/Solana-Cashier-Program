@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "dynamoose": "^4.0.1",
-    "nestjs-dynamoose": "^0.5.8"
+    "nestjs-dynamoose": "^0.5.8",
+    "global-cache": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.4.5"

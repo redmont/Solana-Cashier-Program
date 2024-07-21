@@ -13,11 +13,13 @@ import {
   Tr,
 } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { IoPencil } from 'react-icons/io5';
 
 const GameServerConfigs = () => {
+  const router = useRouter();
   const { isPending, error, data } = useQuery<{
-    serverConfigs: { serverId: string; streamUrl: string }[];
+    serverConfigs: { serverId: string; streamId: string }[];
   }>({
     queryKey: ['game-server-configs'],
   });
@@ -30,17 +32,23 @@ const GameServerConfigs = () => {
             <Tr>
               <Th></Th>
               <Th>Server ID</Th>
-              <Th>Stream URL</Th>
+              <Th>Stream ID</Th>
             </Tr>
           </Thead>
           <Tbody>
             {data?.serverConfigs.map((serverConfig) => (
               <Tr key={serverConfig.serverId}>
                 <Td>
-                  <IconButton size="sm" icon={<IoPencil />} aria-label="Edit" />
+                  <IconButton size="sm" icon={<IoPencil />} aria-label="Edit"
+                    onClick={() =>
+                      router.push(
+                        `/game-server-configs/${serverConfig.serverId}`,
+                      )
+                    }
+                  />
                 </Td>
                 <Td>{serverConfig.serverId}</Td>
-                <Td>{serverConfig.streamUrl}</Td>
+                <Td>{serverConfig.streamId}</Td>
               </Tr>
             ))}
             {isPending && (

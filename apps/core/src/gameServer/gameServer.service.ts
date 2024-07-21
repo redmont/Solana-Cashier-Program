@@ -84,10 +84,16 @@ export class GameServerService {
 
     // Send message acknowledgement
     if (data.messageId && data.type !== 'ok') {
-      this.gameServerGateway.sendMessageToServer({
-        serverId,
-        payload: { type: 'ok', messageId: data.messageId },
-      });
+      try {
+        this.gameServerGateway.sendMessageToServer({
+          serverId,
+          payload: { type: 'ok', messageId: data.messageId },
+        });
+      } catch (e) {
+        this.logger.warn(
+          `Failed to send message acknowledgement to server '${serverId}': ${e}`,
+        );
+      }
     }
 
     if (data.type === 'ready') {
@@ -166,7 +172,7 @@ export class GameServerService {
   async allocateServerForMatch(
     matchId: string,
     matchParameters: MatchParameters,
-  ): Promise<{ serverId: string; capabilities: any; streamUrl: string }> {
+  ): Promise<{ serverId: string; capabilities: any; streamId: string }> {
     // We're not checking server capabilities yet,
     // so we just return the first server that's ready.
 
@@ -181,7 +187,12 @@ export class GameServerService {
         const serverConfig = await this.gameServerConfigService.get(key);
         if (!serverConfig) {
           this.logger.error(`No config found for server ${key}`);
-          return null;
+          continue;
+        }
+
+        if (!serverConfig.enabled) {
+          this.logger.warn(`Server ${key} is not enabled`);
+          continue;
         }
 
         fsm.send({
@@ -189,10 +200,10 @@ export class GameServerService {
           params: { matchId, matchParameters },
         });
 
-        const { streamUrl } = serverConfig;
+        const { streamId } = serverConfig;
 
         const { capabilities } = snapshot.context;
-        return { serverId: key, capabilities, streamUrl };
+        return { serverId: key, capabilities, streamId };
       }
     }
 

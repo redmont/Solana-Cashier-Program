@@ -1,228 +1,146 @@
+import { DynamicModule, Global, Module } from '@nestjs/common';
 import {
-  Module,
-  DynamicModule,
-  Global,
-  ModuleMetadata,
-  Provider,
-  Type,
-} from '@nestjs/common';
-import { DynamooseModule } from 'nestjs-dynamoose';
-import { MatchSchema } from './schemas/match.schema';
-import { QueryStoreService } from '.';
-import { SeriesSchema } from './schemas/series.schema';
-import { ActivityStreamSchema } from './schemas/activityStream.schema';
-import { CurrentMatchSchema } from './schemas/currentMatch.schema';
-import { UserMatchResultSchema } from './schemas/userMatchResult.schema';
-import { RosterSchema } from './schemas/roster.schema';
-import { UserMatchSchema } from './schemas/userMatch.schema';
-import { TournamentSchema } from './schemas/tournament.schema';
-import { TournamentEntrySchema } from './schemas/tournamentEntry.schema';
+  ConfigurableModuleClass,
+  QUERY_STORE_MODULE_ASYNC_OPTIONS_TYPE,
+  QUERY_STORE_MODULE_OPTIONS_TOKEN,
+  QUERY_STORE_MODULE_OPTIONS_TYPE,
+} from './queryStore.module-definition';
+import {
+  ActivityStreamSchema,
+  CurrentMatchSchema,
+  DailyClaimAmountsSchema,
+  DailyClaimStatusSchema,
+  MatchSchema,
+  RosterSchema,
+  SeriesSchema,
+  TournamentEntrySchema,
+  TournamentSchema,
+  UserMatchResultSchema,
+  UserMatchSchema,
+} from './schemas';
+import { DynamooseModule, Model } from 'nestjs-dynamoose';
+import { QueryStoreService } from './queryStore.service';
+import { RedisCacheModule, RedisCacheService } from 'global-cache';
+import { TournamentQueryStoreService } from './tournamentQueryStore.service';
+import { UserProfilesQueryStoreService } from './userProfiles.service';
+import { UserProfileSchema } from './schemas/userProfile.schema';
+import { Key } from './interfaces/key.interface';
+import { UserProfile } from './interfaces/userProfile.interface';
+import { Tournament, TournamentEntry } from './interfaces';
 
-interface QueryStoreOptions {
-  local?: string | boolean;
-  tableName: string;
-  isDynamoDbLocal: boolean;
-}
-
-export interface QueryStoreModuleAsyncOptions
-  extends Pick<ModuleMetadata, 'imports'> {
-  useExisting?: Type<QueryStoreOptionsFactory>;
-  useClass?: Type<QueryStoreOptionsFactory>;
-  useFactory?: (
-    ...args: any[]
-  ) => Promise<QueryStoreOptions> | QueryStoreOptions;
-  inject?: any[];
-  extraProviders?: Provider[];
-}
-
-export interface QueryStoreOptionsFactory {
-  createQueryStoreOptions(): Promise<QueryStoreOptions> | QueryStoreOptions;
+@Module({})
+export class QueryStoreOptionsModule extends ConfigurableModuleClass {
+  public static registerAsync(
+    options: typeof QUERY_STORE_MODULE_ASYNC_OPTIONS_TYPE,
+  ): DynamicModule {
+    return {
+      ...super.registerAsync(options),
+      exports: [QUERY_STORE_MODULE_OPTIONS_TOKEN],
+    };
+  }
 }
 
 @Global()
-@Module({})
-export class QueryStoreModule {
-  static registerAsync(options: QueryStoreModuleAsyncOptions): DynamicModule {
-    const models = [
-      {
-        name: 'match',
-        imports: options.imports || [],
-        useFactory: async (_: any, options: QueryStoreOptions) => {
-          return {
-            schema: MatchSchema,
-            options: {
-              tableName: options.tableName,
-              create: options.isDynamoDbLocal,
-            },
-          };
-        },
-        inject: ['QUERY_STORE_OPTIONS'],
-      },
-      {
-        name: 'series',
-        imports: options.imports || [],
-        useFactory: async (_: any, options: QueryStoreOptions) => {
-          return {
-            schema: SeriesSchema,
-            options: {
-              tableName: options.tableName,
-              create: options.isDynamoDbLocal,
-            },
-          };
-        },
-        inject: ['QUERY_STORE_OPTIONS'],
-      },
-      {
-        name: 'currentMatch',
-        imports: options.imports || [],
-        useFactory: async (_: any, options: QueryStoreOptions) => {
-          return {
-            schema: CurrentMatchSchema,
-            options: {
-              tableName: options.tableName,
-              create: options.isDynamoDbLocal,
-            },
-          };
-        },
-        inject: ['QUERY_STORE_OPTIONS'],
-      },
-      {
-        name: 'activityStream',
-        imports: options.imports || [],
-        useFactory: async (_: any, options: QueryStoreOptions) => {
-          return {
-            schema: ActivityStreamSchema,
-            options: {
-              tableName: options.tableName,
-              create: options.isDynamoDbLocal,
-            },
-          };
-        },
-        inject: ['QUERY_STORE_OPTIONS'],
-      },
-      {
-        name: 'userMatch',
-        imports: options.imports || [],
-        useFactory: async (_: any, options: QueryStoreOptions) => {
-          return {
-            schema: UserMatchSchema,
-            options: {
-              tableName: options.tableName,
-              create: options.isDynamoDbLocal,
-            },
-          };
-        },
-        inject: ['QUERY_STORE_OPTIONS'],
-      },
-      {
-        name: 'userMatchResult',
-        imports: options.imports || [],
-        useFactory: async (_: any, options: QueryStoreOptions) => {
-          return {
-            schema: UserMatchResultSchema,
-            options: {
-              tableName: options.tableName,
-              create: options.isDynamoDbLocal,
-            },
-          };
-        },
-        inject: ['QUERY_STORE_OPTIONS'],
-      },
-      {
-        name: 'roster',
-        imports: options.imports || [],
-        useFactory: async (_: any, options: QueryStoreOptions) => {
-          return {
-            schema: RosterSchema,
-            options: {
-              tableName: options.tableName,
-              create: options.isDynamoDbLocal,
-            },
-          };
-        },
-        inject: ['QUERY_STORE_OPTIONS'],
-      },
-      {
-        name: 'tournament',
-        imports: options.imports || [],
-        useFactory: async (_: any, options: QueryStoreOptions) => {
-          return {
-            schema: TournamentSchema,
-            options: {
-              tableName: options.tableName,
-              create: options.isDynamoDbLocal,
-            },
-          };
-        },
-        inject: ['QUERY_STORE_OPTIONS'],
-      },
-      {
-        name: 'tournamentEntry',
-        imports: options.imports || [],
-        useFactory: async (_: any, options: QueryStoreOptions) => {
-          return {
-            schema: TournamentEntrySchema,
-            options: {
-              tableName: options.tableName,
-              create: options.isDynamoDbLocal,
-            },
-          };
-        },
-        inject: ['QUERY_STORE_OPTIONS'],
-      },
-    ];
+@Module({
+  providers: [QueryStoreService],
+  exports: [
+    QueryStoreService,
+    RedisCacheModule,
+    UserProfilesQueryStoreService,
+    TournamentQueryStoreService,
+  ],
+})
+export class QueryStoreModule extends ConfigurableModuleClass {
+  static registerAsync(
+    options: typeof QUERY_STORE_MODULE_ASYNC_OPTIONS_TYPE,
+  ): DynamicModule {
+    const schemas = {
+      match: MatchSchema,
+      series: SeriesSchema,
+      currentMatch: CurrentMatchSchema,
+      activityStream: ActivityStreamSchema,
+      userMatch: UserMatchSchema,
+      userMatchResult: UserMatchResultSchema,
+      roster: RosterSchema,
+      tournament: TournamentSchema,
+      tournamentEntry: TournamentEntrySchema,
+      dailyClaimAmounts: DailyClaimAmountsSchema,
+      dailyClaimStatus: DailyClaimStatusSchema,
+      userProfile: UserProfileSchema,
+    };
+
+    const moduleDefinition = super.registerAsync(options);
 
     return {
-      module: QueryStoreModule,
+      ...moduleDefinition,
       imports: [
-        DynamooseModule.forRootAsync({
-          useFactory: async (options: QueryStoreOptions) => {
+        ...(moduleDefinition.imports || []),
+        DynamooseModule.forFeatureAsync(
+          Object.keys(schemas).map((key) => {
             return {
-              local: options.local,
+              name: key,
+              imports: [QueryStoreOptionsModule.registerAsync(options)],
+              useFactory: async (
+                _: any,
+                options: typeof QUERY_STORE_MODULE_OPTIONS_TYPE,
+              ) => {
+                return {
+                  schema: schemas[key],
+                  options: {
+                    tableName: options.tableName,
+                    create: options.isDynamoDbLocal,
+                  },
+                };
+              },
+              inject: [QUERY_STORE_MODULE_OPTIONS_TOKEN],
+            };
+          }),
+        ),
+        RedisCacheModule.registerAsync({
+          imports: [QueryStoreOptionsModule.registerAsync(options)],
+          useFactory: async (
+            options: typeof QUERY_STORE_MODULE_OPTIONS_TYPE,
+          ) => {
+            return {
+              redisHost: options.redisHost,
+              redisPort: options.redisPort,
             };
           },
-          inject: ['QUERY_STORE_OPTIONS'],
+          inject: [QUERY_STORE_MODULE_OPTIONS_TOKEN],
         }),
-        DynamooseModule.forFeatureAsync(models),
-        ...(options.imports || []),
       ],
-      providers: [...this.createAsyncProviders(options), QueryStoreService],
-      exports: [QueryStoreService, 'QUERY_STORE_OPTIONS'],
-    };
-  }
-
-  private static createAsyncProviders(
-    options: QueryStoreModuleAsyncOptions,
-  ): Provider[] {
-    if (options.useExisting || options.useFactory) {
-      return [this.createAsyncOptionsProvider(options)];
-    }
-    // For useClass
-    return [
-      this.createAsyncOptionsProvider(options),
-      {
-        provide: options.useClass,
-        useClass: options.useClass,
-      },
-    ];
-  }
-
-  private static createAsyncOptionsProvider(
-    options: QueryStoreModuleAsyncOptions,
-  ): Provider {
-    if (options.useFactory) {
-      return {
-        provide: 'QUERY_STORE_OPTIONS',
-        useFactory: options.useFactory,
-        inject: options.inject || [],
-      };
-    }
-    // For useClass or useExisting
-    return {
-      provide: 'QUERY_STORE_OPTIONS',
-      useFactory: async (optionsFactory: QueryStoreOptionsFactory) =>
-        optionsFactory.createQueryStoreOptions(),
-      inject: [options.useExisting || options.useClass],
+      providers: [
+        ...(moduleDefinition.providers || []),
+        {
+          provide: UserProfilesQueryStoreService,
+          inject: [RedisCacheService, 'userProfileModel'],
+          useFactory: async (
+            cache: RedisCacheService,
+            userProfileModel: Model<UserProfile, Key>,
+          ) => {
+            return new UserProfilesQueryStoreService(cache, userProfileModel);
+          },
+        },
+        {
+          provide: TournamentQueryStoreService,
+          inject: [
+            UserProfilesQueryStoreService,
+            'tournamentModel',
+            'tournamentEntryModel',
+          ],
+          useFactory: async (
+            userProfilesQueryStoreService: UserProfilesQueryStoreService,
+            tournamentModel: Model<Tournament, Key>,
+            tournamentEntryModel: Model<TournamentEntry, Key>,
+          ) => {
+            return new TournamentQueryStoreService(
+              userProfilesQueryStoreService,
+              tournamentModel,
+              tournamentEntryModel,
+            );
+          },
+        },
+      ],
     };
   }
 }

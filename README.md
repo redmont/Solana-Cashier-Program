@@ -1,7 +1,16 @@
-# Brawlers
+# BRAWL3RS
 
 ## Prerequisites
 
+### Run front-end only
+
+* NodeJS
+* pnpm
+
+### Run entire project
+
+* NodeJS
+* pnpm
 * [Docker](https://www.docker.com/)
 * [AWS CLI (v2)](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 * [NestJS CLI](https://docs.nestjs.com/cli/overview)
@@ -16,19 +25,73 @@
     curl -sf https://binaries.nats.dev/nats-io/natscli/nats@latest | sh
     ```
 
-## Run project
+## Run front-end only
 
-Run infrastructure
+Create .env file:
+
+```sh
+cp apps/ui/.env.example apps/ui/.env
+```
+
+Update the .env file and set the server URL to the dev server:
+
+```
+NEXT_PUBLIC_SERVER_URL=https://ui-gateway.dev.brawlers.bltzr.gg:3333
+```
+
+Run the UI:
+
+```sh
+pnpm install
+cd apps/ui
+pnpm dev
+```
+
+## Run entire project
+
+Create .env files:
+
+```sh
+cp apps/admin/.env.example apps/admin/.env
+cp apps/ui/.env.example apps/ui/.env
+cp apps/cashier/.env.example apps/cashier/.env
+cp apps/core/.env.example apps/core/.env
+cp apps/ui-gateway/.env.example apps/ui-gateway/.env
+```
+
+Run infrastructure:
 
 ```sh
 ./run-infra.sh
 ```
 
+Set up oracle indexer NATS subject:
+
+```sh
+nats --server localhost:4222 stream add oracleIndexer --subjects='oracleIndexer.>' --retention='workq' --max-msgs=-1 --max-bytes=-1 --max-
+age='1h' --storage='file' --discard='old' --replicas=1 --defaults
+```
+
 Run project:
 
 ```sh
+# Install dependencies
 pnpm install
+# Build packages
+pnpm build
+# Run
 pnpm dev
+```
+
+### (Optional) Run with debug of a particular service
+
+```sh
+pnpm dev -F '!core'
+```
+
+```sh
+cd apps/core
+pnpm start:debug
 ```
 
 ### Set up the series
@@ -42,7 +105,14 @@ curl --location 'http://localhost:8080/admin/game-server-configs' \
 --header 'Content-Type: application/json' \
 --data '{
     "codeName": "mock001",
-    "streamUrl": "https://viewer.millicast.com?streamId=WBYdQB/brawlers-dev-2&controls=false&showLabels=false"
+    "streamId": "brawlers_dev_1"
+}'
+
+curl -X PATCH --location 'http://localhost:8080/admin/game-server-configs/mock001' \
+--header 'Content-Type: application/json' \
+--data '{
+    "streamId": "brawlers_dev_1",
+    "enabled": true
 }'
 ```
 
@@ -104,6 +174,18 @@ curl -X PATCH --location 'http://localhost:8080/admin/roster' \
 }'
 ```
 
+#### (Optional) Add daily claims
+
+```sh
+curl -X PUT --location 'http://localhost:8080/admin/daily-claim-amounts' \
+--header 'Content-Type: application/json' \
+--data '{
+    "dailyClaimAmounts": [750, 1250, 1500, 1725, 1825, 1850]
+}'
+```
+
+#### (Optional) Set up tournament
+
 Create a 7 day tournament:
 
 ```sh
@@ -113,7 +195,7 @@ curl --location 'http://localhost:8080/admin/tournaments' \
   "codeName": "chicken-dinner",
   "displayName": "Chicken dinner",
   "startDate": "'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'",
-  "endDate": "'"$(date -d "+7 days" -u +"%Y-%m-%dT%H:%M:%SZ")"'",
+  "rounds": 7,
   "prizes": [
     {
       "title": "$300",
@@ -137,7 +219,7 @@ curl --location 'http://localhost:8080/admin/tournaments' \
 ./mock-ws-client.js
 ```
 
-### Run roster of 3 series
+### (Optional) Run roster of 3 series
 
 ```sh
 curl --location 'http://localhost:8080/admin/series' \

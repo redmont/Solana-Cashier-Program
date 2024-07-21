@@ -83,14 +83,15 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
 
         <div className="widget-content">
           <div className="fighter-image-box">
-            <img
-              className="fighter-image fighter-image-1"
-              src={fighters?.[0]?.imageUrl}
-            />
-            <img
-              className="fighter-image fighter-image-2"
-              src={fighters?.[1]?.imageUrl}
-            />
+            {fighters?.map((fighter, i) => (
+              <img
+                className={classNames(
+                  'fighter-image',
+                  `fighter-image-${i + 1}`,
+                )}
+                src={fighter.imageUrl}
+              />
+            ))}
           </div>
 
           <div className="result-info">

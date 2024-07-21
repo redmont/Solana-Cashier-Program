@@ -11,10 +11,10 @@ import { useAppState, MatchInfo } from '@/hooks';
 import { BetPlacementWidget } from '@/components/betPlacementWidget';
 import { StakeWidget } from '@/components/stakeWidget';
 import { BetListWidget } from '@/components/betListWidget';
-import { ActivityStreamWidget } from '@/components/activityStreamWidget';
 import { MatchResultWidget } from '@/components/matchResultWidget';
 import { MatchStreamWidget } from '@/components/matchStreamWidget';
 import { MatchStatusWidget } from '@/components/matchStatusWidget';
+import { ChatWidget } from '@/components/chatWidget';
 
 export default function Home() {
   const [matchResult, setMatchResult] = useState<MatchInfo | null>(null);
@@ -66,14 +66,9 @@ export default function Home() {
           />
         )}
 
-        {!matchResult && (
-          <StakeWidget
-            currentBet={currentBet}
-            currentFighter={currentFighter}
-          />
-        )}
+        {!matchResult && <StakeWidget currentFighter={currentFighter} />}
 
-        <ActivityStreamWidget />
+        <ChatWidget />
       </div>
     </main>
   );

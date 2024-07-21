@@ -13,7 +13,8 @@ export interface EthConnectButtonProps {
 }
 
 export const JoinButton: FC<EthConnectButtonProps> = ({ ...props }) => {
-  const { setShowAuthFlow, setShowDynamicUserProfile } = useDynamicContext();
+  const { setShowAuthFlow, setShowDynamicUserProfile, user } =
+    useDynamicContext();
   const { isConnected, address } = useEthWallet();
 
   // Seems like isAuthenticated is set straight after page load
@@ -28,7 +29,7 @@ export const JoinButton: FC<EthConnectButtonProps> = ({ ...props }) => {
     <Button
       size={props.size}
       type="button"
-      label={isConnected ? walletAddress : 'Join the Fight'}
+      label={isConnected ? user?.username ?? walletAddress : 'Join the Fight'}
       className={classNames(props.className, 'font-normal', {
         'px-4 py-3': props.size === 'large',
         'px-4 py-2': !props.size,

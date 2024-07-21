@@ -6,7 +6,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "build": "tsup src/index.ts --format cjs,esm --dts --external '@grpc/grpc-js' --external '@grpc/proto-loader' --external 'mqtt' --external 'amqplib' --external 'amqp-connection-manager' --external 'kafkajs' --external 'class-validator' --external 'class-transformer'",
     "dev": "pnpm run build -- --watch"
   },
   "devDependencies": {
