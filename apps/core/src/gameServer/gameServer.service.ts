@@ -84,10 +84,16 @@ export class GameServerService {
 
     // Send message acknowledgement
     if (data.messageId && data.type !== 'ok') {
-      this.gameServerGateway.sendMessageToServer({
-        serverId,
-        payload: { type: 'ok', messageId: data.messageId },
-      });
+      try {
+        this.gameServerGateway.sendMessageToServer({
+          serverId,
+          payload: { type: 'ok', messageId: data.messageId },
+        });
+      } catch (e) {
+        this.logger.warn(
+          `Failed to send message acknowledgement to server '${serverId}': ${e}`,
+        );
+      }
     }
 
     if (data.type === 'ready') {

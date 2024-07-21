@@ -228,9 +228,9 @@ export class MatchBettingService {
       new MatchCompletedActivityEvent(
         winningFighter.displayName,
         losingFighter.displayName,
+        totalWinPool,
         winnerTokenPriceDelta?.relative,
         loserTokenPriceDelta?.relative,
-        totalWinPool,
       ),
     );
   }

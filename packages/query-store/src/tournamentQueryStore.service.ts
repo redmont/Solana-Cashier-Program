@@ -297,7 +297,7 @@ export class TournamentQueryStoreService {
             const userRank = rank + userItemIndex;
             currentUserItem = {
               rank: userRank,
-              username: usernames[userItem.sk] ?? '',
+              username: usernames[userItem.sk],
               walletAddress: userItem.primaryWalletAddress,
               balance: userItem.balance,
               xp: userItem.xp?.toString() ?? '0',
@@ -319,7 +319,7 @@ export class TournamentQueryStoreService {
             currentUserItem,
             items: response.map((item) => ({
               rank: rank++,
-              username: usernames[item.sk] ?? '',
+              username: usernames[item.sk],
               walletAddress: item.primaryWalletAddress,
               balance: item.balance,
               winAmount: item.tournamentEntryWinAmount?.toString() ?? '0',

@@ -8,7 +8,7 @@ export class PlayerWinMessage implements MessageConverter<WinActivityEvent> {
   async convert(event: WinActivityEvent) {
     const { userId, amount } = event;
 
-    const message = `**You won ${amount} ${pluralise(amount, 'credit', 'credits')}!** Check the (/tournament)[leaderboard] to see your latest rank.`;
+    const message = `**You won ${amount} ${pluralise(amount, 'credit', 'credits')}!** Check the [leaderboard](/tournament) to see your latest rank.`;
 
     return { userId, message };
   }

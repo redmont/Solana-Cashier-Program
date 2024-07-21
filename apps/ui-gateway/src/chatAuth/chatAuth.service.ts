@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RedisCacheService } from 'global-cache';
 import PubNub from 'pubnub';
 
 @Injectable()
 export class ChatAuthService {
   private pubNub: PubNub;
 
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    private readonly cache: RedisCacheService,
+  ) {
     this.pubNub = new PubNub({
       subscribeKey: configService.get<string>('pubNubSubscribeKey'),
       publishKey: configService.get<string>('pubNubPublishKey'),
@@ -49,6 +53,20 @@ export class ChatAuthService {
     });
   }
 
+  async createUserChannel(userId: string) {
+    const channelName = `brawlers-user-${userId}`;
+
+    // Ensure there is a channel for the user
+    await this.pubNub.objects.setChannelMetadata({
+      channel: channelName,
+      data: {
+        name: userId,
+      },
+    });
+
+    await this.cache.set(`chat:channel:${channelName}`, '1');
+  }
+
   async getAuthToken(userId?: string, username?: string) {
     let grantTokenParams: PubNub.GrantTokenParameters;
     let authorizedUuid: string;
@@ -58,15 +76,8 @@ export class ChatAuthService {
       channels.push(`brawlers-user-${userId}`);
       authorizedUuid = `chat_${userId}`;
 
+      await this.createUserChannel(userId);
       await this.updateMetadata({ username: userId });
-
-      // Ensure there is a channel for the user
-      this.pubNub.objects.setChannelMetadata({
-        channel: `brawlers-user-${userId}`,
-        data: {
-          name: userId,
-        },
-      });
 
       grantTokenParams = {
         ttl: 24 * 60,

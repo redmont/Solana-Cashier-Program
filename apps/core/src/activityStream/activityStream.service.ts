@@ -21,6 +21,7 @@ import { PlayerWinMessage } from './messages/playerWin.message';
 import { PlayerBetPlacedMessage } from './messages/playerBetPlaced.message';
 import { ModuleRef } from '@nestjs/core';
 import { ChatService } from '@/chat/chat.service';
+import { UserProfilesQueryStoreService } from 'query-store';
 
 export type Activity = 'betPlaced' | 'win' | 'loss';
 
@@ -52,6 +53,7 @@ export class ActivityStreamService {
   constructor(
     private readonly moduleRef: ModuleRef,
     private readonly chatService: ChatService,
+    private readonly userProfiles: UserProfilesQueryStoreService,
   ) {}
 
   onModuleInit() {
@@ -89,7 +91,16 @@ export class ActivityStreamService {
         if (chatMessage) {
           const { userId, message } = chatMessage;
 
-          await this.chatService.sendSystemMessage({ userId, message });
+          if (userId) {
+            const usernames = await this.userProfiles.getUsernames([userId]);
+            const username = usernames[userId];
+
+            if (username?.length > 0) {
+              await this.chatService.sendSystemMessage({ userId, message });
+            }
+          } else {
+            await this.chatService.sendSystemMessage({ message });
+          }
         }
       }
     } catch (e) {

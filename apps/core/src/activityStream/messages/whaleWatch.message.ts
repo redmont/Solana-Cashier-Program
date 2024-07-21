@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { BetPlacedActivityEvent } from '../events/betPlaced.event';
 import { MessageConverter } from './messageConverter';
 import { UserProfilesQueryStoreService } from 'query-store';
+import { md } from '../utils';
 
 @Injectable()
 export class WhaleWatchMessage
@@ -14,7 +15,7 @@ export class WhaleWatchMessage
     amount,
     fighterDisplayName,
   }: BetPlacedActivityEvent) {
-    if (amount < 1) {
+    if (amount < 1000) {
       return null;
     }
 
@@ -22,9 +23,9 @@ export class WhaleWatchMessage
     const username = usernames[userId];
 
     if (username?.length > 0) {
-      const message = `**Whale watch!**  
-🐋 ${username} just bet  
-💰 ${amount} credits on  
+      const message = md`**Whale watch!**\n
+🐋 ${username} just bet\n
+💰 ${amount} credits on\n
 🥊 ${fighterDisplayName} to win`;
 
       return { message };

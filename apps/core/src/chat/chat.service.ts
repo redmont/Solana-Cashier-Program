@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RedisCacheService } from 'global-cache';
 import PubNub from 'pubnub';
 
 const username = 'system';
@@ -11,7 +12,10 @@ export class ChatService {
   private readonly pubNub: PubNub;
   private token: [string, number];
 
-  constructor(readonly config: ConfigService) {
+  constructor(
+    readonly config: ConfigService,
+    private readonly cache: RedisCacheService,
+  ) {
     this.pubNub = new PubNub({
       subscribeKey: config.get<string>('pubNubSubscribeKey'),
       publishKey: config.get<string>('pubNubPublishKey'),
@@ -55,6 +59,10 @@ export class ChatService {
     this.pubNub.setToken(pubNubToken);
   }
 
+  async channelExists(channel: string) {
+    return (await this.cache.get(`chat:channel:${channel}`)) === '1';
+  }
+
   async sendSystemMessage({
     userId,
     message,
@@ -65,6 +73,10 @@ export class ChatService {
     await this.ensureToken();
 
     const channel = userId ? `brawlers-user-${userId}` : 'brawlers-general';
+
+    if (userId && !this.channelExists(channel)) {
+      return;
+    }
 
     try {
       await this.pubNub.publish({

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { MessageConverter } from './messageConverter';
 import { PoolOpenActivityEvent } from '../events';
 import { QueryStoreService } from 'query-store';
+import { md } from '../utils';
 
 @Injectable()
 export class PoolOpenMessage
@@ -26,11 +27,8 @@ export class PoolOpenMessage
         }
       });
 
-      resultsText = `  
-  
-**Last 5 results: 🏆**  
-${winnerDisplayNames.join(`  
-`)}`;
+      // prettier-ignore
+      resultsText = md`\n\n**Last 5 results: 🏆**\n${winnerDisplayNames.join(md`\n`)}`;
     }
 
     let message = `**The match pool is OPEN:** place your stakes now for ${fighter1.displayName} vs ${fighter2.displayName}! 🥊`;

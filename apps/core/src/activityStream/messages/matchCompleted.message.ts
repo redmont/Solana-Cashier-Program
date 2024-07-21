@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MatchCompletedActivityEvent } from '../events/matchCompleted.event';
 import { MessageConverter } from './messageConverter';
+import { md, signedNumberFormat } from '../utils';
 
 @Injectable()
 export class MatchCompletedMessage
@@ -19,16 +20,12 @@ export class MatchCompletedMessage
 
     if (!winnerPriceChange || !loserPriceChange) {
       return {
-        message: `${winnerDisplayName} beats ${loserDisplayName} for the win! 🥊  
-  
-Total prize pool won is ${prizePoolFormatted} 🏦`,
+        message: md`${winnerDisplayName} beats ${loserDisplayName} for the win! 🥊\n\nTotal prize pool won is ${prizePoolFormatted} 🏦`,
       };
     }
 
     return {
-      message: `${winnerDisplayName} ${Math.sign(winnerPriceChange)}% beats ${loserDisplayName} ${Math.sign(loserPriceChange)}% for the win! 🥊  
-  
-Total prize pool won is ${prizePoolFormatted} 🏦`,
+      message: md`${winnerDisplayName} ${signedNumberFormat.format(winnerPriceChange)}% beats ${loserDisplayName} ${signedNumberFormat.format(loserPriceChange)}% for the win! 🥊\n\nTotal prize pool won is ${prizePoolFormatted} 🏦`,
     };
   }
 }

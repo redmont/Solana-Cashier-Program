@@ -81,8 +81,7 @@ export const CreditClaimWidget: FC = () => {
   const claim = useCallback(async () => {
     if (!claims) return;
 
-    const { dailyClaimAmounts, streak } = claims;
-
+    const { dailyClaimAmounts } = claims;
     setClaiming(true);
 
     try {
@@ -100,7 +99,7 @@ export const CreditClaimWidget: FC = () => {
     } finally {
       setClaiming(false);
     }
-  }, [claims, send]);
+  }, [claims, streak, send]);
 
   const checkScroll = useCallback(() => {
     const viewportEl = viewportRef.current;
