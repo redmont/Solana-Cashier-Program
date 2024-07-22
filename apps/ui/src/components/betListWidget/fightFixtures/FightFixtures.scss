@@ -6,10 +6,10 @@ $fightCardBgBg: #0e0d15;
 .fight-fixtures-widget {
   display: flex;
   flex-direction: column;
-  padding: 1.5rem 0.5rem;
+  padding: 0 0.5rem;
   gap: 1.5rem;
   width: 100%;
-  
+
   .current-fight {
     display: flex;
     justify-content: space-between;
@@ -47,14 +47,12 @@ $fightCardBgBg: #0e0d15;
         flex-direction: row;
         border-top-left-radius: 3px;
         border-bottom-left-radius: 3px;
-        border-right: 0;
       }
 
       &:last-of-type {
         flex-direction: row-reverse;
         border-top-right-radius: 3px;
         border-bottom-right-radius: 3px;
-        border-left: 0;
       }
     }
   }
@@ -71,6 +69,7 @@ $fightCardBgBg: #0e0d15;
     &.win {
       background-color: $fightCardBgGreen;
       font-weight: 600;
+      border-color: $primaryColor;
     }
 
     &.loss {

@@ -72,16 +72,7 @@ export const FightFixtures: FC = () => {
   return (
     <div className="fight-fixtures-widget">
       <FightFixturesList
-        data={roster}
-        title="Up Next"
-        success={false}
-        matches={[]}
-        show={'first'}
-      />
-      <CurrentFight fighters={fighters} />
-      <FightFixturesList
         data={previousFight}
-        title="Head-to-head"
         success={false}
         matches={[]}
         show={'all'}

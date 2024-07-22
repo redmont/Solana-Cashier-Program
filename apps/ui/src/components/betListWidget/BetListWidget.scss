@@ -4,6 +4,7 @@
     border-radius: $borderRadius;
     display: flex;
     flex-direction: column;
+    padding-top: 1rem;
   }
 
   .header {
@@ -28,11 +29,6 @@
       align-items: center;
       justify-content: center;
       height: 100%;
-    }
-
-    .bet-total {
-      font-size: 0.875rem;
-      margin-top: 0.25rem;
     }
   }
 
@@ -69,6 +65,23 @@
 
     .p-tabview-nav-link {
       padding: $tabviewHeaderSpacing;
+      justify-content: center;
+    }
+
+    .p-tabview-nav-container{
+      position: sticky;
+      top: 0;
+      background-color: black;
     }
   }
+}
+
+.tab-header {
+  width: 100%;
+}
+
+.bet-total {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  text-align: center;
 }
