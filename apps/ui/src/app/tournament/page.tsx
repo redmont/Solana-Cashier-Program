@@ -54,7 +54,14 @@ export default function Tournament() {
   const leaderboardWidgetProps = useMemo(() => {
     if (!tournament) return null;
 
-    const { items, currentUserItem = null, roundEndDate } = tournament ?? {};
+    const {
+      items,
+      currentUserItem = null,
+      roundEndDate,
+      endDate,
+      startDate,
+      currentRound,
+    } = tournament ?? {};
 
     const records: LeaderboardRecord[] = items?.slice(0, 100) ?? [];
 
@@ -70,7 +77,10 @@ export default function Tournament() {
 
     return {
       records,
-      resetDateTime: roundEndDate,
+      startDateTime: startDate,
+      endDateTime: endDate,
+      currentRound,
+      roundEndDate: roundEndDate,
       searchQuery,
       onSearch: (query: string) => {
         setSearchQuery(query);

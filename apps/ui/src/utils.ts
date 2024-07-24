@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 export const openNewTab = (url: string) => {
   window?.open(url, '_blank')?.focus();
 };
@@ -68,7 +70,7 @@ export function toScientificParts(num: number) {
     return { base: 0, exponent: 0 };
   }
 
-  let [base, exponent] = num.toExponential().split('e');
+  const [base, exponent] = num.toExponential().split('e');
   return {
     base: parseFloat(base),
     exponent: parseInt(exponent, 10),
@@ -80,3 +82,17 @@ export const truncateEthAddress = (walletAddress: string) => {
 
   return walletAddress.slice(0, 8) + '...' + walletAddress.slice(-4);
 };
+
+export function getNormalizedTimeDifference(args: {
+  t1: dayjs.ConfigType;
+  t2: dayjs.ConfigType;
+  normaliseBy?: number;
+}) {
+  const t1 = dayjs(args.t1);
+  const t2 = dayjs(args.t2);
+
+  const diffDays = t2.diff(t1, 'day', true);
+
+  // default normalise by 24 hours
+  return diffDays / (args.normaliseBy ?? 1);
+}
