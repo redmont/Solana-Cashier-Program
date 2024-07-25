@@ -9,6 +9,7 @@ import { TournamentModule } from '@/tournament/tournament.module';
 import { AuthModule } from '@/auth/auth.module';
 import { FighterProfilesModule } from '@/fighterProfiles/fighterProfiles.module';
 import { DailyClaimModule } from '@/dailyClaim/dailyClaim.module';
+import { UsersModule } from '@/users/users.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { DailyClaimModule } from '@/dailyClaim/dailyClaim.module';
     TournamentModule,
     FighterProfilesModule,
     DailyClaimModule,
+    UsersModule,
   ],
   providers: [AdminService],
   controllers: [AdminController],

@@ -7,7 +7,6 @@ import {
 import { Observable } from 'rxjs';
 import { WebSocket } from 'ws';
 import { Inject, Logger, forwardRef } from '@nestjs/common';
-import { v4 as uuid } from 'uuid';
 import { ServerMessage } from './models/serverMessage';
 import { GameServerService } from './gameServer.service';
 

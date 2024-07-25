@@ -70,7 +70,11 @@ locals {
     },
     environment = [
       {
-        name = "NATS_URI", value = "nats://nats.${var.prefix}.${var.environment}.local:4222"
+        name = "NATS_URI", value = join(",", [
+          "nats://nats-n1-c1.${var.prefix}.${var.environment}.local:4222",
+          "nats://nats-n2-c1.${var.prefix}.${var.environment}.local:4222",
+          "nats://nats-n3-c1.${var.prefix}.${var.environment}.local:4222"
+        ])
       },
       {
         name = "REDIS_HOST", value = var.redis_host

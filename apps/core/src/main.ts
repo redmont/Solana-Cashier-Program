@@ -17,7 +17,7 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     strategy: new NatsJetStreamServer({
       connectionOptions: {
-        servers: config.natsUri,
+        servers: config.natsUri.split(','),
         name: 'core-listener',
         debug: true,
       },

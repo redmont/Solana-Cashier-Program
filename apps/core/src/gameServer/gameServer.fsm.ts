@@ -1,6 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { setup, assign, assertEvent, fromPromise } from 'xstate';
-import { MatchSetup } from './models/matchSetup';
+import { setup, fromPromise } from 'xstate';
 import { ServerMessage } from './models/serverMessage';
 import { ServerCapabilities } from './models/serverCapabilities';
 import { FightType } from './models/fightType';
@@ -21,12 +20,8 @@ export interface MatchParameters {
   fightType: FightType;
 }
 
-type SendMatchSetupEvent = {
-  type: 'SEND_MATCH_SETUP';
-  params: {
-    matchId: string;
-    matchParameters: MatchParameters;
-  };
+type MatchSetupSentEvent = {
+  type: 'MATCH_SETUP_SENT';
 };
 
 type OutcomeSentEvent = {
@@ -53,27 +48,10 @@ export const createGameServerFSM = (
   return setup({
     types: {} as {
       events:
-        | SendMatchSetupEvent
+        | MatchSetupSentEvent
         | OutcomeSentEvent
         | ReadyEvent
         | MatchCompletionEvent;
-    },
-    actions: {
-      sendMatchDetails: async ({ context, event }) => {
-        assertEvent(event, 'SEND_MATCH_SETUP');
-        const { matchId, matchParameters } = event.params;
-
-        await sendMessage<MatchSetup>({
-          serverId: context.serverId,
-          payload: new MatchSetup(
-            matchId,
-            matchParameters.startTime,
-            matchParameters.fighters,
-            matchParameters.level,
-            matchParameters.fightType,
-          ),
-        });
-      },
     },
     actors: {
       forceReset: fromPromise<void, string>(async ({ input: serverId }) => {
@@ -91,13 +69,7 @@ export const createGameServerFSM = (
     states: {
       ready: {
         on: {
-          SEND_MATCH_SETUP: {
-            actions: [
-              'sendMatchDetails',
-              assign(({ event }) => {
-                return { matchId: event.params.matchId };
-              }),
-            ],
+          MATCH_SETUP_SENT: {
             target: 'waitingToStart',
           },
           READY: 'ready',

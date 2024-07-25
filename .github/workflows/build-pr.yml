@@ -23,11 +23,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
 
-      #      - name: Install pnpm
-      #        run: |
-      #          npm install -g pnpm
-      #          SHELL=bash pnpm setup
-      #          echo "PNPM_HOME=/usr/local/bin" >> $GITHUB_ENV
       - uses: pnpm/action-setup@v3
         with:
           version: 9.1.2
@@ -54,4 +49,4 @@ jobs:
           pnpm build
 
       - name: Run tests
-        run: pnpm coverage:total
+        run: pnpm coverage:total $(ls coverage/coverage-total.*.json | tail -n 1)

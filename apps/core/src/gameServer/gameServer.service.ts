@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Actor, createActor } from 'xstate';
 import { v4 as uuid } from 'uuid';
+import { ResultAsync, fromPromise, errAsync, okAsync } from 'neverthrow';
 import {
   MatchCompletedMessage,
   GameServerDisconnectedMessage,
@@ -13,11 +14,13 @@ import { MatchOutcome } from './models/matchOutcome';
 import { GameServerConfigService } from '../gameServerConfig/gameServerConfig.service';
 import { GameServerCapabilitiesService } from '@/gameServerCapabilities/gameServerCapabilities.service';
 import { GameServerGateway } from './gameServerGateway';
+import { MatchSetup } from './models/matchSetup';
+import { GameServerConfig } from '@/gameServerConfig/gameServerConfig.interface';
 
 @Injectable()
 export class GameServerService {
   private logger = new Logger(GameServerService.name);
-  private gameServerFSMs: Map<
+  public readonly gameServerFSMs: Map<
     string,
     Actor<ReturnType<typeof createGameServerFSM>>
   > = new Map();
@@ -30,11 +33,15 @@ export class GameServerService {
     private readonly gameServerGateway: GameServerGateway,
   ) {}
 
-  private async sendMessage(serverId: string, payload: any) {
+  public sendMessage(
+    serverId: string,
+    payload: any,
+  ): ResultAsync<void, string> {
     const messageId = uuid();
     const message = { serverId, payload: { messageId, ...payload } };
+    const maxAttempts = 8;
 
-    const attemptSendMessage = (attempt: number): Promise<void> => {
+    const attemptSendMessage = (attempt: number = 0): Promise<void> => {
       return new Promise((resolve, reject) => {
         if (!this.pendingMessages.has(serverId)) {
           this.pendingMessages.set(serverId, new Map());
@@ -48,7 +55,7 @@ export class GameServerService {
               this.pendingMessages.get(serverId).has(messageId)
             ) {
               this.pendingMessages.get(serverId).delete(messageId);
-              if (attempt < 8) {
+              if (attempt < maxAttempts) {
                 this.logger.warn(`Attempt ${attempt + 1} failed, retrying...`);
                 resolve(attemptSendMessage(attempt + 1));
               } else {
@@ -63,7 +70,10 @@ export class GameServerService {
       });
     };
 
-    return attemptSendMessage(0);
+    return fromPromise<void, string>(
+      attemptSendMessage(0),
+      (err: string) => err,
+    );
   }
 
   async handleGameServerMessage(serverId: string, data: any) {
@@ -85,7 +95,7 @@ export class GameServerService {
     // Send message acknowledgement
     if (data.messageId && data.type !== 'ok') {
       try {
-        this.gameServerGateway.sendMessageToServer({
+        await this.gameServerGateway.sendMessageToServer({
           serverId,
           payload: { type: 'ok', messageId: data.messageId },
         });
@@ -119,8 +129,8 @@ export class GameServerService {
           createGameServerFSM(
             serverId,
             capabilities,
-            (data: { serverId: string; payload: ServerMessage }) =>
-              this.sendMessage(data.serverId, data.payload),
+            async (data: { serverId: string; payload: ServerMessage }) => {},
+            // this.sendMessage(data.serverId, data.payload),
             this.logger,
           ),
         );
@@ -184,7 +194,11 @@ export class GameServerService {
       const snapshot = fsm.getSnapshot();
 
       if (snapshot.value === 'ready') {
-        const serverConfig = await this.gameServerConfigService.get(key);
+        const serverConfig: GameServerConfig = await fromPromise<
+          GameServerConfig,
+          any
+        >(this.gameServerConfigService.get(key), (err) => err).unwrapOr(null);
+
         if (!serverConfig) {
           this.logger.error(`No config found for server ${key}`);
           continue;
@@ -195,9 +209,24 @@ export class GameServerService {
           continue;
         }
 
+        const { startTime, fighters, level, fightType } = matchParameters;
+
+        const sendMessageResult = await this.sendMessage(
+          key,
+          new MatchSetup(matchId, startTime, fighters, level, fightType),
+        );
+
+        if (!sendMessageResult.isOk()) {
+          const err = sendMessageResult.error;
+          this.logger.warn(
+            `Failed to send match setup message to server '${key}'`,
+            err,
+          );
+          continue;
+        }
+
         fsm.send({
-          type: 'SEND_MATCH_SETUP',
-          params: { matchId, matchParameters },
+          type: 'MATCH_SETUP_SENT',
         });
 
         const { streamId } = serverConfig;
@@ -210,7 +239,7 @@ export class GameServerService {
     return null;
   }
 
-  async setOutcome(
+  setOutcome(
     serverId: string,
     matchId: string,
     outcome: {
@@ -218,15 +247,29 @@ export class GameServerService {
       health: number;
       finishingMove: string;
     }[],
-  ) {
+  ): ResultAsync<void, string> {
     const fsm = this.gameServerFSMs.get(serverId);
     if (!fsm) {
-      this.logger.error(`No FSM found for server ${serverId}`);
-      return;
+      const errorMessage = `No FSM found for server ${serverId}`;
+      this.logger.error(errorMessage);
+      return errAsync(errorMessage);
     }
 
-    await this.sendMessage(serverId, new MatchOutcome(matchId, outcome));
-
+    // In theory, this should be done after the message is sent.
+    // However, message sending can fail, and that should not prevent
+    // the FSM from transitioning to the next state.
     fsm.send({ type: 'OUTCOME_SENT' });
+
+    this.sendMessage(serverId, new MatchOutcome(matchId, outcome)).match(
+      () => {},
+      (err) => {
+        this.logger.error(
+          `Failed to send outcome message to server '${serverId}'`,
+          err,
+        );
+      },
+    );
+
+    return okAsync(undefined);
   }
 }

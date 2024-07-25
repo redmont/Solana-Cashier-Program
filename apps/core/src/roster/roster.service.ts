@@ -205,20 +205,35 @@ export class RosterService {
     const series = await this.seriesService.getSeries(seriesCodeName);
     const fighterProfiles = await this.fighterProfilesService.list();
 
+    const tickers = [];
     let fighters = [];
     for (const fighterProfile of series.fighterProfiles) {
       if (fighterProfile === '#RANDOM#') {
+        // Prevent infinite loop
+        let count = 0;
         while (true) {
+          if (count > 50) {
+            break;
+          }
+
           // Random fighter
           const randomIndex = Math.floor(
             Math.random() * fighterProfiles.length,
           );
           const fighter = fighterProfiles[randomIndex];
           // We can't use the same fighter twice
-          if (!fighters.includes(fighter)) {
-            fighters.push(fighter);
+          // nor the same ticker
+          if (
+            !fighters.includes(fighter) &&
+            !tickers.includes(fighter.ticker.toLowerCase())
+          ) {
+            const { codeName, displayName, imagePath } = fighter;
+            fighters.push({ codeName, displayName, imagePath });
+            tickers.push(fighter.ticker.toLowerCase());
             break;
           }
+
+          count++;
         }
       } else {
         const { codeName, displayName, imagePath } = fighterProfiles.find(

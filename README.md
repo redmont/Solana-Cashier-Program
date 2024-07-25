@@ -13,6 +13,18 @@
 * pnpm
 * [Docker](https://www.docker.com/)
 * [AWS CLI (v2)](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+
+> [!IMPORTANT]
+> You must have AWS credentials set up - dummy ones will work fine, as running the project locally does not require any AWS services.
+> ```sh
+> cat << AWSFILE > ~/.aws/credentials
+> [default]
+> aws_access_key_id=dummy
+> aws_secret_access_key=dummy
+> region=ap-southeast-1
+> AWSFILE
+> ```
+
 * [NestJS CLI](https://docs.nestjs.com/cli/overview)
 
     ```sh
