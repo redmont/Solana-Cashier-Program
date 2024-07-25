@@ -94,7 +94,8 @@ const MillicastStream: React.FC = () => {
       millicastView?.signaling?.close();
       millicastView?.webRTCPeer?.closeRTCPeer();
     };
-  }, [tokenGenerator]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [streamName, tokenGenerator]);
 
   useEffect(() => {
     if (!showStream) {
@@ -104,20 +105,15 @@ const MillicastStream: React.FC = () => {
       millicastView?.signaling?.close();
       millicastView?.webRTCPeer?.closeRTCPeer();
     } else {
-      // Just to check that we are within the same effect context
-      const seed = Math.floor(Math.random() * 1000);
-
       let isOn = true;
-      let timeout: any;
+      let timeout: NodeJS.Timeout;
 
       const connect = async () => {
         if (!isOn) return;
 
         try {
           await millicastView?.connect();
-          console.log(`[${seed}] Connected`);
         } catch (e) {
-          console.log(`[${seed}] Failed to connect`, e);
           if (timeout) {
             clearTimeout(timeout);
           }
@@ -137,7 +133,7 @@ const MillicastStream: React.FC = () => {
         millicastView?.webRTCPeer?.closeRTCPeer();
       };
     }
-  }, [showStream, millicastView]);
+  }, [showStream, millicastView, streamToken]);
 
   return (
     <>

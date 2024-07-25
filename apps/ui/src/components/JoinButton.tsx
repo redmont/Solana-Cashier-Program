@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useCallback } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { classNames } from 'primereact/utils';
 import { Button } from 'primereact/button';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
@@ -16,10 +16,22 @@ export const JoinButton: FC<EthConnectButtonProps> = ({ ...props }) => {
   const { setShowAuthFlow, setShowDynamicUserProfile, user } =
     useDynamicContext();
   const { isConnected, address } = useEthWallet();
+  const [buttonText, setButtonText] = useState<string>('Join the Fight');
 
+  // TODO
   // Seems like isAuthenticated is set straight after page load
   // but wallet address is not. Needs to be polished.
+
   const walletAddress = truncateEthAddress(address ?? '');
+
+  // TODO
+  // User auth is client side, leading to hydration issues
+  // Authentication should also be server-side if we want to use app router
+  useEffect(() => {
+    if (isConnected) {
+      setButtonText(user?.username ?? walletAddress);
+    }
+  }, [isConnected, user, walletAddress]);
 
   const handleClick = useCallback(() => {
     isConnected ? setShowDynamicUserProfile(true) : setShowAuthFlow(true);
@@ -29,7 +41,7 @@ export const JoinButton: FC<EthConnectButtonProps> = ({ ...props }) => {
     <Button
       size={props.size}
       type="button"
-      label={isConnected ? user?.username ?? walletAddress : 'Join the Fight'}
+      label={buttonText}
       className={classNames(props.className, 'font-normal', {
         'px-4 py-3': props.size === 'large',
         'px-4 py-2': !props.size,

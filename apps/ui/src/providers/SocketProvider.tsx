@@ -54,17 +54,14 @@ export const SocketProvider: FC<PropsWithChildren> = ({ children }) => {
   useEffect(() => {
     if (socket.connected) {
       setConnected(true);
-      console.log('connected');
     }
 
     socket.on('connect', () => {
       setConnected(true);
-      console.log('connected');
     });
 
     socket.on('disconnect', () => {
       setConnected(false);
-      console.log('disconnected');
     });
   }, []);
 

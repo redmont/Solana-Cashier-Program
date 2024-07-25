@@ -5,6 +5,7 @@ $chat-input-height: 3rem;
   grid-row: 1/4;
 
   .widget-body {
+    position: relative;
     height: 100%;
     border: 1px solid var(--surface-50);
     border-radius: $borderRadius;
@@ -64,6 +65,11 @@ $chat-input-height: 3rem;
         white-space: pre;
       }
     }
+
+    .message-text a {
+      color: $primary500;
+      text-decoration: none;
+    }
   }
 
   .message-ts {
@@ -110,6 +116,24 @@ $chat-input-height: 3rem;
       position: absolute;
       bottom: 0;
     }
+  }
+
+  .chat-new-message-notification {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--orange-300);
+    border: none;
+    font-size: medium;
+    background-color: $solidSurfaceColor;
+    padding: 4px 8px;
+    z-index: 100;
+    position: absolute;
+    bottom: 4.5rem;
+    right: 1rem;
+    border-radius: $borderRadius;
+    border: 1px solid var(--orange-300);
   }
 
   .send-message-button {

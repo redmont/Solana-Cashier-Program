@@ -1,3 +1,5 @@
+#!/bin/bash
+
 DYNAMODB_CONTAINER_NAME="brawlers-db"
 
 trap cleanup INT TERM EXIT

@@ -39,6 +39,6 @@ export class Red5Client {
   }
 
   async disconnect() {
-    this.whepClient.unsubscribe();
+    this.whepClient?.unsubscribe();
   }
 }

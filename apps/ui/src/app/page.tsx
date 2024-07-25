@@ -1,11 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import dayjs from 'dayjs';
-import duration from 'dayjs/plugin/duration';
-
-dayjs.extend(duration);
-
 import { MatchStatus } from '@/types';
 import { useAppState, MatchInfo } from '@/hooks';
 import { BetPlacementWidget } from '@/components/betPlacementWidget';
@@ -45,11 +40,8 @@ export default function Home() {
     <main className="main-page">
       <div className="main-page-content">
         <MatchStreamWidget />
-
         <BetListWidget />
-
         <MatchStatusWidget />
-
         {matchResult && (
           <MatchResultWidget
             result={matchResult}

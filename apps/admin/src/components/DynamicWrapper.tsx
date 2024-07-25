@@ -27,7 +27,6 @@ export default function ProviderWrapper({ children }: React.PropsWithChildren) {
             })
               .then((res) => {
                 if (res.ok) {
-                  console.log('LOGGED IN', res);
                   window.location.reload();
                   // Handle success - maybe redirect to the home page or user dashboard
                 } else {

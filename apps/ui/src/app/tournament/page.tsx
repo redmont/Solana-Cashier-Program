@@ -9,8 +9,6 @@ import { useSocket } from '@/hooks';
 
 import { LeaderboardWidget } from '@/components/leaderboardWidget';
 import { PrizesWidget } from '@/components/prizesWidget';
-import { ZealyWidget } from '@/components/zealyWidget';
-import { XpQuestsWidget } from '@/components/xpQuestsWidget';
 import { CreditClaimWidget } from '@/components/creditClaimWidget';
 import { Scrollable } from '@/components/Scrollable';
 import { classNames } from 'primereact/utils';
@@ -115,12 +113,6 @@ export default function Tournament() {
         {prizesWidgetProps && <PrizesWidget {...prizesWidgetProps} />}
 
         <CreditClaimWidget />
-
-        {/* <div className="tournament-page-section-inner">
-          <ZealyWidget />
-
-          <XpQuestsWidget />
-        </div> */}
       </Scrollable>
 
       <ul className="tournament-page-nav">

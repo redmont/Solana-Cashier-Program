@@ -1,11 +1,9 @@
 import jwt, { JwtPayload, Secret, VerifyErrors } from 'jsonwebtoken';
 
 export const getKey = (
-  headers: any,
+  _headers: any,
   callback: (err: Error | null, key?: Secret) => void,
 ): void => {
-  console.log('calling getKey');
-
   // Define the options for the fetch request
   const options = {
     method: 'GET',
@@ -47,11 +45,9 @@ export const validateJWT = async (
             err: VerifyErrors | null,
             decoded: string | JwtPayload | undefined,
           ) => {
-            console.log('decoded the jwt');
             if (err) {
               reject(err);
             } else {
-              console.log('checking the type of decoded');
               // Ensure that the decoded token is of type JwtPayload
               if (typeof decoded === 'object' && decoded !== null) {
                 resolve(decoded);
