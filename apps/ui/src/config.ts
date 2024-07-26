@@ -22,3 +22,6 @@ export const pubNubPubKey = process.env.NEXT_PUBLIC_PUBNUB_PUB_KEY || '';
 export const pubNubSubKey = process.env.NEXT_PUBLIC_PUBNUB_SUB_KEY || '';
 
 export const LOCAL_PRICE_CACHE_PERIOD = 1000 * 10;
+
+export const streamingServerHostname =
+  process.env.NEXT_PUBLIC_STREAMING_SERVER_HOSTNAME || '';

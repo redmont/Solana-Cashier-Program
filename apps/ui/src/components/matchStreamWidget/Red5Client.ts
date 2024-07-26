@@ -1,3 +1,4 @@
+import { streamingServerHostname } from '@/config';
 import { WHEPClient } from 'red5pro-webrtc-sdk';
 
 export class Red5Client {
@@ -16,7 +17,7 @@ export class Red5Client {
 
     const config = {
       protocol: 'https',
-      host: 'r5stream.prod.brawl3rs.ai',
+      host: streamingServerHostname,
       app: 'live',
       streamName: this.streamName,
       rtcConfiguration: {
