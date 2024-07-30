@@ -1,11 +1,20 @@
-import { FC } from 'react';
-import { useAppState, useEthWallet } from '@/hooks';
+import { FC, useCallback, useEffect, useState } from 'react';
+import { useAppState, useEthWallet, useSocket } from '@/hooks';
 import { truncateEthAddress } from '../../utils';
 import { classNames } from 'primereact/utils';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { Scrollable } from '@/components/Scrollable';
 import { FightFixtures } from '@/components/betListWidget/fightFixtures';
-import { Tooltip } from '../Tooltip';
+import { CurrentFight } from './fightFixtures/CurrentFight';
+import { FightFixturesList } from './fightFixtures/FightFixturesList';
+import {
+  GetRosterMessage,
+  GetRosterMessageResponse,
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
+
+interface RosterItem {
+  series: string;
+}
 
 export const BetListWidget: FC = () => {
   const { match } = useAppState();
@@ -16,26 +25,45 @@ export const BetListWidget: FC = () => {
     return match?.bets[fighters[index]?.codeName];
   });
 
+  const [roster, setRoster] = useState<RosterItem[]>([]);
+  const { send, connected } = useSocket();
+
+  const getRosterData = useCallback(async () => {
+    if (!connected) return;
+
+    const resp = (await send(
+      new GetRosterMessage(),
+    )) as GetRosterMessageResponse;
+
+    const { success, roster } = resp;
+
+    if (success) {
+      setRoster(roster);
+    }
+  }, [connected, send]);
+
+  useEffect(() => {
+    if (connected) {
+      getRosterData();
+    }
+  }, [connected, getRosterData]);
+
   return (
     <div className="widget bet-list-widget">
       <div className="widget-body">
+        <div className="fight-fixtures-widget">
+          <FightFixturesList
+            data={roster}
+            title="Up Next"
+            success={false}
+            matches={[]}
+            show={'first'}
+          />
+          <CurrentFight fighters={fighters} credits={bets as any} />
+        </div>
         <Scrollable className="bet-list-viewport">
           <TabView className="tab-view" activeIndex={0}>
-            <TabPanel header="Depth">
-              <div className="header">
-                {fighters.map((fighter, i) => (
-                  <div className="column" key={fighter.codeName}>
-                    <div className="fighter-name">{fighter.displayName}</div>
-                    <Tooltip
-                      content={`Total global stakes in ${fighter.displayName}'s pool`}
-                    >
-                      <div className="bet-total">
-                        {bets[i]?.total || 0} Credits
-                      </div>
-                    </Tooltip>
-                  </div>
-                ))}
-              </div>
+            <TabPanel header="Depth" headerClassName="tab-header">
               <div className="bet-list">
                 {bets.map((bet, i) => {
                   const list = bet?.list;
@@ -57,7 +85,7 @@ export const BetListWidget: FC = () => {
                 })}
               </div>
             </TabPanel>
-            <TabPanel header="Fight card">
+            <TabPanel header="Past Fights" headerClassName="tab-header">
               <FightFixtures />
             </TabPanel>
           </TabView>

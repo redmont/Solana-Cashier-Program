@@ -9,12 +9,11 @@ import { useSocket } from '@/hooks';
 
 import { LeaderboardWidget } from '@/components/leaderboardWidget';
 import { PrizesWidget } from '@/components/prizesWidget';
-import { ZealyWidget } from '@/components/zealyWidget';
-import { XpQuestsWidget } from '@/components/xpQuestsWidget';
 import { CreditClaimWidget } from '@/components/creditClaimWidget';
 import { Scrollable } from '@/components/Scrollable';
 import { classNames } from 'primereact/utils';
 import { LeaderboardIcon, RewardsIcon } from '@/icons';
+import { ZealyWidget } from '@/components/zealyWidget';
 
 type TournamentTabName = 'leaderboard' | 'rewards';
 
@@ -54,7 +53,14 @@ export default function Tournament() {
   const leaderboardWidgetProps = useMemo(() => {
     if (!tournament) return null;
 
-    const { items, currentUserItem = null, roundEndDate } = tournament ?? {};
+    const {
+      items,
+      currentUserItem = null,
+      roundEndDate,
+      endDate,
+      startDate,
+      currentRound,
+    } = tournament ?? {};
 
     const records: LeaderboardRecord[] = items?.slice(0, 100) ?? [];
 
@@ -70,7 +76,10 @@ export default function Tournament() {
 
     return {
       records,
-      resetDateTime: roundEndDate,
+      startDateTime: startDate,
+      endDateTime: endDate,
+      currentRound,
+      roundEndDate: roundEndDate,
       searchQuery,
       onSearch: (query: string) => {
         setSearchQuery(query);
@@ -105,12 +114,9 @@ export default function Tournament() {
         {prizesWidgetProps && <PrizesWidget {...prizesWidgetProps} />}
 
         <CreditClaimWidget />
-
-        {/* <div className="tournament-page-section-inner">
+        <div className="tournament-page-section-inner">
           <ZealyWidget />
-
-          <XpQuestsWidget />
-        </div> */}
+        </div>
       </Scrollable>
 
       <ul className="tournament-page-nav">

@@ -159,7 +159,14 @@ export class MatchManagementService {
       };
     });
 
-    await this.gameServerService.setOutcome(serverId, matchId, outcome);
+    const setOutcomeResult = await this.gameServerService.setOutcome(
+      serverId,
+      matchId,
+      outcome,
+    );
+    if (setOutcomeResult.isErr()) {
+      return null;
+    }
 
     // Winning fighter is the one with positive health, otherwise null (draw)
     const winningFighter = outcome.find((fighter) => fighter.health > 0);

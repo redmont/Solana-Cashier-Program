@@ -28,7 +28,6 @@ export function useBalanceState() {
       subscribe(
         BalanceUpdatedEvent.messageType,
         ({ balance, timestamp }: BalanceUpdatedEvent) => {
-          console.log(BalanceUpdatedEvent.messageType, balance);
           patchState(timestamp, { balance: +balance });
         },
       ),
@@ -36,8 +35,6 @@ export function useBalanceState() {
 
     send(new GetBalanceMessage()).then((message: unknown) => {
       const { balance } = message as GetBalanceMessageResponse;
-
-      console.log(GetBalanceMessage.messageType, message);
 
       setState(new Date(), { balance, isBalanceReady: true });
     });

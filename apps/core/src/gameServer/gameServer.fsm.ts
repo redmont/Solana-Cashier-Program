@@ -1,10 +1,10 @@
 import { Logger } from '@nestjs/common';
-import { setup, assign, assertEvent, fromPromise } from 'xstate';
-import { MatchSetup } from './models/matchSetup';
+import { setup, fromPromise, assign } from 'xstate';
 import { ServerMessage } from './models/serverMessage';
 import { ServerCapabilities } from './models/serverCapabilities';
 import { FightType } from './models/fightType';
-import { Error } from './models/error';
+import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
+import { sendGenericBrokerCommand } from 'broker-comms';
 
 export interface MatchParameters {
   startTime: string;
@@ -21,12 +21,9 @@ export interface MatchParameters {
   fightType: FightType;
 }
 
-type SendMatchSetupEvent = {
-  type: 'SEND_MATCH_SETUP';
-  params: {
-    matchId: string;
-    matchParameters: MatchParameters;
-  };
+type MatchSetupSentEvent = {
+  type: 'MATCH_SETUP_SENT';
+  matchId: string;
 };
 
 type OutcomeSentEvent = {
@@ -41,6 +38,10 @@ type MatchCompletionEvent = {
   type: 'MATCH_COMPLETED';
 };
 
+type ResetEvent = {
+  type: 'RESET';
+};
+
 export const createGameServerFSM = (
   serverId: string,
   capabilities: ServerCapabilities,
@@ -48,56 +49,50 @@ export const createGameServerFSM = (
     serverId: string;
     payload: T;
   }) => Promise<void>,
+  broker: NatsJetStreamClientProxy,
   logger: Logger,
 ) => {
   return setup({
     types: {} as {
       events:
-        | SendMatchSetupEvent
+        | MatchSetupSentEvent
         | OutcomeSentEvent
         | ReadyEvent
-        | MatchCompletionEvent;
-    },
-    actions: {
-      sendMatchDetails: async ({ context, event }) => {
-        assertEvent(event, 'SEND_MATCH_SETUP');
-        const { matchId, matchParameters } = event.params;
-
-        await sendMessage<MatchSetup>({
-          serverId: context.serverId,
-          payload: new MatchSetup(
-            matchId,
-            matchParameters.startTime,
-            matchParameters.fighters,
-            matchParameters.level,
-            matchParameters.fightType,
-          ),
-        });
-      },
+        | MatchCompletionEvent
+        | ResetEvent;
     },
     actors: {
       forceReset: fromPromise<void, string>(async ({ input: serverId }) => {
         console.log('Sending reset message to server');
-        await sendMessage<Error>({
-          serverId,
-          payload: new Error(),
-        });
+
+        try {
+          await sendGenericBrokerCommand(
+            broker,
+            `gameEngineControl.${serverId}`,
+            {
+              commandName: 'reset',
+              commandPayload: {},
+            },
+          );
+        } catch (e) {
+          logger.warn('Error sending reset message:', e);
+        }
       }),
     },
   }).createMachine({
     id: `gameServer-${serverId}`,
     initial: 'ready',
     context: { serverId, capabilities, matchId: null, matchConfig: null },
+    on: {
+      RESET: '.forceReset',
+    },
     states: {
       ready: {
         on: {
-          SEND_MATCH_SETUP: {
-            actions: [
-              'sendMatchDetails',
-              assign(({ event }) => {
-                return { matchId: event.params.matchId };
-              }),
-            ],
+          MATCH_SETUP_SENT: {
+            actions: assign({
+              matchId: ({ event: { matchId } }) => matchId,
+            }),
             target: 'waitingToStart',
           },
           READY: 'ready',
@@ -121,13 +116,13 @@ export const createGameServerFSM = (
           READY: 'ready',
         },
         after: {
-          60_000: 'forceReset',
+          90_000: 'forceReset',
         },
       },
       forceReset: {
         invoke: {
           src: 'forceReset',
-          input: ({ context }) => context.codeName,
+          input: ({ context }) => context.serverId,
           onDone: {
             target: 'waitingForReady',
           },

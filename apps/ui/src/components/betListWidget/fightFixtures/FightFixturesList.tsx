@@ -4,7 +4,7 @@ import Typography from '@/components/ui/typography';
 import { GetMatchHistoryMessageResponse } from '@/interfaces';
 
 interface MatchHistoryWithTitle extends GetMatchHistoryMessageResponse {
-  title: string;
+  title?: string;
   data: any;
   show: 'first' | 'last' | 'all';
 }

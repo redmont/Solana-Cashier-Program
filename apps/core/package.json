@@ -25,6 +25,7 @@
     "@bltzr-gg/brawlers-ui-gateway-messages": "workspace:*",
     "@bltzr-gg/croupier": "^3.4.0",
     "@nestjs-plugins/nestjs-nats-jetstream-transport": "^2.2.6",
+    "@nestjs/axios": "^3.0.2",
     "@nestjs/common": "^10.3.7",
     "@nestjs/config": "^3.2.1",
     "@nestjs/core": "^10.3.7",
@@ -36,6 +37,7 @@
     "@nestjs/serve-static": "^4.0.2",
     "@nestjs/websockets": "^10.3.7",
     "@repo/eslint-config": "workspace:*",
+    "axios": "^1.6.8",
     "broker-comms": "workspace:*",
     "cashier-messages": "workspace:*",
     "core-messages": "workspace:*",
@@ -59,6 +61,7 @@
     "sharp": "^0.33.3",
     "socket.io": "^4.7.5",
     "uuid": "^9.0.1",
+    "viem": "^2.17.8",
     "ws": "^8.16.0",
     "xstate": "^5.10.0"
   },

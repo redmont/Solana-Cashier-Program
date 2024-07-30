@@ -83,6 +83,7 @@ export class ReadModelService {
   async getAccountByWalletAddress(walletAddress: string) {
     return this.accountModel
       .query({ primaryWalletAddress: walletAddress })
+      .using('primaryWalletAddress')
       .exec();
   }
 }

@@ -26,16 +26,16 @@ const XpQuestTile: FC<XpQuestTileProps> = (props) => {
       href="https://zealy.io/cw/brawl3rs/questboard"
       target="_blank"
     >
-      <div className="xp-quest-tile-head">
+      <span className="xp-quest-tile-head">
         <i className={`pi pi-${props.icon}`} />
-      </div>
-      <div className="xp-quest-tile-body">
-        <div className="xp-quest-tile-title">{props.title}</div>
-        <div className="xp-quest-tile-xp">+{props.xp} XP</div>
-      </div>
-      <div className="xp-quest-tile-tail">
+      </span>
+      <span className="xp-quest-tile-body">
+        <span className="xp-quest-tile-title">{props.title}</span>
+        <span className="xp-quest-tile-xp">+{props.xp} XP</span>
+      </span>
+      <span className="xp-quest-tile-tail">
         <i className={`pi pi-arrow-right`} />
-      </div>
+      </span>
     </a>
   );
 };

@@ -15,6 +15,20 @@ resource "aws_security_group" "task_sg" {
   }
 
   ingress {
+    from_port   = 6222
+    to_port     = 6222
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+  }
+
+  ingress {
+    from_port   = 8222
+    to_port     = 8222
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+  }
+
+  ingress {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
@@ -54,4 +68,16 @@ resource "aws_iam_role_policy_attachment" "ecs_tasks_execution_role" {
 resource "aws_cloudwatch_log_group" "log_group" {
   name              = "${var.prefix}-${var.environment}"
   retention_in_days = 30
+}
+
+module "nats" {
+  source                          = "./nats"
+  prefix                          = var.prefix
+  environment                     = var.environment
+  service_discovery_namespace_arn = var.service_discovery_namespace_arn
+  vpc_private_subnets             = var.vpc_private_subnets
+  ecs_tasks_execution_role_arn    = aws_iam_role.ecs_tasks_execution_role.arn
+  cloudwatch_log_group_name       = aws_cloudwatch_log_group.log_group.name
+  ecs_cluster_id                  = aws_ecs_cluster.cluster.id
+  task_sg_id                      = aws_security_group.task_sg.id
 }

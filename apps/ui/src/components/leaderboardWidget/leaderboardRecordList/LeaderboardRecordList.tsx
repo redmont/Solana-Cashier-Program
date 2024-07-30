@@ -13,6 +13,7 @@ export const LeaderboardRecordList: FC<LeaderboardProps> = ({ records }) => {
           xp={rec.xp}
           rank={i + 1}
           winAmount={rec.winAmount}
+          username={rec.username}
         />
       ))}
     </div>
@@ -30,13 +31,13 @@ const LeaderboardRecordCard: FC<LeaderboardRecord> = (props) => {
       })}
     >
       <div className="card-header">
-        <div className="card-rank">12</div>
+        <div className="card-rank">{props.rank}</div>
         {props.rank <= 3 && (
           <div className="card-top-rank">
             <img src={`/rank-${props.rank}.svg`} />
           </div>
         )}
-        <div className="card-wallet">{walletAddress}</div>
+        <div className="card-wallet">{props.username ?? walletAddress}</div>
       </div>
 
       <div className="card-stat-list">

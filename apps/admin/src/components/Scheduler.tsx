@@ -54,12 +54,6 @@ export const Scheduler = ({
     },
   });
 
-  useEffect(() => {
-    if (rosterData) {
-      console.log(rosterData);
-    }
-  }, [rosterData]);
-
   const scheduleSchema: RJSFSchema = {
     title: 'Schedule',
     type: 'array',

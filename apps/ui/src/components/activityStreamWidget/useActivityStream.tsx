@@ -57,8 +57,6 @@ export function useActivityStream(series?: string, matchId?: string) {
       subscribe(
         ActivityStreamEvent.messageType,
         ({ message, timestamp }: ActivityStreamEvent) => {
-          console.log(ActivityStreamEvent.messageType, message);
-
           patchState(timestamp, {
             messages: [
               ...state.messages,
@@ -84,8 +82,6 @@ export function useActivityStream(series?: string, matchId?: string) {
       (response: unknown) => {
         const { messages } =
           response as typeof GetActivityStreamMessage.responseType;
-
-        console.log(GetActivityStreamMessage.messageType, response);
 
         setState(new Date(), {
           messages: messages.map((m) => ({

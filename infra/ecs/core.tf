@@ -84,7 +84,11 @@ locals {
     },
     environment = [
       {
-        name = "NATS_URI", value = "nats://nats.${var.prefix}.${var.environment}.local:4222"
+        name = "NATS_URI", value = join(",", [
+          "nats://nats-n1-c1.${var.prefix}.${var.environment}.local:4222",
+          "nats://nats-n2-c1.${var.prefix}.${var.environment}.local:4222",
+          "nats://nats-n3-c1.${var.prefix}.${var.environment}.local:4222"
+        ])
       },
       {
         name = "BROKER_REDIS_HOST", value = var.redis_host
@@ -111,8 +115,11 @@ locals {
         name = "MEDIA_URI", value = "https://${var.public_assets_hostname}"
       },
       {
-        name = "USE_MOCK_GAME_SERVER", value = var.environment == "dev" ? "true" : "false"
+        name = "USE_MOCK_GAME_SERVER", value = "false"
       },
+      # {
+      #  name = "USE_MOCK_GAME_SERVER", value = var.environment == "dev" ? "true" : "false"
+      # },
       {
         name = "DYNAMIC_PUBLIC_KEY", value = var.dynamic_public_key
       },
@@ -127,6 +134,9 @@ locals {
       },
       {
         name = "PUBNUB_USER_ID", value = "system"
+      },
+      {
+        name = "RED5_STREAM_MANAGER_HOSTNAME", value = var.environment == "prod" ? "r5stream.prod.brawl3rs.ai" : "r5stream.dev.brawl3rs.ai"
       }
     ]
   }

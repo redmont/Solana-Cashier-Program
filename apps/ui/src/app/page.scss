@@ -4,6 +4,12 @@
 
 .main-page-content {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.bet-list-widget {
+  order: 999;
 }
 
 .match-stream-widget {
@@ -96,7 +102,7 @@
 
   .bet-list-widget {
     grid-column: 1 / 3;
-    grid-row: 2 / 3;
+    grid-row: 6;
   }
 
   .match-status-widget {
@@ -106,7 +112,7 @@
 
   .bet-placement-widget {
     grid-column: 1 / 2;
-    grid-row: 4;
+    grid-row: 2;
 
     .widget-body {
       flex-direction: row;

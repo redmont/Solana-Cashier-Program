@@ -34,8 +34,6 @@ export const CreditClaimWidget: FC = () => {
     if (!connected) return;
 
     send(new GetDailyClaimsMessage()).then((message: unknown) => {
-      console.log(GetDailyClaimsMessage.messageType, message);
-
       setClaims(message as GetDailyClaimsMessageResponse);
     });
   }, [send, connected]);
@@ -123,7 +121,8 @@ export const CreditClaimWidget: FC = () => {
         <div className="widget-title">Daily Credits Claim</div>
 
         <p className="widget-info">
-          Boost your rewards daily! Claim credits to grow your streak - miss a day, and it resets.
+          Boost your rewards daily! Claim credits to grow your streak - miss a
+          day, and it resets.
         </p>
       </div>
       <div className="widget-body">

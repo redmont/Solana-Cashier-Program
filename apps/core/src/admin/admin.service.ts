@@ -1,16 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
-import { sendBrokerMessage } from 'broker-comms';
+import { sendBrokerCommand } from 'broker-comms';
 import {
-  CreditByWalletAddressMessage as CreditMessage,
-  CreditByWalletAddressMessageResponse as CreditMessageResponse,
-  DebitByWalletAddressMessage as DebitMessage,
-  DebitByWalletAddressMessageResponse as DebitMessageResponse,
+  CreditMessage,
+  CreditMessageResponse,
+  DebitByWalletAddressMessage,
+  DebitByWalletAddressMessageResponse,
 } from 'cashier-messages';
+import { UsersService } from '@/users/users.service';
+import { getAddress } from 'viem';
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly broker: NatsJetStreamClientProxy) {}
+  private readonly logger = new Logger(AdminService.name);
+
+  constructor(
+    private readonly broker: NatsJetStreamClientProxy,
+    private readonly usersService: UsersService,
+  ) {}
 
   async processPointsBalancesUpload(file: Express.Multer.File) {
     const fileData = file.buffer.toString();
@@ -30,12 +37,42 @@ export class AdminService {
     for (const item of items) {
       if (item.amount > 0) {
         try {
-          await sendBrokerMessage<CreditMessage, CreditMessageResponse>(
-            this.broker,
-            new CreditMessage(item.walletAddress, item.amount, 'IMPORT'),
-          );
-          credits++;
+          const formattedAddress = getAddress(item.walletAddress);
+
+          // Check if user exists
+          let userId =
+            await this.usersService.getUserIdByWalletAddress(formattedAddress);
+          if (!userId) {
+            const user = await this.usersService.createUser(formattedAddress);
+            userId = user.userId;
+          }
+
+          const result = await sendBrokerCommand<
+            CreditMessage,
+            CreditMessageResponse
+          >(this.broker, new CreditMessage(userId, item.amount, 'IMPORT'));
+
+          if (!result.success) {
+            this.logger.warn(
+              `Error crediting user via cashier broker message, '${item.walletAddress}' with amount '${item.amount}'`,
+              result.message,
+            );
+
+            errors.push(
+              result.message,
+              formattedAddress,
+              item.amount,
+              'credit',
+            );
+          } else {
+            credits++;
+          }
         } catch (e) {
+          this.logger.warn(
+            `Error crediting user '${item.walletAddress}' with amount '${item.amount}'`,
+            e,
+          );
+
           errors.push({
             ...e,
             walletAddress: item.walletAddress,
@@ -45,9 +82,12 @@ export class AdminService {
         }
       } else if (item.amount < 0) {
         try {
-          await sendBrokerMessage<DebitMessage, DebitMessageResponse>(
+          await sendBrokerCommand<
+            DebitByWalletAddressMessage,
+            DebitByWalletAddressMessageResponse
+          >(
             this.broker,
-            new DebitMessage(
+            new DebitByWalletAddressMessage(
               item.walletAddress,
               Math.abs(item.amount),
               'IMPORT',

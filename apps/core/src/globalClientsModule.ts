@@ -10,7 +10,7 @@ import { NatsJetStreamTransport } from '@nestjs-plugins/nestjs-nats-jetstream-tr
       useFactory: async (configService: ConfigService) => {
         return {
           connectionOptions: {
-            servers: [configService.get<string>('natsUri')],
+            servers: configService.get<string>('natsUri').split(','),
           },
           jetStreamOption: {
             timeout: 20_000,

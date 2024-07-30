@@ -5,10 +5,13 @@ import { GameServerCapabilitiesModule } from '@/gameServerCapabilities/gameServe
 import { GameServerService } from './gameServer.service';
 import { MockGameServer } from './mockGameServer';
 import { GameServerGateway } from './gameServerGateway';
+import { HttpModule } from '@nestjs/axios';
+import { StreamUrlService } from './streamUrl.service';
 
 @Module({
-  imports: [GameServerConfigModule, GameServerCapabilitiesModule],
+  imports: [HttpModule, GameServerConfigModule, GameServerCapabilitiesModule],
   providers: [
+    StreamUrlService,
     GameServerService,
     GameServerGateway,
     GameServerWebSocketGateway,

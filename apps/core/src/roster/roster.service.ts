@@ -205,27 +205,41 @@ export class RosterService {
     const series = await this.seriesService.getSeries(seriesCodeName);
     const fighterProfiles = await this.fighterProfilesService.list();
 
-    let fighters = [];
-    for (const fighterProfile of series.fighterProfiles) {
-      if (fighterProfile === '#RANDOM#') {
-        while (true) {
-          // Random fighter
-          const randomIndex = Math.floor(
-            Math.random() * fighterProfiles.length,
-          );
-          const fighter = fighterProfiles[randomIndex];
-          // We can't use the same fighter twice
-          if (!fighters.includes(fighter)) {
-            fighters.push(fighter);
-            break;
-          }
-        }
-      } else {
-        const { codeName, displayName, imagePath } = fighterProfiles.find(
-          (x) => x.codeName === fighterProfile,
-        );
+    // Add non-random fighters and tickers first
+
+    const fighters = [];
+    const tickers = [];
+    for (const fighterProfile of series.fighterProfiles.filter(
+      (f) => f !== '#RANDOM#',
+    )) {
+      const { codeName, displayName, imagePath, ticker } = fighterProfiles.find(
+        (x) => x.codeName === fighterProfile,
+      );
+      fighters.push({ codeName, displayName, imagePath });
+      tickers.push(ticker.toLowerCase());
+    }
+
+    // Now add random fighters, making sure
+    // the random choices don't conflict with the non-random ones
+
+    let fightersToAdd = series.fighterProfiles.filter(
+      (f) => f === '#RANDOM#',
+    ).length;
+    let count = 0;
+
+    while (fightersToAdd > 0 && count < 50) {
+      const randomIndex = Math.floor(Math.random() * fighterProfiles.length);
+      const fighter = fighterProfiles[randomIndex];
+      if (
+        !fighters.find((f) => f.codeName === fighter.codeName) &&
+        !tickers.includes(fighter.ticker.toLowerCase())
+      ) {
+        const { codeName, displayName, imagePath } = fighter;
         fighters.push({ codeName, displayName, imagePath });
+        tickers.push(fighter.ticker.toLowerCase());
+        fightersToAdd--;
       }
+      count++;
     }
 
     return {

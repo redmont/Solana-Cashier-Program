@@ -13,4 +13,5 @@ export const md = (strings: TemplateStringsArray, ...values: any[]): string => {
 
 export const signedNumberFormat = new Intl.NumberFormat('en-US', {
   signDisplay: 'exceptZero',
+  maximumFractionDigits: 6,
 });

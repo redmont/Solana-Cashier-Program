@@ -1,0 +1,130 @@
+{
+  "total": {
+    "lines": {
+      "total": 5241,
+      "covered": 2965,
+      "skipped": 0,
+      "pct": 56.57
+    },
+    "statements": {
+      "total": 5241,
+      "covered": 2965,
+      "skipped": 0,
+      "pct": 56.57
+    },
+    "functions": {
+      "total": 217,
+      "covered": 82,
+      "skipped": 0,
+      "pct": 37.79
+    },
+    "branches": {
+      "total": 196,
+      "covered": 160,
+      "skipped": 0,
+      "pct": 81.63
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": null
+    }
+  },
+  "cashier": {
+    "lines": {
+      "total": 375,
+      "covered": 99,
+      "skipped": 0,
+      "pct": 26.4
+    },
+    "statements": {
+      "total": 375,
+      "covered": 99,
+      "skipped": 0,
+      "pct": 26.4
+    },
+    "functions": {
+      "total": 13,
+      "covered": 1,
+      "skipped": 0,
+      "pct": 7.69
+    },
+    "branches": {
+      "total": 1,
+      "covered": 1,
+      "skipped": 0,
+      "pct": 100
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    }
+  },
+  "core": {
+    "lines": {
+      "total": 4442,
+      "covered": 2564,
+      "skipped": 0,
+      "pct": 57.72
+    },
+    "statements": {
+      "total": 4442,
+      "covered": 2564,
+      "skipped": 0,
+      "pct": 57.72
+    },
+    "functions": {
+      "total": 180,
+      "covered": 69,
+      "skipped": 0,
+      "pct": 38.33
+    },
+    "branches": {
+      "total": 179,
+      "covered": 147,
+      "skipped": 0,
+      "pct": 82.12
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    }
+  },
+  "ui-gateway": {
+    "lines": {
+      "total": 424,
+      "covered": 302,
+      "skipped": 0,
+      "pct": 71.22
+    },
+    "statements": {
+      "total": 424,
+      "covered": 302,
+      "skipped": 0,
+      "pct": 71.22
+    },
+    "functions": {
+      "total": 24,
+      "covered": 12,
+      "skipped": 0,
+      "pct": 50
+    },
+    "branches": {
+      "total": 16,
+      "covered": 12,
+      "skipped": 0,
+      "pct": 75
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    }
+  }
+}

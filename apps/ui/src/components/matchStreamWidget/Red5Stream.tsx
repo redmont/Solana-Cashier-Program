@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { SoundToggle } from './SoundToggle';
 import Image from 'next/image';
-import { GetStreamAuthTokenMessage, GetStreamAuthTokenMessageResponse } from '@bltzr-gg/brawlers-ui-gateway-messages';
+import {
+  GetStreamAuthTokenMessage,
+  GetStreamAuthTokenMessageResponse,
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { useAppState, useSocket } from '@/hooks';
 import { Red5Client } from './Red5Client';
 
@@ -36,17 +39,12 @@ const Red5Stream = ({
     }
   }, [streamViewExpected, connected, send]);
 
-
   useEffect(() => {
     setRed5Client((prevRed5Client) => {
       prevRed5Client?.disconnect();
 
       if (streamToken && match?.streamId) {
-        return new Red5Client(
-          match.streamId,
-          streamToken,
-          "stream",
-        );
+        return new Red5Client(match.streamId, streamToken, 'stream');
       }
       return undefined;
     });
@@ -56,14 +54,10 @@ const Red5Stream = ({
     };
   }, [streamToken, match?.streamId]);
 
-
   useEffect(() => {
     if (!streamViewExpected) {
       red5Client?.disconnect();
     } else {
-      // Just to check that we are within the same effect context
-      const seed = Math.floor(Math.random() * 1000);
-
       let isOn = true;
       let timeout: any;
 
@@ -72,9 +66,7 @@ const Red5Stream = ({
 
         try {
           await red5Client?.connect();
-          console.log(`[${seed}] Connected`);
         } catch (e) {
-          console.log(`[${seed}] Failed to connect`, e);
           if (timeout) {
             clearTimeout(timeout);
           }

@@ -4,7 +4,10 @@ export interface LeaderboardProps {
 
 export interface LeaderboardWidgetProps extends LeaderboardProps {
   searchQuery?: string;
-  resetDateTime: string | number;
+  endDateTime: string | number;
+  startDateTime: string | number;
+  currentRound: number;
+  roundEndDate: string | number;
   onSearch?: (query: string) => void;
 }
 

@@ -10,7 +10,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       useFactory: async (configService: ConfigService) => {
         return {
           connectionOptions: {
-            servers: [configService.get<string>('natsUri')],
+            servers: configService.get<string>('natsUri').split(','),
           },
           jetStreamOption: {
             timeout: 20_000,

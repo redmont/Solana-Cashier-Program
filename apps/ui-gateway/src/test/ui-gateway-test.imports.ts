@@ -5,7 +5,13 @@ import { ConfigModule } from '@nestjs/config';
 import { DynamooseModule } from 'nestjs-dynamoose';
 
 export const UiGatewayTestImports = [
-  ConfigModule.forRoot(),
+  ConfigModule.forRoot({
+    load: [
+      () => ({
+        natsUri: '',
+      }),
+    ],
+  }),
   AuthModule,
   DynamooseModule.forRoot({
     local: 'http://localhost:8001',

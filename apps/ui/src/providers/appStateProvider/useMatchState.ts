@@ -61,13 +61,13 @@ export function useMatchState() {
     series: '',
     state: '',
     preMatchVideoUrl: '',
+    streamId: '',
     bets: [],
     prices: new Map(),
   });
 
   useEffect(() => {
     return subscribe(BetPlacedEvent.messageType, (message: BetPlacedEvent) => {
-      console.log(BetPlacedEvent.messageType, message);
       const { amount, fighter, walletAddress, timestamp } = message;
 
       patchState(timestamp || new Date(), {
@@ -135,7 +135,6 @@ export function useMatchState() {
   useEffect(() => {
     const subscriptions = [
       subscribe(MatchUpdatedEvent.messageType, (message: MatchUpdatedEvent) => {
-        console.log(MatchUpdatedEvent.messageType, message);
         const {
           matchId,
           series,
@@ -145,6 +144,7 @@ export function useMatchState() {
           winner,
           timestamp,
           fighters,
+          streamId,
         } = message;
 
         patchState(timestamp, {
@@ -155,16 +155,15 @@ export function useMatchState() {
           startTime,
           winner,
           fighters,
+          streamId,
         });
       }),
       subscribe(BetsUpdatedEvent.messageType, (message: BetsUpdatedEvent) => {
-        console.log(BetsUpdatedEvent.messageType, message);
         const { bets, timestamp } = message;
 
         patchState(timestamp || new Date(), { bets });
       }),
       subscribe(MatchResultEvent.messageType, (message: MatchResultEvent) => {
-        console.log(MatchResultEvent.messageType, message);
         const { winAmount, timestamp } = message;
 
         patchState(timestamp, { winAmount });
