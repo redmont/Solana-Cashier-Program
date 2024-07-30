@@ -13,6 +13,7 @@ import { CreditClaimWidget } from '@/components/creditClaimWidget';
 import { Scrollable } from '@/components/Scrollable';
 import { classNames } from 'primereact/utils';
 import { LeaderboardIcon, RewardsIcon } from '@/icons';
+import { ZealyWidget } from '@/components/zealyWidget';
 
 type TournamentTabName = 'leaderboard' | 'rewards';
 
@@ -113,6 +114,9 @@ export default function Tournament() {
         {prizesWidgetProps && <PrizesWidget {...prizesWidgetProps} />}
 
         <CreditClaimWidget />
+        <div className="tournament-page-section-inner">
+          <ZealyWidget />
+        </div>
       </Scrollable>
 
       <ul className="tournament-page-nav">

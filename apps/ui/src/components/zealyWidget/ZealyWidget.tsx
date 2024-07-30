@@ -4,7 +4,7 @@ export const ZealyWidget: FC = () => {
   return (
     <div className="widget zealy-widget">
       <div className="widget-header">
-        Earn additional XP via our Zealy campaign
+        Earn additional credits via our Zealy campaign
       </div>
 
       <div className="widget-body">

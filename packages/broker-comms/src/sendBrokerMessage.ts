@@ -32,28 +32,38 @@ export async function sendBrokerMessage<
   return response;
 }
 
+export async function sendGenericBrokerCommand<TResponse>(
+  clientProxy: NatsJetStreamClientProxy,
+  pattern: any,
+  payload: any,
+) {
+  try {
+    const requestBuilder = new NatsRequestOptionsBuilder();
+    requestBuilder.setTimeout(20_000);
+    requestBuilder.setPayload(payload);
+    const request = requestBuilder.build();
+
+    return await firstValueFrom(
+      clientProxy.send<TResponse>(pattern, request).pipe(timeout(30000)),
+    );
+  } catch (error) {
+    console.log(
+      `Error in sendBrokerCommand sending message with pattern ${JSON.stringify(pattern)}: `,
+      JSON.stringify(payload),
+    );
+    throw error;
+  }
+}
+
 export async function sendBrokerCommand<
   T extends BrokerMessage<TResponse>,
   TResponse extends BaseResponse,
 >(clientProxy: NatsJetStreamClientProxy, message: T): Promise<TResponse> {
   const messageType = (message.constructor as any).messageType;
 
-  try {
-    const requestBuilder = new NatsRequestOptionsBuilder();
-    requestBuilder.setTimeout(20_000);
-    requestBuilder.setPayload(message);
-    const request = requestBuilder.build();
-
-    return await firstValueFrom(
-      clientProxy
-        .send<TResponse>({ cmd: messageType }, request)
-        .pipe(timeout(30000)),
-    );
-  } catch (error) {
-    console.log(
-      `Error in sendBrokerCommand sending message of type ${messageType}: `,
-      JSON.stringify(message),
-    );
-    throw error;
-  }
+  return await sendGenericBrokerCommand<TResponse>(
+    clientProxy,
+    { cmd: messageType },
+    message,
+  );
 }

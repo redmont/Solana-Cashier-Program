@@ -134,6 +134,9 @@ locals {
       },
       {
         name = "PUBNUB_USER_ID", value = "system"
+      },
+      {
+        name = "RED5_STREAM_MANAGER_HOSTNAME", value = var.environment == "prod" ? "r5stream.prod.brawl3rs.ai" : "r5stream.dev.brawl3rs.ai"
       }
     ]
   }

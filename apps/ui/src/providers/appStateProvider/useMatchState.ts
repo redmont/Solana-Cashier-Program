@@ -61,6 +61,7 @@ export function useMatchState() {
     series: '',
     state: '',
     preMatchVideoUrl: '',
+    streamId: '',
     bets: [],
     prices: new Map(),
   });
@@ -143,6 +144,7 @@ export function useMatchState() {
           winner,
           timestamp,
           fighters,
+          streamId,
         } = message;
 
         patchState(timestamp, {
@@ -153,6 +155,7 @@ export function useMatchState() {
           startTime,
           winner,
           fighters,
+          streamId,
         });
       }),
       subscribe(BetsUpdatedEvent.messageType, (message: BetsUpdatedEvent) => {

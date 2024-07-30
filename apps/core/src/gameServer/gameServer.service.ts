@@ -16,6 +16,9 @@ import { GameServerCapabilitiesService } from '@/gameServerCapabilities/gameServ
 import { GameServerGateway } from './gameServerGateway';
 import { MatchSetup } from './models/matchSetup';
 import { GameServerConfig } from '@/gameServerConfig/gameServerConfig.interface';
+import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
+import { sendBrokerCommand, sendGenericBrokerCommand } from 'broker-comms';
+import { StreamUrlService } from './streamUrl.service';
 
 @Injectable()
 export class GameServerService {
@@ -24,13 +27,25 @@ export class GameServerService {
     string,
     Actor<ReturnType<typeof createGameServerFSM>>
   > = new Map();
+  private lastUsedServerId: string | null = null;
   private pendingMessages = new Map<string, Map<string, any>>();
+
+  private sortedServers(): [
+    string,
+    Actor<ReturnType<typeof createGameServerFSM>>,
+  ][] {
+    return Array.from(this.gameServerFSMs.entries()).sort(([a], [b]) =>
+      a.localeCompare(b),
+    );
+  }
 
   constructor(
     private eventEmitter: EventEmitter2,
     private readonly gameServerConfigService: GameServerConfigService,
     private readonly gameServerCapabilitiesService: GameServerCapabilitiesService,
+    private readonly streamUrlService: StreamUrlService,
     private readonly gameServerGateway: GameServerGateway,
+    private readonly broker: NatsJetStreamClientProxy,
   ) {}
 
   public sendMessage(
@@ -66,7 +81,11 @@ export class GameServerService {
           1.5 ** attempt * 1000,
         );
 
-        this.gameServerGateway.sendMessageToServer(message);
+        try {
+          this.gameServerGateway.sendMessageToServer(message);
+        } catch (e) {
+          reject(e);
+        }
       });
     };
 
@@ -131,6 +150,7 @@ export class GameServerService {
             capabilities,
             async (data: { serverId: string; payload: ServerMessage }) => {},
             // this.sendMessage(data.serverId, data.payload),
+            this.broker,
             this.logger,
           ),
         );
@@ -189,8 +209,26 @@ export class GameServerService {
     this.logger.debug(
       `Number of available servers: ${this.gameServerFSMs.size}`,
     );
+    const servers = this.sortedServers();
+    const serverCount = servers.length;
 
-    for (let [key, fsm] of this.gameServerFSMs.entries()) {
+    if (serverCount === 0) {
+      this.logger.warn('No servers available');
+      return null;
+    }
+
+    let startIndex = 0;
+
+    // Find the starting index based on the last used server ID
+    if (this.lastUsedServerId) {
+      const lastIndex = servers.findIndex(
+        ([key]) => key === this.lastUsedServerId,
+      );
+      startIndex = lastIndex >= 0 ? (lastIndex + 1) % serverCount : 0;
+    }
+
+    for (let i = 0; i < serverCount; i++) {
+      const [key, fsm] = servers[(startIndex + i) % serverCount];
       const snapshot = fsm.getSnapshot();
 
       if (snapshot.value === 'ready') {
@@ -206,6 +244,30 @@ export class GameServerService {
 
         if (!serverConfig.enabled) {
           this.logger.warn(`Server ${key} is not enabled`);
+          continue;
+        }
+
+        const streamUrl = await this.streamUrlService.getStreamUrl(
+          serverConfig.streamId,
+        );
+        if (!streamUrl) {
+          this.logger.warn(`Failed to get stream URL for server '${key}'`);
+          continue;
+        }
+
+        try {
+          await sendGenericBrokerCommand(
+            this.broker,
+            `gameEngineControl.${key}`,
+            {
+              commandName: 'setStreamUrl',
+              commandPayload: {
+                streamUrl,
+              },
+            },
+          );
+        } catch (e) {
+          this.logger.error(`Failed to set stream URL for server '${key}'`, e);
           continue;
         }
 
@@ -227,11 +289,14 @@ export class GameServerService {
 
         fsm.send({
           type: 'MATCH_SETUP_SENT',
+          matchId,
         });
 
         const { streamId } = serverConfig;
-
         const { capabilities } = snapshot.context;
+
+        this.lastUsedServerId = key;
+
         return { serverId: key, capabilities, streamId };
       }
     }
@@ -267,6 +332,7 @@ export class GameServerService {
           `Failed to send outcome message to server '${serverId}'`,
           err,
         );
+        fsm.send({ type: 'RESET' });
       },
     );
 

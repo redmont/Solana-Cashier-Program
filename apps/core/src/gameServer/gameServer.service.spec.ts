@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { GameServerService } from './gameServer.service';
 import { GameServerConfigService } from '@/gameServerConfig/gameServerConfig.service';
 import { GameServerCapabilitiesService } from '@/gameServerCapabilities/gameServerCapabilities.service';
@@ -7,6 +8,8 @@ import { FightType } from './models/fightType';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { waitForPromisesAndFakeTimers } from '@/test/utils';
 import { ResultAsync } from 'neverthrow';
+import { StreamUrlService } from './streamUrl.service';
+import { of } from 'rxjs';
 
 describe('GameServerService', () => {
   let service: GameServerService;
@@ -24,6 +27,16 @@ describe('GameServerService', () => {
   };
 
   const eventEmitter = {};
+
+  const clientProxy = {
+    send: jest.fn().mockImplementation(() => {
+      return of({});
+    }),
+  };
+
+  const streamUrlService = {
+    getStreamUrl: jest.fn().mockResolvedValue('some_stream_url'),
+  };
 
   beforeAll(() => {
     jest.useFakeTimers();
@@ -47,6 +60,14 @@ describe('GameServerService', () => {
         {
           provide: GameServerGateway,
           useValue: gameServerGateway,
+        },
+        {
+          provide: NatsJetStreamClientProxy,
+          useValue: clientProxy,
+        },
+        {
+          provide: StreamUrlService,
+          useValue: streamUrlService,
         },
         GameServerService,
       ],
@@ -201,6 +222,35 @@ describe('GameServerService', () => {
       expect(result).toHaveProperty('serverId', 'test001');
       expect(result).toHaveProperty('capabilities', readyMessage.capabilities);
     });
+
+    it('should return servers in a round-robin fashion', async () => {
+      gameServerConfigService.get.mockResolvedValueOnce({
+        enabled: true,
+      });
+
+      jest
+        .spyOn(service, 'sendMessage')
+        .mockImplementationOnce(() =>
+          ResultAsync.fromPromise<void, string>(
+            Promise.resolve(undefined),
+            (err: string) => err,
+          ),
+        );
+
+      await service.handleGameServerMessage('test001', readyMessage);
+
+      service['lastUsedServerId'] = 'test001';
+
+      await service.handleGameServerMessage('test002', readyMessage);
+      await service.handleGameServerMessage('test003', readyMessage);
+
+      const result1 = await service.allocateServerForMatch(
+        'match1',
+        matchParameters,
+      );
+
+      expect(result1).toHaveProperty('serverId', 'test002');
+    });
   });
 
   describe('setOutcome', () => {
@@ -221,6 +271,14 @@ describe('GameServerService', () => {
         enabled: true,
       });
       await service.handleGameServerMessage('test001', readyMessage);
+      const fsmSend = service.gameServerFSMs.get('test001').send;
+      jest
+        .spyOn(service.gameServerFSMs.get('test001'), 'send')
+        .mockImplementation((args) => {
+          if (args.type !== 'RESET') {
+            fsmSend(args);
+          }
+        });
 
       jest
         .spyOn(service, 'sendMessage')

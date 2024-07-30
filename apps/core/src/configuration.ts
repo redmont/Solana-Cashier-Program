@@ -19,4 +19,5 @@ export default () => ({
   pubNubSubscribeKey: process.env.PUBNUB_SUBSCRIBE_KEY,
   pubNubSecretKey: process.env.PUBNUB_SECRET_KEY,
   pubNubUserId: process.env.PUBNUB_USER_ID,
+  red5StreamManagerHostname: process.env.RED5_STREAM_MANAGER_HOSTNAME,
 });

@@ -11,9 +11,13 @@ describe('RosterService', () => {
   let service: RosterService;
 
   const rosterModel = dynamoose.model('roster', RosterSchema);
-  const seriesService = {};
+  const seriesService = {
+    getSeries: jest.fn(),
+  };
   const queryStoreService = {};
-  const fighterProfilesService = {};
+  const fighterProfilesService = {
+    list: jest.fn(),
+  };
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
@@ -84,6 +88,165 @@ describe('RosterService', () => {
           schedule: [{ codeName: 'series123' }],
         },
       );
+    });
+  });
+
+  describe('getSeriesFromSchedule', () => {
+    it('should return null and create an empty roster if there is no roster', async () => {
+      jest
+        .spyOn(rosterModel, 'get')
+        .mockImplementation(() => Promise.resolve(null));
+
+      const create = jest
+        .spyOn(rosterModel, 'create')
+        .mockImplementation(() => Promise.resolve({}));
+
+      const series = await service.getSeriesFromSchedule();
+
+      expect(series).toBeNull();
+      expect(create).toHaveBeenCalledWith({
+        pk: 'roster',
+        sk: 'roster',
+        scheduleType: 'linear',
+        series: [],
+        schedule: [],
+        timedSeries: [],
+      });
+    });
+
+    it('should return null if there are no series in the roster', async () => {
+      jest.spyOn(rosterModel, 'get').mockImplementation(() =>
+        Promise.resolve({
+          series: [],
+        }),
+      );
+
+      const series = await service.getSeriesFromSchedule();
+
+      expect(series).toBeNull();
+    });
+  });
+
+  describe('getSeriesWithFighters', () => {
+    it('should return the series with the fighters', async () => {
+      jest.spyOn(seriesService, 'getSeries').mockImplementationOnce(() => {
+        return {
+          codeName: 'series123',
+          fighterProfiles: ['fighter1', 'fighter2'],
+        };
+      });
+      jest.spyOn(fighterProfilesService, 'list').mockImplementationOnce(() => {
+        return [
+          {
+            codeName: 'fighter1',
+            ticker: 'ABC',
+            displayName: 'Fighter 1',
+            imagePath: '/fighter1.jpg',
+          },
+          {
+            codeName: 'fighter2',
+            ticker: 'DEF',
+            displayName: 'Fighter 2',
+            imagePath: '/fighter2.jpg',
+          },
+        ];
+      });
+
+      const series = await service.getSeriesWithFighters('series123');
+
+      expect(series.codeName).toEqual('series123');
+      expect(series.fighters).toEqual([
+        {
+          codeName: 'fighter1',
+          displayName: 'Fighter 1',
+          imagePath: '/fighter1.jpg',
+        },
+        {
+          codeName: 'fighter2',
+          displayName: 'Fighter 2',
+          imagePath: '/fighter2.jpg',
+        },
+      ]);
+    });
+
+    it('should not use the same fighters in a random vs random series', async () => {
+      jest.spyOn(seriesService, 'getSeries').mockImplementationOnce(() => {
+        return {
+          codeName: 'randomVsRandom',
+          fighterProfiles: ['#RANDOM#', '#RANDOM#'],
+        };
+      });
+      jest.spyOn(fighterProfilesService, 'list').mockImplementationOnce(() => {
+        return [
+          { codeName: 'fighter1', ticker: 'ABC' },
+          { codeName: 'fighter1', ticker: 'DEF' },
+        ];
+      });
+
+      const series = await service.getSeriesWithFighters('randomVsRandom');
+
+      // The infinite loop prevention should kick in and only one fighter should be added
+      expect(series.fighters.length).toEqual(1);
+    });
+
+    it('should not use the same ticker in a random vs random series', async () => {
+      jest.spyOn(seriesService, 'getSeries').mockImplementationOnce(() => {
+        return {
+          codeName: 'randomVsRandom',
+          fighterProfiles: ['#RANDOM#', '#RANDOM#'],
+        };
+      });
+      jest.spyOn(fighterProfilesService, 'list').mockImplementationOnce(() => {
+        return [
+          { codeName: 'fighter1', ticker: 'ABC' },
+          { codeName: 'fighter2', ticker: 'ABC' },
+        ];
+      });
+
+      const series = await service.getSeriesWithFighters('randomVsRandom');
+
+      // The infinite loop prevention should kick in and only one fighter should be added
+      expect(series.fighters.length).toEqual(1);
+    });
+
+    it('should not use the same fighters in a fighter vs random series', async () => {
+      jest.spyOn(seriesService, 'getSeries').mockImplementationOnce(() => {
+        return {
+          codeName: 'randomVsRandom',
+          fighterProfiles: ['fighter1', '#RANDOM#'],
+        };
+      });
+      jest.spyOn(fighterProfilesService, 'list').mockImplementationOnce(() => {
+        return [
+          { codeName: 'fighter1', ticker: 'ABC' },
+          { codeName: 'fighter1', ticker: 'DEF' },
+        ];
+      });
+
+      const series = await service.getSeriesWithFighters('randomVsRandom');
+
+      // The infinite loop prevention should kick in and only one fighter should be added
+      expect(series.fighters.length).toEqual(1);
+    });
+
+    it('should not use the same ticker in a fighter vs random series', async () => {
+      jest.spyOn(seriesService, 'getSeries').mockImplementationOnce(() => {
+        return {
+          codeName: 'randomVsRandom',
+          fighterProfiles: ['fighter1', '#RANDOM#'],
+        };
+      });
+      jest.spyOn(fighterProfilesService, 'list').mockImplementationOnce(() => {
+        return [
+          { codeName: 'fighter1', ticker: 'ABC' },
+          { codeName: 'fighter2', ticker: 'ABC' },
+        ];
+      });
+
+      const series = await service.getSeriesWithFighters('randomVsRandom');
+
+      // The infinite loop prevention should kick in and only one fighter should be added
+      expect(series.fighters.length).toEqual(1);
     });
   });
 });
