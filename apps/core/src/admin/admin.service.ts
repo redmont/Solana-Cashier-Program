@@ -4,8 +4,8 @@ import { sendBrokerCommand } from 'broker-comms';
 import {
   CreditMessage,
   CreditMessageResponse,
-  DebitByWalletAddressMessage,
-  DebitByWalletAddressMessageResponse,
+  DebitMessage,
+  DebitMessageResponse,
 } from 'cashier-messages';
 import { UsersService } from '@/users/users.service';
 import { getAddress } from 'viem';
@@ -82,19 +82,39 @@ export class AdminService {
         }
       } else if (item.amount < 0) {
         try {
-          await sendBrokerCommand<
-            DebitByWalletAddressMessage,
-            DebitByWalletAddressMessageResponse
+          const formattedAddress = getAddress(item.walletAddress);
+
+          // Check if user exists
+          let userId =
+            await this.usersService.getUserIdByWalletAddress(formattedAddress);
+          if (!userId) {
+            const user = await this.usersService.createUser(formattedAddress);
+            userId = user.userId;
+          }
+
+          const result = await sendBrokerCommand<
+            DebitMessage,
+            DebitMessageResponse
           >(
             this.broker,
-            new DebitByWalletAddressMessage(
-              item.walletAddress,
-              Math.abs(item.amount),
-              'IMPORT',
-            ),
+            new DebitMessage(userId, Math.abs(item.amount), 'IMPORT'),
           );
-          debits++;
+          if (!result.success) {
+            this.logger.warn(
+              `Error debiting user via cashier broker message, '${item.walletAddress}' with amount '${item.amount}'`,
+              result.message,
+            );
+
+            errors.push(result.message, formattedAddress, item.amount, 'debit');
+          } else {
+            debits++;
+          }
         } catch (e) {
+          this.logger.warn(
+            `Error debiting user '${item.walletAddress}' with amount '${item.amount}'`,
+            e,
+          );
+
           errors.push({
             ...e,
             walletAddress: item.walletAddress,

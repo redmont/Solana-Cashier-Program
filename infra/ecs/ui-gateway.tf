@@ -135,6 +135,9 @@ locals {
       },
       {
         name = "PUBNUB_USER_ID", value = "system"
+      },
+      {
+        name = "NODE_OPTIONS", value = "--max-old-space-size=1536"
       }
     ]
   }
