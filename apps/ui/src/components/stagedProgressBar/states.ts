@@ -1,1 +1,1 @@
-export type State = 'current' | 'past' | 'future';
+export type State = 'current' | 'past' | 'future' | 'flag' | 'flag-end';

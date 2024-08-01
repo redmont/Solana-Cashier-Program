@@ -1,5 +1,7 @@
 export interface LeaderboardProps {
   records: LeaderboardRecord[];
+  tournamentValue?: any;
+  winNamed?: string;
 }
 
 export interface LeaderboardWidgetProps extends LeaderboardProps {
@@ -18,4 +20,6 @@ export interface LeaderboardRecord {
   rank: number;
   highlighted?: boolean;
   winAmount?: string;
+  value?: string;
+  valueName?: string;
 }
