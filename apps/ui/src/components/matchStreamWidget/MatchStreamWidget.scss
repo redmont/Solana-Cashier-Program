@@ -1,7 +1,7 @@
 .video-stream-unmute-button {
   position: absolute;
   left: 1rem;
-  bottom: 1rem;
+  bottom: 0.75rem;
   width: 2.5rem;
   height: 2.5rem;
   display: flex;
@@ -13,7 +13,7 @@
     border: 0;
   }
 
-  &>span {
+  & > span {
     position: relative;
   }
 
@@ -37,6 +37,7 @@
   position: absolute;
   right: 1rem;
   bottom: 1rem;
+  height: 2rem;
   display: flex;
   padding: 0.25rem 0.5rem 0.25rem 0.25rem;
   justify-content: center;
@@ -57,4 +58,12 @@
 .fight-starting-soon {
   width: 100%;
   height: auto;
+}
+
+.stream-match-progress {
+  display: none;
+  position: absolute;
+  left: 5rem;
+  right: 6.5rem;
+  bottom: 1rem;
 }

@@ -7,20 +7,21 @@ $fightCardBgBg: #0e0d15;
   display: flex;
   flex-direction: column;
   padding: 0 0.5rem;
-  gap: 1.5rem;
+  gap: 1rem;
   width: 100%;
 
   .current-fight {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    gap: 1rem;
+    gap: 3rem;
     padding: 0.5rem;
+    align-self: center;
   }
 
   .current-fight-img {
-    width: 5.5rem;
-    height: 5.5rem;
+    width: 4rem;
+    height: 4rem;
     border-radius: 4px;
   }
 

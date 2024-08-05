@@ -13,6 +13,7 @@ import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { FighterSwitch } from './FighterSwitch';
 import { PriceVisualisation } from './PriceVisualisation';
 import { Tooltip } from '../Tooltip';
+import Typography from '../ui/typography';
 
 export interface BetPlacementWidgetProps {
   fighter: number; // 0 or 1
@@ -143,12 +144,12 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
       <div className="widget-body framed">
         <div className="widget-section">
           <div className="fighter-selection">
-            <div className="selection-title">Back your fighter</div>
+            <Typography variant="header-secondary" className="left">
+              Back your fighter
+            </Typography>
 
             <PriceVisualisation fighters={fighters} prices={match?.prices} />
-            <div className="spacer">
-              <div className="separator"></div>
-            </div>
+
             <FighterSwitch
               fighters={fighters}
               selectedFighter={selectedFighter}
@@ -160,7 +161,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
             >
               <div className="projected-win-rate">
                 <span>{bets.at(0)?.projectedWinRate ?? 0}x</span>
-                <span>WIN RATE</span>
+                <span>Win Rate</span>
                 <span>{bets.at(1)?.projectedWinRate ?? 0}x</span>
               </div>
             </Tooltip>
@@ -168,10 +169,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
 
           <div className="credits-selection">
             <div className="credits-slider-box">
-              <div className="credits-slider-labels">
-                <span>1%</span>
-                <span>100%</span>
-              </div>
+              <span>1%</span>
 
               <Slider
                 value={betPercent}
@@ -179,6 +177,8 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
                 min={1}
                 marks={[25, 50, 75]}
               />
+
+              <span>100%</span>
             </div>
 
             <div className="credits-input-group p-inputgroup">

@@ -6,15 +6,13 @@ export interface StakeWidgetProps {
   currentFighter: number;
 }
 
-export const StakeWidget: FC<StakeWidgetProps> = ({ currentFighter }) => {
+export const StakeWidget: FC<StakeWidgetProps> = () => {
   const { match } = useAppState();
   const { fighters = [] } = match ?? {};
 
   const bets = fighters.map((f, index) => {
     const bet = match?.bets[fighters[index]?.codeName];
     const stake = bet?.stake ?? 0;
-
-    const isOpponent = index !== currentFighter;
 
     return {
       ...bet,
@@ -32,6 +30,7 @@ export const StakeWidget: FC<StakeWidgetProps> = ({ currentFighter }) => {
                 <img src={fighter.imageUrl} />
                 {fighter.displayName}
               </div>
+
               <Tooltip
                 content={`Your existing stake on ${fighter.displayName}`}
               >
@@ -46,7 +45,6 @@ export const StakeWidget: FC<StakeWidgetProps> = ({ currentFighter }) => {
                 <span>{bets[i]?.winRate ?? 0}x</span>
               </div>
             </div>
-            {i % 2 === 0 && <div className="separator"></div>}
           </Fragment>
         ))}
       </div>

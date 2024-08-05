@@ -14,6 +14,7 @@ import { useEthWallet, useAppState } from '@/hooks';
 import { YouTubeStream } from './YoutubeStream';
 import { Tooltip } from '../Tooltip';
 import { BroadcastIcon } from '@/icons';
+import { MatchProgress } from '../matchProgress';
 
 // The Red5Pro SDK does not support SSR,
 // so we need to load it dynamically.
@@ -37,7 +38,10 @@ export const MatchStreamWidget: FC = () => {
     streamSource = 'red5';
   }
 
-  const streamViewExpected = useMemo(() => match?.status !== MatchStatus.PendingStart, [match?.status]);
+  const streamViewExpected = useMemo(
+    () => match?.status !== MatchStatus.PendingStart,
+    [match?.status],
+  );
 
   return (
     <div className="match-stream-widget">
@@ -66,6 +70,10 @@ export const MatchStreamWidget: FC = () => {
           </div>
         </Tooltip>
       )}
+
+      <div className="stream-match-progress">
+        <MatchProgress />
+      </div>
     </div>
   );
 };

@@ -72,7 +72,9 @@ export const FightFixturesList: React.FC<MatchHistoryWithTitle> = ({
 
   return (
     <div className="fight-list">
-      <Typography variant="header-secondary">{title}</Typography>
+      <Typography variant="header-secondary" className="left">
+        {title}
+      </Typography>
       <div className="fight-list-wrapper">
         {filteredData.map(
           (

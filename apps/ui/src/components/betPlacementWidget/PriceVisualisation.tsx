@@ -47,16 +47,6 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
 
   return (
     <div className="price-visualisation">
-      <Tooltip content={'Trailing 10s price Δ'}>
-        <div className="tow-container">
-          <div className="tow-line"></div>
-          <div
-            className="tow-indicator"
-            style={{ left: `${10 + progress * 80}%` }}
-          ></div>
-        </div>
-      </Tooltip>
-
       <div className="price-info-container">
         {fighters.map((fighter, i) => {
           const ticker = fighter.ticker;
@@ -116,6 +106,16 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
           );
         })}
       </div>
+
+      <Tooltip content={'Trailing 10s price Δ'}>
+        <div className="tow-container">
+          <div className="tow-line"></div>
+          <div
+            className="tow-indicator"
+            style={{ left: `${10 + progress * 80}%` }}
+          ></div>
+        </div>
+      </Tooltip>
     </div>
   );
 };

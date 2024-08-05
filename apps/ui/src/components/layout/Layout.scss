@@ -1,4 +1,4 @@
-$topbar-height: 5rem;
+$topbar-height: 4rem;
 
 .layout {
   margin: 0 auto;
@@ -12,12 +12,13 @@ $topbar-height: 5rem;
   width: 100%;
   background-color: $panelHeaderBackground;
   border-radius: 9px;
-  margin: 12px 0 16px 0;
+  margin: 0.5rem 0;
+  height: $topbar-height;
 
   .spacer {
     clip-path: polygon(84% 0, 100% 0, 15% 100%, 0 100%);
     background-color: black !important;
-    width: 80px;
+    width: 4rem;
   }
 }
 
@@ -48,8 +49,8 @@ $topbar-height: 5rem;
 .logo-container {
   display: flex;
   align-items: center;
-  padding: 1rem;
   flex-grow: 1;
+  padding: 0 1rem;
 }
 
 .logo,
@@ -133,7 +134,7 @@ main {
   }
 
   main {
-    min-height: calc(100vh - $topbar-height);
+    min-height: calc(100vh - $topbar-height - 1rem);
   }
 }
 
