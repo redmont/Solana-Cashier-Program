@@ -64,9 +64,8 @@ export const MobileJoinButton: FC<EthConnectButtonProps> = (props) => {
     <Button
       type="button"
       icon="pi pi-wallet"
-      rounded
       size="large"
-      className={classNames(props.className, 'p-4')}
+      className={classNames(props.className)}
       onClick={handleClick}
     />
   );

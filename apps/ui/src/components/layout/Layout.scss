@@ -5,6 +5,70 @@ $topbar-height: 4rem;
   width: 100%;
   min-width: 20rem;
   max-width: 36rem;
+
+  .topbar-layout {
+    padding: 0 1rem;
+  }
+
+  .mask-parent {
+    display: flex;
+  }
+
+  .navbar-mask {
+    z-index: 99;
+    padding: 0 1rem;
+    border-radius: 6px;
+    height: 80%;
+    position: absolute;
+    width: 100%;
+    max-width: 36rem;
+    font-size: 1.3rem;
+
+    .mask {
+      background-color: $panelHeaderBackground;
+      border-radius: 6px;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0rem 0 3rem 0;
+
+      .mask-nav {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        height: 100%;
+        width: 100%;
+        padding: 1rem 4rem;
+
+        .upper {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          gap: 70px;
+        }
+
+        .username {
+          padding: 1rem 0rem;
+          width: 100%;
+          border: 2px solid rgba(11, 209, 138, 0.2);
+          border-radius: $borderRadius;
+          background: rgba(11, 209, 138, 0.1);
+          display: flex;
+          justify-content: center;
+          color: white;
+        }
+        .top-side {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 30px;
+        }
+      }
+    }
+  }
 }
 
 .topbar {
@@ -12,10 +76,12 @@ $topbar-height: 4rem;
   width: 100%;
   background-color: $panelHeaderBackground;
   border-radius: 9px;
-  margin: 0.5rem 0;
-  height: $topbar-height;
+  margin: 12px 0 16px 0;
+  align-items: center;
+  justify-content: space-between;
 
   .spacer {
+    display: none;
     clip-path: polygon(84% 0, 100% 0, 15% 100%, 0 100%);
     background-color: black !important;
     width: 4rem;
@@ -26,11 +92,29 @@ $topbar-height: 4rem;
   display: none;
   flex: 1 1 auto;
   gap: 1.5rem;
+
+  .left-side {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0 1rem;
+  }
+  .right-side {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0 1rem;
+  }
+  .username {
+    border: 2px solid rgba(11, 209, 138, 0.2);
+    border-radius: $borderRadius;
+    background: rgba(11, 209, 138, 0.1);
+    display: flex;
+    justify-content: center;
+    color: white;
+  }
 }
 
 .nav-link {
   color: $secondaryButtonHoverBg;
-  text-transform: uppercase;
   font-weight: bold;
   display: flex;
   align-items: center;
@@ -49,8 +133,7 @@ $topbar-height: 4rem;
 .logo-container {
   display: flex;
   align-items: center;
-  flex-grow: 1;
-  padding: 0 1rem;
+  padding: 0.5rem 1rem;
 }
 
 .logo,
@@ -64,7 +147,7 @@ $topbar-height: 4rem;
 
 .topbar-tools {
   align-self: center;
-  justify-self: right;
+  justify-content: end;
   display: flex;
   gap: 1rem;
   align-items: center;
@@ -74,6 +157,15 @@ $topbar-height: 4rem;
     height: 2.5rem;
     width: 2.5rem;
     border: 1px solid $primaryColor;
+  }
+
+  .username {
+    display: none;
+    border: 2px solid rgba(11, 209, 138, 0.2);
+    border-radius: $borderRadius;
+    background: rgba(11, 209, 138, 0.1);
+    justify-content: center;
+    color: white;
   }
 }
 
@@ -102,10 +194,105 @@ main {
   padding-bottom: 1rem;
 }
 
+.mobile-credit-panel {
+  display: none;
+  background: #4cdc8814;
+  align-items: center;
+  border-radius: 6px;
+
+  .text {
+    text-wrap: nowrap;
+    padding: 0.5rem 2rem;
+    font-weight: 700;
+  }
+
+  .icon {
+    display: flex;
+    align-items: center;
+    padding: 3px 4px;
+    background: #4cdc8829;
+    border: 1px solid #4cdc8814;
+    border-radius: 4px;
+    margin: 0.5rem 0.5rem 0.5rem 0;
+  }
+}
+
+.small-mobile {
+  display: flex;
+
+  .mobile-credit-panel-small {
+    display: flex;
+    background: #4cdc8814;
+    align-items: center;
+    border-radius: 6px;
+
+    .text {
+      text-wrap: nowrap;
+      padding: 0.5rem 2rem;
+      font-weight: 700;
+    }
+
+    .icon {
+      display: flex;
+      align-items: center;
+      padding: 3px 4px;
+      background: #4cdc8829;
+      border: 1px solid #4cdc8814;
+      border-radius: 4px;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+    }
+  }
+}
+
+@media screen and (min-width: 30rem) {
+  .small-mobile {
+    display: none;
+  }
+
+  .mobile-credit-panel {
+    display: flex;
+  }
+}
+
 @media screen and (min-width: 48rem) {
   .layout {
     max-width: 48rem;
     padding: 0 1rem;
+
+    .topbar {
+      align-items: unset;
+    }
+
+    .topbar-layout {
+      padding: 0 0;
+    }
+
+    .mask-parent {
+      justify-content: end;
+    }
+
+    .navbar-mask {
+      max-width: 26rem;
+      max-height: 20rem;
+      font-size: 1rem;
+      padding: 0 0rem;
+
+      .mask {
+        padding: 1rem 0;
+
+        .mask-nav {
+          font-size: 1.2rem;
+
+          .top-side {
+            gap: 30px;
+          }
+
+          .username {
+            display: none;
+          }
+        }
+      }
+    }
   }
 
   .logo {
@@ -120,10 +307,17 @@ main {
     flex-grow: 0;
   }
 
-  .topnav {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .topbar {
+    .spacer {
+      display: flex;
+      clip-path: polygon(84% 0, 100% 0, 15% 100%, 0 100%);
+      background-color: black !important;
+      width: 80px;
+    }
+  }
+
+  .mobile-credit-panel {
+    display: none;
   }
 }
 
@@ -131,6 +325,11 @@ main {
   .layout {
     max-width: 75rem;
     padding: 0 1rem;
+    .navbar-mask {
+      .mask {
+        padding: 1rem 0;
+      }
+    }
   }
 
   main {
@@ -141,6 +340,9 @@ main {
 @media screen and (min-width: 92rem) {
   .layout {
     max-width: 100rem;
+    .mask-parent {
+      display: none;
+    }
   }
 
   .logo-container {
@@ -159,24 +361,84 @@ main {
     grid-column: 2;
     align-self: center;
     justify-self: right;
+    display: none;
+  }
+
+  .topnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 }
 
 .balance-desktop {
   display: none;
   align-items: center;
-  background-color: $successButtonActiveBg;
-  padding: 8px 1rem 6px 1rem;
+  background: #4cdc8814;
+  padding: 8px 1rem;
   border-radius: 8px;
-  gap: 8px;
+  gap: 10px;
   color: white;
   font-weight: bold;
+  .text {
+    text-wrap: nowrap;
+  }
 }
 
 .balance-cashier-desktop {
   background-color: $primary500;
   padding: 3px 16px;
   border-radius: 4px;
-  gap: 8px;
   color: black;
+  border: 1px solid #12552ef0;
+}
+
+.icon-1,
+.icon-2,
+.icon-3 {
+  position: absolute;
+  width: 32px;
+  height: 3px;
+  background-color: white;
+  transition: all 400ms cubic-bezier(0.84, 0.06, 0.52, 1.8);
+}
+
+.icon-1 {
+  transform: translateY(-8px);
+  animation-delay: 100ms;
+}
+
+.icon-3 {
+  transform: translateY(8px);
+  animation-delay: 250ms;
+}
+
+.hamburger-icon {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 50px;
+  width: 50px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease-in-out;
+  border: 1px transparent;
+}
+
+.icon-1.a {
+  transform: rotate(50deg);
+}
+.icon-3.b {
+  transform: rotate(-50deg);
+}
+.icon-2.c {
+  opacity: 0;
+}
+
+.mobile-wallet {
+  padding: 0.5rem 1.5rem;
+  color: white !important;
+  background: #4cdc8814;
+  border: 1px solid #4cdc8829;
 }
