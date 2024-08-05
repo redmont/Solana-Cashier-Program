@@ -1,7 +1,7 @@
 'use client';
 
 import dayjs from 'dayjs';
-import { FC, useMemo } from 'react';
+import { FC, useCallback, useMemo } from 'react';
 
 import { LeaderboardSearchInput } from './LeaderboardSearchInput';
 import { LeaderboardRecordList } from './leaderboardRecordList/LeaderboardRecordList';
@@ -16,31 +16,53 @@ import { TabPanel, TabView } from 'primereact/tabview';
 import { Scrollable } from '../Scrollable';
 import { WidgetCountdown } from '../widgetCountdown';
 
-export const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
+const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
   searchQuery,
   startDateTime,
   endDateTime,
   currentRound,
   roundEndDate,
   records,
+  currentUserItem,
+  currentTab,
+  onTabChange,
   onSearch,
 }) => {
+  const activeTab = useMemo(
+    () => (currentTab === 'daily' ? 0 : 1),
+    [currentTab],
+  );
+
   const { totalDays, tournamentDays } = useMemo(() => {
     const totalDays = dayjs(endDateTime).diff(dayjs(startDateTime), 'day');
     const tournamentDays = Array.from({ length: totalDays }, (_, i) => i + 1);
     return { totalDays, tournamentDays };
   }, [startDateTime, endDateTime]);
+
   const countdown = useCountdown(roundEndDate);
+
   const duration = useMemo(
     () => dayjs.duration(countdown, 'milliseconds'),
     [countdown],
   );
+
   const endTimeEpoch = new Date(endDateTime).getTime();
+
+  const handleTabChange = useCallback(
+    ({ index }: { index: number }) => {
+      onTabChange(index === 0 ? 'daily' : 'xp');
+    },
+    [onTabChange],
+  );
 
   return (
     <div className="widget leaderboard-widget">
       <div className="widget-header">
-        <TabView className="tab-view" activeIndex={0}>
+        <TabView
+          className="tab-view"
+          activeIndex={activeTab}
+          onTabChange={handleTabChange}
+        >
           <TabPanel
             header="Daily Leaderboard"
             headerClassName="tab-header daily"
@@ -82,16 +104,18 @@ export const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
                   />
                 </Tooltip>
 
-                <div className="rank-position-panel">
-                  <div className="left-side">
-                    <p className="place">#435</p>
-                    <p className="text">Your position in the leaderboard</p>
+                {currentUserItem?.winAmount && (
+                  <div className="rank-position-panel">
+                    <div className="left-side">
+                      <p className="place">#{currentUserItem.rank}</p>
+                      <p className="text">Your position in the leaderboard</p>
+                    </div>
+                    <div className="right-side">
+                      <p className="text">24h Net Wins</p>
+                      <p className="place">{currentUserItem.winAmount}</p>
+                    </div>
                   </div>
-                  <div className="right-side">
-                    <p className="text">24h Net Wins</p>
-                    <p className="place">52</p>
-                  </div>
-                </div>
+                )}
 
                 <div className="table-header">
                   <div className="inner-header-left">
@@ -159,16 +183,18 @@ export const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
                     />
                   </Tooltip>
 
-                  <div className="rank-position-panel-mobile">
-                    <div className="left-side">
-                      <p className="place">#435</p>
-                      <p className="text">Your position in the leaderboard</p>
+                  {currentUserItem?.winAmount && (
+                    <div className="rank-position-panel-mobile">
+                      <div className="left-side">
+                        <p className="place">#{currentUserItem.rank}</p>
+                        <p className="text">Your position in the leaderboard</p>
+                      </div>
+                      <div className="right-side">
+                        <p className="place">{currentUserItem.winAmount}</p>
+                        <p className="text">24h Net Wins</p>
+                      </div>
                     </div>
-                    <div className="right-side">
-                      <p className="place">52</p>
-                      <p className="text">24h Net Wins</p>
-                    </div>
-                  </div>
+                  )}
 
                   <div className="table-header mobile">
                     <LeaderboardSearchInput
@@ -213,16 +239,18 @@ export const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
                   </div>
                 </div>
 
-                <div className="rank-position-panel">
-                  <div className="left-side">
-                    <p className="place">#43</p>
-                    <p className="text">Your position in the leaderboard</p>
+                {currentUserItem?.xp && (
+                  <div className="rank-position-panel">
+                    <div className="left-side">
+                      <p className="place">#{currentUserItem.rank}</p>
+                      <p className="text">Your position in the leaderboard</p>
+                    </div>
+                    <div className="right-side">
+                      <p className="text">Total XP</p>
+                      <p className="place">{currentUserItem.xp}</p>
+                    </div>
                   </div>
-                  <div className="right-side">
-                    <p className="text">Total XP</p>
-                    <p className="place">542</p>
-                  </div>
-                </div>
+                )}
 
                 <div className="table-header">
                   <div className="inner-header-left">
@@ -268,16 +296,18 @@ export const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
                     </div>
                   </div>
 
-                  <div className="rank-position-panel-mobile">
-                    <div className="left-side">
-                      <p className="place">#435</p>
-                      <p className="text">Your position in the leaderboard</p>
+                  {currentUserItem?.xp && (
+                    <div className="rank-position-panel-mobile">
+                      <div className="left-side">
+                        <p className="place">#{currentUserItem.rank}</p>
+                        <p className="text">Your position in the leaderboard</p>
+                      </div>
+                      <div className="right-side">
+                        <p className="place">{currentUserItem.xp}</p>
+                        <p className="text">Total XP</p>
+                      </div>
                     </div>
-                    <div className="right-side">
-                      <p className="place">542</p>
-                      <p className="text">Total XP</p>
-                    </div>
-                  </div>
+                  )}
 
                   <div className="table-header mobile">
                     <LeaderboardSearchInput
@@ -307,3 +337,5 @@ export const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
     </div>
   );
 };
+
+export default LeaderboardWidget;

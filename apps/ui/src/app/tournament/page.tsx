@@ -7,38 +7,39 @@ import {
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { useSocket } from '@/hooks';
 
-import { LeaderboardWidget } from '@/components/leaderboardWidget';
 import { PrizesWidget } from '@/components/prizesWidget';
 import { CreditClaimWidget } from '@/components/creditClaimWidget';
 import { Scrollable } from '@/components/Scrollable';
 import { classNames } from 'primereact/utils';
 import { LeaderboardIcon, RewardsIcon } from '@/icons';
 import { ZealyWidget } from '@/components/zealyWidget';
+import LeaderboardWidget from '@/components/leaderboardWidget/LeaderboardWidget';
 
-type TournamentTabName = 'leaderboard' | 'rewards';
+type TournamentMobileTabName = 'leaderboard' | 'rewards';
 
 export interface LeaderboardRecord {
   walletAddress: string;
-  balance: string;
   rank: number;
   highlighted?: boolean;
+  xp?: string;
   winAmount?: string;
 }
 
 export default function Tournament() {
-  const [currentTab, setCurrentTab] =
-    useState<TournamentTabName>('leaderboard');
+  const [currentMobileTab, setCurrentMobileTab] =
+    useState<TournamentMobileTabName>('leaderboard');
+  const [currentTab, setCurrentTab] = useState<'daily' | 'xp'>('daily');
 
   const { send, connected } = useSocket();
   const [searchQuery, setSearchQuery] = useState('');
   const [tournament, setTournament] = useState<GetTournamentMessageResponse>();
 
   const getData = useCallback(
-    async (query: string) => {
+    async (type: 'winAmount' | 'xp', query?: string) => {
       if (!connected) return;
 
       const resp: GetTournamentMessageResponse = await send(
-        new GetTournamentMessage(undefined, 100, 1, query),
+        new GetTournamentMessage(type, 100, 1, query),
       );
 
       setTournament(resp);
@@ -47,11 +48,13 @@ export default function Tournament() {
   );
 
   useEffect(() => {
-    getData('');
+    getData('winAmount');
   }, [getData]);
 
   const leaderboardWidgetProps = useMemo(() => {
-    if (!tournament) return null;
+    if (!tournament) {
+      return null;
+    }
 
     const {
       items,
@@ -64,29 +67,25 @@ export default function Tournament() {
 
     const records: LeaderboardRecord[] = items?.slice(0, 100) ?? [];
 
-    const userRecord =
-      currentUserItem &&
-      records.find(
-        (rec) => rec.walletAddress === currentUserItem.walletAddress,
-      );
-
-    if (userRecord) {
-      userRecord.highlighted = true;
-    }
-
     return {
       records,
+      currentUserItem,
       startDateTime: startDate,
       endDateTime: endDate,
       currentRound,
       roundEndDate: roundEndDate,
       searchQuery,
+      currentTab,
+      onTabChange: (tab: 'daily' | 'xp') => {
+        setCurrentTab(tab);
+        getData(tab === 'daily' ? 'winAmount' : 'xp');
+      },
       onSearch: (query: string) => {
         setSearchQuery(query);
-        getData(query);
+        getData(currentTab === 'daily' ? 'winAmount' : 'xp', query);
       },
     };
-  }, [tournament, searchQuery, getData]);
+  }, [tournament, currentTab, setCurrentTab, searchQuery, getData]);
 
   const prizesWidgetProps = useMemo(() => {
     if (!tournament) return null;
@@ -103,7 +102,7 @@ export default function Tournament() {
   if (!tournament) return null;
 
   return (
-    <main className={classNames('tournament-page', `tab-${currentTab}`)}>
+    <main className={classNames('tournament-page', `tab-${currentMobileTab}`)}>
       {leaderboardWidgetProps && (
         <Scrollable className="tournament-page-section leaderboard-section">
           <LeaderboardWidget {...leaderboardWidgetProps} />
@@ -122,9 +121,9 @@ export default function Tournament() {
       <ul className="tournament-page-nav">
         <li
           className={classNames('tournament-page-nav-item', {
-            active: currentTab === 'leaderboard',
+            active: currentMobileTab === 'leaderboard',
           })}
-          onClick={() => setCurrentTab('leaderboard')}
+          onClick={() => setCurrentMobileTab('leaderboard')}
         >
           <div className="nav-item-icon">
             <LeaderboardIcon />
@@ -134,9 +133,9 @@ export default function Tournament() {
 
         <li
           className={classNames('tournament-page-nav-item', {
-            active: currentTab === 'rewards',
+            active: currentMobileTab === 'rewards',
           })}
-          onClick={() => setCurrentTab('rewards')}
+          onClick={() => setCurrentMobileTab('rewards')}
         >
           <div className="nav-item-icon">
             <RewardsIcon />
