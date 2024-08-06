@@ -1,16 +1,23 @@
 import { FC, useState, useRef, useEffect } from 'react';
 import dayjs from 'dayjs';
 
-import { MatchStatus } from '@/types';
-import { useAppState } from '@/hooks';
 import { MatchStage } from './MatchStage';
 import { MatchStageTransition } from './MatchStageTransition';
+import { useAtomValue } from 'jotai';
+import {
+  matchStartTimeAtom,
+  matchStatusAtom,
+  poolOpenStartTimeAtom,
+} from '@/store/match';
 
 const pricePollingStageDurationMs = 10 * 1000;
 
 export const MatchProgress: FC = () => {
   const timer = useRef<NodeJS.Timeout>();
-  const { match } = useAppState();
+  const matchStatus = useAtomValue(matchStatusAtom);
+  const matchStartTime = useAtomValue(matchStartTimeAtom);
+  const poolOpenStartTime = useAtomValue(poolOpenStartTimeAtom);
+
   const [timeLeft, setTimeLeft] = useState('0m : 00s');
   const [matchTime, setMatchTime] = useState('0m : 00s');
   const [progress, setProgress] = useState(0);
@@ -18,19 +25,18 @@ export const MatchProgress: FC = () => {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!match?.startTime || !match?.poolOpenStartTime) return;
+    if (!matchStartTime || !poolOpenStartTime) return;
 
     timer.current = setInterval(() => {
-      const startTime = dayjs(match.startTime);
+      const startTime = dayjs(matchStartTime);
       const startTimeDiff = startTime.diff();
 
-      if (match.status === MatchStatus.BetsOpen) {
+      if (matchStatus === 'bettingOpen') {
         let millisLeft = startTimeDiff >= 0 ? startTimeDiff : 0;
 
         if (startTimeDiff < 0) millisLeft = 0;
 
-        const poolOpenStartTime = dayjs(match.poolOpenStartTime);
-        const durationMs = startTime.diff(poolOpenStartTime);
+        const durationMs = startTime.diff(dayjs(poolOpenStartTime));
 
         const progress = Math.floor((1 - millisLeft / durationMs) * 100);
 
@@ -40,7 +46,7 @@ export const MatchProgress: FC = () => {
         setProgress(progress);
       }
 
-      if (match.status === MatchStatus.PollingPrices) {
+      if (matchStatus === 'pollingPrices') {
         const progress = Math.floor(
           (-startTimeDiff / pricePollingStageDurationMs) * 100,
         );
@@ -48,7 +54,7 @@ export const MatchProgress: FC = () => {
         setProgress(progress);
       }
 
-      if (match.status === MatchStatus.InProgress) {
+      if (matchStatus === 'matchInProgress') {
         const matchTimeVal = dayjs
           .duration(-startTimeDiff - pricePollingStageDurationMs)
           .format('m[m] : ss[s]');
@@ -58,12 +64,7 @@ export const MatchProgress: FC = () => {
     }, 1000);
 
     return () => clearInterval(timer.current);
-  }, [
-    match?.poolOpenStartTime,
-    match?.startTime,
-    match?.status,
-    statusTimestamp,
-  ]);
+  }, [matchStartTime, matchStatus, poolOpenStartTime, statusTimestamp]);
 
   useEffect(() => {
     const timestamp = dayjs().valueOf();
@@ -87,7 +88,7 @@ export const MatchProgress: FC = () => {
       left: x - containerX + (widgetBodyEl?.scrollLeft ?? 0),
       behavior: 'smooth',
     });
-  }, [match?.status]);
+  }, [matchStatus]);
 
   return (
     <div ref={rootRef} className="match-progress">

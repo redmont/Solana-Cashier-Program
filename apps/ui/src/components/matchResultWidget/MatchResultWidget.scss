@@ -1,11 +1,8 @@
 .match-result-widget {
   position: relative;
+  z-index: 10;
 
   &.winner-fighter-2 {
-    .fighter-image-box {
-      background: rgba(240, 172, 93, 0.1);
-    }
-
     .win-amount {
       color: var(--orange-300);
     }
@@ -66,7 +63,7 @@
   }
 
   .result-title {
-    font-size: 1rem;
+    font-size: 2rem;
     text-transform: uppercase;
     font-weight: 600;
   }

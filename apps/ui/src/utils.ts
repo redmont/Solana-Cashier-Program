@@ -96,3 +96,6 @@ export function getNormalizedTimeDifference(args: {
   // default normalise by 24 hours
   return diffDays / (args.normaliseBy ?? 1);
 }
+
+export const calculateWinRate = (fighterTotal: number, opponentTotal: number) =>
+  (1 + (fighterTotal > 0 ? opponentTotal / fighterTotal : 0)).toFixed(2);

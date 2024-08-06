@@ -1,9 +1,9 @@
 import { FC } from 'react';
 import { classNames } from 'primereact/utils';
 
-import { MatchStatus } from '@/types';
-import { useAppState } from '@/hooks';
 import { matchStatusSequence } from './matchStatusSequence';
+import { useAtomValue } from 'jotai';
+import { matchStatusAtom } from '@/store/match';
 
 export interface MatchStatusBoxProps {
   order: number;
@@ -13,11 +13,8 @@ export interface MatchStatusBoxProps {
 }
 
 export const MatchStage: FC<MatchStatusBoxProps> = ({ order, ...props }) => {
-  const { match } = useAppState();
-
-  const matchStage = matchStatusSequence.indexOf(
-    match?.status ?? MatchStatus.Unknown,
-  );
+  const matchStatus = useAtomValue(matchStatusAtom);
+  const matchStage = matchStatusSequence.indexOf(matchStatus);
 
   return (
     <div

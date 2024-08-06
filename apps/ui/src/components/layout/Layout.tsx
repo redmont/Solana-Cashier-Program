@@ -6,21 +6,23 @@ import Link from 'next/link';
 
 import { JoinButton, MobileJoinButton } from '@/components/JoinButton';
 import { ChildContainerProps } from '@/types';
-import { useAppState, useEthWallet } from '@/hooks';
+import { useEthWallet } from '@/hooks';
 import { usePostHog } from '@/hooks/usePostHog';
 import {
   TutorialDialog,
   shouldShowTutorial,
 } from '@/components/tutorialDialog';
+import { useAtomValue } from 'jotai';
+import { balanceAtom } from '@/store/account';
 
 export const Layout = (props: ChildContainerProps) => {
+  const balance = useAtomValue(balanceAtom);
   usePostHog();
 
   const [isOpen, setOpen] = useState(false);
   const [isReady, setReady] = useState(false);
   const [isTutorialVisible, setTutorialVisible] = useState(false);
 
-  const { balance, isBalanceReady } = useAppState();
   const { isConnected } = useEthWallet();
 
   const currentPath = usePathname();
@@ -60,12 +62,6 @@ export const Layout = (props: ChildContainerProps) => {
               >
                 Tournament
               </Link>
-              {/* <Link
-                className={`nav-link ${isActive('/fighter') ? 'active' : ''}`}
-                href="/fighter"
-              >
-                Fighter Roster
-              </Link> */}
             </div>
 
             <div className="right-side">
@@ -76,38 +72,21 @@ export const Layout = (props: ChildContainerProps) => {
                 <img src="/tutorial.svg" alt="tutorial" />
                 How To Play
               </span>
-              {isReady && isConnected && isBalanceReady && (
+              {isReady && isConnected && balance !== undefined && (
                 <div className="balance-desktop md:flex">
                   <div className="text">Credits: {Math.floor(balance)}</div>
-                  {/* <div className="balance-cashier-desktop">Cashier</div> */}
                 </div>
               )}
               <JoinButton className="username" />
             </div>
           </div>
 
-          <div className="credits-panel">
-            {/* {isReady && isConnected && isBalanceReady && (
-            <>
-              <div className="balance-mobile md:hidden">
-                {Math.floor(balance)} CR
-              </div>
-
-              <div className="balance-desktop md:flex">
-                <div className='text'>Credits: {Math.floor(balance)}</div>
-                <div className="balance-cashier-desktop">Cashier</div>
-              </div>
-            </>
-          )} */}
-          </div>
+          <div className="credits-panel"></div>
 
           <div className="small-mobile">
-            {isReady && isConnected && isBalanceReady && (
+            {isReady && isConnected && balance !== undefined && (
               <div className="mobile-credit-panel-small">
                 <div className="text">{Math.floor(balance)}</div>
-                {/* <div className="icon">
-                  <img src="/plus-icon.svg" alt="plus" />
-                </div> */}
               </div>
             )}
           </div>
@@ -115,17 +94,13 @@ export const Layout = (props: ChildContainerProps) => {
             {!isConnected && (
               <MobileJoinButton className="mobile-wallet md:hidden" />
             )}
-            {isReady && isConnected && isBalanceReady && (
+            {isReady && isConnected && balance !== undefined && (
               <>
                 <div className="balance-desktop md:flex">
                   <div className="text">Credits: {Math.floor(balance)}</div>
-                  {/* <div className="balance-cashier-desktop">Cashier</div> */}
                 </div>
                 <div className="mobile-credit-panel">
                   <div className="text">{Math.floor(balance)}</div>
-                  {/* <div className="icon">
-                    <img src="/plus-icon.svg" alt="plus" />
-                  </div> */}
                 </div>
               </>
             )}
@@ -165,13 +140,6 @@ export const Layout = (props: ChildContainerProps) => {
                     >
                       Tournament
                     </Link>
-                    {/* <Link
-                      className={`nav-link ${isActive('/fighter') ? 'active' : ''}`}
-                      href="/fighter"
-                      onClick={() => setOpen(!isOpen)}
-                    >
-                      Fighter Roster
-                    </Link> */}
                   </div>
                 </div>
 

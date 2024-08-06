@@ -1,11 +1,9 @@
 import { FC, useRef, useEffect, useCallback } from 'react';
-import { useAppState } from '@/hooks';
 import { useActivityStream } from './useActivityStream';
 import { Scrollable, ScrollableRef } from '@/components/Scrollable';
 
 export const ActivityStreamWidget: FC = () => {
-  const { match } = useAppState();
-  const { messages } = useActivityStream(match?.series, match?.matchId);
+  const { messages } = useActivityStream();
   const lastMessageRef = useRef<HTMLDivElement>(null);
   const scrollableRef = useRef<ScrollableRef>(null);
   const prevChatViewportRef = useRef<{
@@ -36,7 +34,11 @@ export const ActivityStreamWidget: FC = () => {
         // have to use timeout to make it working with Scrollable
 
         setTimeout(() => {
-          lastMessageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+          lastMessageRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'start',
+          });
         }, 100);
       }
 

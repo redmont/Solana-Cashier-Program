@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { AppStateProvider } from './appStateProvider';
+import { AppStateProvider } from './AppStateProvider';
 import { ChildContainerProps } from '@/types';
 
 import { EthWalletProvider } from './EthWalletProvider';

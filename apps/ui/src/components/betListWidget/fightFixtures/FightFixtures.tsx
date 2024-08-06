@@ -1,73 +1,44 @@
 import { FC, useCallback, useEffect, useState } from 'react';
-import { CurrentFight } from './CurrentFight';
 import { FightFixturesList } from './FightFixturesList';
-import { useSocket, useAppState } from '@/hooks';
+import { useSocket } from '@/hooks';
 
-import {
-  GetRosterMessage,
-  GetMatchHistoryMessage,
-} from '@bltzr-gg/brawlers-ui-gateway-messages';
-import {
-  GetRosterMessageResponse,
-  GetMatchHistoryMessageResponse,
-} from '@/interfaces';
-
-interface RosterItem {
-  series: string;
-}
+import { GetMatchHistoryMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
+import { GetMatchHistoryMessageResponse } from '@/interfaces';
+import { useAtomValue } from 'jotai';
+import { fightersAtom, matchSeriesAtom } from '@/store/match';
 
 export const FightFixtures: FC = () => {
-  const { match } = useAppState();
-  const { series = '', fighters = [] } = match ?? {};
-  const [roster, setRoster] = useState<RosterItem[]>([]);
+  const { send, connected } = useSocket();
+  const matchSeries = useAtomValue(matchSeriesAtom);
+  const fighters = useAtomValue(fightersAtom);
   const [previousFight, setPreviousFight] = useState<
     GetMatchHistoryMessageResponse['matches']
   >([]);
 
-  const { send, connected } = useSocket();
-
-  const getRosterData = useCallback(async () => {
-    if (!connected) return;
-
-    const resp = (await send(
-      new GetRosterMessage(),
-    )) as GetRosterMessageResponse;
-
-    const { success, roster } = resp;
-
-    if (success) {
-      setRoster(roster);
-    }
-  }, [connected, send]);
-
   const getMatchHistoryData = useCallback(async () => {
-    if (!connected || !series || !fighters) return;
+    if (!connected || !matchSeries || !fighters) return;
 
     const resp = (await send(
-      new GetMatchHistoryMessage(fighters.map((i) => i.codeName)),
+      new GetMatchHistoryMessage(
+        fighters.map((fighter) => fighter?.codeName ?? ''),
+      ),
     )) as GetMatchHistoryMessageResponse;
 
     const { success, matches } = resp;
 
     if (success) {
       const filteredMatches = matches.filter(
-        (match) => match.seriesCodeName === series,
+        (match) => match.seriesCodeName === matchSeries,
       );
       setPreviousFight(filteredMatches);
     }
-  }, [connected, send, series]);
-
-  useEffect(() => {
-    if (connected) {
-      getRosterData();
-    }
-  }, [connected, getRosterData]);
+  }, [connected, matchSeries, fighters, send]);
 
   useEffect(() => {
     if (connected) {
       getMatchHistoryData();
     }
-  }, [connected, series, getMatchHistoryData]);
+  }, [connected, getMatchHistoryData]);
 
   return (
     <div className="fight-fixtures-widget">

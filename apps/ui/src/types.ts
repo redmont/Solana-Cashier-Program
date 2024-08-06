@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { z } from 'zod';
 
 export interface ChildContainerProps {
   children: ReactNode;
@@ -17,11 +18,13 @@ export interface Bet {
   walletAddress: string;
 }
 
-export enum MatchStatus {
-  Unknown = '',
-  BetsOpen = 'bettingOpen',
-  PendingStart = 'pendingStart',
-  PollingPrices = 'pollingPrices',
-  InProgress = 'matchInProgress',
-  Finished = 'matchFinished',
-}
+export const MatchStatusEnum = z.enum([
+  '',
+  'bettingOpen',
+  'pendingStart',
+  'pollingPrices',
+  'matchInProgress',
+  'matchFinished',
+]);
+
+export type MatchStatus = z.infer<typeof MatchStatusEnum>;

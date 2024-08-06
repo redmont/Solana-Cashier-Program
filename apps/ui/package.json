@@ -23,6 +23,7 @@
     "@vercel/analytics": "^1.2.2",
     "dayjs": "^1.11.10",
     "html-to-image": "^1.11.11",
+    "jotai": "^2.9.1",
     "jwt-decode": "^4.0.0",
     "next": "14.1.4",
     "overlayscrollbars": "^2.3.2",
@@ -40,7 +41,8 @@
     "video.js": "^8.12.0",
     "viem": "~2.9.9",
     "wagmi": "^2.8.5",
-    "youtube-player": "^5.6.0"
+    "youtube-player": "^5.6.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.7",
