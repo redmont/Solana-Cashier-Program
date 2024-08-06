@@ -66,6 +66,11 @@
 
 .match-status-widget {
   place-self: center center;
+  width: 100%;
+
+  .match-stage {
+    min-width: 11rem;
+  }
 }
 
 @media screen and (min-width: 48rem) {
@@ -75,7 +80,7 @@
 
   .main-page-content {
     display: grid;
-    grid-template-rows: repeat(2, auto) 3rem repeat(2, auto);
+    grid-template-rows: auto 3rem repeat(3, auto);
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     grid-auto-flow: row;
@@ -92,7 +97,7 @@
 
   .match-stream-widget {
     grid-column: 1 / 3;
-    grid-row: 1 / 2;
+    grid-row: 1;
     height: 28rem;
 
     .fighter-image {
@@ -107,21 +112,26 @@
 
   .match-status-widget {
     grid-column: 1/ 3;
-    grid-row: 3;
+    grid-row: 2;
   }
 
   .bet-placement-widget {
     grid-column: 1 / 2;
-    grid-row: 2;
+    grid-row: 3;
 
     .widget-body {
       flex-direction: row;
     }
   }
 
+  .stake-widget {
+    grid-column: 2/3;
+    grid-row: 3;
+  }
+
   .match-result-widget {
     grid-column: 1 / 3;
-    grid-row: 4;
+    grid-row: 3;
   }
 
   .activity-stream-widget {
@@ -143,7 +153,7 @@
   }
 
   .main-page-content {
-    grid-template-rows: 27.75rem 2rem 27rem;
+    grid-template-rows: 27.75rem 2rem 25rem;
     grid-template-columns: repeat(2, 25rem) auto;
     gap: 1rem;
   }
@@ -203,9 +213,74 @@
   }
 }
 
-@media screen and (min-width: 92rem) {
+@media screen and (min-width: 92rem) and (max-height: calc(60rem - 1px)) {
+  .layout {
+    max-width: 92rem;
+  }
+
+  .main-page {
+    height: calc(100vh - 4rem - 1rem);
+  }
+
   .main-page-content {
-    grid-template-rows: 27rem 2rem 27rem;
+    grid-template-rows: 25rem 1fr 1px;
+    grid-template-columns: 29rem 15rem 14rem 29rem;
+    gap: 1rem;
+    flex-grow: 1;
+    height: 100%;
+  }
+
+  .widget-body {
+    height: 100%;
+  }
+
+  .match-stream-widget {
+    grid-column: 1 / 3;
+    grid-row: 1 / 2;
+    height: 25rem;
+
+    .fighter-image {
+      top: 5%;
+    }
+
+    .stream-match-progress {
+      display: flex;
+    }
+  }
+
+  .bet-list-widget {
+    grid-column: 1;
+    grid-row: 2 / 4;
+  }
+
+  .chat-widget {
+    grid-column: 3 / 5;
+    grid-row: 1 / 2;
+  }
+
+  .match-status-widget {
+    display: none;
+  }
+
+  .bet-placement-widget {
+    grid-column: 2 / 4;
+    grid-row: 2 / 4;
+  }
+
+  .stake-widget {
+    grid-column: 4 / 5;
+    grid-row: 2 / 4;
+  }
+
+  .match-result-widget {
+    grid-column: 2 / 5;
+    grid-row: 2 / 4;
+  }
+}
+
+@media screen and (min-width: 92rem) and (min-height: 60rem) {
+  .main-page-content {
+    grid-template-rows: 27rem 2.5rem 25rem;
     grid-template-columns: 1fr repeat(2, 23.5rem) 1fr;
     gap: 1rem;
   }
@@ -220,6 +295,10 @@
 
     .fighter-image {
       top: 7%;
+    }
+
+    .stream-match-progress {
+      display: none;
     }
   }
 

@@ -1,19 +1,17 @@
 'use client';
 
 import { FC, useMemo } from 'react';
-import dayjs from 'dayjs';
 import dynamic from 'next/dynamic';
-import duration from 'dayjs/plugin/duration';
 
-dayjs.extend(duration);
-
-import { MatchStatus } from '@/types';
 import { youTubeStreamId } from '@/config';
-import { useEthWallet, useAppState } from '@/hooks';
+import { useEthWallet } from '@/hooks';
 
 import { YouTubeStream } from './YoutubeStream';
 import { Tooltip } from '../Tooltip';
 import { BroadcastIcon } from '@/icons';
+import { useAtomValue } from 'jotai';
+import { fightersAtom, matchStatusAtom } from '@/store/match';
+import { MatchProgress } from '../matchProgress';
 
 // The Red5Pro SDK does not support SSR,
 // so we need to load it dynamically.
@@ -25,9 +23,8 @@ type StreamSource = 'millicast' | 'cloudflare' | 'youtube' | 'red5' | 'static';
 
 export const MatchStreamWidget: FC = () => {
   const { isConnected } = useEthWallet();
-
-  const { match } = useAppState();
-  const { fighters = [] } = match ?? {};
+  const fighters = useAtomValue(fightersAtom);
+  const matchStatus = useAtomValue(matchStatusAtom);
 
   let streamSource: StreamSource = 'static';
 
@@ -37,16 +34,22 @@ export const MatchStreamWidget: FC = () => {
     streamSource = 'red5';
   }
 
-  const streamViewExpected = useMemo(() => match?.status !== MatchStatus.PendingStart, [match?.status]);
+  const streamViewExpected = useMemo(
+    () => matchStatus !== 'pendingStart',
+    [matchStatus],
+  );
 
   return (
     <div className="match-stream-widget">
-      {match?.status === MatchStatus.InProgress &&
-        fighters.map((fighter, i) => (
-          <div className="fighter-image" key={i}>
-            <img src={fighter.imageUrl} alt={fighter.displayName} />
-          </div>
-        ))}
+      {matchStatus === 'matchInProgress' &&
+        fighters.map(
+          (fighter, i) =>
+            fighter && (
+              <div className="fighter-image" key={i}>
+                <img src={fighter.imageUrl} alt={fighter.displayName} />
+              </div>
+            ),
+        )}
 
       {(!isConnected || streamSource === 'youtube') && youTubeStreamId && (
         <YouTubeStream streamId={youTubeStreamId} />
@@ -66,6 +69,10 @@ export const MatchStreamWidget: FC = () => {
           </div>
         </Tooltip>
       )}
+
+      <div className="stream-match-progress">
+        <MatchProgress />
+      </div>
     </div>
   );
 };

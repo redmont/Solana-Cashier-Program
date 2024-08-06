@@ -11,6 +11,7 @@ import {
   GetBalanceMessage,
   GetAllBalancesMessageResponse,
   EnsureAccountExistsMessage,
+  ResetBalanceMessage,
 } from 'cashier-messages';
 import { ReadModelService } from 'cashier-read-model';
 import { createAccountCommand } from './commands/createAccount.command';
@@ -20,6 +21,7 @@ import {
   debitAccountCommand,
 } from './commands/debitAccount.command';
 import { ensureAccountExistsCommand } from './commands/ensureAccountExists.command';
+import { resetAccountBalanceCommand } from './commands/resetBalance.command';
 
 @Controller()
 export class AccountController {
@@ -202,5 +204,24 @@ export class AccountController {
         };
       }),
     };
+  }
+
+  @MessagePattern({ cmd: ResetBalanceMessage.messageType })
+  async resetBalance(@Payload() { accountId, reason }: ResetBalanceMessage) {
+    try {
+      await resetAccountBalanceCommand(this.eventStore).handler(
+        {
+          accountId,
+          reason: reason,
+        },
+        [this.eventStore],
+        {},
+      );
+    } catch (e) {
+      this.logger.error('Error resetting account balance', e);
+      return { success: false, error: e.message };
+    }
+
+    return { success: true };
   }
 }

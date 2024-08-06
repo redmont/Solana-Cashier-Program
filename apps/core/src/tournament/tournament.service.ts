@@ -8,6 +8,7 @@ import { TournamentEntry } from './interfaces/tournamentEntry.interface';
 import { TournamentWinnings } from './interfaces/tournamentWinnings.interface';
 import { Cron } from '@nestjs/schedule';
 import { ActivityStreamService, BetXpActivityEvent } from '@/activityStream';
+import { WinXpActivityEvent } from '@/activityStream/events/winXpActivity.event';
 
 @Injectable()
 export class TournamentService {
@@ -174,12 +175,12 @@ export class TournamentService {
       });
     }
 
-    // Allocate 1 XP per 100 betAmount
-    if (betAmount) {
-      const unprocessedBetAmount =
-        item.entryBetAmount - (item.entryBetAmountCreditedXp ?? 0);
-      if (unprocessedBetAmount > 0) {
-        const xp = Math.floor(unprocessedBetAmount / 100);
+    // Allocate 1 XP per 100 winAmount
+    if (winAmount) {
+      const unprocessedWinAmount =
+        item.winAmount - (item.winAmountCreditedXp ?? 0);
+      if (unprocessedWinAmount > 0) {
+        const xp = Math.floor(unprocessedWinAmount / 100);
         if (xp > 0) {
           item = await this.tournamentEntryModel.update(
             {
@@ -189,13 +190,13 @@ export class TournamentService {
             {
               $ADD: {
                 xp,
-                entryBetAmountCreditedXp: xp * 100,
+                winAmountCreditedXp: xp * 100,
               },
             },
             { return: 'item', returnValues: 'ALL_NEW' },
           );
 
-          this.activityStreamService.track(new BetXpActivityEvent(userId, xp));
+          this.activityStreamService.track(new WinXpActivityEvent(userId, xp));
         }
       }
     }

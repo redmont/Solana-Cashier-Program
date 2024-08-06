@@ -3,16 +3,12 @@ import { classNames } from 'primereact/utils';
 import { truncateEthAddress } from '@/utils';
 import { LeaderboardRecord, LeaderboardProps } from '../leaderboardTypes';
 
-export const LeaderboardTable: FC<LeaderboardProps> = ({ records }) => {
+export const LeaderboardTable: FC<LeaderboardProps> = ({
+  records,
+  tournamentValue,
+}) => {
   return (
     <div className="leaderboard-table">
-      <div className="table-header">
-        <div className="col-rank">Rank</div>
-        <div className="col-player">Player</div>
-        <div className="col-wins">24h Net Credit Wins</div>
-        <div className="col-xp">Tournament XP</div>
-      </div>
-
       <div className="table-body">
         {records.map((rec, i) => (
           <LeaderboardTableRow
@@ -20,8 +16,9 @@ export const LeaderboardTable: FC<LeaderboardProps> = ({ records }) => {
             username={rec.username}
             walletAddress={rec.walletAddress}
             xp={rec.xp}
-            rank={i + 1}
+            rank={rec.rank}
             winAmount={rec.winAmount}
+            value={tournamentValue?.[i]}
           />
         ))}
       </div>
@@ -47,8 +44,9 @@ export const LeaderboardTableRow: FC<LeaderboardRecord> = (props) => (
       )}
     </div>
 
-    <div className="col-player">{props.username ?? truncateEthAddress(props.walletAddress)}</div>
-    <div className="col-wins">{props.winAmount}</div>
-    <div className="col-xp">{props.xp}</div>
+    <div className="col-player">
+      {props.username ?? truncateEthAddress(props.walletAddress)}
+    </div>
+    <div className="col-xp">{props.value}</div>
   </div>
 );

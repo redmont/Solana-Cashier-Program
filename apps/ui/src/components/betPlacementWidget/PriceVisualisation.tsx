@@ -1,23 +1,21 @@
-import { MatchInfo } from '@/hooks';
-import { Fighter } from '@/types';
 import { classNames } from 'primereact/utils';
-import { FC, useEffect, useRef, useState } from 'react';
+import { FC, Fragment, useEffect, useRef, useState } from 'react';
 import { Tooltip } from '../Tooltip';
-import { LOCAL_PRICE_CACHE_PERIOD } from '@/config';
 import { toScientificParts } from '@/utils';
+import { useAtomValue } from 'jotai';
+import { fightersAtom, priceMovementAverages } from '@/store/match';
 
-interface Props {
-  fighters: Fighter[];
-  prices?: MatchInfo['prices'];
-}
-
-export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
+export const PriceVisualisation: FC = () => {
+  const fighters = useAtomValue(fightersAtom);
+  const priceMovements = useAtomValue(priceMovementAverages);
   const [progress, setProgress] = useState(0.5);
   const [isWinner, setIsWinner] = useState([false, false]);
   const deltasRef = useRef<number[]>([0.5, 0.5]);
+
   useEffect(() => {
-    const tickers = fighters.map((fighter) => fighter.ticker);
-    let deltas = tickers.map((ticker) => prices?.get(ticker)?.change.ppm ?? 0);
+    let deltas = priceMovements.map(
+      (priceMovement) => priceMovement.priceMovementAverage,
+    );
 
     const min = Math.min(...deltas);
     const max = Math.max(...deltas);
@@ -43,38 +41,19 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
     setIsWinner([progress < 0.5, progress > 0.5]);
 
     setProgress(progress);
-  }, [prices]);
+  }, [fighters, priceMovements]);
 
   return (
     <div className="price-visualisation">
-      <Tooltip content={'Trailing 10s price Δ'}>
-        <div className="tow-container">
-          <div className="tow-line"></div>
-          <div
-            className="tow-indicator"
-            style={{ left: `${10 + progress * 80}%` }}
-          ></div>
-        </div>
-      </Tooltip>
-
       <div className="price-info-container">
-        {fighters.map((fighter, i) => {
-          const ticker = fighter.ticker;
-          const price = prices?.get(ticker);
+        {priceMovements.map(({ priceDelta, price, ticker }, i) => {
           const direction =
-            !price || price.change.absolute === 0
-              ? 'none'
-              : price.change.absolute > 0
-                ? 'up'
-                : 'down';
-          // const displayPriceChange = `${Math.abs(price ? price.change.ppm : 0).toFixed(2)}ppm`;
+            priceDelta === 0 ? 'none' : priceDelta > 0 ? 'up' : 'down';
 
-          const priceInScientificNotation = toScientificParts(
-            price?.event.price ?? 0,
-          );
+          const priceInScientificNotation = toScientificParts(price);
           const displayPrice = `${priceInScientificNotation.base.toFixed(5)}`;
           return (
-            <>
+            <Fragment key={`${ticker}-${i}`}>
               <Tooltip
                 content={
                   <div>
@@ -82,8 +61,6 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
                       Price is scaled by 10
                       <sup>{priceInScientificNotation.exponent * -1}</sup>
                     </span>
-                    {/* <br /> TODO: implement price data source
-                    <span>Source: MEXC</span> */}
                   </div>
                 }
                 key={ticker}
@@ -95,7 +72,7 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
                     fontWeight: isWinner[i] ? 'bold' : 'normal',
                   }}
                 >
-                  <span className="price-ticker">{`${ticker}`}</span>
+                  <span className="price-ticker">{ticker}</span>
                   <span className="price-value">{`$${displayPrice}`}</span>
                   <i
                     className={classNames(
@@ -112,10 +89,20 @@ export const PriceVisualisation: FC<Props> = ({ fighters, prices }) => {
                   <div className="price-info-indicator pi pi-wave-pulse"></div>
                 </Tooltip>
               )}
-            </>
+            </Fragment>
           );
         })}
       </div>
+
+      <Tooltip content={'Trailing 10s price Δ'}>
+        <div className="tow-container">
+          <div className="tow-line"></div>
+          <div
+            className="tow-indicator"
+            style={{ left: `${10 + progress * 80}%` }}
+          ></div>
+        </div>
+      </Tooltip>
     </div>
   );
 };

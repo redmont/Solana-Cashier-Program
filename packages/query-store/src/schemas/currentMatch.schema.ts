@@ -62,4 +62,5 @@ export const CurrentMatchSchema = new Schema({
       },
     ],
   },
+  lastUpdated: String,
 });

@@ -9,6 +9,10 @@ $nav-height: 5rem;
   .leaderboard-widget {
     height: auto;
     min-height: 100%;
+
+    .panel {
+      height: auto;
+    }
   }
 
   &.tab-leaderboard {

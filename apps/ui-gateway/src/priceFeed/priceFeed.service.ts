@@ -1,16 +1,22 @@
-import { TickerPriceEvent } from '@bltzr-gg/brawlers-ui-gateway-messages';
+import {
+  TickerPriceEvent,
+  TickerPricesEvent,
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { Injectable } from '@nestjs/common';
 import dayjs from '@/dayjs';
 import { Gateway } from '@/gateway';
+import { Queue } from './queue';
+
+const cachedTickerSize = 30;
 
 @Injectable()
 export class PriceFeedService {
   private cache = new Map<
     string,
-    {
+    Queue<{
       price: number;
       timestamp: number;
-    }
+    }>
   >();
   private trackedTickers: { fighter: string; ticker: string }[] = [];
 
@@ -22,22 +28,30 @@ export class PriceFeedService {
     const now = dayjs.utc();
     const ts = dayjs.utc(timestamp);
 
-    // Discard timestamps older than 5 minutes
-    if (now.diff(ts, 'minute') > 5) {
+    // Discard timestamps older than 6 minutes
+    if (now.diff(ts, 'minute') > 6) {
       return;
     }
 
     // Check the timestamp in cache. If it's newer, discard the event.
-    const cached = this.cache.get(symbolLower);
-    if (cached && cached.timestamp > timestamp) {
+    let cached = this.cache.get(symbolLower);
+    if (cached && cached.size > 0 && cached.last.timestamp > timestamp) {
       return;
     }
 
-    // Update cache
-    this.cache.set(symbolLower, {
-      price,
-      timestamp,
-    });
+    // Update cache if the timestamp is at least 10 seconds newer
+    if (
+      cached &&
+      cached.size > 0 &&
+      cached.last.timestamp + 10_000 < timestamp
+    ) {
+      if (!cached) {
+        cached = new Queue(cachedTickerSize);
+        this.cache.set(symbolLower, cached);
+      }
+
+      cached.enqueue({ price, timestamp });
+    }
 
     // Check if the symbol is being tracked
     const trackedTicker = this.trackedTickers.find(
@@ -72,11 +86,14 @@ export class PriceFeedService {
       .map((t) => {
         const cached = this.cache.get(t.ticker.toLowerCase());
         if (cached) {
-          return new TickerPriceEvent(
-            dayjs.utc(cached.timestamp).toISOString(),
-            t.fighter,
-            t.ticker,
-            cached.price,
+          return new TickerPricesEvent(
+            cached.asArray().map((c) => ({
+              timestamp: dayjs.utc(c.timestamp).toISOString(),
+              fighter: t.fighter,
+              ticker: t.ticker,
+              price: c.price,
+            })),
+            dayjs.utc().toISOString(),
           );
         }
       })

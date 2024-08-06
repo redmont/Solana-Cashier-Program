@@ -101,6 +101,7 @@ export class SeriesPersistenceService {
     poolOpenStartTime,
     startTime,
     winner,
+    timestamp,
   }: {
     codeName: string;
     matchId: string;
@@ -116,6 +117,7 @@ export class SeriesPersistenceService {
     poolOpenStartTime?: string;
     startTime?: string;
     winner?: string;
+    timestamp: string;
   }) {
     await this.queryStore.updateCurrentMatch({
       seriesCodeName: codeName,
@@ -127,6 +129,7 @@ export class SeriesPersistenceService {
       poolOpenStartTime,
       startTime,
       winner,
+      timestamp,
     });
   }
 }

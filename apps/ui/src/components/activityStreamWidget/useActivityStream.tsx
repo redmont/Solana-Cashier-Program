@@ -8,7 +8,9 @@ import {
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { useDeferredState } from '@/hooks/useDeferredState';
-import { useAppState, useEthWallet } from '@/hooks';
+import { useEthWallet } from '@/hooks';
+import { useAtomValue } from 'jotai';
+import { matchIdAtom, matchSeriesAtom, matchStatusAtom } from '@/store/match';
 
 export interface ActivityStreamMessage {
   text: string;
@@ -26,10 +28,12 @@ const messages = {
   matchInProgress: `The match pool is CLOSED! The fight kicks off in 10 seconds while we poll our fighters' crypto price moves... #LFG`,
 };
 
-export function useActivityStream(series?: string, matchId?: string) {
+export function useActivityStream() {
+  const matchSeries = useAtomValue(matchSeriesAtom);
+  const matchId = useAtomValue(matchIdAtom);
+  const matchStatus = useAtomValue(matchStatusAtom);
   const { send, subscribe, connected: socketIsConnected } = useSocket();
   const { isConnected: walletIsConnected } = useEthWallet();
-  const { match } = useAppState();
   const isReady = useRef<boolean>(false);
 
   const [state, patchState, setState] = useDeferredState<ActivityStreamData>({
@@ -73,12 +77,13 @@ export function useActivityStream(series?: string, matchId?: string) {
     return () => {
       subscriptions.forEach((unsubscribe) => unsubscribe());
     };
-  }, [state]);
+  }, [patchState, state, subscribe]);
 
   useEffect(() => {
-    if (!socketIsConnected || !matchId || !series || isReady.current) return;
+    if (!socketIsConnected || !matchId || !matchSeries || isReady.current)
+      return;
 
-    send(new GetActivityStreamMessage(series, matchId)).then(
+    send(new GetActivityStreamMessage(matchSeries, matchId)).then(
       (response: unknown) => {
         const { messages } =
           response as typeof GetActivityStreamMessage.responseType;
@@ -93,21 +98,21 @@ export function useActivityStream(series?: string, matchId?: string) {
         isReady.current = true;
       },
     );
-  }, [socketIsConnected, series, matchId]);
+  }, [socketIsConnected, matchSeries, matchId, send, setState]);
 
   useEffect(() => {
     if (
       !loginActivityCreated &&
       walletIsConnected &&
-      match?.status &&
+      matchStatus &&
       isReady.current
     ) {
       const timestamp = new Date();
 
-      if (match?.status === 'bettingOpen') {
+      if (matchStatus === 'bettingOpen') {
         addEphemeralMessage(timestamp, messages.loginBettingOpen);
       }
-      if (match?.status === 'matchInProgress') {
+      if (matchStatus === 'matchInProgress') {
         addEphemeralMessage(timestamp, messages.loginMatchInProgress);
       }
 
@@ -116,20 +121,20 @@ export function useActivityStream(series?: string, matchId?: string) {
   }, [
     loginActivityCreated,
     walletIsConnected,
-    match?.status,
     addEphemeralMessage,
+    matchStatus,
   ]);
 
   useEffect(() => {
     const timestamp = new Date();
 
-    if (match?.status === 'bettingOpen') {
+    if (matchStatus === 'bettingOpen') {
       addEphemeralMessage(timestamp, messages.bettingOpen);
     }
-    if (match?.status === 'matchInProgress') {
+    if (matchStatus === 'matchInProgress') {
       addEphemeralMessage(timestamp, messages.matchInProgress);
     }
-  }, [match?.status]);
+  }, [addEphemeralMessage, matchStatus]);
 
   return state;
 }

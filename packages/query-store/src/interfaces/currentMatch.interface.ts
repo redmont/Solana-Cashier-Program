@@ -20,4 +20,5 @@ export interface CurrentMatch extends Key {
     amount: string;
     fighter: string;
   }[];
+  lastUpdated: string;
 }

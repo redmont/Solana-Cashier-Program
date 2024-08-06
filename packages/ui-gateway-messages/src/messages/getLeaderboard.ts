@@ -4,7 +4,8 @@ export interface LeaderboardItem {
   rank: number;
   username: string;
   walletAddress: string;
-  balance: string;
+  winAmount?: string;
+  xp?: string;
 }
 
 export interface GetLeaderboardMessageResponse extends Message {

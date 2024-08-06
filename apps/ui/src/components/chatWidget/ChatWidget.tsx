@@ -114,7 +114,8 @@ export const ChatWidget = () => {
   }, [messages, handleScroll, lastMessageIsInView]);
 
   const [lastSeen, setLastSeen] = useState<HTMLDivElement | null>(null);
-  const hasNewMessages = lastSeen !== lastMessageRef.current;
+  const hasNewMessages = !scrollSticky && lastSeen !== lastMessageRef.current;
+
   useEffect(() => {
     if (lastMessageIsInView) {
       setLastSeen(lastMessageRef.current);

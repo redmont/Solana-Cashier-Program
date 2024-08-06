@@ -1,5 +1,5 @@
 import { streamUrl } from '@/config';
-import { useAppState, useSocket } from '@/hooks';
+import { useSocket } from '@/hooks';
 import {
   GetStreamTokenMessage,
   GetStreamTokenMessageResponse,
@@ -7,7 +7,8 @@ import {
 import { Director, View as MillicastView } from '@millicast/sdk';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SoundToggle } from './SoundToggle';
-import { MatchStatus } from '@/types';
+import { useAtomValue } from 'jotai';
+import { matchStatusAtom } from '@/store/match';
 
 const parseStreamUrl = () => {
   try {
@@ -23,10 +24,10 @@ const parseStreamUrl = () => {
 };
 
 const MillicastStream: React.FC = () => {
+  const matchStatus = useAtomValue(matchStatusAtom);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isMuted, setMuted] = useState(true);
   const { connected, send } = useSocket();
-  const { match } = useAppState();
   const [streamToken, setStreamToken] = useState<string | undefined>();
   const [millicastView, setMillicastView] = useState<MillicastView | undefined>(
     undefined,
@@ -35,8 +36,8 @@ const MillicastStream: React.FC = () => {
   const { accountId, streamName } = parseStreamUrl();
 
   const showStream = useMemo(
-    () => match?.status !== MatchStatus.PendingStart,
-    [match?.status],
+    () => matchStatus !== 'pendingStart',
+    [matchStatus],
   );
 
   useEffect(() => {

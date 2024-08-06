@@ -3,9 +3,8 @@ import { Message } from './message';
 export interface TournamentLeaderboardItem {
   rank: number;
   walletAddress: string;
-  balance: string;
-  xp: string;
-  winAmount: string;
+  xp?: string;
+  winAmount?: string;
 }
 
 export interface GetTournamentMessageResponse extends Message {

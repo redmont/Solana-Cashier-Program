@@ -8,6 +8,12 @@ export const UserSchema = new Schema({
   sk: {
     type: String,
     rangeKey: true,
+    index: {
+      name: 'skUserId',
+      type: 'global',
+      project: false,
+      rangeKey: 'userId',
+    },
   },
   userId: {
     type: String,

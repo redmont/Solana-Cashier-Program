@@ -15,12 +15,17 @@ export class ReadModelService {
     private readonly accountCountModel: Model<AccountCount, ReadModelKey>,
   ) {}
 
-  async createAccount(accountId: string, primaryWalletAddress: string) {
+  async createAccount(
+    accountId: string,
+    primaryWalletAddress: string,
+    timestamp: string,
+  ) {
     await this.accountModel.create({
       pk: `account`,
       sk: `account#${accountId}`,
       primaryWalletAddress,
       balance: 0,
+      lastUpdated: timestamp,
     });
 
     await this.accountCountModel.update(
@@ -36,7 +41,11 @@ export class ReadModelService {
     );
   }
 
-  async updateAccountBalance(accountId: string, balance: number) {
+  async updateAccountBalance(
+    accountId: string,
+    balance: number,
+    timestamp: string,
+  ) {
     await this.accountModel.update(
       {
         pk: `account`,
@@ -45,6 +54,7 @@ export class ReadModelService {
       {
         $SET: {
           balance,
+          lastUpdated: timestamp,
         },
       },
     );

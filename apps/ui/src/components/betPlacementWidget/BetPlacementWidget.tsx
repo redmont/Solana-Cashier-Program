@@ -1,106 +1,100 @@
 'use client';
 
-import { FC, useState, useCallback, useEffect, useMemo, Fragment } from 'react';
-import { classNames } from 'primereact/utils';
+import { FC, useState, useCallback, useEffect, useMemo } from 'react';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { useAtom, useAtomValue } from 'jotai';
 
-import { Fighter, MatchStatus } from '@/types';
 import { Slider } from '../slider';
-import { useSocket, useAppState, usePostHog, useEthWallet } from '@/hooks';
+import { useSocket, usePostHog, useEthWallet } from '@/hooks';
 import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { FighterSwitch } from './FighterSwitch';
 import { PriceVisualisation } from './PriceVisualisation';
 import { Tooltip } from '../Tooltip';
+import { balanceAtom } from '@/store/account';
+import { matchSeriesAtom, matchStatusAtom } from '@/store/match';
+import {
+  betAmountAtom,
+  selectedFighterAtom,
+  winningRatesWithBetAmountAtom,
+} from '@/store/app';
+import Typography from '../ui/typography';
 
-export interface BetPlacementWidgetProps {
-  fighter: number; // 0 or 1
-  betAmount: number;
-  onBetChange: (amount: number) => void;
-  onFighterChange: (fighter: number) => void;
-}
+export const BetPlacementWidget: FC = () => {
+  const balance = useAtomValue(balanceAtom);
+  const matchSeries = useAtomValue(matchSeriesAtom);
+  const matchStatus = useAtomValue(matchStatusAtom);
+  const [projectedWinRate1, projectedWinRate2] = useAtomValue(
+    winningRatesWithBetAmountAtom,
+  );
+  const [betAmount, setBetAmount] = useAtom(betAmountAtom);
 
-export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
-  onBetChange,
-  onFighterChange,
-  ...props
-}) => {
+  const selectedFighter = useAtomValue(selectedFighterAtom);
+
   const { isConnected, isAuthenticated } = useEthWallet();
   const { setShowAuthFlow } = useDynamicContext();
-  const { isBalanceReady, balance, match } = useAppState();
-  const { fighters = [] } = match ?? {};
   const [error, setError] = useState('');
   const [isDirty, setDirty] = useState(false);
   const [isLoading, setLoading] = useState(true);
   const [betPercent, setBetPercent] = useState(25);
   const { send } = useSocket();
   const posthog = usePostHog();
-
-  const betAmount = props.betAmount ?? 0;
-  const selectedFighter = fighters.at(props.fighter);
+  const isBalanceReady = balance !== undefined;
 
   useEffect(() => {
-    if (balance < betAmount) {
+    if (balance !== undefined && balance < betAmount) {
       if (isDirty) setError('Insufficient credits balance');
-      else onBetChange(Math.floor(balance));
+      else setBetAmount(Math.floor(balance));
     } else {
       setError('');
     }
 
     setBetPercent(balance ? Math.floor((betAmount / balance) * 100) : 0);
-  }, [balance, betAmount, isDirty, onBetChange]);
+  }, [balance, betAmount, isDirty, setBetAmount]);
 
   useEffect(() => {
     if (!isAuthenticated || isBalanceReady) {
       setLoading(false);
     }
 
-    if (props.betAmount > 0 || (isAuthenticated && !isBalanceReady)) return;
+    if (betAmount > 0 || (isAuthenticated && !isBalanceReady)) return;
 
-    onBetChange(Math.floor(balance * 0.25));
+    setBetAmount(Math.floor((balance ?? 0) * 0.25));
 
     // We only need to track isBalanceReady
     // to apply this once balance is fetched from server
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isBalanceReady, isAuthenticated, onBetChange]);
-
-  const handleFighterChange = useCallback(
-    (fighter: number) => {
-      onFighterChange(fighter);
-    },
-    [onFighterChange],
-  );
+  }, [isBalanceReady, isAuthenticated]);
 
   const handleBetAmountChange = useCallback(
     (evt: InputNumberChangeEvent) => {
-      onBetChange(evt?.value || 0);
       setDirty(true);
+      setBetAmount(evt?.value || 0);
     },
-    [onBetChange],
+    [setBetAmount],
   );
 
   const handlePercentChange = useCallback(
     (percent: number) => {
-      const amount = Math.floor((balance * percent) / 100);
+      const amount = Math.floor(((balance ?? 0) * percent) / 100);
 
-      setBetPercent(percent);
-      onBetChange(amount);
       setDirty(true);
+      setBetPercent(percent);
+      setBetAmount(amount);
     },
-    [balance, onBetChange],
+    [balance, setBetAmount],
   );
 
   const placeBet = useCallback(async () => {
-    if (!match?.series || !selectedFighter?.codeName) {
+    if (!matchSeries || !selectedFighter?.codeName) {
       return;
     }
 
-    setDirty(false);
     setLoading(true);
 
     await send(
-      new PlaceBetMessage(match?.series, betAmount, selectedFighter.codeName),
+      new PlaceBetMessage(matchSeries, betAmount, selectedFighter.codeName),
     );
 
     setLoading(false);
@@ -109,7 +103,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
       fighter: selectedFighter.codeName,
       stake: betAmount,
     });
-  }, [match?.series, betAmount, selectedFighter?.codeName, posthog, send]);
+  }, [matchSeries, selectedFighter?.codeName, send, betAmount, posthog]);
 
   const join = useCallback(() => setShowAuthFlow(true), [setShowAuthFlow]);
 
@@ -125,53 +119,31 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
     return isLoading ? 'Processing' : 'Confirm';
   }, [isLoading, isAuthenticated, isBalanceReady]);
 
-  const bets = fighters.map((fighter) => {
-    const bet = match?.bets[fighter?.codeName];
-    const stake = bet?.stake ?? 0;
-
-    const isOpponent = fighter.codeName !== selectedFighter?.codeName;
-
-    return {
-      ...bet,
-      stake,
-      projectedWinRate: bet?.projectWinRate(betAmount, isOpponent),
-    };
-  });
-
   return (
     <div className="widget bet-placement-widget">
       <div className="widget-body framed">
         <div className="widget-section">
           <div className="fighter-selection">
-            <div className="selection-title">Back your fighter</div>
+            <Typography variant="header-secondary" className="left">
+              Back your fighter
+            </Typography>
 
-            <PriceVisualisation fighters={fighters} prices={match?.prices} />
-            <div className="spacer">
-              <div className="separator"></div>
-            </div>
-            <FighterSwitch
-              fighters={fighters}
-              selectedFighter={selectedFighter}
-              handleFighterChange={handleFighterChange}
-            />
-
+            <PriceVisualisation />
+            <FighterSwitch />
             <Tooltip
               content={`Your projected win rate once you confirm your stake`}
             >
               <div className="projected-win-rate">
-                <span>{bets.at(0)?.projectedWinRate ?? 0}x</span>
-                <span>WIN RATE</span>
-                <span>{bets.at(1)?.projectedWinRate ?? 0}x</span>
+                <span>{projectedWinRate1}x</span>
+                <span>Win Rate</span>
+                <span>{projectedWinRate2}x</span>
               </div>
             </Tooltip>
           </div>
 
           <div className="credits-selection">
             <div className="credits-slider-box">
-              <div className="credits-slider-labels">
-                <span>1%</span>
-                <span>100%</span>
-              </div>
+              <span>1%</span>
 
               <Slider
                 value={betPercent}
@@ -179,6 +151,8 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
                 min={1}
                 marks={[25, 50, 75]}
               />
+
+              <span>100%</span>
             </div>
 
             <div className="credits-input-group p-inputgroup">
@@ -209,7 +183,7 @@ export const BetPlacementWidget: FC<BetPlacementWidgetProps> = ({
               disabled={
                 isLoading ||
                 !!error ||
-                ((betAmount === 0 || match?.status !== MatchStatus.BetsOpen) &&
+                ((betAmount === 0 || matchStatus !== 'bettingOpen') &&
                   isConnected)
               }
               onClick={isConnected ? placeBet : join}

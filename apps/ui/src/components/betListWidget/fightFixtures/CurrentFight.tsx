@@ -1,22 +1,13 @@
 import { FC } from 'react';
 import Typography from '@/components/ui/typography';
 import { Tooltip } from '@/components/Tooltip';
+import { useAtomValue } from 'jotai';
+import { fighterBettingInformationAtom, fightersAtom } from '@/store/match';
 
-interface Fighter {
-  imageUrl: string;
-  displayName: string;
-}
+export const CurrentFight: FC = () => {
+  const fighters = useAtomValue(fightersAtom);
+  const bettingInfos = useAtomValue(fighterBettingInformationAtom);
 
-interface Credit {
-  total: number;
-}
-
-interface CurrentFightProps {
-  fighters: Fighter[];
-  credits: Credit[];
-}
-
-export const CurrentFight: FC<CurrentFightProps> = ({ fighters, credits }) => {
   return (
     <div className="current-fight">
       <div>
@@ -28,7 +19,7 @@ export const CurrentFight: FC<CurrentFightProps> = ({ fighters, credits }) => {
         <Tooltip
           content={`Total global stakes in ${fighters[0]?.displayName}'s pool`}
         >
-          <div className="bet-total">{credits[0]?.total || 0} Credits</div>
+          <div className="bet-total">{bettingInfos[0]?.total || 0} Credits</div>
         </Tooltip>
       </div>
       <div className="current-fight-title-wrapper">
@@ -44,7 +35,7 @@ export const CurrentFight: FC<CurrentFightProps> = ({ fighters, credits }) => {
         <Tooltip
           content={`Total global stakes in ${fighters[0]?.displayName}'s pool`}
         >
-          <div className="bet-total">{credits[1]?.total || 0} Credits</div>
+          <div className="bet-total">{bettingInfos[1]?.total || 0} Credits</div>
         </Tooltip>
       </div>
     </div>

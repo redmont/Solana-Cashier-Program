@@ -1,9 +1,9 @@
 import { FC } from 'react';
 import { classNames } from 'primereact/utils';
 
-import { MatchStatus } from '@/types';
-import { useAppState } from '@/hooks';
 import { matchStatusSequence } from './matchStatusSequence';
+import { useAtomValue } from 'jotai';
+import { matchStatusAtom } from '@/store/match';
 
 export interface MatchStageTransitionProps {
   stage: number;
@@ -14,11 +14,9 @@ export const MatchStageTransition: FC<MatchStageTransitionProps> = ({
   stage,
   ...props
 }) => {
-  const { match } = useAppState();
+  const matchStatus = useAtomValue(matchStatusAtom);
 
-  const matchStage = matchStatusSequence.indexOf(
-    match?.status ?? MatchStatus.Unknown,
-  );
+  const matchStage = matchStatusSequence.indexOf(matchStatus ?? '');
 
   return (
     <div className="match-stage-transition-box">

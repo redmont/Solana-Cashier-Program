@@ -44,17 +44,6 @@
     align-items: center;
   }
 
-  .table-header {
-    @extend %table-row;
-
-    font-size: 0.875rem;
-    font-weight: 500;
-    display: flex;
-    flex-direction: row;
-    flex-shrink: 0;
-    background-color: #0e0e10;
-  }
-
   .table-row {
     @extend %table-row;
 

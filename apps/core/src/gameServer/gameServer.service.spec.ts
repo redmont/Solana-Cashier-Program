@@ -10,6 +10,7 @@ import { waitForPromisesAndFakeTimers } from '@/test/utils';
 import { ResultAsync } from 'neverthrow';
 import { StreamUrlService } from './streamUrl.service';
 import { of } from 'rxjs';
+import { ConfigService } from '@nestjs/config';
 
 describe('GameServerService', () => {
   let service: GameServerService;
@@ -27,6 +28,10 @@ describe('GameServerService', () => {
   };
 
   const eventEmitter = {};
+
+  let configService = {
+    get: jest.fn().mockReturnValue(''),
+  };
 
   const clientProxy = {
     send: jest.fn().mockImplementation(() => {
@@ -48,6 +53,10 @@ describe('GameServerService', () => {
         {
           provide: EventEmitter2,
           useValue: eventEmitter,
+        },
+        {
+          provide: ConfigService,
+          useValue: configService,
         },
         {
           provide: GameServerConfigService,

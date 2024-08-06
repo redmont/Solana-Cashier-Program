@@ -21,6 +21,7 @@ export const accountsReducer: Reducer<AccountAggregate, AccountEventDetails> = (
         balance: 0,
       };
     }
+
     case 'ACCOUNT_CREDITED': {
       return {
         ...accountAggregate,

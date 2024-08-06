@@ -1,4 +1,12 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Ip,
+  Post,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 export class GetNonceDto {
@@ -15,9 +23,22 @@ export class GetTokenDto {
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  isPrivateNetworkRequest(ip: string) {
+    return (
+      ip === '127.0.0.1' ||
+      ip.startsWith('192.168.') ||
+      ip.startsWith('10.') ||
+      ip.startsWith('172.')
+    );
+  }
+
   @HttpCode(HttpStatus.OK)
   @Post('get-nonce')
-  async getNonce(@Body() getNonceDto: GetNonceDto) {
+  async getNonce(@Ip() ip: string, @Body() getNonceDto: GetNonceDto) {
+    if (!this.isPrivateNetworkRequest(ip)) {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+
     const message = await this.authService.getNonceMessage(
       getNonceDto.walletAddress,
     );
@@ -30,8 +51,13 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('get-token')
   async getToken(
+    @Ip() ip: string,
     @Body() { walletAddress, message, signedMessage }: GetTokenDto,
   ) {
+    if (!this.isPrivateNetworkRequest(ip)) {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+
     return await this.authService.getToken(
       walletAddress,
       message,

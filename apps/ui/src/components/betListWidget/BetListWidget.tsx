@@ -1,5 +1,5 @@
 import { FC, useCallback, useEffect, useState } from 'react';
-import { useAppState, useEthWallet, useSocket } from '@/hooks';
+import { useEthWallet, useSocket } from '@/hooks';
 import { truncateEthAddress } from '../../utils';
 import { classNames } from 'primereact/utils';
 import { TabView, TabPanel } from 'primereact/tabview';
@@ -11,20 +11,16 @@ import {
   GetRosterMessage,
   GetRosterMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
+import { useAtomValue } from 'jotai';
+import { fighterBettingInformationAtom } from '@/store/match';
 
 interface RosterItem {
   series: string;
 }
 
 export const BetListWidget: FC = () => {
-  const { match } = useAppState();
-  const { fighters = [] } = match ?? {};
+  const bettingInfos = useAtomValue(fighterBettingInformationAtom);
   const { address } = useEthWallet();
-
-  const bets = fighters.map((f, index) => {
-    return match?.bets[fighters[index]?.codeName];
-  });
-
   const [roster, setRoster] = useState<RosterItem[]>([]);
   const { send, connected } = useSocket();
 
@@ -59,14 +55,14 @@ export const BetListWidget: FC = () => {
             matches={[]}
             show={'first'}
           />
-          <CurrentFight fighters={fighters} credits={bets as any} />
+          <CurrentFight />
         </div>
         <Scrollable className="bet-list-viewport">
           <TabView className="tab-view" activeIndex={0}>
             <TabPanel header="Depth" headerClassName="tab-header">
               <div className="bet-list">
-                {bets.map((bet, i) => {
-                  const list = bet?.list;
+                {bettingInfos.map((betInfo, i) => {
+                  const list = betInfo?.list;
                   return (
                     <div className="column" key={i}>
                       {list?.map(({ amount, walletAddress }, index) => (

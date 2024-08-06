@@ -5,16 +5,18 @@ import {
   GetStreamAuthTokenMessage,
   GetStreamAuthTokenMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
-import { useAppState, useSocket } from '@/hooks';
+import { useSocket } from '@/hooks';
 import { Red5Client } from './Red5Client';
+import { useAtomValue } from 'jotai';
+import { streamIdAtom } from '@/store/match';
 
 const Red5Stream = ({
   streamViewExpected,
 }: {
   streamViewExpected: boolean;
 }) => {
+  const streamId = useAtomValue(streamIdAtom);
   const { connected, send } = useSocket();
-  const { match } = useAppState();
   const [isMuted, setMuted] = useState(true);
   const [streamToken, setStreamToken] = useState<string | undefined>();
   const [red5Client, setRed5Client] = useState<Red5Client | undefined>();
@@ -43,8 +45,8 @@ const Red5Stream = ({
     setRed5Client((prevRed5Client) => {
       prevRed5Client?.disconnect();
 
-      if (streamToken && match?.streamId) {
-        return new Red5Client(match.streamId, streamToken, 'stream');
+      if (streamToken && streamId) {
+        return new Red5Client(streamId, streamToken, 'stream');
       }
       return undefined;
     });
@@ -52,14 +54,15 @@ const Red5Stream = ({
     return () => {
       red5Client?.disconnect();
     };
-  }, [streamToken, match?.streamId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [streamToken, streamId]);
 
   useEffect(() => {
     if (!streamViewExpected) {
       red5Client?.disconnect();
     } else {
       let isOn = true;
-      let timeout: any;
+      let timeout: NodeJS.Timeout;
 
       const connect = async () => {
         if (!isOn) return;
@@ -84,7 +87,7 @@ const Red5Stream = ({
         red5Client?.disconnect();
       };
     }
-  }, [streamViewExpected, red5Client]);
+  }, [streamViewExpected, red5Client, streamToken]);
 
   return (
     <>

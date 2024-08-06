@@ -22,6 +22,8 @@ import { PlayerBetPlacedMessage } from './messages/playerBetPlaced.message';
 import { ModuleRef } from '@nestjs/core';
 import { ChatService } from '@/chat/chat.service';
 import { UserProfilesQueryStoreService } from 'query-store';
+import { WinXpActivityEvent } from './events/winXpActivity.event';
+import { PlayerWinXpUnlockedMessage } from './messages/playerWinXpUnlocked.message';
 
 export type Activity = 'betPlaced' | 'win' | 'loss';
 
@@ -35,6 +37,7 @@ const eventToConverter = new Map<
 >([
   [BetPlacedActivityEvent, [WhaleWatchMessage, PlayerBetPlacedMessage]],
   [BetXpActivityEvent, [PlayerXpUnlockedMessage]],
+  [WinXpActivityEvent, [PlayerWinXpUnlockedMessage]],
   [WinActivityEvent, [PlayerWinMessage]],
   [PoolOpenActivityEvent, [PoolOpenMessage]],
   [PoolClosedActivityEvent, [PoolClosedMessage]],

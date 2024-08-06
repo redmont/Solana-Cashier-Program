@@ -16,9 +16,12 @@ import {
   Tr,
   useDisclosure,
 } from '@chakra-ui/react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { IoArrowDown, IoArrowUp, IoPencil } from 'react-icons/io5';
 import { UploadBalanceChanges } from '@/components/UploadBalanceChanges';
+import { baseUrl } from '@/config';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import axios from 'axios';
 
 const useDownloadBalances = () => {
   const queryClient = useQueryClient();
@@ -29,6 +32,8 @@ const useDownloadBalances = () => {
 };
 
 const Points = () => {
+  const { authToken } = useDynamicContext();
+
   const {
     isOpen: uploadBalancesIsOpen,
     onOpen: uploadBalancesOnOpen,
@@ -57,6 +62,17 @@ const Points = () => {
   //   queryKey: ['points-balances'],
   // });
 
+  const { mutate: resetBalancesMutate, isPending: resetBalancesIsPending } =
+    useMutation({
+      mutationFn: () => {
+        return axios.post(`${baseUrl}/reset-balances`, data, {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+      },
+    });
+
   const onDownloadBalances = async () => {
     const blob: any = await downloadBalances();
     if (blob) {
@@ -66,6 +82,10 @@ const Points = () => {
       a.download = 'balances.csv';
       a.click();
     }
+  };
+
+  const onResetBalances = () => {
+    resetBalancesMutate();
   };
 
   return (
@@ -116,6 +136,14 @@ const Points = () => {
           </Table>
         </TableContainer>
         <HStack mt="4" gap="4" justifyContent="flex-end">
+          <Button
+            colorScheme="primary"
+            variant="solid"
+            onClick={onResetBalances}
+            isLoading={resetBalancesIsPending}
+          >
+            Reset balances
+          </Button>
           <Button
             leftIcon={<IoArrowDown />}
             colorScheme="primary"

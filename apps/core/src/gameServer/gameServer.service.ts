@@ -19,10 +19,12 @@ import { GameServerConfig } from '@/gameServerConfig/gameServerConfig.interface'
 import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { sendBrokerCommand, sendGenericBrokerCommand } from 'broker-comms';
 import { StreamUrlService } from './streamUrl.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class GameServerService {
   private logger = new Logger(GameServerService.name);
+  private useMockGameServer: boolean;
   public readonly gameServerFSMs: Map<
     string,
     Actor<ReturnType<typeof createGameServerFSM>>
@@ -41,12 +43,16 @@ export class GameServerService {
 
   constructor(
     private eventEmitter: EventEmitter2,
+    private configService: ConfigService,
     private readonly gameServerConfigService: GameServerConfigService,
     private readonly gameServerCapabilitiesService: GameServerCapabilitiesService,
     private readonly streamUrlService: StreamUrlService,
     private readonly gameServerGateway: GameServerGateway,
     private readonly broker: NatsJetStreamClientProxy,
-  ) {}
+  ) {
+    this.useMockGameServer =
+      this.configService.get<boolean>('useMockGameServer');
+  }
 
   public sendMessage(
     serverId: string,
@@ -247,28 +253,34 @@ export class GameServerService {
           continue;
         }
 
-        const streamUrl = await this.streamUrlService.getStreamUrl(
-          serverConfig.streamId,
-        );
-        if (!streamUrl) {
-          this.logger.warn(`Failed to get stream URL for server '${key}'`);
-          continue;
-        }
-
-        try {
-          await sendGenericBrokerCommand(
-            this.broker,
-            `gameEngineControl.${key}`,
-            {
-              commandName: 'setStreamUrl',
-              commandPayload: {
-                streamUrl,
-              },
-            },
+        // The mock game server is not controlled via NATS
+        if (!this.useMockGameServer) {
+          const streamUrl = await this.streamUrlService.getStreamUrl(
+            serverConfig.streamId,
           );
-        } catch (e) {
-          this.logger.error(`Failed to set stream URL for server '${key}'`, e);
-          continue;
+          if (!streamUrl) {
+            this.logger.warn(`Failed to get stream URL for server '${key}'`);
+            continue;
+          }
+
+          try {
+            await sendGenericBrokerCommand(
+              this.broker,
+              `gameEngineControl.${key}`,
+              {
+                commandName: 'setStreamUrl',
+                commandPayload: {
+                  streamUrl,
+                },
+              },
+            );
+          } catch (e) {
+            this.logger.error(
+              `Failed to set stream URL for server '${key}'`,
+              e,
+            );
+            continue;
+          }
         }
 
         const { startTime, fighters, level, fightType } = matchParameters;

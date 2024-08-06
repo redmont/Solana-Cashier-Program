@@ -5,6 +5,7 @@ export class BalanceUpdatedEvent extends BrokerEvent {
   static messageType = `${prefix}.event.balanceUpdated`;
 
   constructor(
+    public readonly timestamp: string,
     public readonly userId: string,
     public readonly balance: string,
   ) {

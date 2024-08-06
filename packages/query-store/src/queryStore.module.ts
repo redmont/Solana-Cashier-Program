@@ -124,16 +124,19 @@ export class QueryStoreModule extends ConfigurableModuleClass {
         {
           provide: TournamentQueryStoreService,
           inject: [
+            RedisCacheService,
             UserProfilesQueryStoreService,
             'tournamentModel',
             'tournamentEntryModel',
           ],
           useFactory: async (
+            cache: RedisCacheService,
             userProfilesQueryStoreService: UserProfilesQueryStoreService,
             tournamentModel: Model<Tournament, Key>,
             tournamentEntryModel: Model<TournamentEntry, Key>,
           ) => {
             return new TournamentQueryStoreService(
+              cache,
               userProfilesQueryStoreService,
               tournamentModel,
               tournamentEntryModel,

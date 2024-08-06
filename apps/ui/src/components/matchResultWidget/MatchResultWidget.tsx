@@ -1,26 +1,55 @@
-import { MatchInfo } from '@/hooks';
 import { Button } from 'primereact/button';
 import { classNames } from 'primereact/utils';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { toPng } from 'html-to-image';
+import { useAtomValue } from 'jotai';
+import {
+  fightersAtom,
+  matchIdAtom,
+  MatchResult,
+  matchResultAtom,
+  matchStatusAtom,
+} from '@/store/match';
+import { Fighter } from '@/types';
 
-export interface MatchResultWidgetProps {
-  result: MatchInfo;
-  onDismiss?: () => void;
-}
+type ResultCache = {
+  result: MatchResult;
+  winner: Fighter;
+  loser: Fighter;
+};
 
-export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
-  result,
-  onDismiss,
-}) => {
+export const MatchResultWidget: FC = () => {
+  const [cachedResult, setCachedResult] = useState<ResultCache | null>(null);
+  const matchStatus = useAtomValue(matchStatusAtom);
+  const matchId = useAtomValue(matchIdAtom);
   const imageEnabled = false;
+  const fighters = useAtomValue(fightersAtom);
+  const results = useAtomValue(matchResultAtom);
 
-  const { winner, fighters, winAmount } = result ?? {};
-  const isWin = winAmount && +winAmount > 0;
-  const winnerIndex = fighters?.findIndex((f) => f.codeName === winner);
-  const loserIndex = winnerIndex - 1;
   const [isSavingPng, setSavingPng] = useState(false);
   const [isPngSaved, setPngSaved] = useState(false);
+
+  useEffect(() => {
+    const isWin =
+      results?.matchId === matchId &&
+      results?.winAmount &&
+      +results.winAmount > 0;
+    if (matchStatus === 'matchFinished' && isWin) {
+      const winner = fighters.find(
+        (f) => f?.codeName && f.codeName === results?.winner,
+      );
+      const loser = fighters.find(
+        (f) => f?.codeName && f.codeName !== results?.winner,
+      );
+      if (winner && loser) {
+        setCachedResult({
+          result: results,
+          winner,
+          loser,
+        });
+      }
+    }
+  }, [fighters, matchId, matchStatus, results]);
 
   const generateImage = useCallback(async () => {
     const widget = document.getElementById('match-result-widget');
@@ -43,10 +72,9 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
   }, []);
 
   const dismiss = useCallback(() => {
+    setCachedResult(null);
     setPngSaved(false);
-
-    onDismiss && onDismiss();
-  }, [onDismiss]);
+  }, []);
 
   useEffect(() => {
     if (!imageEnabled || !isSavingPng) return;
@@ -55,10 +83,16 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
   }, [isSavingPng, imageEnabled, generateImage]);
 
   const share = useCallback(async () => {
+    if (!cachedResult) return;
+    const {
+      winner,
+      loser,
+      result: { winAmount },
+    } = cachedResult;
     const text = encodeURIComponent(
-      `🥊 ${fighters.at(winnerIndex)?.displayName} conquers ${fighters.at(loserIndex)?.displayName} in @BRAWL3RS!\
+      `🥊 ${winner?.displayName} conquers ${loser?.displayName} in @BRAWL3RS!\
       \n🪙 Banked +${winAmount} Brawl3r credits and shot up the leaderboard.\
-      \n🏆 Eyeing those tournament prizes. Who’s next??`,
+      \n🏆 Eyeing those tournament prizes. Who's next??`,
     );
 
     const hashtags = ['LFB'].join(',');
@@ -67,68 +101,65 @@ export const MatchResultWidget: FC<MatchResultWidgetProps> = ({
       `https://twitter.com/intent/tweet?text=${text}&hashtags=${hashtags}`,
       '__blank',
     );
-  }, [fighters, loserIndex, winnerIndex, winAmount]);
+  }, [cachedResult]);
 
   return (
-    <div
-      id="match-result-widget"
-      className={classNames('widget match-result-widget', {
-        'winner-fighter-2': winnerIndex === 1,
-      })}
-    >
-      <div className="widget-body framed">
-        {isSavingPng && (
-          <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
-        )}
+    cachedResult && (
+      <div
+        id="match-result-widget"
+        className={classNames('widget match-result-widget')}
+      >
+        <div className="widget-body framed">
+          {isSavingPng && (
+            <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
+          )}
 
-        <div className="widget-content">
-          <div className="fighter-image-box">
-            {fighters?.map((fighter, i) => (
+          <div className="widget-content">
+            <div className="fighter-image-box">
               <img
-                className={classNames(
-                  'fighter-image',
-                  `fighter-image-${i + 1}`,
-                )}
-                src={fighter.imageUrl}
+                className={classNames('fighter-image')}
+                src={cachedResult?.winner.imageUrl}
               />
-            ))}
-          </div>
+            </div>
 
-          <div className="result-info">
-            <div className="result-title">{winner} Wins!</div>
-
-            <div className="win-amount">{`+${isWin ? winAmount : 0}`}</div>
-
-            {!isSavingPng && (
-              <div className="widget-actions">
-                {imageEnabled && !isPngSaved && (
-                  <Button
-                    className="p-button-secondary p-button-outlined"
-                    label="Get Result Image"
-                    onClick={() => setSavingPng(true)}
-                  />
-                )}
-
-                {(!imageEnabled || isPngSaved) && (
-                  <Button
-                    className="p-button-secondary p-button-outlined"
-                    label="Share"
-                    icon="pi pi-twitter"
-                    onClick={share}
-                  />
-                )}
-
-                <Button
-                  className="p-button-secondary p-button-outlined"
-                  label="Next Fight"
-                  onClick={dismiss}
-                />
+            <div className="result-info">
+              <div className="result-title">
+                {cachedResult?.winner.displayName} Wins!
               </div>
-            )}
+
+              <div className="win-amount">{`+${+cachedResult.result.winAmount > 0 ? cachedResult.result?.winAmount : 0}`}</div>
+
+              {!isSavingPng && (
+                <div className="widget-actions">
+                  {imageEnabled && !isPngSaved && (
+                    <Button
+                      className="p-button-secondary p-button-outlined"
+                      label="Get Result Image"
+                      onClick={() => setSavingPng(true)}
+                    />
+                  )}
+
+                  {(!imageEnabled || isPngSaved) && (
+                    <Button
+                      className="p-button-secondary p-button-outlined"
+                      label="Share"
+                      icon="pi pi-twitter"
+                      onClick={share}
+                    />
+                  )}
+
+                  <Button
+                    className="p-button-secondary p-button-outlined"
+                    label="Next Fight"
+                    onClick={dismiss}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    )
   );
 };
 

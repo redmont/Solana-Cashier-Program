@@ -17,10 +17,12 @@ import {
 } from '@nestjs/common';
 import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { sendBrokerMessage } from 'broker-comms';
+import { sendBrokerCommand, sendBrokerMessage } from 'broker-comms';
 import {
   GetAllBalancesMessage,
   GetAllBalancesMessageResponse,
+  ResetBalanceMessage,
+  ResetBalanceMessageResponse,
 } from 'cashier-messages';
 import { GameServerConfigService } from '@/gameServerConfig/gameServerConfig.service';
 import { SeriesService } from 'src/series/series.service';
@@ -45,6 +47,7 @@ import { Tournament } from '@/tournament/interfaces/tournament.interface';
 import { DailyClaimService } from '@/dailyClaim/dailyClaim.service';
 import { CreateFighterProfileRequest } from './models/createFighterProfileRequest';
 import { UpdateFighterProfileRequest } from './models/updateFighterProfileRequest';
+import { UsersService } from '@/users/users.service';
 
 @Controller('admin')
 export class AdminController {
@@ -60,6 +63,7 @@ export class AdminController {
     private readonly tournamentService: TournamentService,
     private readonly fighterProfilesService: FighterProfilesService,
     private readonly dailyClaimService: DailyClaimService,
+    private readonly usersService: UsersService,
     private readonly broker: NatsJetStreamClientProxy,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
@@ -317,5 +321,31 @@ export class AdminController {
   @Put('/daily-claim-amounts')
   async setDailyClaimAmounts(@Body() body: SetDailyClaimAmountsRequest) {
     await this.dailyClaimService.setDailyClaimAmounts(body.dailyClaimAmounts);
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Post('/reset-balances')
+  async resetBalances() {
+    const userIds = await this.usersService.getAllUserIds();
+
+    let successCount = 0;
+    let errorCount = 0;
+    const errors = [];
+
+    for (const userId of userIds) {
+      const result = await sendBrokerCommand<
+        ResetBalanceMessage,
+        ResetBalanceMessageResponse
+      >(this.broker, new ResetBalanceMessage(userId, 'TOURNAMENT_RESET'));
+
+      if (result.success) {
+        successCount++;
+      } else {
+        errorCount++;
+        errors.push(result.message);
+      }
+    }
+
+    return { successCount, errorCount, errors };
   }
 }

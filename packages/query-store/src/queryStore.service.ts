@@ -56,6 +56,7 @@ export class QueryStoreService implements OnModuleInit {
         seriesCodeName: '',
         preMatchVideoPath: '',
         streamId: '',
+        lastUpdated: new Date().toISOString(),
       });
     }
   }
@@ -128,6 +129,7 @@ export class QueryStoreService implements OnModuleInit {
     poolOpenStartTime,
     startTime,
     winner,
+    timestamp,
   }: {
     seriesCodeName: string;
     matchId: string;
@@ -143,6 +145,7 @@ export class QueryStoreService implements OnModuleInit {
     poolOpenStartTime?: string;
     startTime?: string;
     winner?: string;
+    timestamp: string;
   }) {
     await this.currentMatchModel.update(
       {
@@ -159,16 +162,24 @@ export class QueryStoreService implements OnModuleInit {
         poolOpenStartTime: poolOpenStartTime ?? undefined,
         startTime: startTime ?? undefined,
         winner: winner ?? undefined,
+        lastUpdated: timestamp,
       },
     );
   }
 
-  async saveCurrentMatch(
-    seriesCodeName: string,
-    matchId: string,
-    state: string,
-    startTime?: string,
-  ) {
+  async saveCurrentMatch({
+    seriesCodeName,
+    matchId,
+    state,
+    timestamp,
+    startTime,
+  }: {
+    seriesCodeName: string;
+    matchId: string;
+    state: string;
+    timestamp: string;
+    startTime?: string;
+  }) {
     await this.currentMatchModel.update(
       {
         pk: `currentMatch`,
@@ -179,6 +190,7 @@ export class QueryStoreService implements OnModuleInit {
         matchId,
         state,
         startTime,
+        lastUpdated: timestamp,
       },
     );
   }
@@ -238,7 +250,7 @@ export class QueryStoreService implements OnModuleInit {
     );
   }
 
-  async resetCurrentMatch() {
+  async resetCurrentMatch(timestamp: string) {
     await this.currentMatchModel.update(
       {
         pk: `currentMatch`,
@@ -248,6 +260,7 @@ export class QueryStoreService implements OnModuleInit {
         state: 'idle',
         winner: '',
         bets: [],
+        lastUpdated: timestamp,
       },
     );
   }

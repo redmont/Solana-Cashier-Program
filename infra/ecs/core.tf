@@ -65,8 +65,8 @@ resource "aws_iam_role_policy_attachment" "dev_dynamodb_policy" {
 locals {
   core_container_definition = {
     name   = "core"
-    cpu    = 256
-    memory = 512
+    cpu    = 512
+    memory = 1024
     portMappings = [
       {
         name          = "game-server-websocket",

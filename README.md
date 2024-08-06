@@ -225,12 +225,6 @@ curl --location 'http://localhost:8080/admin/tournaments' \
 }'
 ```
 
-### Run the mock server
-
-```sh
-./mock-ws-client.js
-```
-
 ### (Optional) Run roster of 3 series
 
 ```sh

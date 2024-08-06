@@ -6,20 +6,23 @@ import Link from 'next/link';
 
 import { JoinButton, MobileJoinButton } from '@/components/JoinButton';
 import { ChildContainerProps } from '@/types';
-import { useAppState, useEthWallet } from '@/hooks';
+import { useEthWallet } from '@/hooks';
 import { usePostHog } from '@/hooks/usePostHog';
 import {
   TutorialDialog,
   shouldShowTutorial,
 } from '@/components/tutorialDialog';
+import { useAtomValue } from 'jotai';
+import { balanceAtom } from '@/store/account';
 
 export const Layout = (props: ChildContainerProps) => {
+  const balance = useAtomValue(balanceAtom);
   usePostHog();
 
+  const [isOpen, setOpen] = useState(false);
   const [isReady, setReady] = useState(false);
   const [isTutorialVisible, setTutorialVisible] = useState(false);
 
-  const { balance, isBalanceReady } = useAppState();
   const { isConnected } = useEthWallet();
 
   const currentPath = usePathname();
@@ -35,70 +38,123 @@ export const Layout = (props: ChildContainerProps) => {
 
   return (
     <div className="layout">
-      <div className="topbar">
-        <div className="logo-container">
-          <Link href="/">
-            <img className="logo-mobile" src="/logo-mobile.png" alt="Logo" />
-            <img className="logo" src="/logo.png" alt="Logo" />
-          </Link>
-        </div>
+      <div className="topbar-layout">
+        <div className="topbar">
+          <div className="logo-container">
+            <Link href="/">
+              <img className="logo-mobile" src="/logo-mobile.png" alt="Logo" />
+              <img className="logo" src="/logo.png" alt="Logo" />
+            </Link>
+          </div>
 
-        <div className="spacer" />
-        <div className="topnav">
-          <Link
-            className={`nav-link ${isActive('/') ? 'active' : ''}`}
-            href="/"
-          >
-            Play
-          </Link>
+          <div className="spacer" />
+          <div className="topnav">
+            <div className="left-side">
+              <Link
+                className={`nav-link ${isActive('/') ? 'active' : ''}`}
+                href="/"
+              >
+                Play
+              </Link>
+              <Link
+                className={`nav-link ${isActive('/tournament') ? 'active' : ''}`}
+                href="/tournament"
+              >
+                Tournament
+              </Link>
+            </div>
 
-          <Link
-            className={`nav-link ${isActive('/tournament') ? 'active' : ''}`}
-            href="/tournament"
-          >
-            Tournament
-          </Link>
+            <div className="right-side">
+              <span
+                className={`nav-link ${isActive('/how-to-play') ? 'active' : ''}`}
+                onClick={() => setTutorialVisible(true)}
+              >
+                <img src="/tutorial.svg" alt="tutorial" />
+                How To Play
+              </span>
+              {isReady && isConnected && balance !== undefined && (
+                <div className="balance-desktop md:flex">
+                  <div className="text">Credits: {Math.floor(balance)}</div>
+                </div>
+              )}
+              <JoinButton className="username" />
+            </div>
+          </div>
 
-          <span
-            className={`nav-link ${isActive('/how-to-play') ? 'active' : ''}`}
-            onClick={() => setTutorialVisible(true)}
-          >
-            How To Play
-          </span>
-        </div>
+          <div className="credits-panel"></div>
 
-        <div className="topbar-tools">
-          {isReady && isConnected && isBalanceReady && (
-            <>
-              <div className="balance-mobile md:hidden">
-                {Math.floor(balance)} CR
+          <div className="small-mobile">
+            {isReady && isConnected && balance !== undefined && (
+              <div className="mobile-credit-panel-small">
+                <div className="text">{Math.floor(balance)}</div>
               </div>
-
-              <div className="balance-desktop md:flex">
-                {/* <div className="balance-cashier-desktop">Cashier</div> */}
-                <div>Credits: {Math.floor(balance)}</div>
-              </div>
-            </>
-          )}
-
-          <Link
-            href="/tournament"
-            className={`p-button-link md:hidden ${isActive('/tournament') ? 'active' : ''}`}
-          >
-            <i className="pi pi-trophy"></i>
-          </Link>
-
-          <span
-            className={`p-button-link md:hidden ${isActive('/how-to-play') ? 'active' : ''}`}
-            onClick={() => setTutorialVisible(true)}
-          >
-            <i className="pi pi-book"></i>
-          </span>
-
-          <JoinButton className="p-button-secondary p-button-outlined hidden md:block" />
-          <MobileJoinButton className="md:hidden" />
+            )}
+          </div>
+          <div className="topbar-tools">
+            {!isConnected && (
+              <MobileJoinButton className="mobile-wallet md:hidden" />
+            )}
+            {isReady && isConnected && balance !== undefined && (
+              <>
+                <div className="balance-desktop md:flex">
+                  <div className="text">Credits: {Math.floor(balance)}</div>
+                </div>
+                <div className="mobile-credit-panel">
+                  <div className="text">{Math.floor(balance)}</div>
+                </div>
+              </>
+            )}
+            <JoinButton className="username md:flex" />
+            <div
+              className="hamburger-icon"
+              id="icon"
+              onClick={() => setOpen(!isOpen)}
+            >
+              <div className={`icon-1 ${isOpen ? 'a' : ''}`} id="a"></div>
+              <div className={`icon-2 ${isOpen ? 'c' : ''}`} id="b"></div>
+              <div className={`icon-3 ${isOpen ? 'b' : ''}`} id="c"></div>
+            </div>
+          </div>
         </div>
       </div>
+      {isOpen && (
+        <div className="mask-parent">
+          <div className="navbar-mask">
+            <div className="mask">
+              <div className="mask-nav">
+                <div className="upper">
+                  <JoinButton className="username" />
+
+                  <div className="top-side">
+                    <Link
+                      className={`nav-link ${isActive('/') ? 'active' : ''}`}
+                      href="/"
+                      onClick={() => setOpen(!isOpen)}
+                    >
+                      Play
+                    </Link>
+                    <Link
+                      className={`nav-link ${isActive('/tournament') ? 'active' : ''}`}
+                      href="/tournament"
+                      onClick={() => setOpen(!isOpen)}
+                    >
+                      Tournament
+                    </Link>
+                  </div>
+                </div>
+
+                <span
+                  className={`nav-link ${isActive('/how-to-play') ? 'active' : ''}`}
+                  onClick={() => setTutorialVisible(true)}
+                >
+                  <img src="/tutorial.svg" alt="tutorial" />
+                  How To Play
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {props.children}
 

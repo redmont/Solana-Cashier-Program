@@ -4,7 +4,7 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-import { Redis } from 'ioredis';
+import { ChainableCommander, Redis } from 'ioredis';
 import { MODULE_OPTIONS_TOKEN } from './redisCache.module-definition';
 import { RedisCacheModuleOptions } from './interfaces/redisCacheModuleOptions.interface';
 
@@ -38,6 +38,14 @@ export class RedisCacheService implements OnModuleInit, OnModuleDestroy {
     await this.client.set(key, value);
   }
 
+  async hset(key: string, value: any): Promise<void> {
+    await this.client.hset(key, value);
+  }
+
+  hgetall(key: string) {
+    return this.client.hgetall(key);
+  }
+
   async hmset(key: string, value: any): Promise<void> {
     await this.client.hmset(key, value);
   }
@@ -51,6 +59,48 @@ export class RedisCacheService implements OnModuleInit, OnModuleDestroy {
     keys.forEach((key) => pipeline.hmget(key, ...fields));
 
     return await pipeline.exec();
+  }
+
+  async pipeline(pipelineFunc: (pipeline: ChainableCommander) => void) {
+    const p = this.client.pipeline();
+
+    pipelineFunc(p);
+
+    return await p.exec();
+  }
+
+  zadd(key: string, score: number, value: string) {
+    return this.client.zadd(key, score, value);
+  }
+
+  zrem(key: string, value: string) {
+    return this.client.zrem(key, value);
+  }
+
+  zrevrank(key: string, value: string): Promise<number | null> {
+    return this.client.zrevrank(key, value);
+  }
+
+  async zscore(key: string, value: string): Promise<string> {
+    return await this.client.zscore(key, value);
+  }
+
+  zrangebylex(key: string, start: string, end: string): Promise<string[]> {
+    return this.client.zrangebylex(key, start, end);
+  }
+
+  zrevrange(
+    key: string,
+    start: number,
+    stop: number,
+    withScores = false,
+  ): Promise<string[]> {
+    return this.client.zrevrange(
+      key,
+      start,
+      stop,
+      withScores ? 'WITHSCORES' : undefined,
+    );
   }
 
   async getAllItems(prefix: string): Promise<any[]> {

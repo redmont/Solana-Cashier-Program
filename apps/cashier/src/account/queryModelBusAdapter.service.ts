@@ -12,8 +12,8 @@ import {
   BalanceUpdatedEvent,
 } from 'cashier-messages';
 import { ReadModelService } from 'cashier-read-model';
-import { AccountAggregate } from 'src/account/aggregates';
-import { AccountEventDetails } from 'src/account/reducers/accountsReducer';
+import { AccountAggregate } from './aggregates';
+import { AccountEventDetails } from './reducers/accountsReducer';
 
 @Injectable()
 export class QueryModelBusAdapter implements MessageChannelAdapter {
@@ -36,9 +36,14 @@ export class QueryModelBusAdapter implements MessageChannelAdapter {
       await this.readModelService.createAccount(
         accountId,
         primaryWalletAddress,
+        message.event.timestamp,
       );
     } else {
-      await this.readModelService.updateAccountBalance(accountId, balance);
+      await this.readModelService.updateAccountBalance(
+        accountId,
+        balance,
+        message.event.timestamp,
+      );
 
       const payload = message.event.payload as any;
 
@@ -71,6 +76,7 @@ export class QueryModelBusAdapter implements MessageChannelAdapter {
     }
 
     this.broker.emit(BalanceUpdatedEvent.messageType, {
+      timestamp: message.event.timestamp,
       userId: accountId,
       balance: balance.toString(),
     });

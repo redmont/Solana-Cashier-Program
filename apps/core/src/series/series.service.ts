@@ -168,7 +168,7 @@ export class SeriesService {
         },
         resetBets: async (codeName) => {
           await this.queryStore.setBets(codeName, []);
-          await this.queryStore.resetCurrentMatch();
+          await this.queryStore.resetCurrentMatch(dayjs.utc().toISOString());
 
           this.gatewayManagerService.handleBetsUpdated(codeName, []);
         },
@@ -191,6 +191,7 @@ export class SeriesService {
             streamId: context.streamId,
             poolOpenStartTime: context.poolOpenStartTime,
             startTime: context.startTime,
+            timestamp: dayjs.utc().toISOString(),
           });
 
           this.gatewayManagerService.handleMatchUpdated({

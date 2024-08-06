@@ -98,6 +98,11 @@ resource "aws_dynamodb_table" "core_table" {
     type = "S"
   }
 
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+
   global_secondary_index {
     name            = "pkStartDate"
     hash_key        = "pk"
@@ -123,6 +128,13 @@ resource "aws_dynamodb_table" "core_table" {
       "userId",
       "winAmount"
     ]
+  }
+
+  global_secondary_index {
+    name            = "skUserId"
+    hash_key        = "sk"
+    range_key       = "userId"
+    projection_type = "KEYS_ONLY"
   }
 }
 
