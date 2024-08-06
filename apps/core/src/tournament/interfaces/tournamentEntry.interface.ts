@@ -5,6 +5,7 @@ export interface TournamentEntry extends Key {
   userId: string;
   primaryWalletAddress: string;
   winAmount: number;
+  winAmountCreditedXp: number;
   entryBetAmount: number;
   entryBetAmountCreditedXp: number;
   xp: number;

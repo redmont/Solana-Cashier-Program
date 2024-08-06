@@ -28,8 +28,8 @@ export class PriceFeedService {
     const now = dayjs.utc();
     const ts = dayjs.utc(timestamp);
 
-    // Discard timestamps older than 5 minutes
-    if (now.diff(ts, 'minute') > 5) {
+    // Discard timestamps older than 6 minutes
+    if (now.diff(ts, 'minute') > 6) {
       return;
     }
 
@@ -39,13 +39,19 @@ export class PriceFeedService {
       return;
     }
 
-    // Update cache
-    if (!cached) {
-      cached = new Queue(cachedTickerSize);
-      this.cache.set(symbolLower, cached);
-    }
+    // Update cache if the timestamp is at least 10 seconds newer
+    if (
+      cached &&
+      cached.size > 0 &&
+      cached.last.timestamp + 10_000 < timestamp
+    ) {
+      if (!cached) {
+        cached = new Queue(cachedTickerSize);
+        this.cache.set(symbolLower, cached);
+      }
 
-    cached.enqueue({ price, timestamp });
+      cached.enqueue({ price, timestamp });
+    }
 
     // Check if the symbol is being tracked
     const trackedTicker = this.trackedTickers.find(

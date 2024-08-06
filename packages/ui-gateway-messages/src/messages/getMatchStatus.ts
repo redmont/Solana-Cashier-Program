@@ -17,6 +17,7 @@ export interface GetMatchStatusMessageResponse {
   poolOpenStartTime?: string;
   startTime?: string;
   winner?: string;
+  timestamp: string;
 }
 
 export class GetMatchStatusMessage extends Message<GetMatchStatusMessageResponse> {

@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { User, UserWallet } from './users.interface';
 import { Key } from 'src/interfaces/key';
-import { sendBrokerCommand, sendBrokerMessage } from 'broker-comms';
+import { sendBrokerCommand } from 'broker-comms';
 import {
   EnsureAccountExistsMessage,
   EnsureAccountExistsMessageResponse,
@@ -24,8 +24,20 @@ export class UsersService {
     private readonly userWalletModel: Model<UserWallet, Key>,
     private readonly broker: NatsJetStreamClientProxy,
   ) {}
+
   getUserById(id: string) {
     return this.userModel.get({ pk: `user#${id}`, sk: `user` });
+  }
+
+  async getAllUserIds() {
+    // Query users
+    const users = await this.userModel
+      .query({ sk: 'user' })
+      .using('skUserId')
+      .all()
+      .exec();
+
+    return users.map((user) => user.userId);
   }
 
   async getUserIdByWalletAddress(walletAddress: string) {

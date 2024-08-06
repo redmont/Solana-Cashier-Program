@@ -103,11 +103,15 @@ export class GatewayManagerService implements OnModuleInit {
     );
   }
 
-  async handleBalanceUpdated(userId: string, balance: string) {
+  async handleBalanceUpdated(
+    timestamp: string,
+    userId: string,
+    balance: string,
+  ) {
     await this.emitToClient(
       userId,
       BalanceUpdatedEvent.messageType,
-      new BalanceUpdatedEvent(dayjs.utc().toISOString(), userId, balance),
+      new BalanceUpdatedEvent(timestamp, userId, balance),
     );
   }
 

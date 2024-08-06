@@ -13,6 +13,7 @@ export const TournamentEntrySchema = new Schema({
   userId: String,
   primaryWalletAddress: String,
   winAmount: Number,
+  winAmountCreditedXp: Number,
   entryBetAmount: Number,
   entryBetAmountCreditedXp: Number,
   balance: String,

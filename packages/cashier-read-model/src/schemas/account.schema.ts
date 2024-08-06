@@ -24,6 +24,7 @@ const AccountSchema = new Schema({
       project: true,
     },
   },
+  lastUpdated: String,
 });
 
 export { AccountSchema };

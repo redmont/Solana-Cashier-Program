@@ -11,9 +11,9 @@ export class GatewayManagerController {
   @EventPattern(CashierBalanceUpdatedEvent.messageType)
   async handleBalanceUpdated(
     @Ctx() ctx: NatsJetStreamContext,
-    @Payload() data: CashierBalanceUpdatedEvent,
+    @Payload() { timestamp, userId, balance }: CashierBalanceUpdatedEvent,
   ) {
-    this.gatewayManagerService.handleBalanceUpdated(data.userId, data.balance);
+    this.gatewayManagerService.handleBalanceUpdated(timestamp, userId, balance);
 
     ctx.message.ack();
   }

@@ -73,6 +73,10 @@ export class RedisCacheService implements OnModuleInit, OnModuleDestroy {
     return this.client.zadd(key, score, value);
   }
 
+  zrem(key: string, value: string) {
+    return this.client.zrem(key, value);
+  }
+
   zrevrank(key: string, value: string): Promise<number | null> {
     return this.client.zrevrank(key, value);
   }

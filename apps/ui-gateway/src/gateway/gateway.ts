@@ -219,6 +219,7 @@ export class Gateway
       winner,
       preMatchVideoPath,
       streamId,
+      lastUpdated,
     } = await this.query.getCurrentMatch();
 
     const preMatchVideoUrl =
@@ -238,6 +239,7 @@ export class Gateway
       poolOpenStartTime,
       startTime,
       winner,
+      timestamp: lastUpdated,
       success: true,
     };
   }

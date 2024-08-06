@@ -234,7 +234,7 @@ const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
                   <div className="widget-info">
                     <p>
                       Earn <span className="xp">1 XP</span>&nbsp;for every 100
-                      Credits bet.
+                      Credits won.
                     </p>
                   </div>
                 </div>
@@ -291,7 +291,7 @@ const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
                     <div className="widget-info">
                       <p>
                         Earn <span className="xp">1 XP</span>&nbsp;for every 100
-                        Credits bet.
+                        Credits won.
                       </p>
                     </div>
                   </div>

@@ -161,6 +161,7 @@ describe('TournamentService', () => {
         userId: 'user1234',
         primaryWalletAddress: '0x1234',
         winAmount: 0,
+        winAmountCreditedXp: 0,
         entryBetAmount: 0,
         entryBetAmountCreditedXp: 0,
         balance: '100',

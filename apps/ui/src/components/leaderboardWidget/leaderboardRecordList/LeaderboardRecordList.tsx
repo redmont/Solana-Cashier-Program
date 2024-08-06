@@ -3,7 +3,11 @@ import { LeaderboardProps, LeaderboardRecord } from '../leaderboardTypes';
 import { classNames } from 'primereact/utils';
 import { truncateEthAddress } from '@/utils';
 
-export const LeaderboardRecordList: FC<LeaderboardProps> = ({ records, tournamentValue, winNamed }) => {
+export const LeaderboardRecordList: FC<LeaderboardProps> = ({
+  records,
+  tournamentValue,
+  winNamed,
+}) => {
   return (
     <div className="leaderboard-record-list">
       {records.map((rec, i) => (
@@ -11,7 +15,7 @@ export const LeaderboardRecordList: FC<LeaderboardProps> = ({ records, tournamen
           key={i}
           walletAddress={rec.walletAddress}
           xp={rec.xp}
-          rank={i + 1}
+          rank={rec.rank}
           winAmount={rec.winAmount}
           username={rec.username}
           value={tournamentValue?.[i]}

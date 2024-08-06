@@ -160,15 +160,15 @@ export class TournamentQueryStoreService {
     );
 
     if (tournamentEntryWinAmount) {
-      await this.cache.zadd(
-        `tournamentEntryWinAmount:${tournament}`,
-        tournamentEntryWinAmount,
-        userId,
-      );
+      const key = `tournamentEntryWinAmount:${tournament}`;
+      await this.cache.zrem(key, userId);
+      await this.cache.zadd(key, tournamentEntryWinAmount, userId);
     }
 
     if (xp) {
-      await this.cache.zadd(`tournamentEntryXp:${tournament}`, xp, userId);
+      const key = `tournamentEntryXp:${tournament}`;
+      await this.cache.zrem(key, userId);
+      await this.cache.zadd(key, xp, userId);
     }
   }
 

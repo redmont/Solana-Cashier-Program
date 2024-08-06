@@ -6,3 +6,4 @@ export * from './getAllBalances';
 export * from './creditByWalletAddress';
 export * from './debitByWalletAddress';
 export * from './ensureAccountExists';
+export * from './resetBalances';
