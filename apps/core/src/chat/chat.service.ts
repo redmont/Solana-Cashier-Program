@@ -11,15 +11,15 @@ export class ChatService {
 
   private readonly pubNub: PubNub;
   private token: [string, number];
-  private keyExist: boolean;
+  private chatEnabled: boolean;
 
   constructor(
     readonly config: ConfigService,
     private readonly cache: RedisCacheService,
   ) {
-    this.keyExist = this.doesKeyExist(config);
+    this.chatEnabled = this.doesKeyExist(config);
 
-    if (!this.keyExist) return;
+    if (!this.chatEnabled) return;
 
     this.pubNub = new PubNub({
       subscribeKey: config.get<string>('pubNubSubscribeKey'),
@@ -84,7 +84,7 @@ export class ChatService {
     userId?: string;
     message: string;
   }) {
-    if (!this.keyExist) return;
+    if (!this.chatEnabled) return;
 
     await this.ensureToken();
 
