@@ -137,6 +137,9 @@ locals {
       },
       {
         name = "RED5_STREAM_MANAGER_HOSTNAME", value = var.environment == "prod" ? "r5stream.prod.brawl3rs.ai" : "r5stream.dev.brawl3rs.ai"
+      },
+      {
+        name = "ZEALY_XP_CONVERSION_RATE", value = "1"
       }
     ]
   }

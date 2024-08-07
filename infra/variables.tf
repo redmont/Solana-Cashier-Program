@@ -82,3 +82,8 @@ variable "pubnub_secret_key" {
   description = "PubNub secret key"
   type        = string
 }
+
+variable "zealy_webhook_secret" {
+  description = "Zealy webhook secret"
+  type        = string
+}

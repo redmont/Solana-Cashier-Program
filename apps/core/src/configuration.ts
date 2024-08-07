@@ -20,4 +20,5 @@ export default () => ({
   pubNubSecretKey: process.env.PUBNUB_SECRET_KEY,
   pubNubUserId: process.env.PUBNUB_USER_ID,
   red5StreamManagerHostname: process.env.RED5_STREAM_MANAGER_HOSTNAME,
+  zealyXpConversionRate: process.env.ZEALY_XP_CONVERSION_RATE,
 });

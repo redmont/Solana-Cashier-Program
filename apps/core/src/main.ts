@@ -36,6 +36,10 @@ async function bootstrap() {
           name: 'gateway',
           subjects: ['gateway.>'],
         },
+        {
+          name: 'zealy',
+          subjects: ['zealy.*'],
+        },
       ],
     }),
   });
