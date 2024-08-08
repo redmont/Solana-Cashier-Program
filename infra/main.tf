@@ -93,8 +93,10 @@ module "cashier_webhook_listener" {
   lambda_dir  = "${var.root_dir}/modules/cashier/dist"
   filename    = "webhookListener"
   env_variables = {
-    ALCHEMY_WEBHOOK_SIGNING_KEY  = var.alchemy_webhook_signing_key
-    SERVICE_DISCOVERY_SERVICE_ID = aws_service_discovery_private_dns_namespace.discovery_namespace.id
+    ALCHEMY_WEBHOOK_SIGNING_KEY      = var.alchemy_webhook_signing_key
+    SERVICE_DISCOVERY_NAMESPACE_NAME = aws_service_discovery_private_dns_namespace.discovery_namespace.name
+    SERVICE_DISCOVERY_SERVICE_ID     = aws_service_discovery_private_dns_namespace.discovery_namespace.id
+    SERVICE_DISCOVERY_SERVICE_NAMES  = "nats-n1-c1,nats-n2-c1,nats-n3-c1"
   }
   vpc_config = {
     subnet_ids         = module.vpc.private_subnets
@@ -125,5 +127,49 @@ resource "aws_iam_role_policy" "cashier_webhook_listener" {
 
 resource "aws_lambda_function_url" "cashier_webhook_listener" {
   function_name      = module.cashier_webhook_listener.lambda_name
+  authorization_type = "NONE"
+}
+
+module "zealy_webhook_listener" {
+  source      = "./modules/function"
+  name        = "zealy-webhook"
+  prefix      = local.prefix
+  environment = var.environment
+  lambda_dir  = "${var.root_dir}/modules/zealy/dist"
+  filename    = "webhookListener"
+  env_variables = {
+    ZEALY_WEBHOOK_SECRET             = var.zealy_webhook_secret
+    SERVICE_DISCOVERY_NAMESPACE_NAME = aws_service_discovery_private_dns_namespace.discovery_namespace.name
+    SERVICE_DISCOVERY_SERVICE_ID     = aws_service_discovery_private_dns_namespace.discovery_namespace.id
+    SERVICE_DISCOVERY_SERVICE_NAMES  = "nats-n1-c1,nats-n2-c1,nats-n3-c1"
+  }
+  vpc_config = {
+    subnet_ids         = module.vpc.private_subnets
+    security_group_ids = [module.vpc.default_security_group_id]
+  }
+}
+resource "aws_iam_role_policy" "zealy_webhook_listener" {
+  name = "${local.prefix}-zealy-webhook-listener-${var.environment}"
+
+  role = module.zealy_webhook_listener.exec_role_name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "servicediscovery:DiscoverInstances"
+        ]
+        Resource = [
+          "*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_lambda_function_url" "zealy_webhook_listener" {
+  function_name      = module.zealy_webhook_listener.lambda_name
   authorization_type = "NONE"
 }

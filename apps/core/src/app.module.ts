@@ -17,6 +17,7 @@ import { RosterModule } from './roster/roster.module';
 import { SeriesService } from './series/series.service';
 import { RosterService } from './roster/roster.service';
 import { MediaLibraryModule } from './mediaLibrary/mediaLibrary.module';
+import { ZealyModule } from './zealy/zealy.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { MediaLibraryModule } from './mediaLibrary/mediaLibrary.module';
     AdminModule,
     RosterModule,
     MediaLibraryModule,
+    ZealyModule,
   ],
 })
 export class AppModule implements OnModuleInit {

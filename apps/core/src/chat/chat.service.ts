@@ -11,11 +11,16 @@ export class ChatService {
 
   private readonly pubNub: PubNub;
   private token: [string, number];
+  private chatEnabled: boolean;
 
   constructor(
     readonly config: ConfigService,
     private readonly cache: RedisCacheService,
   ) {
+    this.chatEnabled = this.doesKeyExist(config);
+
+    if (!this.chatEnabled) return;
+
     this.pubNub = new PubNub({
       subscribeKey: config.get<string>('pubNubSubscribeKey'),
       publishKey: config.get<string>('pubNubPublishKey'),
@@ -25,6 +30,15 @@ export class ChatService {
     });
 
     this.ensureToken();
+  }
+
+  private doesKeyExist(config: ConfigService) {
+    return (
+      config.get<string>('pubNubSubscribeKey') !== '' &&
+      config.get<string>('pubNubPublishKey') !== '' &&
+      config.get<string>('pubNubSecretKey') !== '' &&
+      config.get<string>('pubNubUserId') !== ''
+    );
   }
 
   private async ensureToken() {
@@ -70,6 +84,8 @@ export class ChatService {
     userId?: string;
     message: string;
   }) {
+    if (!this.chatEnabled) return;
+
     await this.ensureToken();
 
     const channel = userId ? `brawlers-user-${userId}` : 'brawlers-general';
