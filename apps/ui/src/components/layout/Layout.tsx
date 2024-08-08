@@ -62,6 +62,13 @@ export const Layout = (props: ChildContainerProps) => {
               >
                 Tournament
               </Link>
+              <Link
+                className={`nav-link`}
+                href="https://forms.gle/5uQjMrR419w4cT5w9"
+                target="blank"
+              >
+                Add Your Character
+              </Link>
             </div>
 
             <div className="right-side">
@@ -139,6 +146,13 @@ export const Layout = (props: ChildContainerProps) => {
                       onClick={() => setOpen(!isOpen)}
                     >
                       Tournament
+                    </Link>
+                    <Link
+                      className={`nav-link`}
+                      href="https://forms.gle/5uQjMrR419w4cT5w9"
+                      target="blank"
+                    >
+                      Add Your Character
                     </Link>
                   </div>
                 </div>
