@@ -74,6 +74,32 @@
     }
   }
 
+  .table-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .table-section {
+      border-radius: 6px;
+      background: black;
+      padding: 0.5rem 1rem;
+
+      .table {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        list-style-type: none;
+        padding: 0;
+
+        .cell {
+          padding: 10px 0;
+          display: flex;
+          justify-content: center;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
   .prize-tile {
     display: flex;
     flex-direction: column;
@@ -227,7 +253,7 @@
             display: none;
           }
 
-          .left-xp{
+          .left-xp {
             display: flex;
           }
         }
@@ -334,7 +360,7 @@
             }
           }
           .middle-left {
-            .username  {
+            .username {
               display: none;
             }
             .view-all {
@@ -360,7 +386,7 @@
 
       .prize-pool-panel {
         max-width: 250px;
-        
+
         .prize-pool {
           text-align: center;
           padding: 1rem;
@@ -373,7 +399,6 @@
   }
 
   @media screen and (min-width: 75rem) {
-
     .prev-winner {
       .prev-winner-section {
         font-size: 13px;
@@ -392,7 +417,7 @@
       justify-content: space-between;
       align-items: center;
     }
-    
+
     .prize-carousel {
       gap: 0.5rem;
     }

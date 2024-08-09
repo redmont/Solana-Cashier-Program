@@ -62,58 +62,35 @@ export const PrizesWidget: FC<PrizesWidgetProps> = ({
 
       <div className="widget-body">
         <div>
-          <div
-            className={classNames('prize-carousel', {
-              loading: !isReady,
-            })}
-            ref={carouselRef}
-          >
+          <div className="table-container">
+            <div className="table-section">
+              {prizes.slice(0, 10).map((item, index) => (
+                <div className="table" key={index}>
+                  <div className="cell">{item.title}</div>
+                  <div className="cell">{item.description}</div>
+                </div>
+              ))}
+            </div>
             <PrizeTile
-              place="1"
-              size="large"
-              imageSrc="/1st.svg"
-              value={prizes[0]?.title}
-              description={prizes[0]?.description}
-              className="prize-tile"
-            />
-
-            <PrizeTile
-              place="2"
-              size="medium"
-              imageSrc="/2nd.svg"
-              value={prizes[1]?.title}
-              description={prizes[1]?.description}
-              className="prize-tile"
-            />
-
-            <PrizeTile
-              place="3"
-              size="small"
-              imageSrc="/3rd.svg"
-              value={prizes[2]?.title}
-              description={prizes[2]?.description}
+              place="4"
+              imageSrc="/raffle.svg"
+              description={prizes[prizes.length - 1]?.description}
               className="prize-tile"
             />
           </div>
-          <PrizeTile
-            place="4"
-            imageSrc="/raffle.svg"
-            description={prizes[3]?.description}
-            className="prize-tile"
-          />
         </div>
 
-        {showPrev ? (
-          <p className="top-header" onClick={() => setShowPrev(!showPrev)}>
-            Hide Previous winners
-            <img src="/arrow-down.svg" alt="" />
-          </p>
-        ) : (
-          <p className="top-header" onClick={() => setShowPrev(!showPrev)}>
-            Show Previous winners
-            <img src="/arrow-right.svg" alt="" />
-          </p>
-        )}
+        {false && (
+            <p className="top-header" onClick={() => setShowPrev(!showPrev)}>
+              Hide Previous winners
+              <img src="/arrow-down.svg" alt="" />
+            </p>
+          ) && (
+            <p className="top-header" onClick={() => setShowPrev(!showPrev)}>
+              Show Previous winners
+              <img src="/arrow-right.svg" alt="" />
+            </p>
+          )}
         <div
           className={classNames('prev-winner', {
             collapsed: !showPrev,
