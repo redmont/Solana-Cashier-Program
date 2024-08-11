@@ -11,12 +11,12 @@ import { PostHogProvider } from './PostHogProvider';
 
 export const AppProviders = (props: ChildContainerProps) => {
   return (
-    <EthWalletProvider>
-      <PostHogProvider>
+    <PostHogProvider>
+      <EthWalletProvider>
         <SocketProvider>
           <AppStateProvider>{props.children}</AppStateProvider>
         </SocketProvider>
-      </PostHogProvider>
-    </EthWalletProvider>
+      </EthWalletProvider>
+    </PostHogProvider>
   );
 };

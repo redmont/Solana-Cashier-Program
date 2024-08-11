@@ -12,11 +12,13 @@ export interface EthConnectButtonProps {
   size?: 'small' | 'large';
 }
 
+const defaultText = 'Join the Fight';
+
 export const JoinButton: FC<EthConnectButtonProps> = ({ ...props }) => {
   const { setShowAuthFlow, setShowDynamicUserProfile, user } =
     useDynamicContext();
-  const { isConnected, address } = useEthWallet();
-  const [buttonText, setButtonText] = useState<string>('Join the Fight');
+  const { isAuthenticated, address } = useEthWallet();
+  const [buttonText, setButtonText] = useState<string>(defaultText);
 
   // TODO
   // Seems like isAuthenticated is set straight after page load
@@ -28,14 +30,14 @@ export const JoinButton: FC<EthConnectButtonProps> = ({ ...props }) => {
   // User auth is client side, leading to hydration issues
   // Authentication should also be server-side if we want to use app router
   useEffect(() => {
-    if (isConnected) {
-      setButtonText(user?.username ?? walletAddress);
-    }
-  }, [isConnected, user, walletAddress]);
+    setButtonText(
+      isAuthenticated ? (user?.username ?? walletAddress) : defaultText,
+    );
+  }, [isAuthenticated, user, walletAddress]);
 
   const handleClick = useCallback(() => {
-    isConnected ? setShowDynamicUserProfile(true) : setShowAuthFlow(true);
-  }, [isConnected, setShowAuthFlow, setShowDynamicUserProfile]);
+    isAuthenticated ? setShowDynamicUserProfile(true) : setShowAuthFlow(true);
+  }, [isAuthenticated, setShowAuthFlow, setShowDynamicUserProfile]);
 
   return (
     <Button

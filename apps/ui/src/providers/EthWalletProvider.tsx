@@ -12,6 +12,7 @@ import {
 } from '@dynamic-labs/sdk-react-core';
 import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
 import { DynamicWagmiConnector } from '@dynamic-labs/wagmi-connector';
+import { usePostHog } from 'posthog-js/react';
 
 import { ChildContainerProps } from '@/types';
 import { dynamicWalletEnvironmentId } from '@/config';
@@ -28,11 +29,18 @@ export const wagmiConfig = createConfig({
 });
 
 export const EthWalletProvider: FC<ChildContainerProps> = ({ children }) => {
+  const posthog = usePostHog();
+
   return (
     <DynamicContextProvider
       settings={{
         environmentId: dynamicWalletEnvironmentId,
         walletConnectors: [EthereumWalletConnectors],
+        events: {
+          onLogout: () => {
+            posthog.reset();
+          },
+        },
       }}
     >
       <WagmiProvider config={wagmiConfig}>
