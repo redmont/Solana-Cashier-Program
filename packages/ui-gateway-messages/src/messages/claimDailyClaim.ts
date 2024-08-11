@@ -1,6 +1,6 @@
-import { Message } from './message';
+import { Message, MessageResponse } from './message';
 
-export interface ClaimDailyClaimMessageResponse {
+export interface ClaimDailyClaimMessageResponse extends MessageResponse {
   success: boolean;
   message?: string;
   data?: {

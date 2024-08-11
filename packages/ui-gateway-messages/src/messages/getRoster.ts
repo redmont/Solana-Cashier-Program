@@ -1,9 +1,13 @@
-import { Message } from './message';
+import { Message, MessageResponse } from './message';
 
-export interface GetRosterMessageResponse {
+export interface GetRosterMessageResponse extends MessageResponse {
   success: boolean;
   roster: {
     series: string;
+    fighters: {
+      displayName: string;
+      imageUrl: string;
+    }[];
   }[];
 }
 

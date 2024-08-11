@@ -1,4 +1,4 @@
-import { FC, ReactNode, useMemo, useRef, useState } from 'react';
+import { FC, ReactNode, useMemo, useRef } from 'react';
 import {
   Tooltip as PRTooltip,
   TooltipProps as PRTooltipProps,

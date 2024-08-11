@@ -10,7 +10,11 @@ import {
   useState,
 } from 'react';
 import { Socket, io } from 'socket.io-client';
-import { Message, GatewayEvent } from '@bltzr-gg/brawlers-ui-gateway-messages';
+import {
+  Message,
+  GatewayEvent,
+  MessageResponse,
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { serverUrl } from '@/config';
 import { useEthWallet } from '@/hooks';
@@ -21,7 +25,9 @@ export const socket: Socket = io(serverUrl, {
 
 interface SocketContextValue {
   connected: boolean;
-  send: <M extends Message, R>(message: M) => Promise<R>;
+  send: <M extends Message, R extends MessageResponse>(
+    message: M,
+  ) => Promise<R>;
   subscribe: <E extends GatewayEvent>(
     messageType: string,
     handler: (message: E) => void,
@@ -37,6 +43,11 @@ const SocketContext = createContext<SocketContextValue>({
     throw new Error('Not inside the SocketContext');
   },
 });
+
+interface MessageConstructor {
+  (): Message;
+  messageType: string;
+}
 
 export const SocketProvider: FC<PropsWithChildren> = ({ children }) => {
   const [connected, setConnected] = useState<boolean>(false);
@@ -66,12 +77,12 @@ export const SocketProvider: FC<PropsWithChildren> = ({ children }) => {
   }, []);
 
   const send = useCallback(
-    <M extends Message, R>(message: M) => {
+    <M extends Message, R extends MessageResponse>(message: M) => {
       if (!connected) {
         throw new WebSocketError('Socket is not connected');
       }
 
-      const { messageType } = message.constructor as any;
+      const { messageType } = message.constructor as MessageConstructor;
 
       return new Promise<R>((resolve, reject) => {
         socket.emit(messageType, message, (response: R) => {
@@ -84,9 +95,7 @@ export const SocketProvider: FC<PropsWithChildren> = ({ children }) => {
             resolve(response);
           } else {
             reject(
-              new WebSocketError(
-                (response as any).error?.message || 'Unknown error',
-              ),
+              new WebSocketError(response.error?.message || 'Unknown error'),
             );
           }
         });

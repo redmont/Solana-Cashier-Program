@@ -1,6 +1,6 @@
-import { Message } from './message';
+import { Message, MessageResponse } from './message';
 
-export interface GetBalanceMessageResponse {
+export interface GetBalanceMessageResponse extends MessageResponse {
   success: boolean;
   balance: number;
 }

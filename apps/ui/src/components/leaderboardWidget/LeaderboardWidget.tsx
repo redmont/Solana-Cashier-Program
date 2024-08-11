@@ -33,7 +33,7 @@ const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
     [currentTab],
   );
 
-  const { totalDays, tournamentDays } = useMemo(() => {
+  const { tournamentDays } = useMemo(() => {
     const totalDays = dayjs(endDateTime).diff(dayjs(startDateTime), 'day');
     const tournamentDays = Array.from({ length: totalDays }, (_, i) => i + 1);
     return { totalDays, tournamentDays };

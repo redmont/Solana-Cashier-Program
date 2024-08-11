@@ -16,22 +16,26 @@ export const CurrentFight: FC = () => {
           src={fighters[0]?.imageUrl}
           alt={fighters[0]?.displayName}
         />
+
         <Tooltip
           content={`Total global stakes in ${fighters[0]?.displayName}'s pool`}
         >
           <div className="bet-total">{bettingInfos[0]?.total || 0} Credits</div>
         </Tooltip>
       </div>
+
       <div className="current-fight-title-wrapper">
         <Typography variant="header-secondary">Current Fight</Typography>
         <Typography variant="header-secondary">{`${fighters[0]?.displayName} VS ${fighters[1]?.displayName}`}</Typography>
       </div>
+
       <div>
         <img
           className="current-fight-img"
           src={fighters[1]?.imageUrl}
           alt={fighters[1]?.displayName}
         />
+
         <Tooltip
           content={`Total global stakes in ${fighters[0]?.displayName}'s pool`}
         >

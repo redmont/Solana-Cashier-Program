@@ -4,10 +4,11 @@ import {
   ChatAuthMessage,
   type ChatAuthMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
-import { Chat, Message, type Channel } from '@pubnub/chat';
 
 import { useEthWallet, useSocket } from '@/hooks';
 import { pubNubPubKey, pubNubSubKey } from '@/config';
+
+import { Chat, Message, Channel } from './Chat';
 
 export type Channels = {
   general?: Channel;
@@ -16,6 +17,7 @@ export type Channels = {
 
 const byTimetoken = (a: Message, b: Message) =>
   parseFloat(a.timetoken) - parseFloat(b.timetoken);
+
 const notDeleted = (msg: Message) =>
   msg.actions === undefined || msg.actions.deleted?.deleted?.length === 0;
 
@@ -39,6 +41,7 @@ const useChat = (mode: 'global' | 'alerts') => {
     }
 
     let abort = false;
+
     const initChat = async () => {
       const getTokenResponse = await send<
         ChatAuthMessage,
@@ -51,29 +54,6 @@ const useChat = (mode: 'global' | 'alerts') => {
         userId: getTokenResponse.authorizedUuid,
         authKey: getTokenResponse.token,
       });
-
-      // We have to do this, as the Chat SDK forces withPresence
-      (chat as any).subscribe = function (channel: string) {
-        const subscriptionId = Math.floor(Math.random() * Date.now()).toString(
-          36,
-        );
-        const channelSubIds = (this.subscriptions[channel] ||= new Set());
-        if (!channelSubIds.size) {
-          this.sdk.subscribe({ channels: [channel], withPresence: false });
-        }
-
-        channelSubIds.add(subscriptionId);
-
-        return () => {
-          if (!channelSubIds || !channelSubIds.has(subscriptionId)) {
-            return;
-          }
-          channelSubIds.delete(subscriptionId);
-          if (!channelSubIds.size) {
-            this.sdk.unsubscribe({ channels: [channel] });
-          }
-        };
-      };
 
       const filteredChannels = await Promise.all(
         getTokenResponse.channels
@@ -94,6 +74,7 @@ const useChat = (mode: 'global' | 'alerts') => {
         const messages = filteredChannels
           .map((channel) => channel.messages)
           .flat();
+
         const channels = {
           general:
             filteredChannels.find((c) => c.channel?.id?.includes('general'))
@@ -102,7 +83,9 @@ const useChat = (mode: 'global' | 'alerts') => {
             filteredChannels.find((c) => c.channel?.id?.includes('user'))
               ?.channel ?? undefined,
         };
+
         messages.sort(byTimetoken);
+
         setMessages(messages);
         setChannels(channels);
       }
@@ -136,6 +119,7 @@ const useChat = (mode: 'global' | 'alerts') => {
 
   useEffect(() => {
     let unsub: () => void;
+
     if (channels?.general) {
       unsub = channels.general.connect((msg) => {
         appendMessage(msg);

@@ -1,6 +1,6 @@
-import { Message } from './message';
+import { Message, MessageResponse } from './message';
 
-export interface GetDailyClaimsMessageResponse {
+export interface GetDailyClaimsMessageResponse extends MessageResponse {
   success: boolean;
   dailyClaimAmounts: number[];
   streak: number;

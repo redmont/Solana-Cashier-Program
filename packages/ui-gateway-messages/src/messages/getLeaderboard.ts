@@ -1,4 +1,4 @@
-import { Message } from './message';
+import { Message, MessageResponse } from './message';
 
 export interface LeaderboardItem {
   rank: number;
@@ -8,7 +8,9 @@ export interface LeaderboardItem {
   xp?: string;
 }
 
-export interface GetLeaderboardMessageResponse extends Message {
+export interface GetLeaderboardMessageResponse
+  extends Message,
+    MessageResponse {
   totalCount: number;
   items: LeaderboardItem[];
   success: boolean;

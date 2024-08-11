@@ -1,4 +1,4 @@
-import { Message } from './message';
+import { Message, MessageResponse } from './message';
 
 export interface TournamentLeaderboardItem {
   rank: number;
@@ -7,7 +7,7 @@ export interface TournamentLeaderboardItem {
   winAmount?: string;
 }
 
-export interface GetTournamentMessageResponse extends Message {
+export interface GetTournamentMessageResponse extends Message, MessageResponse {
   displayName: string;
   description: string;
   startDate: string;

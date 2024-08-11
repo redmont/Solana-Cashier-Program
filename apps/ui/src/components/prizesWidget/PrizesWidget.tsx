@@ -1,29 +1,10 @@
 'use client';
 
-import { FC, useState, useRef, useEffect } from 'react';
+import { FC, useState } from 'react';
 import { classNames } from 'primereact/utils';
 import { WidgetCountdown } from '@/components/widgetCountdown';
 
-const prizes: {
-  title: string;
-  description: string;
-}[] = [
-  {
-    title: 'NFT name',
-    description: 'Raffled to the top 20,000 XP Players',
-  },
-  {
-    title: 'NFT name',
-    description: 'Raffled to the top 20,000 XP Players',
-  },
-  {
-    title: 'NFT name',
-    description: 'Raffled to the top 20,000 XP Players',
-  },
-];
-
 export interface PrizesWidgetProps {
-  title: string;
   prizes: {
     title: string;
     description: string;
@@ -32,15 +13,10 @@ export interface PrizesWidgetProps {
 }
 
 export const PrizesWidget: FC<PrizesWidgetProps> = ({
-  title,
   endDateTime,
   prizes,
 }) => {
-  const [isReady, setReady] = useState(false);
   const [showPrev, setShowPrev] = useState(false);
-  const carouselRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => setReady(true));
 
   return (
     <div className="widget prizes-widget">
