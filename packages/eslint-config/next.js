@@ -20,7 +20,6 @@ module.exports = {
     node: true,
     browser: true,
   },
-  plugins: ['only-warn'],
   settings: {
     'import/resolver': {
       typescript: {
@@ -36,6 +35,11 @@ module.exports = {
   overrides: [{ files: ['*.js?(x)', '*.ts?(x)'] }],
   rules: {
     'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['warn'],
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        argsIgnorePattern: '^_',
+      },
+    ],
   },
 };

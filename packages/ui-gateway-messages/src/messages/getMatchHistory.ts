@@ -1,6 +1,6 @@
-import { Message } from './message';
+import { Message, MessageResponse } from './message';
 
-export interface GetMatchHistoryMessageResponse {
+export interface GetMatchHistoryMessageResponse extends MessageResponse {
   success: boolean;
   matches: {
     seriesCodeName: string;

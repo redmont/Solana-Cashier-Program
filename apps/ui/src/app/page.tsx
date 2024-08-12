@@ -2,7 +2,7 @@
 
 import { BetPlacementWidget } from '@/components/betPlacementWidget';
 import { StakeWidget } from '@/components/stakeWidget';
-import { BetListWidget } from '@/components/betListWidget';
+import { FightCardWidget } from '@/components/fightCardWidget';
 import { MatchResultWidget } from '@/components/matchResultWidget';
 import { MatchStreamWidget } from '@/components/matchStreamWidget';
 import { MatchStatusWidget } from '@/components/matchStatusWidget';
@@ -13,7 +13,7 @@ export default function Home() {
     <main className="main-page">
       <div className="main-page-content">
         <MatchStreamWidget />
-        <BetListWidget />
+        <FightCardWidget />
         <MatchStatusWidget />
         <MatchResultWidget />
         <BetPlacementWidget />

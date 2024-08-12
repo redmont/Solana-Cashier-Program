@@ -1,6 +1,6 @@
-import { Message } from './message';
+import { Message, MessageResponse } from './message';
 
-export interface GetStreamTokenMessageResponse {
+export interface GetStreamTokenMessageResponse extends MessageResponse {
   success: boolean;
   token: string;
 }

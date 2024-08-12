@@ -2,7 +2,7 @@ import { streamingServerHostname } from '@/config';
 import { WHEPClient } from 'red5pro-webrtc-sdk';
 
 export class Red5Client {
-  private whepClient: any;
+  private whepClient?: WHEPClient;
 
   constructor(
     private readonly streamName: string,
@@ -15,7 +15,9 @@ export class Red5Client {
       this.whepClient.unsubscribe();
     }
 
-    const config = {
+    this.whepClient = new WHEPClient();
+
+    await this.whepClient.init({
       protocol: 'https',
       host: streamingServerHostname,
       app: 'live',
@@ -31,10 +33,7 @@ export class Red5Client {
         token: this.token,
       },
       mediaElementId: this.mediaElementId,
-    };
-
-    this.whepClient = new WHEPClient();
-    await this.whepClient.init(config);
+    });
 
     await this.whepClient.subscribe();
   }

@@ -5,7 +5,6 @@ type TypographyProps = {
   variant: 'header-secondary';
   children: React.ReactNode;
   className?: string;
-  [key: string]: any;
 };
 
 const variantToTag = {

@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { JoinButton, MobileJoinButton } from '@/components/JoinButton';
 import { ChildContainerProps } from '@/types';
 import { useEthWallet } from '@/hooks';
-import { usePostHog } from '@/hooks/usePostHog';
 import {
   TutorialDialog,
   shouldShowTutorial,
@@ -17,7 +16,6 @@ import { balanceAtom } from '@/store/account';
 
 export const Layout = (props: ChildContainerProps) => {
   const balance = useAtomValue(balanceAtom);
-  usePostHog();
 
   const [isOpen, setOpen] = useState(false);
   const [isReady, setReady] = useState(false);

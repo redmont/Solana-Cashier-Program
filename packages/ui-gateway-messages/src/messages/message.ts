@@ -8,3 +8,9 @@ export interface MessageConstructor<T extends Message> {
   new (...args: any[]): T;
   messageType: string;
 }
+
+export interface MessageResponse {
+  error?: {
+    message: string;
+  };
+}

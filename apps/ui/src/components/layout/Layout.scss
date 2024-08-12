@@ -147,7 +147,7 @@ $topbar-height: 4rem;
 
 .topbar-tools {
   align-self: center;
-  justify-content: end;
+  justify-content: flex-end;
   display: flex;
   gap: 1rem;
   align-items: center;
@@ -268,7 +268,7 @@ main {
     }
 
     .mask-parent {
-      justify-content: end;
+      justify-content: flex-end;
     }
 
     .navbar-mask {

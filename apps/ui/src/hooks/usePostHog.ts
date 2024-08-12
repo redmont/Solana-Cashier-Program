@@ -2,13 +2,11 @@ import { usePostHog as usePH } from 'posthog-js/react';
 import { useEthWallet } from '@/hooks';
 
 export function usePostHog() {
-  const { address: walletAddress, isConnected } = useEthWallet();
+  const { address: walletAddress, isAuthenticated } = useEthWallet();
   const posthog = usePH();
 
-  if (isConnected && walletAddress) {
+  if (isAuthenticated && walletAddress) {
     posthog?.identify(walletAddress.toLowerCase());
-  } else {
-    posthog?.reset();
   }
 
   return posthog;

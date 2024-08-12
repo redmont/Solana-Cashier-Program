@@ -1,6 +1,6 @@
-import { Message } from './message';
+import { Message, MessageResponse } from './message';
 
-export interface ChatAuthMessageResponse {
+export interface ChatAuthMessageResponse extends MessageResponse {
   success: boolean;
   token: string;
   authorizedUuid: string;

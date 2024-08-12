@@ -1,6 +1,6 @@
 export interface LeaderboardProps {
   records: LeaderboardRecord[];
-  tournamentValue?: any;
+  tournamentValue?: LeaderboardRecord['winAmount'][];
   winNamed?: string;
 }
 

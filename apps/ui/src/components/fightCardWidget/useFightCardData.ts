@@ -1,19 +1,25 @@
-import { FC, useCallback, useEffect, useState } from 'react';
-import { FightFixturesList } from './FightFixturesList';
+import { useCallback, useEffect, useState } from 'react';
 import { useSocket } from '@/hooks';
 
-import { GetMatchHistoryMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
-import { GetMatchHistoryMessageResponse } from '@/interfaces';
+import {
+  GetMatchHistoryMessage,
+  GetRosterMessage,
+  GetRosterMessageResponse,
+  GetMatchHistoryMessageResponse,
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { useAtomValue } from 'jotai';
 import { fightersAtom, matchSeriesAtom } from '@/store/match';
 
-export const FightFixtures: FC = () => {
+export type RosterData = GetRosterMessageResponse['roster'];
+
+export function useFightCardData() {
   const { send, connected } = useSocket();
   const matchSeries = useAtomValue(matchSeriesAtom);
   const fighters = useAtomValue(fightersAtom);
-  const [previousFight, setPreviousFight] = useState<
+  const [previousFights, setPreviousFights] = useState<
     GetMatchHistoryMessageResponse['matches']
   >([]);
+  const [roster, setRoster] = useState<RosterData>([]);
 
   const getMatchHistoryData = useCallback(async () => {
     if (!connected || !matchSeries || !fighters) return;
@@ -30,7 +36,7 @@ export const FightFixtures: FC = () => {
       const filteredMatches = matches.filter(
         (match) => match.seriesCodeName === matchSeries,
       );
-      setPreviousFight(filteredMatches);
+      setPreviousFights(filteredMatches);
     }
   }, [connected, matchSeries, fighters, send]);
 
@@ -40,14 +46,25 @@ export const FightFixtures: FC = () => {
     }
   }, [connected, getMatchHistoryData]);
 
-  return (
-    <div className="fight-fixtures-widget">
-      <FightFixturesList
-        data={previousFight}
-        success={false}
-        matches={[]}
-        show={'all'}
-      />
-    </div>
-  );
-};
+  const getRosterData = useCallback(async () => {
+    if (!connected) return;
+
+    const resp = (await send(
+      new GetRosterMessage(),
+    )) as GetRosterMessageResponse;
+
+    const { success, roster } = resp;
+
+    if (success) {
+      setRoster(roster);
+    }
+  }, [connected, send]);
+
+  useEffect(() => {
+    if (connected) {
+      getRosterData();
+    }
+  }, [connected, getRosterData]);
+
+  return { previousFights, roster };
+}
