@@ -156,9 +156,10 @@ export class Gateway
         } else {
           const userId = decodedToken.sub;
           const walletAddress = decodedToken.claims.walletAddress;
+          const username = decodedToken.claims.username;
 
           await this.userProfilesQueryStore.setUserProfile(userId, {
-            username: '',
+            username,
             primaryWalletAddress: walletAddress,
           });
 
@@ -166,7 +167,7 @@ export class Gateway
           client.data.authorizedUser = {
             userId,
             walletAddress,
-            username: '', // todo
+            username,
           };
         }
 
