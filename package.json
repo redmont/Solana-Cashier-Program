@@ -9,7 +9,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "publish-packages": "turbo run build && changeset version && changeset publish",
     "coverage:per-package": "turbo run coverage",
-    "coverage:total": "pnpm coverage:per-package && node coverage-total.js"
+    "coverage:total": "pnpm coverage:per-package && node coverage-total.js",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
@@ -23,6 +24,10 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@changesets/cli": "^2.27.1"
+    "@changesets/cli": "^2.27.1",
+    "husky": "^9.1.4"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,md}": "prettier --write"
   }
 }

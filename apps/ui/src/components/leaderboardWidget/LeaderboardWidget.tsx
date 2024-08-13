@@ -13,7 +13,7 @@ import { getNormalizedTimeDifference } from '@/utils';
 import { Tooltip } from '../Tooltip';
 import { useCountdown } from '@/hooks';
 import { TabPanel, TabView } from 'primereact/tabview';
-import { Scrollable } from '../Scrollable';
+import { Scrollable } from '@/components/ui/scrollable';
 import { WidgetCountdown } from '../widgetCountdown';
 
 const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({

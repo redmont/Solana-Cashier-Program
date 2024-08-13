@@ -36,7 +36,9 @@ export const YouTubeStream: React.FC<YouTubeStreamProps> = ({ streamId }) => {
   useEffect(() => {
     const player = playerRef.current;
 
-    if (!player) return;
+    if (!player) {
+      return;
+    }
 
     if (!isMuted) {
       player.unMute();

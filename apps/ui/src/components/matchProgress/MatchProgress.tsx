@@ -25,7 +25,9 @@ export const MatchProgress: FC = () => {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!matchStartTime || !poolOpenStartTime) return;
+    if (!matchStartTime || !poolOpenStartTime) {
+      return;
+    }
 
     timer.current = setInterval(() => {
       const startTime = dayjs(matchStartTime);
@@ -34,7 +36,9 @@ export const MatchProgress: FC = () => {
       if (matchStatus === 'bettingOpen') {
         let millisLeft = startTimeDiff >= 0 ? startTimeDiff : 0;
 
-        if (startTimeDiff < 0) millisLeft = 0;
+        if (startTimeDiff < 0) {
+          millisLeft = 0;
+        }
 
         const durationMs = startTime.diff(dayjs(poolOpenStartTime));
 

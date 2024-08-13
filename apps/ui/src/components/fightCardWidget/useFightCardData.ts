@@ -22,7 +22,9 @@ export function useFightCardData() {
   const [roster, setRoster] = useState<RosterData>([]);
 
   const getMatchHistoryData = useCallback(async () => {
-    if (!connected || !matchSeries || !fighters) return;
+    if (!connected || !matchSeries || !fighters) {
+      return;
+    }
 
     const resp = (await send(
       new GetMatchHistoryMessage(
@@ -47,7 +49,9 @@ export function useFightCardData() {
   }, [connected, getMatchHistoryData]);
 
   const getRosterData = useCallback(async () => {
-    if (!connected) return;
+    if (!connected) {
+      return;
+    }
 
     const resp = (await send(
       new GetRosterMessage(),

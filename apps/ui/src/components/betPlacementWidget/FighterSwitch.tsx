@@ -1,7 +1,7 @@
 import { selectedFighterAtom, selectedFighterIndexAtom } from '@/store/app';
 import { fightersAtom } from '@/store/match';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { classNames } from 'primereact/utils';
+import { cn as classNames } from '@/lib/utils';
 import { FC } from 'react';
 
 export const FighterSwitch: FC = () => {

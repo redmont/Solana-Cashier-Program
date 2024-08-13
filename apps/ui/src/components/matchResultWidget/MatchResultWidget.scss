@@ -7,13 +7,6 @@
       color: var(--orange-300);
     }
 
-    .widget-actions {
-      button {
-        border-color: var(--orange-300);
-        color: var(--orange-300);
-      }
-    }
-
     .fighter-image-2 {
       display: block;
     }
@@ -94,15 +87,6 @@
   .widget-actions {
     margin-top: 1rem;
     width: 100%;
-
-    button {
-      height: 2.5rem;
-      font-size: 1rem;
-      padding: 0 1rem;
-      border: 1px solid #4cdc88;
-      color: #4cdc88;
-      width: 100%;
-    }
 
     .p-button-label {
       padding: 0 1rem;

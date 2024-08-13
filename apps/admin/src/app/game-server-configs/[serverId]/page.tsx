@@ -1,15 +1,15 @@
 'use client';
 
-import { baseUrl } from "@/config";
-import { Box, useToast } from "@chakra-ui/react";
-import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
-import Form from "@rjsf/chakra-ui";
-import { RJSFSchema } from "@rjsf/utils";
+import { baseUrl } from '@/config';
+import { Box, useToast } from '@chakra-ui/react';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import Form from '@rjsf/chakra-ui';
+import { RJSFSchema } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
-import { useMutation, useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 interface CreateGameServerConfigRequest {
   serverId: string;
@@ -43,11 +43,15 @@ const EditGameServerConfig = ({ params }: { params: { serverId: string } }) => {
 
   const updateGameServerConfigMutation = useMutation({
     mutationFn: (data: UpdateGameServerConfigRequest) => {
-      return axios.patch(`${baseUrl}/game-server-configs/${params.serverId}`, data, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
+      return axios.patch(
+        `${baseUrl}/game-server-configs/${params.serverId}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
         },
-      });
+      );
     },
   });
 
@@ -59,7 +63,7 @@ const EditGameServerConfig = ({ params }: { params: { serverId: string } }) => {
       streamId: { type: 'string', title: 'Stream ID' },
       enabled: { type: 'boolean', title: 'Enabled' },
     },
-  }
+  };
 
   const onSubmit = ({ formData }: any) => {
     if (params.serverId === 'new') {
@@ -68,7 +72,7 @@ const EditGameServerConfig = ({ params }: { params: { serverId: string } }) => {
         title: 'Game server config created',
         status: 'success',
         position: 'bottom-right',
-      })
+      });
       router.push('/game-server-configs');
     } else {
       const { pk, sk, codeName, ...rest } = formData;
@@ -81,7 +85,6 @@ const EditGameServerConfig = ({ params }: { params: { serverId: string } }) => {
     }
   };
   return (
-
     <Box>
       <Form
         formData={data}
@@ -92,6 +95,6 @@ const EditGameServerConfig = ({ params }: { params: { serverId: string } }) => {
       />
     </Box>
   );
-}
+};
 
 export default EditGameServerConfig;

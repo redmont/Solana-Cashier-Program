@@ -37,7 +37,11 @@ const menuItems = [
   { text: 'Series', icon: AiOutlineCrown, path: '/series' },
   { text: 'Roster', icon: AiOutlineOrderedList, path: '/roster' },
   { text: 'Credits', icon: AiOutlineDollarCircle, path: '/points' },
-  { text: 'Daily claim amounts', icon: AiOutlineDollar, path: '/daily-claim-amounts' },
+  {
+    text: 'Daily claim amounts',
+    icon: AiOutlineDollar,
+    path: '/daily-claim-amounts',
+  },
   {
     text: 'Game server configs',
     icon: AiOutlineSetting,

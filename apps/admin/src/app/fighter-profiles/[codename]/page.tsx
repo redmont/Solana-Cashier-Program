@@ -177,7 +177,7 @@ const EditFighterProfile = ({ params }: { params: { codename: string } }) => {
         title: 'Fighter profile created',
         status: 'success',
         position: 'bottom-right',
-      })
+      });
       router.push('/fighter-profiles');
     } else {
       const { pk, sk, codeName, ...rest } = formData;

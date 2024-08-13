@@ -1,8 +1,8 @@
 'use client';
 
-import { FC, useState, useCallback, useEffect, useMemo } from 'react';
+import { FC, useState, useCallback, useEffect } from 'react';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
-import { Button } from 'primereact/button';
+import { Button } from '@/components/ui/button';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { useAtom, useAtomValue } from 'jotai';
 
@@ -22,6 +22,7 @@ import {
 import Typography from '../ui/typography';
 
 export const BetPlacementWidget: FC = () => {
+  const [actionTitle, setActionTitle] = useState('Join the Fight');
   const balance = useAtomValue(balanceAtom);
   const matchSeries = useAtomValue(matchSeriesAtom);
   const matchStatus = useAtomValue(matchStatusAtom);
@@ -44,8 +45,11 @@ export const BetPlacementWidget: FC = () => {
 
   useEffect(() => {
     if (balance !== undefined && balance < betAmount) {
-      if (isDirty) setError('Insufficient credits balance');
-      else setBetAmount(Math.floor(balance));
+      if (isDirty) {
+        setError('Insufficient credits balance');
+      } else {
+        setBetAmount(Math.floor(balance));
+      }
     } else {
       setError('');
     }
@@ -58,7 +62,9 @@ export const BetPlacementWidget: FC = () => {
       setLoading(false);
     }
 
-    if (betAmount > 0 || (isAuthenticated && !isBalanceReady)) return;
+    if (betAmount > 0 || (isAuthenticated && !isBalanceReady)) {
+      return;
+    }
 
     setBetAmount(Math.floor((balance ?? 0) * 0.25));
 
@@ -107,16 +113,16 @@ export const BetPlacementWidget: FC = () => {
 
   const join = useCallback(() => setShowAuthFlow(true), [setShowAuthFlow]);
 
-  const actionTitle = useMemo(() => {
+  useEffect(() => {
     if (isLoading && (!isAuthenticated || !isBalanceReady)) {
-      return 'Loading';
+      return setActionTitle('Loading');
     }
 
     if (!isAuthenticated) {
-      return 'Join the Fight';
+      return setActionTitle('Join the Fight');
     }
 
-    return isLoading ? 'Processing' : 'Confirm';
+    return setActionTitle(isLoading ? 'Processing' : 'Confirm');
   }, [isLoading, isAuthenticated, isBalanceReady]);
 
   return (
@@ -165,7 +171,7 @@ export const BetPlacementWidget: FC = () => {
               <span className="p-inputgroup-addon credits-label">Credits</span>
             </div>
 
-            <div className="text-sm mt-2">
+            <div className="mt-2 text-sm">
               {error ? (
                 <span className="text-red-500">{error}</span>
               ) : (
@@ -177,9 +183,7 @@ export const BetPlacementWidget: FC = () => {
 
             <Button
               loading={isLoading}
-              label={actionTitle}
-              size="large"
-              className="button-place w-full mt-3 confirm-button-compact"
+              className="mt-3 w-full text-lg"
               disabled={
                 isLoading ||
                 !!error ||
@@ -187,7 +191,9 @@ export const BetPlacementWidget: FC = () => {
                   isConnected)
               }
               onClick={isConnected ? placeBet : join}
-            />
+            >
+              {actionTitle}
+            </Button>
           </div>
         </div>
       </div>

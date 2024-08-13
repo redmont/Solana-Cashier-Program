@@ -1,3 +1,4 @@
+@import './tailwind.css';
 @import './_variables';
 @import './theme-base/_components';
 @import './_extensions';
@@ -5,7 +6,8 @@
 @import './_pages';
 
 @keyframes flash {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -29,7 +31,7 @@
   --surface-0: #0a061a;
   --surface-50: #231f31;
   --surface-100: #3b3848;
-  --surface-200: #54515f;
+  --surface-200: #d6d5db;
   --surface-300: #6c6a76;
   --surface-400: #85838d;
   --surface-500: #9d9ba3;

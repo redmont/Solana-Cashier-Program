@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { classNames } from 'primereact/utils';
+import { cn as classNames } from '@/lib/utils';
 import { truncateEthAddress } from '@/utils';
 import { LeaderboardRecord, LeaderboardProps } from '../leaderboardTypes';
 

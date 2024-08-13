@@ -1,10 +1,6 @@
-
 'use client';
 
-import {
-  Box,
-  useToast,
-} from '@chakra-ui/react';
+import { Box, useToast } from '@chakra-ui/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { RJSFSchema } from '@rjsf/utils';
 
@@ -37,7 +33,7 @@ const schema: RJSFSchema = {
       },
     },
   },
-}
+};
 
 interface SetDailyClaimAmountsRequest {
   dailyClaimAmounts: number[];
@@ -49,11 +45,10 @@ const DailyClaimAmounts = () => {
   const { authToken } = useDynamicContext();
 
   const { isPending, error, data } = useQuery<{
-    dailyClaimAmounts: number[]
+    dailyClaimAmounts: number[];
   }>({
     queryKey: ['daily-claim-amounts'],
   });
-
 
   const setDailyClaimAmountsMutation = useMutation({
     mutationFn: (data: SetDailyClaimAmountsRequest) => {
@@ -71,8 +66,8 @@ const DailyClaimAmounts = () => {
       title: 'Daily claim amounts updated',
       status: 'success',
       position: 'bottom-right',
-    })
-  }
+    });
+  };
 
   return (
     <Box>
@@ -85,6 +80,6 @@ const DailyClaimAmounts = () => {
       />
     </Box>
   );
-}
+};
 
 export default DailyClaimAmounts;

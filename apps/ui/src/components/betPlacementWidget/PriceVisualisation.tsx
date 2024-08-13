@@ -1,4 +1,4 @@
-import { classNames } from 'primereact/utils';
+import { cn as classNames } from '@/lib/utils';
 import { FC, Fragment, useEffect, useRef, useState } from 'react';
 import { Tooltip } from '../Tooltip';
 import { toScientificParts } from '@/utils';

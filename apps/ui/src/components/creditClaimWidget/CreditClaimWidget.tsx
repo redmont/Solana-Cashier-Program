@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
-import { Button } from 'primereact/button';
+import { Button } from '@/components/ui/button';
 import { classNames } from 'primereact/utils';
 import { useCountdown, useEthWallet, useSocket } from '@/hooks';
 import {
@@ -31,7 +31,9 @@ export const CreditClaimWidget: FC = () => {
   );
 
   useEffect(() => {
-    if (!connected) return;
+    if (!connected) {
+      return;
+    }
 
     send(new GetDailyClaimsMessage()).then((message: unknown) => {
       setClaims(message as GetDailyClaimsMessageResponse);
@@ -43,7 +45,9 @@ export const CreditClaimWidget: FC = () => {
 
     const currentCard = viewportEl?.querySelector('.credit-claim-card.current');
 
-    if (!viewportEl || !currentCard) return;
+    if (!viewportEl || !currentCard) {
+      return;
+    }
 
     const { x: viewportX = 0, width: viewportW = 0 } =
       viewportEl?.getBoundingClientRect() ?? {};
@@ -66,7 +70,9 @@ export const CreditClaimWidget: FC = () => {
   const scroll = useCallback((direction: 1 | -1) => {
     const viewportEl = viewportRef.current;
 
-    if (!viewportEl) return;
+    if (!viewportEl) {
+      return;
+    }
 
     const shift = viewportEl.clientWidth * 0.25;
 
@@ -77,7 +83,9 @@ export const CreditClaimWidget: FC = () => {
   }, []);
 
   const claim = useCallback(async () => {
-    if (!claims) return;
+    if (!claims) {
+      return;
+    }
 
     const { dailyClaimAmounts } = claims;
     setClaiming(true);
@@ -88,7 +96,9 @@ export const CreditClaimWidget: FC = () => {
         ClaimDailyClaimMessageResponse
       >(new ClaimDailyClaimMessage(dailyClaimAmounts[streak]));
 
-      if (!success) return;
+      if (!success) {
+        return;
+      }
 
       setClaims({
         ...claims,
@@ -102,7 +112,9 @@ export const CreditClaimWidget: FC = () => {
   const checkScroll = useCallback(() => {
     const viewportEl = viewportRef.current;
 
-    if (!viewportEl) return;
+    if (!viewportEl) {
+      return;
+    }
 
     allowScrollLeft(viewportEl.scrollLeft !== 0);
 
@@ -215,7 +227,9 @@ const CreditClaimCard: FC<CreditClaimCard> = (props) => {
       {props.claimed && <span className="claimed-label">Claimed</span>}
 
       {!isAuthenticated && (
-        <Button className="claim-button" label="Claim" onClick={join} />
+        <Button className="px-4 py-2" onClick={join}>
+          Claim
+        </Button>
       )}
 
       {isAuthenticated && !props.claimed && (
@@ -224,10 +238,11 @@ const CreditClaimCard: FC<CreditClaimCard> = (props) => {
           disabled={
             !props.current || (props.availableInMs ?? 0) > 0 || !isAuthenticated
           }
-          className="claim-button"
-          label="Claim"
+          className="px-2"
           onClick={props.onClaim}
-        />
+        >
+          {props.current && props.claiming ? 'Claiming' : 'Claim'}
+        </Button>
       )}
     </div>
   );

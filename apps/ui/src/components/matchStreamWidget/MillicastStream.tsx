@@ -18,6 +18,7 @@ const parseStreamUrl = () => {
     const [accountId, stream] = streamName!.split('/');
     return { accountId, streamName: stream };
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.error('Failed to parse stream URL', e);
     return { accountId: '', streamName: '' };
   }
@@ -110,7 +111,9 @@ const MillicastStream: React.FC = () => {
       let timeout: NodeJS.Timeout;
 
       const connect = async () => {
-        if (!isOn) return;
+        if (!isOn) {
+          return;
+        }
 
         try {
           await millicastView?.connect();

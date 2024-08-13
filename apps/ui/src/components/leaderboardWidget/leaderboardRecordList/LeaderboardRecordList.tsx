@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { LeaderboardProps, LeaderboardRecord } from '../leaderboardTypes';
-import { classNames } from 'primereact/utils';
+import { cn as classNames } from '@/lib/utils';
 import { truncateEthAddress } from '@/utils';
 
 export const LeaderboardRecordList: FC<LeaderboardProps> = ({

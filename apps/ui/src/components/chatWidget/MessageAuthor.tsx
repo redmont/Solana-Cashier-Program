@@ -1,6 +1,6 @@
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { Message } from '@pubnub/chat';
-import { classNames } from 'primereact/utils';
+import { cn as classNames } from '@/lib/utils';
 
 const MessageAuthor = ({ msg }: { msg: Message }) => {
   const { user } = useDynamicContext();

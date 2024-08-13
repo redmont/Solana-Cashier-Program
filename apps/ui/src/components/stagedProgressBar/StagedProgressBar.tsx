@@ -2,7 +2,7 @@ import React, { FC, useEffect, useRef } from 'react';
 
 import { Stage } from './Stage';
 import { StageTransition } from './StageTransition';
-import { Scrollable } from '@/components/Scrollable';
+import { Scrollable } from '@/components/ui/scrollable';
 import useElementInView from '@/hooks/useElementIntersected';
 
 export interface StagedProgressBarProps {
@@ -24,7 +24,9 @@ export const StagedProgressBar: FC<StagedProgressBarProps> = ({
   const lastStageRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const elementToScrollTo = isEnded ? lastStageRef.current : currentStageRef.current;
+  const elementToScrollTo = isEnded
+    ? lastStageRef.current
+    : currentStageRef.current;
   const isInView = useElementInView(elementToScrollTo);
 
   useEffect(() => {
@@ -63,7 +65,13 @@ export const StagedProgressBar: FC<StagedProgressBarProps> = ({
               <div key={`stage-${index}`} className="day-box-bar">
                 <div
                   className="day-box"
-                  ref={isCurrentStage ? currentStageRef : (isLastStage ? lastStageRef : undefined)}
+                  ref={
+                    isCurrentStage
+                      ? currentStageRef
+                      : isLastStage
+                        ? lastStageRef
+                        : undefined
+                  }
                 >
                   {isEnded ? (
                     <Stage state={state}>

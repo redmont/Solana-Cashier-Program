@@ -1,6 +1,4 @@
 import { FC, useCallback } from 'react';
-import { Button } from 'primereact/button';
-import { classNames } from 'primereact/utils';
 
 interface SoundToggleProps {
   muted?: boolean;
@@ -11,13 +9,14 @@ export const SoundToggle: FC<SoundToggleProps> = ({ muted, onChange }) => {
   const handleChange = useCallback(() => onChange?.(!muted), [muted, onChange]);
 
   return (
-    <Button
-      className={classNames('video-stream-unmute-button', { muted })}
-      rounded
+    <button
+      className="hover:border-primary-500 hover:bg-primary-300/40 absolute bottom-3 left-4 flex size-12 items-center justify-center rounded-full bg-slate-200/20 hover:border"
       onClick={handleChange}
     >
-      <i className={`pi ${muted ? 'pi-volume-off' : 'pi-volume-up'}`}></i>
+      <i
+        className={`pi ${muted ? 'pi-volume-off' : 'pi-volume-up text-xl'}`}
+      ></i>
       {muted && <i className="pi pi-times"></i>}
-    </Button>
+    </button>
   );
 };

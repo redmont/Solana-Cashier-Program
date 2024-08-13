@@ -1,4 +1,4 @@
-import { classNames } from 'primereact/utils';
+import { cn as classNames } from '@/lib/utils';
 import React, { FC, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Tooltip } from '../Tooltip';
 
@@ -24,15 +24,21 @@ export const Slider: FC<SliderProps> = ({
   const value = useMemo(() => {
     const val = props.value ?? min;
 
-    if (val < min) return min;
-    if (val > max) return max;
+    if (val < min) {
+      return min;
+    }
+    if (val > max) {
+      return max;
+    }
 
     return val;
   }, [props.value, min, max]);
 
   const calcPosition = useCallback(
     (value: number) => {
-      if (max === min) return 0;
+      if (max === min) {
+        return 0;
+      }
 
       return ((value - min) / (max - min)) * 100;
     },
@@ -43,15 +49,21 @@ export const Slider: FC<SliderProps> = ({
 
   const updateValue = useCallback(
     (mouseX: number) => {
-      if (!rootRef.current) return;
+      if (!rootRef.current) {
+        return;
+      }
 
       const element = rootRef.current as Element;
       const { left, width } = element.getBoundingClientRect();
 
       let x = mouseX - left;
 
-      if (x < 0) x = 0;
-      if (x > width) x = width;
+      if (x < 0) {
+        x = 0;
+      }
+      if (x > width) {
+        x = width;
+      }
 
       const value = Math.round((x / width) * (max - min) + min);
 
@@ -62,7 +74,9 @@ export const Slider: FC<SliderProps> = ({
 
   const handleMouseDown = useCallback(
     (evt: React.MouseEvent) => {
-      if (evt.button > 0) return;
+      if (evt.button > 0) {
+        return;
+      }
 
       isDraggingRef.current = true;
 
@@ -87,7 +101,9 @@ export const Slider: FC<SliderProps> = ({
 
   const handleMouseMove = useCallback(
     (evt: MouseEvent) => {
-      if (!isDraggingRef.current) return;
+      if (!isDraggingRef.current) {
+        return;
+      }
 
       updateValue(evt.clientX);
     },
@@ -96,7 +112,9 @@ export const Slider: FC<SliderProps> = ({
 
   const handleTouchMove = useCallback(
     (evt: TouchEvent) => {
-      if (!isDraggingRef.current) return;
+      if (!isDraggingRef.current) {
+        return;
+      }
 
       updateValue(evt.touches[0].clientX);
 

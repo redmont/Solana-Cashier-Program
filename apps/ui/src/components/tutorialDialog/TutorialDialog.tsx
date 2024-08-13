@@ -1,30 +1,19 @@
 import { FC, useCallback, useState } from 'react';
 import { Dialog } from 'primereact/dialog';
-import { Button } from 'primereact/button';
+import { Button } from '@/components/ui/button';
 import { Carousel } from 'primereact/carousel';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
-import { classNames } from 'primereact/utils';
 
 import { TutorialSlide } from './TutorialSlide';
 import { slides } from './slides';
+import { useAtom } from 'jotai';
+import { tutorialCompletedAtom } from '@/store/view';
 
-export interface TutorialDialogProps {
-  visible: boolean;
-  onHide: () => void;
-}
+export const TutorialDialog: FC = () => {
+  const [tutorialCompleted, setTutorialCompleted] = useAtom(
+    tutorialCompletedAtom,
+  );
 
-export function completeTutorial() {
-  localStorage.setItem('tutorial_complete', 'yes');
-}
-
-export function shouldShowTutorial() {
-  return !localStorage.getItem('tutorial_complete');
-}
-
-export const TutorialDialog: FC<TutorialDialogProps> = ({
-  onHide,
-  ...props
-}) => {
   const [slideNum, setSlideNum] = useState(0);
   const { setShowAuthFlow } = useDynamicContext();
 
@@ -41,9 +30,8 @@ export const TutorialDialog: FC<TutorialDialogProps> = ({
   }, [slideNum]);
 
   const dismiss = useCallback(() => {
-    completeTutorial();
-    onHide?.();
-  }, [onHide]);
+    setTutorialCompleted('yes');
+  }, [setTutorialCompleted]);
 
   const complete = useCallback(() => {
     dismiss();
@@ -59,8 +47,8 @@ export const TutorialDialog: FC<TutorialDialogProps> = ({
       blockScroll
       showHeader={false}
       draggable={false}
-      visible={props.visible}
-      onHide={onHide}
+      visible={tutorialCompleted === 'no'}
+      onHide={dismiss}
     >
       <div className="dialog-body">
         <Carousel
@@ -76,37 +64,27 @@ export const TutorialDialog: FC<TutorialDialogProps> = ({
       <div className="dialog-footer">
         <div className="dialog-nav">
           {slideNum > 0 && (
-            <Button
-              label="Back"
-              className="button-back p-button-secondary p-button-outlined border-none"
-              onClick={goBack}
-            ></Button>
+            <Button variant="ghost" onClick={goBack}>
+              Back
+            </Button>
           )}
 
           {!isLastSlide && (
-            <Button
-              label="Next"
-              className="button-next p-button-secondary p-button-outlined"
-              onClick={goNext}
-            ></Button>
+            <Button variant="outline" onClick={goNext}>
+              Next
+            </Button>
           )}
 
           {isLastSlide && (
-            <Button
-              label="Let's Go!"
-              className="p-button-secondary p-button-outlined"
-              onClick={complete}
-            ></Button>
+            <Button variant="outline" onClick={complete}>
+              Let's Go!
+            </Button>
           )}
         </div>
 
-        <Button
-          className={classNames(
-            'button-complete p-button-secondary p-button-outlined border-none text-400',
-          )}
-          label="I know all of this"
-          onClick={dismiss}
-        />
+        <Button variant="ghost" onClick={dismiss}>
+          I know all of this
+        </Button>
       </div>
     </Dialog>
   );

@@ -12,6 +12,13 @@ export const postHogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST;
 export const dynamicWalletEnvironmentId =
   process.env.NEXT_PUBLIC_DYNAMIC_WALLET_ENVIRONMENT_ID || '';
 
+export const usdcContractAddress =
+  (process.env.NEXT_PUBLIC_USDC_CONTRACT_ADDRESS as `0x${string}`) || '0x0';
+
+export const cashierDepositContractAddress =
+  (process.env.NEXT_PUBLIC_CASHIER_DEPOSIT_CONTRACT_ADDRESS as `0x${string}`) ||
+  '0x0';
+
 export const youTubeStreamId = process.env.NEXT_PUBLIC_YOUTUBE_STREAM_ID || '';
 
 export const pubNubPubKey = process.env.NEXT_PUBLIC_PUBNUB_PUB_KEY || '';
