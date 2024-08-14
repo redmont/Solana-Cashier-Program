@@ -8,7 +8,7 @@ import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.s
 error ZeroDepositAmount();
 error ERC20TransferFailed();
 error TokenNotAllowed();
-error NotWholeEtherAmount();
+error TooLowAmount();
 
 contract CashierDeposit is AccessControl {
     using SafeERC20 for IERC20;
@@ -47,9 +47,10 @@ contract CashierDeposit is AccessControl {
         }
 
         uint8 decimals = tokenDecimals[tokenAddress];
-        uint256 wholeEtherAmount = (10 ** uint256(decimals));
-        if (amount % wholeEtherAmount != 0) {
-            revert NotWholeEtherAmount();
+        // Minimum purchase amount is 99 cents
+        uint256 minAmount = 99 * 10 ** (decimals - 2);
+        if (amount < minAmount) {
+            revert TooLowAmount();
         }
 
         emit DepositReceived(userId, tokenAddress, amount);
