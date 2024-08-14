@@ -16,7 +16,6 @@
     "@dynamic-labs/sdk-react-core": "^2.3.8",
     "@dynamic-labs/wagmi-connector": "^2.3.8",
     "@hookform/resolvers": "^3.9.0",
-    "@millicast/sdk": "^0.1.46",
     "@next/third-parties": "^14.2.5",
     "@pubnub/chat": "^0.7.3",
     "@radix-ui/react-label": "^2.1.0",

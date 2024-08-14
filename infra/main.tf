@@ -69,12 +69,6 @@ module "ecs" {
 
   dynamic_public_key = var.dynamic_public_key
 
-  millicast_api_secret                = var.millicast_api_secret
-  millicast_stream_name               = var.millicast_stream_name
-  millicast_parent_subscribe_token    = var.millicast_parent_subscribe_token
-  millicast_parent_subscribe_token_id = var.millicast_parent_subscribe_token_id
-  millicast_allowed_origins           = var.millicast_allowed_origins
-
   cors_origins = var.cors_origins
 
   stream_auth_parent_token_id     = var.stream_auth_parent_token_id
@@ -95,7 +89,6 @@ module "cashier_webhook_listener" {
   env_variables = {
     ALCHEMY_WEBHOOK_SIGNING_KEY      = var.alchemy_webhook_signing_key
     SERVICE_DISCOVERY_NAMESPACE_NAME = aws_service_discovery_private_dns_namespace.discovery_namespace.name
-    SERVICE_DISCOVERY_SERVICE_ID     = aws_service_discovery_private_dns_namespace.discovery_namespace.id
     SERVICE_DISCOVERY_SERVICE_NAMES  = "nats-n1-c1,nats-n2-c1,nats-n3-c1"
   }
   vpc_config = {
@@ -140,7 +133,6 @@ module "zealy_webhook_listener" {
   env_variables = {
     ZEALY_WEBHOOK_SECRET             = var.zealy_webhook_secret
     SERVICE_DISCOVERY_NAMESPACE_NAME = aws_service_discovery_private_dns_namespace.discovery_namespace.name
-    SERVICE_DISCOVERY_SERVICE_ID     = aws_service_discovery_private_dns_namespace.discovery_namespace.id
     SERVICE_DISCOVERY_SERVICE_NAMES  = "nats-n1-c1,nats-n2-c1,nats-n3-c1"
   }
   vpc_config = {

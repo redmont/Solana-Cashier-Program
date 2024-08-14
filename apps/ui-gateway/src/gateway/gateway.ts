@@ -29,8 +29,6 @@ import {
   GetTournamentMessageResponse,
   GetUserIdMessageResponse,
   GetUserIdMessage,
-  GetStreamTokenMessage,
-  GetStreamTokenMessageResponse,
   GetMatchStatusMessageResponse,
   GetStreamAuthTokenMessage,
   GetStreamAuthTokenMessageResponse,
@@ -60,7 +58,6 @@ import { IJwtAuthService } from '@/jwtAuth/jwtAuth.interface';
 import { ConfigService } from '@nestjs/config';
 import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import dayjs from '@/dayjs';
-import { StreamTokenService } from '@/streamToken/streamToken.service';
 import { emitInternalEvent, UserConnectedEvent } from '@/internalEvents';
 import { StreamAuthService } from '@/streamAuth/streamAuth.service';
 import { ChatAuthService } from '@/chatAuth/chatAuth.service';
@@ -90,7 +87,6 @@ export class Gateway
     private readonly query: QueryStoreService,
     @Inject('JWT_AUTH_SERVICE')
     private readonly jwtAuthService: IJwtAuthService,
-    private readonly streamTokenService: StreamTokenService,
     private readonly streamAuthService: StreamAuthService,
     private readonly eventEmitter: EventEmitter2,
     private readonly chatAuthService: ChatAuthService,
@@ -159,7 +155,7 @@ export class Gateway
           const username = decodedToken.claims.username;
 
           await this.userProfilesQueryStore.setUserProfile(userId, {
-            username,
+            username: username?.length > 0 ? username : '',
             primaryWalletAddress: walletAddress,
           });
 
@@ -433,30 +429,6 @@ export class Gateway
     return {
       success: true,
       userId,
-    };
-  }
-
-  @SubscribeMessage(GetStreamTokenMessage.messageType)
-  public async getStreamToken(
-    @ConnectedSocket() client: Socket,
-  ): Promise<GetStreamTokenMessageResponse> {
-    const userId = this.clientUserIdMap.get(client?.id);
-
-    if (!userId) {
-      return {
-        success: false,
-        token: null,
-      };
-    }
-
-    const token = await this.streamTokenService.getToken(
-      userId,
-      client.data.ipAddress,
-    );
-
-    return {
-      success: true,
-      token,
     };
   }
 

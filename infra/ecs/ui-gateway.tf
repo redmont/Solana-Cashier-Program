@@ -101,21 +101,6 @@ locals {
         name = "DYNAMIC_PUBLIC_KEY", value = var.dynamic_public_key
       },
       {
-        name = "MILLICAST_API_SECRET", value = var.millicast_api_secret
-      },
-      {
-        name = "MILLICAST_STREAM_NAME", value = var.millicast_stream_name
-      },
-      {
-        name = "MILLICAST_PARENT_SUBSCRIBE_TOKEN", value = var.millicast_parent_subscribe_token
-      },
-      {
-        name = "MILLICAST_PARENT_SUBSCRIBE_TOKEN_ID", value = var.millicast_parent_subscribe_token_id
-      },
-      {
-        name = "MILLICAST_ALLOWED_ORIGINS", value = var.millicast_allowed_origins
-      },
-      {
         name = "CORS_ORIGINS", value = join(",", var.cors_origins)
       },
       {

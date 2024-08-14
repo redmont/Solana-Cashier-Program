@@ -86,10 +86,12 @@ export class AuthService {
 
     const { userId } = result;
 
-    await this.userProfilesQueryStore.setUserProfile(userId, {
-      username,
-      primaryWalletAddress: walletAddress,
-    });
+    if (username?.length > 0) {
+      await this.userProfilesQueryStore.setUserProfile(userId, {
+        username,
+        primaryWalletAddress: walletAddress,
+      });
+    }
 
     const payload = {
       sub: userId,
