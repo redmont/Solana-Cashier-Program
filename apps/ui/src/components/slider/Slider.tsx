@@ -8,6 +8,7 @@ export interface SliderProps {
   value?: number;
   marks?: number[];
   onChange?: (value: number) => void;
+  disabled?: boolean;
 }
 
 export const Slider: FC<SliderProps> = ({
@@ -15,6 +16,7 @@ export const Slider: FC<SliderProps> = ({
   max = 100,
   marks = [],
   onChange,
+  disabled = false,
   ...props
 }) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -49,7 +51,7 @@ export const Slider: FC<SliderProps> = ({
 
   const updateValue = useCallback(
     (mouseX: number) => {
-      if (!rootRef.current) {
+      if (!rootRef.current || disabled) {
         return;
       }
 
@@ -69,12 +71,12 @@ export const Slider: FC<SliderProps> = ({
 
       onChange?.(value);
     },
-    [min, max, onChange],
+    [min, max, onChange, disabled],
   );
 
   const handleMouseDown = useCallback(
     (evt: React.MouseEvent) => {
-      if (evt.button > 0) {
+      if (evt.button > 0 || disabled) {
         return;
       }
 
@@ -85,34 +87,38 @@ export const Slider: FC<SliderProps> = ({
       evt.preventDefault();
       evt.stopPropagation();
     },
-    [updateValue],
+    [updateValue, disabled],
   );
 
   const handleTouchStart = useCallback(
     (evt: React.TouchEvent) => {
+      if (disabled) {
+        return;
+      }
+
       isDraggingRef.current = true;
 
       const { clientX } = evt.touches[0];
 
       updateValue(clientX);
     },
-    [updateValue],
+    [updateValue, disabled],
   );
 
   const handleMouseMove = useCallback(
     (evt: MouseEvent) => {
-      if (!isDraggingRef.current) {
+      if (!isDraggingRef.current || disabled) {
         return;
       }
 
       updateValue(evt.clientX);
     },
-    [updateValue],
+    [updateValue, disabled],
   );
 
   const handleTouchMove = useCallback(
     (evt: TouchEvent) => {
-      if (!isDraggingRef.current) {
+      if (!isDraggingRef.current || disabled) {
         return;
       }
 
@@ -120,7 +126,7 @@ export const Slider: FC<SliderProps> = ({
 
       evt.preventDefault();
     },
-    [updateValue],
+    [updateValue, disabled],
   );
 
   useEffect(() => {
@@ -128,10 +134,14 @@ export const Slider: FC<SliderProps> = ({
       isDraggingRef.current = false;
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('mouseup', clearDragging);
-    document.addEventListener('touchend', clearDragging);
+    if (!disabled) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('touchmove', handleTouchMove, {
+        passive: false,
+      });
+      document.addEventListener('mouseup', clearDragging);
+      document.addEventListener('touchend', clearDragging);
+    }
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
@@ -139,10 +149,14 @@ export const Slider: FC<SliderProps> = ({
       document.removeEventListener('mouseup', clearDragging);
       document.removeEventListener('touchend', clearDragging);
     };
-  }, [handleMouseMove, handleTouchMove]);
+  }, [handleMouseMove, handleTouchMove, disabled]);
 
   const handleMarkMousedown = useCallback(
     (evt: React.MouseEvent) => {
+      if (disabled) {
+        return;
+      }
+
       const { x, width: markWidth } = (
         evt.target as Element
       ).getBoundingClientRect();
@@ -153,11 +167,15 @@ export const Slider: FC<SliderProps> = ({
 
       evt.preventDefault();
     },
-    [updateValue],
+    [updateValue, disabled],
   );
 
   const handleMarkTouchStart = useCallback(
     (evt: React.TouchEvent) => {
+      if (disabled) {
+        return;
+      }
+
       const { x, width: markWidth } = (
         evt.target as Element
       ).getBoundingClientRect();
@@ -166,11 +184,11 @@ export const Slider: FC<SliderProps> = ({
 
       updateValue(x + markWidth / 2);
     },
-    [updateValue],
+    [updateValue, disabled],
   );
 
   return (
-    <div ref={rootRef} className="slider">
+    <div ref={rootRef} className={classNames('slider', { disabled })}>
       <div
         className="slider-clickarea"
         onMouseDown={handleMouseDown}
@@ -207,7 +225,12 @@ export const Slider: FC<SliderProps> = ({
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
-          <Tooltip content={`${value}%`} at="top" showDelay={0}>
+          <Tooltip
+            content={`${value}%`}
+            at="top"
+            showDelay={0}
+            disabled={disabled}
+          >
             <div className="slider-handle-clickarea"></div>
           </Tooltip>
         </div>

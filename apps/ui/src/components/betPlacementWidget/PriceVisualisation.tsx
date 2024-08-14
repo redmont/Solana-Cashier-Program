@@ -5,7 +5,13 @@ import { toScientificParts } from '@/utils';
 import { useAtomValue } from 'jotai';
 import { fightersAtom, priceMovementAverages } from '@/store/match';
 
-export const PriceVisualisation: FC = () => {
+interface PriceVisualisationProps {
+  disabled: boolean;
+}
+
+export const PriceVisualisation: FC<PriceVisualisationProps> = ({
+  disabled,
+}) => {
   const fighters = useAtomValue(fightersAtom);
   const priceMovements = useAtomValue(priceMovementAverages);
   const [progress, setProgress] = useState(0.5);
@@ -44,7 +50,7 @@ export const PriceVisualisation: FC = () => {
   }, [fighters, priceMovements]);
 
   return (
-    <div className="price-visualisation">
+    <div className={classNames('price-visualisation', { disabled })}>
       <div className="price-info-container">
         {priceMovements.map(({ priceDelta, price, ticker }, i) => {
           const direction =
@@ -64,9 +70,10 @@ export const PriceVisualisation: FC = () => {
                   </div>
                 }
                 key={ticker}
+                disabled={disabled}
               >
                 <div
-                  className={classNames('price-info', direction)}
+                  className={classNames('price-info', direction, { disabled })}
                   style={{
                     flexDirection: `row${i === 1 ? '-reverse' : ''}`,
                     fontWeight: isWinner[i] ? 'bold' : 'normal',
@@ -97,10 +104,17 @@ export const PriceVisualisation: FC = () => {
       <Tooltip content={'Trailing 10s price Δ'}>
         <div className="tow-container">
           <div className="tow-line"></div>
-          <div
-            className="tow-indicator"
-            style={{ left: `${10 + progress * 80}%` }}
-          ></div>
+          {!disabled ? (
+            <div
+              className="tow-indicator"
+              style={{ left: `${10 + progress * 80}%` }}
+            ></div>
+          ) : (
+            <div
+              className="tow-indicator"
+              style={{ left: "50%" }}
+            ></div>
+          )}
         </div>
       </Tooltip>
     </div>

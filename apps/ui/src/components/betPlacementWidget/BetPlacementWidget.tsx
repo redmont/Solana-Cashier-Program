@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useState, useCallback, useEffect } from 'react';
+import { FC, useState, useCallback, useEffect, useMemo } from 'react';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import { Button } from '@/components/ui/button';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
@@ -125,51 +125,83 @@ export const BetPlacementWidget: FC = () => {
     return setActionTitle(isLoading ? 'Processing' : 'Confirm');
   }, [isLoading, isAuthenticated, isBalanceReady]);
 
+  const isDisabled = useMemo(() => {
+    return (
+      isLoading ||
+      !!error ||
+      ((betAmount === 0 || matchStatus !== 'bettingOpen') && isConnected)
+    );
+  }, [isLoading, error, betAmount, matchStatus, isConnected]);
+
+  const disabledReason = useMemo(() => {
+    if (isLoading) {
+      return 'Loading...';
+    }
+    if (error) {
+      return error;
+    }
+    if (betAmount === 0) {
+      return 'Bet amount must be greater than 0';
+    }
+    if (matchStatus !== 'bettingOpen') {
+      return 'Bets are closed during the fight';
+    }
+    return '';
+  }, [isLoading, error, betAmount, matchStatus]);
+
   return (
     <div className="widget bet-placement-widget">
       <div className="widget-body framed">
-        <div className="widget-section">
-          <div className="fighter-selection">
-            <Typography variant="header-secondary" className="left">
-              Back your fighter
-            </Typography>
+        <Tooltip
+          content={isDisabled ? disabledReason : ''}
+          disabled={!isDisabled}
+        >
+          <div className="widget-section">
+            <div className="fighter-selection">
+              <Typography variant="header-secondary" className="left">
+                Back your fighter
+              </Typography>
 
-            <PriceVisualisation />
-            <FighterSwitch />
-            <Tooltip
-              content={`Your projected win rate once you confirm your stake`}
-            >
-              <div className="projected-win-rate">
-                <span>{projectedWinRate1}x</span>
-                <span>Win Rate</span>
-                <span>{projectedWinRate2}x</span>
+              <PriceVisualisation disabled={isDisabled} />
+              <FighterSwitch disabled={isDisabled} />
+              <Tooltip
+                content={`Your projected win rate once you confirm your stake`}
+              >
+                <div className="projected-win-rate">
+                  <span>{projectedWinRate1}x</span>
+                  <span>Win Rate</span>
+                  <span>{projectedWinRate2}x</span>
+                </div>
+              </Tooltip>
+            </div>
+
+            <div className="credits-selection">
+              <div className="credits-slider-box">
+                <span>1%</span>
+
+                <Slider
+                  value={betPercent}
+                  onChange={handlePercentChange}
+                  min={1}
+                  marks={[25, 50, 75]}
+                  disabled={isDisabled}
+                />
+
+                <span>100%</span>
               </div>
-            </Tooltip>
-          </div>
 
-          <div className="credits-selection">
-            <div className="credits-slider-box">
-              <span>1%</span>
+              <div className="credits-input-group p-inputgroup">
+                <InputNumber
+                  className="credits-input"
+                  value={betAmount}
+                  onChange={handleBetAmountChange}
+                  disabled={isDisabled}
+                />
 
-              <Slider
-                value={betPercent}
-                onChange={handlePercentChange}
-                min={1}
-                marks={[25, 50, 75]}
-              />
-
-              <span>100%</span>
-            </div>
-
-            <div className="credits-input-group p-inputgroup">
-              <InputNumber
-                className="credits-input"
-                value={betAmount}
-                onChange={handleBetAmountChange}
-              />
-
-              <span className="p-inputgroup-addon credits-label">Credits</span>
-            </div>
+                <span className="p-inputgroup-addon credits-label">
+                  Credits
+                </span>
+              </div>
 
             <div className="mt-2 text-sm">
               {error ? (
@@ -184,18 +216,14 @@ export const BetPlacementWidget: FC = () => {
             <Button
               loading={isLoading}
               className="mt-3 w-full text-lg"
-              disabled={
-                isLoading ||
-                !!error ||
-                ((betAmount === 0 || matchStatus !== 'bettingOpen') &&
-                  isConnected)
-              }
+              disabled={isDisabled}
               onClick={isConnected ? placeBet : join}
             >
               {actionTitle}
             </Button>
           </div>
         </div>
+        </Tooltip>
       </div>
     </div>
   );
