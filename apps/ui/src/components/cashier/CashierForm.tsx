@@ -1,7 +1,7 @@
 import { FC, useCallback, useState } from 'react';
 
 import { AmountSelectionForm } from './AmountSelectionForm';
-import { CreditAmount } from './utils';
+import { PricedCredits } from './utils';
 import { PurchaseForm } from './PurchaseForm';
 import { X } from 'lucide-react';
 
@@ -13,10 +13,15 @@ export const CashierForm: FC<Props> = ({ onClose }) => {
   const [state, setState] = useState<
     'selectAmount' | 'allowance' | 'completed'
   >('selectAmount');
-  const [credits, setCredits] = useState<CreditAmount>({ amount: 0, price: 0 });
+  const [credits, setCredits] = useState<PricedCredits>({
+    credits: 0,
+    total: 0,
+    pricePerCredit: 0,
+    discount: '0%',
+  });
 
-  const onAmountSelected = useCallback((credits: CreditAmount) => {
-    setCredits(credits);
+  const onAmountSelected = useCallback((priced: PricedCredits) => {
+    setCredits(priced);
     setState('allowance');
   }, []);
 

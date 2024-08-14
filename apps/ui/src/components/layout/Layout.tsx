@@ -7,7 +7,7 @@ import { Navbar } from '../navbar/Navbar';
 
 export const Layout = (props: ChildContainerProps) => {
   return (
-    <div className="container px-2 pt-1">
+    <div className="mx-auto w-full max-w-[1568px] px-2 pt-1">
       <TutorialDialog />
       <Navbar />
       {props.children}

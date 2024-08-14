@@ -11,6 +11,10 @@ import InfoIcon from './InfoIcon';
 import useOnClickOutside from '@/hooks/useOnClickOutside';
 import { CashierForm } from '../cashier';
 import { Button } from '../ui/button';
+import { Tooltip } from '../Tooltip';
+
+const formatCredits = (credits: number) =>
+  new Intl.NumberFormat(undefined, { notation: 'compact' }).format(credits);
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 
 const Burger = forwardRef<
@@ -113,7 +117,7 @@ export const Navbar = () => {
   );
 
   return (
-    <div className="h- relative mb-4 mt-3 flex justify-between rounded-xl bg-foreground">
+    <div className="relative mb-4 mt-3 flex justify-between rounded-xl bg-foreground">
       <div className="flex items-center gap-3">
         <div className="flex shrink-0 items-center justify-center px-4 py-2">
           <Link href="/">
@@ -141,12 +145,17 @@ export const Navbar = () => {
           )}
         >
           <span className="inline-flex gap-1">
-            <span className="hidden sm:inline">Credits:</span>
-            <span>{Math.floor(balance ?? 0)}</span>
+            {balance !== undefined && (
+              <Tooltip position="bottom" content={Math.floor(balance)}>
+                <span className="hidden sm:inline">Credits:</span>
+                <span>{formatCredits(balance)}</span>
+              </Tooltip>
+            )}
           </span>
 
           {cashierEnabled && (
             <Button
+              loading={balance === undefined}
               onClick={() => {
                 setCashierOpen((open) => !open);
               }}
@@ -166,6 +175,14 @@ export const Navbar = () => {
         <JoinButton className="username cursor-pointer md:flex" />
         <Burger ref={burgerRef} isNavOpen={isNavOpen} setNavOpen={setNavOpen} />
       </div>
+      {isCashierOpen && (
+        <div
+          ref={cashierRef}
+          className="absolute right-0 top-[calc(100%+1rem)] z-10 mx-0 w-[calc(100vw-1rem)] rounded-md bg-foreground p-5 sm:top-[calc(100%+1rem)] sm:w-[28rem]"
+        >
+          <CashierForm onClose={() => setCashierOpen(false)} />
+        </div>
+      )}
       {isNavOpen && (
         <div
           ref={navRef}

@@ -23,12 +23,14 @@ import {
   AmountSchema,
   CreditAmount,
   formatUSDC,
-  getCreditPrice,
+  getPricingConfig,
   priceConfigurations,
+  PricedCredits,
 } from './utils';
+import { cn } from '@/lib/utils';
 
 type Props = {
-  onSubmit: (data: CreditAmount) => void;
+  onSubmit: (data: PricedCredits) => void;
 };
 
 export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
@@ -47,16 +49,18 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
 
   const balanceInsufficientRefinement = useCallback(
     (credits: CreditAmount) => {
+      const config = getPricingConfig(credits.amount);
       return (
         balance.status === 'success' &&
-        credits.price <= formatUSDC(balance.data)
+        config &&
+        +config.total <= formatUSDC(balance.data)
       );
     },
     [balance.status, balance.data],
   );
 
   const form = useForm<CreditAmount>({
-    defaultValues: { amount: 1000 },
+    defaultValues: { amount: priceConfigurations[0].credits },
     resolver: zodResolver(
       AmountSchema.refine(
         () => balance.status !== 'pending',
@@ -73,13 +77,26 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
     ),
   });
 
-  const price = getCreditPrice(form.watch('amount'));
+  const priceConfig = getPricingConfig(form.watch('amount'));
   const insufficientBalance =
-    balance.status === 'success' && formatUSDC(balance.data) < price;
+    balance.status === 'success' &&
+    !!priceConfig &&
+    balance.data < +priceConfig.total;
+
+  const _onSubmit = useCallback(
+    (data: CreditAmount) => {
+      const config = getPricingConfig(data.amount);
+      if (!config) {
+        throw new Error('Price configuration not found');
+      }
+      onSubmit(config);
+    },
+    [onSubmit],
+  );
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 px-2">
+      <form onSubmit={form.handleSubmit(_onSubmit)} className="space-y-6 px-2">
         <FormField
           control={form.control}
           name="amount"
@@ -96,29 +113,29 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
                       form.setValue('amount', parseInt(value));
                     }
                   }}
-                  defaultValue={'1000'}
+                  defaultValue={priceConfigurations[0].credits.toString()}
                   className="flex flex-col space-y-1"
                 >
-                  {Object.entries(priceConfigurations).map(
-                    ([preset, price]) => (
+                  {priceConfigurations
+                    .filter((config) => !config.hidden)
+                    .map(({ credits, pricePerCredit: price }) => (
                       <FormItem
-                        key={preset}
+                        key={credits}
                         className="flex items-center space-x-3 space-y-0"
                       >
                         <FormControl>
-                          <RadioGroupItem value={preset} />
+                          <RadioGroupItem value={credits.toString()} />
                         </FormControl>
                         <div className="flex grow justify-between">
                           <FormLabel className="font-semibold">
-                            {preset} credits
+                            {credits} credits
                           </FormLabel>
                           <FormLabel className="font-normal">
-                            {price} USDC
+                            {(price * credits).toFixed(2)} USDC
                           </FormLabel>
                         </div>
                       </FormItem>
-                    ),
-                  )}
+                    ))}
                   <FormItem className="flex items-center space-x-3 space-y-0">
                     <FormControl>
                       <RadioGroupItem value="Custom" />
@@ -135,10 +152,39 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
           name="amount"
           render={({ formState }) => (
             <FormItem>
-              <FormLabel>Amount</FormLabel>
+              <div className="flex justify-between">
+                <FormLabel>Amount</FormLabel>
+                {priceConfig?.discount &&
+                  parseInt(priceConfig.discount) > 0 && (
+                    <FormLabel
+                      className={cn('flex gap-1 font-bold', {
+                        hidden: parseInt(priceConfig?.discount) === 0,
+                        'text-secondary': parseInt(priceConfig?.discount) < 20,
+                        'animate-pulse-fast text-[#d84315]':
+                          parseInt(priceConfig?.discount) >= 20,
+                      })}
+                    >
+                      <span
+                        className={cn({
+                          hidden: parseInt(priceConfig?.discount) < 20,
+                        })}
+                      >
+                        🔥
+                      </span>
+                      Discounted: {priceConfig?.discount}
+                      <span
+                        className={cn({
+                          hidden: parseInt(priceConfig?.discount) < 20,
+                        })}
+                      >
+                        🔥
+                      </span>
+                    </FormLabel>
+                  )}
+              </div>
               <FormControl>
                 <Input
-                  endAdornment={`${price} USDC`}
+                  endAdornment={`${priceConfig?.total.toFixed(2) ?? ''} USDC`}
                   {...form.register('amount', { valueAsNumber: true })}
                   disabled={formState.isSubmitting || !customEnabled}
                   placeholder="Enter amount of credits"
@@ -152,10 +198,7 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
         <FormMessages className="text-center" />
         <div className="flex justify-between gap-3 font-normal">
           <span>Your balance</span>
-          <span>
-            {(parseFloat(balance.data?.toString() ?? '0') / 1000000).toFixed(2)}{' '}
-            USDC
-          </span>
+          <span>{formatUSDC(balance.data)} USDC</span>
         </div>
         <Button
           loading={balance.isLoading}

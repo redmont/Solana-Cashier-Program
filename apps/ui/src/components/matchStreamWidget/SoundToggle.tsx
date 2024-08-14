@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import { FC, useCallback } from 'react';
 
 interface SoundToggleProps {
@@ -10,7 +11,11 @@ export const SoundToggle: FC<SoundToggleProps> = ({ muted, onChange }) => {
 
   return (
     <button
-      className="hover:border-primary-500 hover:bg-primary-300/40 absolute bottom-3 left-4 flex size-12 items-center justify-center rounded-full bg-slate-200/20 hover:border"
+      className={cn(
+        !muted && 'bg-primary text-black',
+        muted && 'bg-slate-200/20',
+        'absolute bottom-3 left-4 flex size-10 items-center justify-center rounded-full ring-primary ring-offset-2 ring-offset-black hover:border hover:border-primary-500 hover:bg-primary-300/40 focus:ring-2',
+      )}
       onClick={handleChange}
     >
       <i
