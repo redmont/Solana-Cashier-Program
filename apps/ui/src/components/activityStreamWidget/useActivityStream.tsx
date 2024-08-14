@@ -80,8 +80,9 @@ export function useActivityStream() {
   }, [patchState, state, subscribe]);
 
   useEffect(() => {
-    if (!socketIsConnected || !matchId || !matchSeries || isReady.current)
+    if (!socketIsConnected || !matchId || !matchSeries || isReady.current) {
       return;
+    }
 
     send(new GetActivityStreamMessage(matchSeries, matchId)).then(
       (response: unknown) => {

@@ -15,7 +15,7 @@
             margin-bottom: $inlineSpacing;
            
             button {
-                background-color: $carouselIndicatorBg;
+                background-color: $carouselIndicatorBg !important;
                 width: $carouselIndicatorWidth;
                 height: $carouselIndicatorHeight;
                 transition: $actionIconTransition;
@@ -30,6 +30,7 @@
                 button {
                     background: $highlightBg;
                     color: $highlightTextColor;
+                    background-color: $primaryColor !important;
                 }
             }
         }

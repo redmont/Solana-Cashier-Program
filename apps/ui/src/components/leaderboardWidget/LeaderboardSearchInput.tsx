@@ -1,6 +1,6 @@
 import { FC, useCallback, ChangeEvent, useState } from 'react';
 import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
+import { Button } from '@/components/ui/button';
 
 export interface LeaderboardSearchInputProps {
   query?: string;
@@ -32,7 +32,7 @@ export const LeaderboardSearchInput: FC<LeaderboardSearchInputProps> = ({
   }, [value, onSearch]);
 
   return (
-    <div className="leaderboard-search-input search-input-group p-inputgroup">
+    <div className="leaderboard-search-input search-input-group p-inputgroup relative">
       <InputText
         className="query-input"
         placeholder="Search"
@@ -40,9 +40,18 @@ export const LeaderboardSearchInput: FC<LeaderboardSearchInputProps> = ({
         onChange={handleChange}
       />
 
-      <Button icon="pi pi-search" onClick={handleSearchClick} />
+      {canClear && (
+        <Button
+          className="rounded-full hover:bg-white/10"
+          onClick={handleClearClick}
+        >
+          <i className="pi pi-times text-text-200" />
+        </Button>
+      )}
 
-      {canClear && <Button icon="pi pi-times" onClick={handleClearClick} />}
+      <Button className="" onClick={handleSearchClick}>
+        <i className="pi pi-search text-text-200" />
+      </Button>
     </div>
   );
 };

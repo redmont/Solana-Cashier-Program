@@ -38,7 +38,9 @@ export function toScientificParts(num: number) {
 }
 
 export const truncateEthAddress = (walletAddress: string) => {
-  if (!walletAddress || walletAddress.length < 10) return walletAddress;
+  if (!walletAddress || walletAddress.length < 10) {
+    return walletAddress;
+  }
 
   return walletAddress.slice(0, 8) + '...' + walletAddress.slice(-4);
 };

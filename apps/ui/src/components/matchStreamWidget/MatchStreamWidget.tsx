@@ -19,7 +19,7 @@ const Red5Stream = dynamic(() => import('./Red5Stream'), {
   ssr: false,
 });
 
-type StreamSource = 'millicast' | 'cloudflare' | 'youtube' | 'red5' | 'static';
+type StreamSource = 'cloudflare' | 'youtube' | 'red5' | 'static';
 
 export const MatchStreamWidget: FC = () => {
   const { isConnected } = useEthWallet();

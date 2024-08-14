@@ -4,7 +4,7 @@ export interface CreateSeriesRequest {
   betPlacementTime: number;
   preMatchVideoPath: string;
   preMatchDelay: number;
-  fighterProfiles: string[]; 
+  fighterProfiles: string[];
   level: string;
   fightType: string;
 }

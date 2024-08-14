@@ -1,4 +1,4 @@
-import { Button } from 'primereact/button';
+import { Button } from '@/components/ui/button';
 import { classNames } from 'primereact/utils';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { toPng } from 'html-to-image';
@@ -77,13 +77,17 @@ export const MatchResultWidget: FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!imageEnabled || !isSavingPng) return;
+    if (!imageEnabled || !isSavingPng) {
+      return;
+    }
 
     generateImage();
   }, [isSavingPng, imageEnabled, generateImage]);
 
   const share = useCallback(async () => {
-    if (!cachedResult) return;
+    if (!cachedResult) {
+      return;
+    }
     const {
       winner,
       loser,
@@ -127,32 +131,23 @@ export const MatchResultWidget: FC = () => {
                 {cachedResult?.winner.displayName} Wins!
               </div>
 
-              <div className="win-amount">{`+${+cachedResult.result.winAmount > 0 ? cachedResult.result?.winAmount : 0}`}</div>
+              <div className="win-amount">{`+${+cachedResult?.result.winAmount > 0 ? cachedResult.result?.winAmount : 0}`}</div>
 
               {!isSavingPng && (
                 <div className="widget-actions">
                   {imageEnabled && !isPngSaved && (
-                    <Button
-                      className="p-button-secondary p-button-outlined"
-                      label="Get Result Image"
-                      onClick={() => setSavingPng(true)}
-                    />
+                    <Button onClick={() => setSavingPng(true)}>
+                      Get Result Image
+                    </Button>
                   )}
 
                   {(!imageEnabled || isPngSaved) && (
-                    <Button
-                      className="p-button-secondary p-button-outlined"
-                      label="Share"
-                      icon="pi pi-twitter"
-                      onClick={share}
-                    />
+                    <Button onClick={share}>
+                      <span>Share on</span> <i className="pi pi-twitter" />
+                    </Button>
                   )}
 
-                  <Button
-                    className="p-button-secondary p-button-outlined"
-                    label="Next Fight"
-                    onClick={dismiss}
-                  />
+                  <Button onClick={dismiss}>Dismiss</Button>
                 </div>
               )}
             </div>

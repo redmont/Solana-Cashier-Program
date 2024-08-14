@@ -13,7 +13,7 @@ export const ZealyWidget: FC = () => {
 
       <div className="widget-footer">
         <a
-          className="goto-button p-button"
+          className="bg-primary-500 hover:bg-primary-600 focus:ring-primary-300 block w-full rounded-lg px-5 py-2.5 text-center text-sm font-bold text-black transition-all delay-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black"
           href="https://zealy.io/cw/brawl3rs/questboard"
           target="_blank"
         >

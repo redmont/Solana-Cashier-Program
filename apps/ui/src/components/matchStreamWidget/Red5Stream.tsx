@@ -65,7 +65,9 @@ const Red5Stream = ({
       let timeout: NodeJS.Timeout;
 
       const connect = async () => {
-        if (!isOn) return;
+        if (!isOn) {
+          return;
+        }
 
         try {
           await red5Client?.connect();

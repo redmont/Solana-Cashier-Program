@@ -3,7 +3,7 @@ import { useEthWallet } from '@/hooks';
 import { truncateEthAddress } from '../../utils';
 import { classNames } from 'primereact/utils';
 import { TabView, TabPanel } from 'primereact/tabview';
-import { Scrollable } from '@/components/Scrollable';
+import { Scrollable } from '@/components/ui/scrollable';
 import { CurrentFight } from './CurrentFight';
 import { FightFixture } from './FightFixture';
 import Typography from '@/components/ui/typography';

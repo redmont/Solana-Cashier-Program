@@ -44,6 +44,14 @@
     margin-top: 0.5rem;
   }
 
+  .disabled {
+    opacity: 0.5;
+  }
+
+  .price-visualisation.disabled {
+    opacity: 0.7;
+  }
+
   .tow-container {
     height: 20px;
     overflow: hidden;

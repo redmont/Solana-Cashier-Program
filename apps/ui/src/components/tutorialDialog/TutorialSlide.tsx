@@ -1,4 +1,4 @@
-import { classNames } from 'primereact/utils';
+import { cn as classNames } from '@/lib/utils';
 import { FC, ReactNode } from 'react';
 
 export interface TutorialSlideProps {

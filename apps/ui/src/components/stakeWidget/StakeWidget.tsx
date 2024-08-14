@@ -20,14 +20,14 @@ export const StakeWidget: FC = () => {
               <Tooltip
                 content={`Your existing stake on ${fighter.displayName}`}
               >
-                <div className="bet-purchase-price mt-3 flex justify-content-between text-white">
-                  <span>My Stake</span>
+                <div className="bet-purchase-price mt-3 flex justify-between text-white">
+                  <span className="font-semibold">My Stake:</span>{' '}
                   <span>{stake ?? 0} credits</span>
                 </div>
               </Tooltip>
 
-              <div className="bet-win-rewards mt-2 flex justify-content-between text-white">
-                <span>Current win rate:</span>
+              <div className="bet-win-rewards mt-2 flex justify-between text-white">
+                <span className="font-semibold">Current win rate:</span>{' '}
                 <span>{winRate ?? 0}x</span>
               </div>
             </div>

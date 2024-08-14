@@ -1,0 +1,53 @@
+.cashier-modal {
+  .p-dialog-header {
+    padding: 1rem;
+  }
+
+  .p-dialog-content {
+    padding: 1rem;
+
+    .p-timeline-event-opposite {
+      display: none;
+    }
+  }
+
+  .presets {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+  }
+
+  .preset {
+    display: flex;
+    gap: 0.5em;
+
+    label {
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+
+  .cashier-modal-actions {
+    display: flex;
+    gap: 0.5em;
+
+    button {
+      flex: 1;
+    }
+  }
+
+  .timeline-title {
+    font-weight: bold;
+  }
+
+  .purchase-completed {
+    text-align: center;
+
+    .purchase-amount {
+      font-size: 1.5rem;
+      color: #4cdc88;
+      padding: 0.5rem 0;
+    }
+  }
+}

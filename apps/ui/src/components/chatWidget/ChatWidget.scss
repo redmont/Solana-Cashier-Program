@@ -95,29 +95,6 @@ $chat-input-height: 3rem;
     }
   }
 
-  .chat-actions {
-    position: relative;
-    display: flex;
-    padding: 1rem;
-    gap: 0.5rem;
-
-    input {
-      flex: 1;
-      border: 2px solid var(--surface-100);
-      border-radius: $borderRadius;
-
-      &:focus {
-        border-color: $primary500;
-        background-color: rgba(11, 209, 138, 0.1);
-      }
-    }
-
-    em-emoji-picker {
-      position: absolute;
-      bottom: 0;
-    }
-  }
-
   .chat-new-message-notification {
     cursor: pointer;
     display: flex;

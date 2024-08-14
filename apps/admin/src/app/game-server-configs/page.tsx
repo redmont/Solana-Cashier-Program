@@ -39,7 +39,10 @@ const GameServerConfigs = () => {
             {data?.serverConfigs.map((serverConfig) => (
               <Tr key={serverConfig.serverId}>
                 <Td>
-                  <IconButton size="sm" icon={<IoPencil />} aria-label="Edit"
+                  <IconButton
+                    size="sm"
+                    icon={<IoPencil />}
+                    aria-label="Edit"
                     onClick={() =>
                       router.push(
                         `/game-server-configs/${serverConfig.serverId}`,

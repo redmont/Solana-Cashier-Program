@@ -6,7 +6,7 @@ import { FightCardWidget } from '@/components/fightCardWidget';
 import { MatchResultWidget } from '@/components/matchResultWidget';
 import { MatchStreamWidget } from '@/components/matchStreamWidget';
 import { MatchStatusWidget } from '@/components/matchStatusWidget';
-import { ChatWidget } from '@/components/chatWidget';
+import { ChatWidget } from '@/components/chatWidget/ChatWidget';
 
 export default function Home() {
   return (

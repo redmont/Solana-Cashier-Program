@@ -1,1 +1,1 @@
-export const BrandName = 'Brawlers'
+export const BrandName = 'Brawlers';

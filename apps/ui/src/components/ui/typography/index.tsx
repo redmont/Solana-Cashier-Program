@@ -1,5 +1,5 @@
 import React from 'react';
-import { classNames } from 'primereact/utils';
+import { cn as classNames } from '@/lib/utils';
 
 type TypographyProps = {
   variant: 'header-secondary';

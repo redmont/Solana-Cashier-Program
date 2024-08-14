@@ -1,10 +1,9 @@
 'use client';
 
-import { Button } from 'primereact/button';
+import { Button } from '@/components/ui/button';
 import { ChatIcon } from '@/icons/ChatIcon';
 import { BellIcon } from '@/icons/BellIcon';
-import { classNames } from 'primereact/utils';
-import { InputText } from 'primereact/inputtext';
+import { cn } from '@/lib/utils';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TimetokenUtils } from '@pubnub/chat';
 import { useMutation } from '@tanstack/react-query';
@@ -13,10 +12,11 @@ import Markdown from 'react-markdown';
 
 import { SendMessageIcon } from '@/icons/SendMessageIcon';
 import useChat from './useChat';
-import { Scrollable, ScrollableRef } from '../Scrollable';
+import { Scrollable, ScrollableRef } from '@/components/ui/scrollable';
 import Clock from '@/icons/Clock';
 import MessageAuthor from './MessageAuthor';
-import useElementInView from '@/hooks/useElementIntersected';
+import { Input } from '../ui/input';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 
 const parseTimetoken = (timetoken: string) => {
   const date = dayjs.utc(TimetokenUtils.timetokenToDate(timetoken));
@@ -25,102 +25,52 @@ const parseTimetoken = (timetoken: string) => {
 };
 
 export const ChatWidget = () => {
+  const { user } = useDynamicContext();
   const [value, setValue] = useState('');
-  const [scrollSticky, setScrollSticky] = useState(true);
   const lastMessageRef = useRef<HTMLDivElement>(null);
-  const lastMessageIsInView = useElementInView(lastMessageRef.current);
   const scrollableRef = useRef<ScrollableRef>(null);
-  const prevChatViewportRef = useRef<{
-    scrollHeight: number;
-    clientHeight: number;
-  }>({
-    scrollHeight: 0,
-    clientHeight: 0,
-  });
-  const [mode, setMode] = useState<'global' | 'alerts'>('global');
-  const { messages, sendMessage, channels, sendingIsEnabled } = useChat(mode);
+  const { messages, setMode, mode, sendMessage, channels, sendingIsEnabled } =
+    useChat();
 
-  useEffect(() => {
-    const element = scrollableRef.current?.getElement()?.lastChild;
+  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(true);
 
-    const onScoll = (event: Event) => {
-      const target = event.target as HTMLElement;
-
-      setScrollSticky(
-        target.scrollHeight - target.scrollTop === target.clientHeight,
-      );
-    };
-
-    element?.addEventListener('scroll', onScoll);
-
-    return () => {
-      element?.removeEventListener('scroll', onScoll);
-    };
+  const scrollBottom = useCallback(() => {
+    if (scrollableRef.current) {
+      scrollableRef.current.scrollTop = scrollableRef.current?.scrollHeight;
+    }
   }, []);
 
-  const scrollDown = useCallback(() => {
-    const messageContainer = lastMessageRef.current?.parentElement;
-    if (messageContainer) {
-      messageContainer.scroll({
-        top: messageContainer.scrollHeight,
+  const scrollToBottomSmooth = useCallback(() => {
+    if (scrollableRef.current) {
+      scrollableRef.current.scrollTo({
+        top: scrollableRef.current.scrollHeight,
         behavior: 'smooth',
       });
     }
-  }, []);
+  }, [scrollableRef]);
 
-  const handleScroll = useCallback(() => {
-    if (scrollableRef.current && lastMessageRef.current && scrollSticky) {
-      const { scrollTop, scrollHeight, clientHeight } =
-        scrollableRef.current.getElement() as HTMLElement;
+  useEffect(() => {
+    const lastMsg = messages[messages.length - 1];
+    const lastUsername =
+      lastMsg &&
+      (lastMsg.content as typeof lastMsg.content & { username?: string })
+        .username;
 
-      const { scrollHeight: prevScrollHeight, clientHeight: prevClientHeight } =
-        prevChatViewportRef.current;
-
-      const scrollDiff =
-        prevScrollHeight === 0 ? 0 : scrollHeight - prevScrollHeight;
-
-      if (
-        scrollHeight - (scrollTop + Math.max(clientHeight, prevClientHeight)) <=
-        2 * scrollDiff
-      ) {
-        // checking previous clientHeight to handle scroll after resize
-        // scroll if previous message was visible in previous state
-        // have to use timeout to make it working with Scrollable
-        setTimeout(() => {
-          scrollDown();
-        }, 100);
-      }
-
-      prevChatViewportRef.current = {
-        scrollHeight,
-        clientHeight,
-      };
+    const shouldScroll =
+      hasScrolledToBottom ||
+      (lastMsg && user && user.username === lastUsername);
+    if (scrollableRef.current && shouldScroll) {
+      scrollBottom();
     }
-  }, [scrollDown, scrollSticky]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, scrollBottom]);
 
   const send = useMutation({
     mutationFn: sendMessage,
     onMutate: () => {
       setValue('');
     },
-    onSuccess: () => {
-      setScrollSticky(true);
-      handleScroll();
-    },
   });
-
-  useEffect(() => {
-    handleScroll();
-  }, [messages, handleScroll, lastMessageIsInView]);
-
-  const [lastSeen, setLastSeen] = useState<HTMLDivElement | null>(null);
-  const hasNewMessages = !scrollSticky && lastSeen !== lastMessageRef.current;
-
-  useEffect(() => {
-    if (lastMessageIsInView) {
-      setLastSeen(lastMessageRef.current);
-    }
-  }, [lastMessageIsInView, messages]);
 
   const handleKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
@@ -132,40 +82,48 @@ export const ChatWidget = () => {
     send.mutate(value);
   };
 
+  const handleScroll = () => {
+    if (scrollableRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollableRef.current;
+      setHasScrolledToBottom(scrollTop + clientHeight >= scrollHeight - 10);
+    }
+  };
+
   return (
     <div className="widget chat-widget">
-      <div className="widget-body">
-        <div className="header">
+      <div className="widget-body relative">
+        <div className="flex justify-between border-b border-border px-4 py-2">
           <div>Chat</div>
           <div className="mode-toggle">
             <div
               onClick={() => setMode('global')}
-              className={classNames({ selected: mode === 'global' })}
+              className={cn({ selected: mode === 'global' })}
             >
               <ChatIcon />
               Global
             </div>
             <div
               onClick={() => setMode('alerts')}
-              className={classNames({ selected: mode === 'alerts' })}
+              className={cn({ selected: mode === 'alerts' })}
             >
               <BellIcon />
               Alerts
             </div>
           </div>
         </div>
-        {hasNewMessages && (
-          <button
-            onClick={() => {
-              setScrollSticky(true);
-              handleScroll();
-            }}
-            className="chat-new-message-notification"
-          >
-            <i className="pi pi-chevron-down"></i>
-          </button>
-        )}
-        <Scrollable className="chat-viewport" ref={scrollableRef}>
+        <Scrollable
+          onScroll={handleScroll}
+          className="chat-viewport relative"
+          ref={scrollableRef}
+        >
+          {!hasScrolledToBottom && (
+            <button
+              onClick={scrollToBottomSmooth}
+              className="absolute bottom-3 right-5 rounded-tl-md"
+            >
+              <i className="pi pi-chevron-down rounded-lg border border-secondary p-2 text-secondary"></i>
+            </button>
+          )}
           {messages.map((msg, index) => (
             <div
               key={index}
@@ -173,7 +131,7 @@ export const ChatWidget = () => {
               className="message"
             >
               <span
-                className={classNames('message-ts', {
+                className={cn('message-ts', {
                   system: msg.userId === 'system',
                 })}
               >
@@ -190,16 +148,19 @@ export const ChatWidget = () => {
             </div>
           ))}
         </Scrollable>
-        <div className="chat-actions">
-          <InputText
-            placeholder={channels?.user ? 'Type a message' : 'Log in to chat'}
+        <div className="flex w-full items-center space-x-2 px-4 pb-4 pt-2">
+          <Input
+            className="grow"
+            placeholder={
+              channels?.general ? 'Type a message' : 'Log in to chat'
+            }
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyUp={handleKeyUp}
             disabled={!sendingIsEnabled}
           />
           <Button
-            className="send-message-button"
+            className="basis-0 px-2.5"
             onClick={handleSendMessageClick}
             disabled={!sendingIsEnabled || send.isPending}
           >

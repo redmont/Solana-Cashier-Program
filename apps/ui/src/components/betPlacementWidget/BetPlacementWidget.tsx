@@ -2,7 +2,7 @@
 
 import { FC, useState, useCallback, useEffect, useMemo } from 'react';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
-import { Button } from 'primereact/button';
+import { Button } from '@/components/ui/button';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { useAtom, useAtomValue } from 'jotai';
 
@@ -22,6 +22,7 @@ import {
 import Typography from '../ui/typography';
 
 export const BetPlacementWidget: FC = () => {
+  const [actionTitle, setActionTitle] = useState('Join the Fight');
   const balance = useAtomValue(balanceAtom);
   const matchSeries = useAtomValue(matchSeriesAtom);
   const matchStatus = useAtomValue(matchStatusAtom);
@@ -44,8 +45,11 @@ export const BetPlacementWidget: FC = () => {
 
   useEffect(() => {
     if (balance !== undefined && balance < betAmount) {
-      if (isDirty) setError('Insufficient credits balance');
-      else setBetAmount(Math.floor(balance));
+      if (isDirty) {
+        setError('Insufficient credits balance');
+      } else {
+        setBetAmount(Math.floor(balance));
+      }
     } else {
       setError('');
     }
@@ -58,7 +62,9 @@ export const BetPlacementWidget: FC = () => {
       setLoading(false);
     }
 
-    if (betAmount > 0 || (isAuthenticated && !isBalanceReady)) return;
+    if (betAmount > 0 || (isAuthenticated && !isBalanceReady)) {
+      return;
+    }
 
     setBetAmount(Math.floor((balance ?? 0) * 0.25));
 
@@ -107,89 +113,121 @@ export const BetPlacementWidget: FC = () => {
 
   const join = useCallback(() => setShowAuthFlow(true), [setShowAuthFlow]);
 
-  const actionTitle = useMemo(() => {
+  useEffect(() => {
     if (isLoading && (!isAuthenticated || !isBalanceReady)) {
-      return 'Loading';
+      return setActionTitle('Loading');
     }
 
     if (!isAuthenticated) {
-      return 'Join the Fight';
+      return setActionTitle('Join the Fight');
     }
 
-    return isLoading ? 'Processing' : 'Confirm';
+    return setActionTitle(isLoading ? 'Processing' : 'Confirm');
   }, [isLoading, isAuthenticated, isBalanceReady]);
+
+  const isDisabled = useMemo(() => {
+    return isLoading || (matchStatus !== 'bettingOpen' && isConnected);
+  }, [isLoading, matchStatus, isConnected]);
+
+  const isDisabledBet = useMemo(() => {
+    return (
+      isLoading ||
+      !!error ||
+      ((betAmount === 0 || matchStatus !== 'bettingOpen') && isConnected)
+    );
+  }, [isLoading, error, betAmount, matchStatus, isConnected]);
+
+  const disabledReason = useMemo(() => {
+    if (isLoading) {
+      return 'Loading...';
+    }
+    if (error) {
+      return error;
+    }
+    if (betAmount === 0) {
+      return 'Bet amount must be greater than 0';
+    }
+    if (matchStatus !== 'bettingOpen') {
+      return 'Bets are closed during the fight';
+    }
+    return '';
+  }, [isLoading, error, betAmount, matchStatus]);
 
   return (
     <div className="widget bet-placement-widget">
       <div className="widget-body framed">
-        <div className="widget-section">
-          <div className="fighter-selection">
-            <Typography variant="header-secondary" className="left">
-              Back your fighter
-            </Typography>
+        <Tooltip
+          content={isDisabled ? disabledReason : ''}
+          disabled={!isDisabled}
+        >
+          <div className="widget-section">
+            <div className="fighter-selection">
+              <Typography variant="header-secondary" className="left">
+                Back your fighter
+              </Typography>
 
-            <PriceVisualisation />
-            <FighterSwitch />
-            <Tooltip
-              content={`Your projected win rate once you confirm your stake`}
-            >
-              <div className="projected-win-rate">
-                <span>{projectedWinRate1}x</span>
-                <span>Win Rate</span>
-                <span>{projectedWinRate2}x</span>
+              <PriceVisualisation disabled={isDisabled} />
+              <FighterSwitch disabled={isDisabled} />
+              <Tooltip
+                content={`Your projected win rate once you confirm your stake`}
+              >
+                <div className="projected-win-rate">
+                  <span>{projectedWinRate1}x</span>
+                  <span>Win Rate</span>
+                  <span>{projectedWinRate2}x</span>
+                </div>
+              </Tooltip>
+            </div>
+
+            <div className="credits-selection">
+              <div className="credits-slider-box">
+                <span>1%</span>
+
+                <Slider
+                  value={betPercent}
+                  onChange={handlePercentChange}
+                  min={1}
+                  marks={[25, 50, 75]}
+                  disabled={isLoading || isDisabled}
+                />
+
+                <span>100%</span>
               </div>
-            </Tooltip>
-          </div>
 
-          <div className="credits-selection">
-            <div className="credits-slider-box">
-              <span>1%</span>
+              <div className="credits-input-group p-inputgroup">
+                <InputNumber
+                  className="credits-input"
+                  value={betAmount}
+                  onChange={handleBetAmountChange}
+                  disabled={isLoading}
+                />
 
-              <Slider
-                value={betPercent}
-                onChange={handlePercentChange}
-                min={1}
-                marks={[25, 50, 75]}
-              />
-
-              <span>100%</span>
-            </div>
-
-            <div className="credits-input-group p-inputgroup">
-              <InputNumber
-                className="credits-input"
-                value={betAmount}
-                onChange={handleBetAmountChange}
-              />
-
-              <span className="p-inputgroup-addon credits-label">Credits</span>
-            </div>
-
-            <div className="text-sm mt-2">
-              {error ? (
-                <span className="text-red-500">{error}</span>
-              ) : (
-                <span className="text-600">
-                  Stakes are locked until the end of the fight.
+                <span className="p-inputgroup-addon credits-label">
+                  Credits
                 </span>
-              )}
-            </div>
+              </div>
 
-            <Button
-              loading={isLoading}
-              label={actionTitle}
-              size="large"
-              className="button-place w-full mt-3 confirm-button-compact"
-              disabled={
-                isLoading ||
-                !!error ||
-                ((betAmount === 0 || matchStatus !== 'bettingOpen') &&
-                  isConnected)
-              }
-              onClick={isConnected ? placeBet : join}
-            />
+              <div className="mt-2 text-sm">
+                {error ? (
+                  <span className="text-red-500">{error}</span>
+                ) : (
+                  <span className="text-600">
+                    Stakes are locked until the end of the fight.
+                  </span>
+                )}
+              </div>
+
+              <Button
+                loading={isLoading}
+                className="mt-3 w-full text-lg"
+                disabled={isDisabledBet}
+                onClick={isConnected ? placeBet : join}
+              >
+                {actionTitle}
+              </Button>
+            </div>
           </div>
-        </div>
+        </Tooltip>
       </div>
     </div>
   );

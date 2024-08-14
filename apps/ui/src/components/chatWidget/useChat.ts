@@ -1,19 +1,15 @@
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import {
   ChatAuthMessage,
   type ChatAuthMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
+import { Chat, Message } from './Chat';
 
 import { useEthWallet, useSocket } from '@/hooks';
 import { pubNubPubKey, pubNubSubKey } from '@/config';
-
-import { Chat, Message, Channel } from './Chat';
-
-export type Channels = {
-  general?: Channel;
-  user?: Channel;
-};
+import { useAtom } from 'jotai';
+import { chatChannelsAtom, chatMessagesAtom, chatModeAtom } from '@/store/chat';
 
 const byTimetoken = (a: Message, b: Message) =>
   parseFloat(a.timetoken) - parseFloat(b.timetoken);
@@ -24,16 +20,20 @@ const notDeleted = (msg: Message) =>
 const MESSAGES_LIMIT = 300;
 const TRUNCATION_AMOUNT = 50;
 
-const useChat = (mode: 'global' | 'alerts') => {
+const useChat = () => {
+  const [mode, setMode] = useAtom(chatModeAtom);
+  const [messages, setMessages] = useAtom(chatMessagesAtom);
+  const [channels, setChannels] = useAtom(chatChannelsAtom);
   const { address } = useEthWallet();
   const { connected, send } = useSocket();
   const { user } = useDynamicContext();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [channels, setChannels] = useState<Channels | undefined>();
 
-  const appendMessage = useCallback((newMessage: Message) => {
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
-  }, []);
+  const appendMessage = useCallback(
+    (newMessage: Message) => {
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    },
+    [setMessages],
+  );
 
   useEffect(() => {
     if (!connected) {
@@ -96,13 +96,13 @@ const useChat = (mode: 'global' | 'alerts') => {
     return () => {
       abort = true;
     };
-  }, [connected, address, send]);
+  }, [connected, address, send, setMessages, setChannels]);
 
   useEffect(() => {
     if (messages.length > MESSAGES_LIMIT) {
       setMessages((prevMessages) => prevMessages.slice(TRUNCATION_AMOUNT));
     }
-  }, [messages.length]);
+  }, [messages.length, setMessages]);
 
   useEffect(() => {
     const stopUpdates =
@@ -115,21 +115,7 @@ const useChat = (mode: 'global' | 'alerts') => {
     return () => {
       stopUpdates();
     };
-  }, [appendMessage, messages]);
-
-  useEffect(() => {
-    let unsub: () => void;
-
-    if (channels?.general) {
-      unsub = channels.general.connect((msg) => {
-        appendMessage(msg);
-      });
-    }
-
-    return () => {
-      unsub?.();
-    };
-  }, [appendMessage, channels?.general]);
+  }, [appendMessage, messages, setMessages]);
 
   useEffect(() => {
     let unsub: () => void;
@@ -142,11 +128,24 @@ const useChat = (mode: 'global' | 'alerts') => {
     return () => {
       unsub?.();
     };
-  }, [appendMessage, channels?.user]);
+  }, [appendMessage, channels.user]);
+
+  useEffect(() => {
+    let unsub: () => void;
+    if (channels?.general) {
+      unsub = channels.general.connect((msg) => {
+        appendMessage(msg);
+      });
+    }
+
+    return () => {
+      unsub?.();
+    };
+  }, [appendMessage, channels.general]);
 
   const sendingIsEnabled = useMemo(() => {
-    return channels?.user && mode === 'global';
-  }, [channels?.user, mode]);
+    return channels?.general && mode === 'global' && user;
+  }, [channels?.general, mode, user]);
 
   const sendMessage = useCallback(
     async (message: string) => {
@@ -161,7 +160,7 @@ const useChat = (mode: 'global' | 'alerts') => {
 
       await channels.general.sendText(message);
     },
-    [channels?.general, sendingIsEnabled, user?.username],
+    [channels.general, sendingIsEnabled, user?.username],
   );
 
   const filteredMessages = useMemo(
@@ -173,6 +172,8 @@ const useChat = (mode: 'global' | 'alerts') => {
   );
 
   return {
+    setMode,
+    mode,
     messages: filteredMessages,
     sendingIsEnabled,
     sendMessage,

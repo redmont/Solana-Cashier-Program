@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useReducer, useRef } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 
@@ -21,7 +23,9 @@ export function useDeferredState<S extends object>(
 
   const patchState = useCallback(
     (timestamp: string | Date | Dayjs, patch: Partial<S>) => {
-      if (isReady.current) return dispatch(patch);
+      if (isReady.current) {
+        return dispatch(patch);
+      }
 
       patches.current.push([dayjs(timestamp), patch]);
     },

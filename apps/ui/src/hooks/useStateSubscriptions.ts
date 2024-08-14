@@ -13,6 +13,8 @@ import {
   GetBalanceMessage,
   BalanceUpdatedEvent,
   TickerPricesEvent,
+  GetUserIdMessage,
+  GetUserIdMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { useSetAtom } from 'jotai';
@@ -30,7 +32,7 @@ import {
   streamIdAtom,
   tickersAtom,
 } from '@/store/match';
-import { accountAddressAtom, balanceAtom } from '@/store/account';
+import { accountAddressAtom, balanceAtom, userIdAtom } from '@/store/account';
 import { useEthWallet } from '../providers/EthWalletProvider';
 
 const GetBalanceMessageResponseSchema = z.object({
@@ -58,6 +60,7 @@ export function useStateSubscriptions() {
   const setBalance = useSetAtom(balanceAtom);
   const setMatchWinner = useSetAtom(matchWinnerAtom);
   const setMatchResult = useSetAtom(matchResultAtom);
+  const setUserId = useSetAtom(userIdAtom);
 
   const timestamps = useRef<Map<string, number>>(new Map());
   const timestampIsSubsequent = useCallback(
@@ -74,6 +77,19 @@ export function useStateSubscriptions() {
     },
     [],
   );
+
+  useEffect(() => {
+    const getUserId = async () => {
+      const { userId } = await send<GetUserIdMessage, GetUserIdMessageResponse>(
+        new GetUserIdMessage(),
+      );
+      setUserId(userId);
+    };
+
+    if (connected) {
+      getUserId();
+    }
+  }, [connected, send, setUserId]);
 
   useEffect(() => {
     setAccountAddress(address);
@@ -208,7 +224,9 @@ export function useStateSubscriptions() {
   );
 
   useEffect(() => {
-    if (!connected) return;
+    if (!connected) {
+      return;
+    }
 
     send(new GetMatchStatusMessage()).then((matchStatus: unknown) => {
       const {

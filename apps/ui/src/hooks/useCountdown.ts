@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useRef, useEffect, useCallback } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 
@@ -8,7 +10,9 @@ export function useCountdown(targetDateTime: string | number | Dayjs) {
   const updateValue = useCallback(() => {
     let msLeft = targetDateTime ? dayjs(targetDateTime).diff().valueOf() : 0;
 
-    if (msLeft < 0) msLeft = 0;
+    if (msLeft < 0) {
+      msLeft = 0;
+    }
 
     setCountdownValue(msLeft);
   }, [targetDateTime]);
@@ -20,7 +24,9 @@ export function useCountdown(targetDateTime: string | number | Dayjs) {
   useEffect(() => {
     let timer = coundownTimer.current;
 
-    if (timer) return;
+    if (timer) {
+      return;
+    }
 
     timer = coundownTimer.current = setInterval(updateValue, 1000);
 

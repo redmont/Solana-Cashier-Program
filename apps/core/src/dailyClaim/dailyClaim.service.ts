@@ -150,7 +150,7 @@ export class DailyClaimService {
       await this.query.setDailyClaimStatus(userId, {
         dailyClaimStreak: claimStatus.dailyClaimStreak,
         nextClaimDate,
-        claimExpiryDate
+        claimExpiryDate,
       });
     }
 

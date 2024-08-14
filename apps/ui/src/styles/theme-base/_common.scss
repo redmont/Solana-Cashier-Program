@@ -12,6 +12,7 @@
 .p-component-overlay {
     background-color: $maskBg;
     transition-duration: $transitionDuration;
+    backdrop-filter: brightness(0.5);
 }
 
 .p-disabled, .p-component:disabled {

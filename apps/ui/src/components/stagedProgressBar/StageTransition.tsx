@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { classNames } from 'primereact/utils';
+import { cn as classNames } from '@/lib/utils';
 import { State } from './states';
 
 export interface StageTransitionProps {

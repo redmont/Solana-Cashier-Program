@@ -4,18 +4,19 @@
 
 ### Run front-end only
 
-* NodeJS
-* pnpm
+- NodeJS
+- pnpm
 
 ### Run entire project
 
-* NodeJS
-* pnpm
-* [Docker](https://www.docker.com/)
-* [AWS CLI (v2)](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- NodeJS
+- pnpm
+- [Docker](https://www.docker.com/)
+- [AWS CLI (v2)](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 
 > [!IMPORTANT]
 > You must have AWS credentials set up - dummy ones will work fine, as running the project locally does not require any AWS services.
+>
 > ```sh
 > cat << AWSFILE > ~/.aws/credentials
 > [default]
@@ -25,17 +26,17 @@
 > AWSFILE
 > ```
 
-* [NestJS CLI](https://docs.nestjs.com/cli/overview)
+- [NestJS CLI](https://docs.nestjs.com/cli/overview)
 
-    ```sh
-    pnpm i -g @nestjs/cli
-    ```
+  ```sh
+  pnpm i -g @nestjs/cli
+  ```
 
-* [NATS CLI](https://github.com/nats-io/natscli)
+- [NATS CLI](https://github.com/nats-io/natscli)
 
-    ```sh
-    curl -sf https://binaries.nats.dev/nats-io/natscli/nats@latest | sh
-    ```
+  ```sh
+  curl -sf https://binaries.nats.dev/nats-io/natscli/nats@latest | sh
+  ```
 
 ## Run front-end only
 

@@ -1,6 +1,6 @@
 import { FC, useRef, useEffect, useCallback } from 'react';
 import { useActivityStream } from './useActivityStream';
-import { Scrollable, ScrollableRef } from '@/components/Scrollable';
+import { Scrollable, ScrollableRef } from '@/components/ui/scrollable';
 
 export const ActivityStreamWidget: FC = () => {
   const { messages } = useActivityStream();
@@ -16,8 +16,7 @@ export const ActivityStreamWidget: FC = () => {
 
   const handleScroll = useCallback(() => {
     if (scrollableRef.current && lastMessageRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } =
-        scrollableRef.current.getElement() as HTMLElement;
+      const { scrollTop, scrollHeight, clientHeight } = scrollableRef.current;
 
       const { scrollHeight: prevScrollHeight, clientHeight: prevClientHeight } =
         prevChatViewportRef.current;

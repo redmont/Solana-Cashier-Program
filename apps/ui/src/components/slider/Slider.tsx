@@ -1,4 +1,4 @@
-import { classNames } from 'primereact/utils';
+import { cn as classNames } from '@/lib/utils';
 import React, { FC, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Tooltip } from '../Tooltip';
 
@@ -8,6 +8,7 @@ export interface SliderProps {
   value?: number;
   marks?: number[];
   onChange?: (value: number) => void;
+  disabled?: boolean;
 }
 
 export const Slider: FC<SliderProps> = ({
@@ -15,6 +16,7 @@ export const Slider: FC<SliderProps> = ({
   max = 100,
   marks = [],
   onChange,
+  disabled = false,
   ...props
 }) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -24,15 +26,21 @@ export const Slider: FC<SliderProps> = ({
   const value = useMemo(() => {
     const val = props.value ?? min;
 
-    if (val < min) return min;
-    if (val > max) return max;
+    if (val < min) {
+      return min;
+    }
+    if (val > max) {
+      return max;
+    }
 
     return val;
   }, [props.value, min, max]);
 
   const calcPosition = useCallback(
     (value: number) => {
-      if (max === min) return 0;
+      if (max === min) {
+        return 0;
+      }
 
       return ((value - min) / (max - min)) * 100;
     },
@@ -43,26 +51,34 @@ export const Slider: FC<SliderProps> = ({
 
   const updateValue = useCallback(
     (mouseX: number) => {
-      if (!rootRef.current) return;
+      if (!rootRef.current || disabled) {
+        return;
+      }
 
       const element = rootRef.current as Element;
       const { left, width } = element.getBoundingClientRect();
 
       let x = mouseX - left;
 
-      if (x < 0) x = 0;
-      if (x > width) x = width;
+      if (x < 0) {
+        x = 0;
+      }
+      if (x > width) {
+        x = width;
+      }
 
       const value = Math.round((x / width) * (max - min) + min);
 
       onChange?.(value);
     },
-    [min, max, onChange],
+    [min, max, onChange, disabled],
   );
 
   const handleMouseDown = useCallback(
     (evt: React.MouseEvent) => {
-      if (evt.button > 0) return;
+      if (evt.button > 0 || disabled) {
+        return;
+      }
 
       isDraggingRef.current = true;
 
@@ -71,38 +87,46 @@ export const Slider: FC<SliderProps> = ({
       evt.preventDefault();
       evt.stopPropagation();
     },
-    [updateValue],
+    [updateValue, disabled],
   );
 
   const handleTouchStart = useCallback(
     (evt: React.TouchEvent) => {
+      if (disabled) {
+        return;
+      }
+
       isDraggingRef.current = true;
 
       const { clientX } = evt.touches[0];
 
       updateValue(clientX);
     },
-    [updateValue],
+    [updateValue, disabled],
   );
 
   const handleMouseMove = useCallback(
     (evt: MouseEvent) => {
-      if (!isDraggingRef.current) return;
+      if (!isDraggingRef.current || disabled) {
+        return;
+      }
 
       updateValue(evt.clientX);
     },
-    [updateValue],
+    [updateValue, disabled],
   );
 
   const handleTouchMove = useCallback(
     (evt: TouchEvent) => {
-      if (!isDraggingRef.current) return;
+      if (!isDraggingRef.current || disabled) {
+        return;
+      }
 
       updateValue(evt.touches[0].clientX);
 
       evt.preventDefault();
     },
-    [updateValue],
+    [updateValue, disabled],
   );
 
   useEffect(() => {
@@ -110,10 +134,14 @@ export const Slider: FC<SliderProps> = ({
       isDraggingRef.current = false;
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('mouseup', clearDragging);
-    document.addEventListener('touchend', clearDragging);
+    if (!disabled) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('touchmove', handleTouchMove, {
+        passive: false,
+      });
+      document.addEventListener('mouseup', clearDragging);
+      document.addEventListener('touchend', clearDragging);
+    }
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
@@ -121,10 +149,14 @@ export const Slider: FC<SliderProps> = ({
       document.removeEventListener('mouseup', clearDragging);
       document.removeEventListener('touchend', clearDragging);
     };
-  }, [handleMouseMove, handleTouchMove]);
+  }, [handleMouseMove, handleTouchMove, disabled]);
 
   const handleMarkMousedown = useCallback(
     (evt: React.MouseEvent) => {
+      if (disabled) {
+        return;
+      }
+
       const { x, width: markWidth } = (
         evt.target as Element
       ).getBoundingClientRect();
@@ -135,11 +167,15 @@ export const Slider: FC<SliderProps> = ({
 
       evt.preventDefault();
     },
-    [updateValue],
+    [updateValue, disabled],
   );
 
   const handleMarkTouchStart = useCallback(
     (evt: React.TouchEvent) => {
+      if (disabled) {
+        return;
+      }
+
       const { x, width: markWidth } = (
         evt.target as Element
       ).getBoundingClientRect();
@@ -148,11 +184,11 @@ export const Slider: FC<SliderProps> = ({
 
       updateValue(x + markWidth / 2);
     },
-    [updateValue],
+    [updateValue, disabled],
   );
 
   return (
-    <div ref={rootRef} className="slider">
+    <div ref={rootRef} className={classNames('slider', { disabled })}>
       <div
         className="slider-clickarea"
         onMouseDown={handleMouseDown}
@@ -189,7 +225,12 @@ export const Slider: FC<SliderProps> = ({
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
-          <Tooltip content={`${value}%`} at="top" showDelay={0}>
+          <Tooltip
+            content={`${value}%`}
+            at="top"
+            showDelay={0}
+            disabled={disabled}
+          >
             <div className="slider-handle-clickarea"></div>
           </Tooltip>
         </div>

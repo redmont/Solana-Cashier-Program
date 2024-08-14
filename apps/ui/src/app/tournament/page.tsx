@@ -9,8 +9,8 @@ import { useSocket } from '@/hooks';
 
 import { PrizesWidget } from '@/components/prizesWidget';
 import { CreditClaimWidget } from '@/components/creditClaimWidget';
-import { Scrollable } from '@/components/Scrollable';
-import { classNames } from 'primereact/utils';
+import { Scrollable } from '@/components/ui/scrollable';
+import { cn as classNames } from '@/lib/utils';
 import { LeaderboardIcon, RewardsIcon } from '@/icons';
 import { ZealyWidget } from '@/components/zealyWidget';
 import LeaderboardWidget from '@/components/leaderboardWidget/LeaderboardWidget';
@@ -36,7 +36,9 @@ export default function Tournament() {
 
   const getData = useCallback(
     async (type: 'winAmount' | 'xp', query?: string) => {
-      if (!connected) return;
+      if (!connected) {
+        return;
+      }
 
       const resp: GetTournamentMessageResponse = await send(
         new GetTournamentMessage(type, 100, 1, query),
@@ -88,7 +90,9 @@ export default function Tournament() {
   }, [tournament, currentTab, setCurrentTab, searchQuery, getData]);
 
   const prizesWidgetProps = useMemo(() => {
-    if (!tournament) return null;
+    if (!tournament) {
+      return null;
+    }
 
     const { prizes = [], displayName, endDate } = tournament ?? {};
 
@@ -99,7 +103,9 @@ export default function Tournament() {
     };
   }, [tournament]);
 
-  if (!tournament) return null;
+  if (!tournament) {
+    return null;
+  }
 
   return (
     <main className={classNames('tournament-page', `tab-${currentMobileTab}`)}>

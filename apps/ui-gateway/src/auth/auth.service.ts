@@ -7,6 +7,7 @@ import {
   EnsureUserIdMessage,
   EnsureUserIdMessageReturnType,
 } from 'core-messages';
+import { UserProfilesQueryStoreService } from 'query-store';
 import { ConfigService } from '@nestjs/config';
 import { Key } from '@/interfaces/key';
 import dayjs from '@/dayjs';
@@ -25,6 +26,7 @@ export class AuthService {
     private readonly nonceModel: Model<Nonce, Key>,
     @Inject(JWT_AUTH_SERVICE) private readonly jwtAuthService: IJwtAuthService,
     private readonly broker: NatsJetStreamClientProxy,
+    private readonly userProfilesQueryStore: UserProfilesQueryStoreService,
   ) {}
 
   async getNonceMessage(walletAddress: string) {
@@ -45,6 +47,7 @@ export class AuthService {
     walletAddress: string,
     message: string,
     signedMessage: string,
+    username: string,
   ) {
     const recoveredAddress = await recoverMessageAddress({
       message,
@@ -82,6 +85,13 @@ export class AuthService {
     >(this.broker, new EnsureUserIdMessage(walletAddress));
 
     const { userId } = result;
+
+    if (username?.length > 0) {
+      await this.userProfilesQueryStore.setUserProfile(userId, {
+        username,
+        primaryWalletAddress: walletAddress,
+      });
+    }
 
     const payload = {
       sub: userId,
