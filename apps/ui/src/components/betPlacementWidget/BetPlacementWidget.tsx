@@ -126,6 +126,10 @@ export const BetPlacementWidget: FC = () => {
   }, [isLoading, isAuthenticated, isBalanceReady]);
 
   const isDisabled = useMemo(() => {
+    return isLoading || (matchStatus !== 'bettingOpen' && isConnected);
+  }, [isLoading, matchStatus, isConnected]);
+
+  const isDisabledBet = useMemo(() => {
     return (
       isLoading ||
       !!error ||
@@ -184,7 +188,7 @@ export const BetPlacementWidget: FC = () => {
                   onChange={handlePercentChange}
                   min={1}
                   marks={[25, 50, 75]}
-                  disabled={isDisabled}
+                  disabled={isLoading || isDisabled}
                 />
 
                 <span>100%</span>
@@ -195,7 +199,7 @@ export const BetPlacementWidget: FC = () => {
                   className="credits-input"
                   value={betAmount}
                   onChange={handleBetAmountChange}
-                  disabled={isDisabled}
+                  disabled={isLoading}
                 />
 
                 <span className="p-inputgroup-addon credits-label">
@@ -203,26 +207,26 @@ export const BetPlacementWidget: FC = () => {
                 </span>
               </div>
 
-            <div className="mt-2 text-sm">
-              {error ? (
-                <span className="text-red-500">{error}</span>
-              ) : (
-                <span className="text-600">
-                  Stakes are locked until the end of the fight.
-                </span>
-              )}
-            </div>
+              <div className="mt-2 text-sm">
+                {error ? (
+                  <span className="text-red-500">{error}</span>
+                ) : (
+                  <span className="text-600">
+                    Stakes are locked until the end of the fight.
+                  </span>
+                )}
+              </div>
 
-            <Button
-              loading={isLoading}
-              className="mt-3 w-full text-lg"
-              disabled={isDisabled}
-              onClick={isConnected ? placeBet : join}
-            >
-              {actionTitle}
-            </Button>
+              <Button
+                loading={isLoading}
+                className="mt-3 w-full text-lg"
+                disabled={isDisabledBet}
+                onClick={isConnected ? placeBet : join}
+              >
+                {actionTitle}
+              </Button>
+            </div>
           </div>
-        </div>
         </Tooltip>
       </div>
     </div>
