@@ -163,14 +163,6 @@ export const Navbar = () => {
               Cashier
             </Button>
           )}
-          {isCashierOpen && (
-            <div
-              ref={cashierRef}
-              className="fixed right-0 top-24 z-10 mx-2 w-[calc(100%-1rem)] rounded-md bg-foreground p-5 sm:absolute sm:top-[calc(100%+1rem)] sm:w-96"
-            >
-              <CashierForm onClose={() => setCashierOpen(false)} />
-            </div>
-          )}
         </div>
         <JoinButton className="username cursor-pointer md:flex" />
         <Burger ref={burgerRef} isNavOpen={isNavOpen} setNavOpen={setNavOpen} />
