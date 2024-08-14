@@ -15,7 +15,8 @@
         "NEXT_PUBLIC_PUBNUB_SUB_KEY",
         "NEXT_PUBLIC_STREAMING_SERVER_HOSTNAME",
         "NEXT_PUBLIC_CASHIER_DEPOSIT_CONTRACT_ADDRESS",
-        "NEXT_PUBLIC_USDC_CONTRACT_ADDRESS"
+        "NEXT_PUBLIC_USDC_CONTRACT_ADDRESS",
+        "NEXT_PUBLIC_POSTHOG_FEATURE_FLAGS"
       ],
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]

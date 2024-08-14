@@ -11,6 +11,7 @@ import InfoIcon from './InfoIcon';
 import useOnClickOutside from '@/hooks/useOnClickOutside';
 import { CashierForm } from '../cashier';
 import { Button } from '../ui/button';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 
 const Burger = forwardRef<
   HTMLButtonElement,
@@ -72,6 +73,7 @@ export const Navbar = () => {
   const [isCashierOpen, setCashierOpen] = useState(false);
   const cashierRef = useRef<HTMLDivElement>(null);
   useOnClickOutside(cashierRef, () => setCashierOpen(false));
+  const cashierEnabled = useFeatureFlag('enable-cashier');
 
   const currentPath = usePathname();
   const linkClasses = (active: boolean) =>
@@ -143,13 +145,15 @@ export const Navbar = () => {
             <span>{Math.floor(balance ?? 0)}</span>
           </span>
 
-          <Button
-            onClick={() => {
-              setCashierOpen((open) => !open);
-            }}
-          >
-            Cashier
-          </Button>
+          {cashierEnabled && (
+            <Button
+              onClick={() => {
+                setCashierOpen((open) => !open);
+              }}
+            >
+              Cashier
+            </Button>
+          )}
           {isCashierOpen && (
             <div
               ref={cashierRef}

@@ -29,3 +29,6 @@ export const LOCAL_PRICE_CACHE_PERIOD = 1000 * 10;
 
 export const streamingServerHostname =
   process.env.NEXT_PUBLIC_STREAMING_SERVER_HOSTNAME || '';
+
+export const postHogFeatureFlags =
+  process.env.NEXT_PUBLIC_POSTHOG_FEATURE_FLAGS || '';
