@@ -1,7 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { classNames } from 'primereact/utils';
 import { FC, useCallback, useEffect, useState } from 'react';
-import { toPng } from 'html-to-image';
 import { useAtomValue } from 'jotai';
 import {
   fightersAtom,
@@ -22,12 +20,8 @@ export const MatchResultWidget: FC = () => {
   const [cachedResult, setCachedResult] = useState<ResultCache | null>(null);
   const matchStatus = useAtomValue(matchStatusAtom);
   const matchId = useAtomValue(matchIdAtom);
-  const imageEnabled = false;
   const fighters = useAtomValue(fightersAtom);
   const results = useAtomValue(matchResultAtom);
-
-  const [isSavingPng, setSavingPng] = useState(false);
-  const [isPngSaved, setPngSaved] = useState(false);
 
   useEffect(() => {
     const isWin =
@@ -51,38 +45,9 @@ export const MatchResultWidget: FC = () => {
     }
   }, [fighters, matchId, matchStatus, results]);
 
-  const generateImage = useCallback(async () => {
-    const widget = document.getElementById('match-result-widget');
-
-    if (!widget) {
-      return setSavingPng(false);
-    }
-
-    try {
-      const dataUrl = await toPng(widget);
-
-      downloadPng(dataUrl);
-
-      setPngSaved(true);
-    } catch {
-      // TODO: show error notification
-    } finally {
-      setSavingPng(false);
-    }
-  }, []);
-
   const dismiss = useCallback(() => {
     setCachedResult(null);
-    setPngSaved(false);
   }, []);
-
-  useEffect(() => {
-    if (!imageEnabled || !isSavingPng) {
-      return;
-    }
-
-    generateImage();
-  }, [isSavingPng, imageEnabled, generateImage]);
 
   const share = useCallback(async () => {
     if (!cachedResult) {
@@ -111,45 +76,40 @@ export const MatchResultWidget: FC = () => {
     cachedResult && (
       <div
         id="match-result-widget"
-        className={classNames('widget match-result-widget')}
+        className="widget match-result-widget relative z-10"
       >
-        <div className="widget-body framed">
-          {isSavingPng && (
-            <img className="qrcode" src="/qrcode.png" alt="Join Barcode" />
-          )}
-
-          <div className="widget-content">
-            <div className="fighter-image-box">
-              <img
-                className={classNames('fighter-image')}
-                src={cachedResult?.winner.imageUrl}
-              />
+        <div className="widget-body framed flex h-full flex-col items-center justify-center">
+          <div className="widget-content flex items-center justify-center gap-5">
+            <div className="size-28 shrink-0 bg-primary/25 xs:size-40">
+              <img className="size-full" src={cachedResult?.winner.imageUrl} />
             </div>
 
-            <div className="result-info">
-              <div className="result-title">
+            <div className="flex flex-col justify-between self-stretch">
+              <div className="text-lg font-semibold uppercase xs:text-3xl">
                 {cachedResult?.winner.displayName} Wins!
               </div>
 
-              <div className="win-amount">{`+${+cachedResult?.result.winAmount > 0 ? cachedResult.result?.winAmount : 0}`}</div>
+              <div className="inline-flex items-end gap-2 leading-none text-primary">
+                <span className="text-xl leading-none xs:text-4xl">
+                  {`+${+cachedResult?.result.winAmount > 0 ? cachedResult.result?.winAmount : 0}`}
+                </span>
+                <span className="text-md sm:text-xl">Credits</span>
+              </div>
+              <div className="my-2 flex w-full justify-center gap-3">
+                <Button
+                  className="h-8 p-1 text-xs xs:h-10 xs:px-2 xs:py-5 xs:text-[1rem]"
+                  onClick={share}
+                >
+                  <span>Share on</span> <i className="pi pi-twitter" />
+                </Button>
 
-              {!isSavingPng && (
-                <div className="widget-actions">
-                  {imageEnabled && !isPngSaved && (
-                    <Button onClick={() => setSavingPng(true)}>
-                      Get Result Image
-                    </Button>
-                  )}
-
-                  {(!imageEnabled || isPngSaved) && (
-                    <Button onClick={share}>
-                      <span>Share on</span> <i className="pi pi-twitter" />
-                    </Button>
-                  )}
-
-                  <Button onClick={dismiss}>Dismiss</Button>
-                </div>
-              )}
+                <Button
+                  className="h-8 p-1 text-xs xs:h-10 xs:px-2 xs:py-5 xs:text-[1rem]"
+                  onClick={dismiss}
+                >
+                  Dismiss
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -157,12 +117,3 @@ export const MatchResultWidget: FC = () => {
     )
   );
 };
-
-function downloadPng(dataUrl: string) {
-  const link = document.createElement('a');
-
-  link.download = 'brawlers-match-result.png';
-  link.href = dataUrl;
-  link.pathname = 'assets/png/' + link.download;
-  link.click();
-}
