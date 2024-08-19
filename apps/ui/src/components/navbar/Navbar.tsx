@@ -1,7 +1,7 @@
 import { balanceAtom } from '@/store/account';
 import { useAtom, useAtomValue } from 'jotai';
 import Link from 'next/link';
-import { Dispatch, forwardRef, SetStateAction, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { JoinButton } from '../JoinButton';
 import { useEthWallet } from '@/hooks';
 import { usePathname } from 'next/navigation';
@@ -12,55 +12,12 @@ import useOnClickOutside from '@/hooks/useOnClickOutside';
 import { CashierForm } from '../cashier';
 import { Button } from '../ui/button';
 import { Tooltip } from '../Tooltip';
+import { Burger } from './Burger';
 
 const formatCredits = (credits: number) =>
   new Intl.NumberFormat(undefined, { notation: 'compact' }).format(credits);
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
-
-const Burger = forwardRef<
-  HTMLButtonElement,
-  {
-    isNavOpen: boolean;
-    setNavOpen: Dispatch<SetStateAction<boolean>>;
-  }
->(({ isNavOpen, setNavOpen }, ref) => (
-  <button
-    ref={ref}
-    className={cn(
-      'relative flex h-12 w-12 items-center justify-center transition-all md:hidden',
-    )}
-    id="icon"
-    onClick={() => setNavOpen((open) => !open)}
-  >
-    <span
-      className={cn(
-        'absolute h-[3px] w-8 bg-current transition-all duration-300 ease-in-out',
-        {
-          'translate-y-0 rotate-45': isNavOpen,
-          '-translate-y-2 rotate-0': !isNavOpen,
-        },
-      )}
-    ></span>
-    <span
-      className={cn(
-        'absolute h-[3px] w-8 bg-current transition-all duration-300 ease-in-out',
-        {
-          'opacity-0': isNavOpen,
-          'opacity-100': !isNavOpen,
-        },
-      )}
-    ></span>
-    <span
-      className={cn(
-        'absolute h-[3px] w-8 bg-current transition-all duration-300 ease-in-out',
-        {
-          'translate-y-0 -rotate-45': isNavOpen,
-          'translate-y-2 rotate-0': !isNavOpen,
-        },
-      )}
-    ></span>
-  </button>
-));
+import { Plus } from 'lucide-react';
 
 export const Navbar = () => {
   const { isAuthenticated } = useEthWallet();
@@ -116,6 +73,42 @@ export const Navbar = () => {
     </span>
   );
 
+  const CashierButton = ({ className }: { className?: string }) => (
+    <div
+      className={cn(
+        'text-text-100 relative flex items-center gap-3 rounded-lg bg-primary-600/10 py-1.5 pl-3 pr-1.5 font-bold text-white',
+        {
+          hidden: !isAuthenticated,
+        },
+        className,
+      )}
+    >
+      <span className="inline-flex gap-1">
+        {balance !== undefined && (
+          <Tooltip position="bottom" content={Math.floor(balance)}>
+            <span className="hidden sm:inline">Credits:</span>
+            <span>{formatCredits(balance)}</span>
+          </Tooltip>
+        )}
+      </span>
+
+      {cashierEnabled && (
+        <Button
+          className="sm:!size-fit sm:!px-5 sm:!py-2 xs:size-8 xs:px-1 xs:py-0"
+          loading={balance === undefined}
+          onClick={() => {
+            setCashierOpen((open) => !open);
+          }}
+        >
+          <span className={cn('inline sm:!inline xs:hidden')}>Cashier</span>
+          <span className="hidden sm:!hidden xs:inline">
+            <Plus />
+          </span>
+        </Button>
+      )}
+    </div>
+  );
+
   return (
     <div className="relative mb-4 mt-3 flex justify-between rounded-xl bg-foreground">
       <div className="flex items-center gap-3">
@@ -136,41 +129,14 @@ export const Navbar = () => {
       </div>
       <div className="flex items-center gap-4 pr-4">
         <HowToPlay className="hidden sm:flex" />
-        <div
-          className={cn(
-            'text-text-100 relative flex items-center gap-3 rounded-lg bg-primary-600/10 py-1.5 pl-3 pr-1.5 font-bold text-white',
-            {
-              hidden: !isAuthenticated,
-            },
-          )}
-        >
-          <span className="inline-flex gap-1">
-            {balance !== undefined && (
-              <Tooltip position="bottom" content={Math.floor(balance)}>
-                <span className="hidden sm:inline">Credits:</span>
-                <span>{formatCredits(balance)}</span>
-              </Tooltip>
-            )}
-          </span>
-
-          {cashierEnabled && (
-            <Button
-              loading={balance === undefined}
-              onClick={() => {
-                setCashierOpen((open) => !open);
-              }}
-            >
-              Cashier
-            </Button>
-          )}
-        </div>
+        {isAuthenticated && <CashierButton className="hidden xs:flex" />}
         <JoinButton className="username cursor-pointer md:flex" />
         <Burger ref={burgerRef} isNavOpen={isNavOpen} setNavOpen={setNavOpen} />
       </div>
       {isCashierOpen && (
         <div
           ref={cashierRef}
-          className="absolute right-0 top-[calc(100%+1rem)] z-10 mx-0 w-[calc(100vw-1rem)] rounded-md bg-foreground p-5 sm:top-[calc(100%+1rem)] sm:w-[28rem]"
+          className="absolute right-0 top-[calc(100%+1rem)] z-20 mx-0 w-[calc(100vw-1rem)] rounded-md bg-foreground p-5 sm:top-[calc(100%+1rem)] sm:w-[28rem]"
         >
           <CashierForm onClose={() => setCashierOpen(false)} />
         </div>
@@ -181,6 +147,7 @@ export const Navbar = () => {
           className="absolute right-0 top-[calc(100%+1rem)] z-10 w-full rounded-md bg-foreground p-5 shadow-xl md:w-80"
         >
           <div className="top-side flex flex-col items-center text-xl md:items-end">
+            {isAuthenticated && <CashierButton className="xs:hidden" />}
             <NavLinks />
             <HowToPlay className="mt-6 sm:hidden" />
           </div>
