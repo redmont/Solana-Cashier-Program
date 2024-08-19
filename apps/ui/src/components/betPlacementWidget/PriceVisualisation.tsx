@@ -104,14 +104,10 @@ export const PriceVisualisation: FC<PriceVisualisationProps> = ({
       <Tooltip content={'Trailing 10s price Δ'}>
         <div className="tow-container">
           <div className="tow-line"></div>
-          {!disabled ? (
-            <div
-              className="tow-indicator"
-              style={{ left: `${10 + progress * 80}%` }}
-            ></div>
-          ) : (
-            <div className="tow-indicator" style={{ left: '50%' }}></div>
-          )}
+          <div
+            className="tow-indicator"
+            style={{ left: `${10 + progress * 80}%` }}
+          ></div>
         </div>
       </Tooltip>
     </div>

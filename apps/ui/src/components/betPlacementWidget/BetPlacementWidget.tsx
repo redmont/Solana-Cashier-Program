@@ -1,7 +1,13 @@
 'use client';
 
-import { FC, useState, useCallback, useEffect, useMemo } from 'react';
-import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
+import {
+  FC,
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  ChangeEventHandler,
+} from 'react';
 import { Button } from '@/components/ui/button';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { useAtom, useAtomValue } from 'jotai';
@@ -20,6 +26,7 @@ import {
   winningRatesWithBetAmountAtom,
 } from '@/store/app';
 import Typography from '../ui/typography';
+import { Input } from '../ui/input';
 
 export const BetPlacementWidget: FC = () => {
   const [actionTitle, setActionTitle] = useState('Join the Fight');
@@ -73,10 +80,12 @@ export const BetPlacementWidget: FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isBalanceReady, isAuthenticated]);
 
-  const handleBetAmountChange = useCallback(
-    (evt: InputNumberChangeEvent) => {
+  const handleBetAmountChange = useCallback<
+    ChangeEventHandler<HTMLInputElement>
+  >(
+    (evt) => {
       setDirty(true);
-      setBetAmount(evt?.value || 0);
+      setBetAmount(parseFloat(evt.target.value) || 0);
     },
     [setBetAmount],
   );
@@ -194,18 +203,13 @@ export const BetPlacementWidget: FC = () => {
                 <span>100%</span>
               </div>
 
-              <div className="credits-input-group p-inputgroup">
-                <InputNumber
-                  className="credits-input"
-                  value={betAmount}
-                  onChange={handleBetAmountChange}
-                  disabled={isLoading}
-                />
-
-                <span className="p-inputgroup-addon credits-label">
-                  Credits
-                </span>
-              </div>
+              <Input
+                endAdornment="Credits"
+                className="my-6"
+                value={betAmount}
+                onChange={handleBetAmountChange}
+                disabled={isLoading}
+              />
 
               <div className="mt-2 text-sm">
                 {error ? (
