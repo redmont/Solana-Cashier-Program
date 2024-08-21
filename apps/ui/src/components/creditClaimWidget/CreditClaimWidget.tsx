@@ -128,7 +128,7 @@ export const CreditClaimWidget: FC = () => {
   useEffect(() => checkScroll(), [checkScroll]);
 
   return (
-    <div className="widget credit-claim-widget">
+    <div className="widget credit-claim-widget rounded-md bg-foreground">
       <div className="widget-header">
         <div className="widget-title">Daily Credits Claim</div>
 
@@ -140,7 +140,7 @@ export const CreditClaimWidget: FC = () => {
       <div className="widget-body">
         <div
           ref={viewportRef}
-          className="credit-claims-viewport"
+          className="credit-claims-viewport flex-wrap"
           onScroll={checkScroll}
         >
           {claims?.dailyClaimAmounts.map((amount, i) => (

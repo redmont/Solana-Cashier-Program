@@ -23,6 +23,7 @@ const config = {
         sm: '48rem',
         md: '75rem',
         lg: '92rem',
+        xl: '112rem',
       },
       colors: {
         text: '#FEFEFE',

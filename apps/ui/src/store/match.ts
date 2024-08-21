@@ -65,12 +65,15 @@ export const priceMovementAverages = atom((get) => {
   const cutoff = Date.now() - PRICE_MOVEMENT_AVERAGES_PERIOD;
 
   return fighters.map((fighter) => {
+
     const ticker = fighter?.ticker;
-    const prices = tickers?.filter(
-      (t) => t.ticker === ticker && new Date(t.timestamp).getTime() > cutoff,
-    );
-    const startPrice = prices?.[0]?.price;
-    const endPrice = prices?.[prices?.length - 1]?.price;
+    const filteredPrices = tickers?.filter(
+      (t) => t.ticker === ticker,
+    ) ?? []
+    const cutoffIndex = filteredPrices?.findIndex((p) => new Date(p.timestamp).getTime() > cutoff)
+    const prices = filteredPrices.slice(cutoffIndex - 1);
+    const startPrice = prices.at(0)?.price
+    const endPrice = prices.at(prices.length - 1)?.price;
 
     const priceDelta =
       startPrice !== undefined && endPrice !== undefined
