@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { SoundToggle } from './SoundToggle';
 import Image from 'next/image';
 import {
@@ -9,91 +9,59 @@ import { useSocket } from '@/hooks';
 import { Red5Client } from './Red5Client';
 import { useAtomValue } from 'jotai';
 import { streamIdAtom } from '@/store/match';
+import { useQuery } from '@tanstack/react-query';
 
-const Red5Stream = ({
-  streamViewExpected,
-}: {
-  streamViewExpected: boolean;
-}) => {
+const Red5Stream = ({ enabled }: { enabled: boolean }) => {
   const streamId = useAtomValue(streamIdAtom);
   const { connected, send } = useSocket();
   const [isMuted, setMuted] = useState(true);
-  const [streamToken, setStreamToken] = useState<string | undefined>();
-  const [red5Client, setRed5Client] = useState<Red5Client | undefined>();
 
-  useEffect(() => {
-    const getToken = async () => {
+  const token = useQuery({
+    enabled: enabled && connected,
+    queryKey: ['streamToken'],
+    queryFn: async () => {
       const getTokenResult = await send<
         GetStreamAuthTokenMessage,
         GetStreamAuthTokenMessageResponse
       >(new GetStreamAuthTokenMessage());
 
-      if (getTokenResult.success) {
-        setStreamToken(getTokenResult.token);
-      }
-    };
+      return getTokenResult.token;
+    },
+  });
 
-    if (connected && streamViewExpected) {
-      // If we are connected to the WebSocket,
-      // and we are supposed to show the stream,
-      // then we need to get a fresh token.
-      getToken();
+  const client = useMemo(() => {
+    if (enabled && connected && token.data !== undefined && streamId !== null) {
+      return new Red5Client(streamId, token.data, 'stream');
     }
-  }, [streamViewExpected, connected, send]);
+    return null;
+  }, [enabled, connected, token.data, streamId]);
 
   useEffect(() => {
-    setRed5Client((prevRed5Client) => {
-      prevRed5Client?.disconnect();
+    if (!enabled) {
+      client?.disconnect();
+    } else if (client) {
+      client.connect();
 
-      if (streamToken && streamId) {
-        return new Red5Client(streamId, streamToken, 'stream');
-      }
-      return undefined;
-    });
-
-    return () => {
-      red5Client?.disconnect();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [streamToken, streamId]);
-
-  useEffect(() => {
-    if (!streamViewExpected) {
-      red5Client?.disconnect();
-    } else {
-      let isOn = true;
-      let timeout: NodeJS.Timeout;
-
-      const connect = async () => {
-        if (!isOn) {
-          return;
+      const interval = setInterval(() => {
+        if (client.connected) {
+          clearInterval(interval);
         }
 
-        try {
-          await red5Client?.connect();
-        } catch (e) {
-          if (timeout) {
-            clearTimeout(timeout);
-          }
-          timeout = setTimeout(connect, 1000);
+        if (!client.connected && client.errored) {
+          client.connect();
         }
-      };
-
-      if (streamToken) {
-        connect();
-      }
+      }, 1500);
 
       return () => {
-        isOn = false;
-        clearTimeout(timeout);
-        red5Client?.disconnect();
+        client.disconnect();
+        clearInterval(interval);
       };
     }
-  }, [streamViewExpected, red5Client, streamToken]);
+  }, [enabled, client, connected]);
 
   return (
     <>
-      {streamViewExpected ? (
+      {enabled ? (
         <video
           id="stream"
           width="100%"
