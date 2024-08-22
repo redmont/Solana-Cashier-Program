@@ -7,8 +7,62 @@ import {
   ServiceDiscoveryClient,
 } from '@aws-sdk/client-servicediscovery';
 
+const initialNatsInstanceIps = process.env.NATS_INSTANCE_IPS?.split(',') ?? [];
+const serviceDiscoveryNamespaceName =
+  process.env.SERVICE_DISCOVERY_NAMESPACE_NAME!;
+const serviceDiscoveryServiceNames =
+  process.env.SERVICE_DISCOVERY_SERVICE_NAMES?.split(',') ?? [];
 const alchemyWebhookSigningKey = process.env.ALCHEMY_WEBHOOK_SIGNING_KEY!;
-const serviceDiscoveryServiceId = process.env.SERVICE_DISCOVERY_SERVICE_ID!;
+
+let natsInstanceIps: string[] = [];
+
+const client = new ServiceDiscoveryClient({
+  region: 'ap-southeast-1',
+  logger: console,
+});
+
+const resolveNatsIps = async () => {
+  // Clear existing NATS instance IPs
+  natsInstanceIps = [...initialNatsInstanceIps];
+
+  for (const serviceName of serviceDiscoveryServiceNames) {
+    const serviceDiscovery = await client.send(
+      new DiscoverInstancesCommand({
+        NamespaceName: serviceDiscoveryNamespaceName,
+        ServiceName: serviceName,
+        HealthStatus: 'ALL',
+      }),
+    );
+
+    const natsInstanceIp =
+      serviceDiscovery.Instances?.[0].Attributes?.AWS_INSTANCE_IPV4;
+
+    if (natsInstanceIp) {
+      natsInstanceIps.push(natsInstanceIp);
+    }
+  }
+};
+
+const getNatsConnection = async () => {
+  if (natsInstanceIps.length > 0) {
+    try {
+      return await connect({ servers: natsInstanceIps });
+    } catch (error) {
+      console.error('Failed to connect to NATS', error);
+    }
+  }
+
+  await resolveNatsIps();
+
+  if (natsInstanceIps.length > 0) {
+    try {
+      return await connect({ servers: natsInstanceIps });
+    } catch (error) {
+      console.error('Failed to connect to NATS', error);
+    }
+  }
+  return null;
+};
 
 const topicHash = keccak256(
   stringToBytes('DepositReceived(bytes32,address,uint256)'),
@@ -35,11 +89,6 @@ interface AlchemyWebhookPayload {
     };
   };
 }
-
-const client = new ServiceDiscoveryClient({
-  region: 'ap-southeast-1',
-  logger: console,
-});
 
 export const handler: Handler = async (event: LambdaFunctionURLEvent) => {
   if (!event.body) {
@@ -77,28 +126,28 @@ export const handler: Handler = async (event: LambdaFunctionURLEvent) => {
   if (log) {
     const { topics, data } = log;
 
-    const serviceDiscovery = await client.send(
-      new DiscoverInstancesCommand({
-        NamespaceName: 'brawl.dev.local',
-        ServiceName: 'nats',
-        HealthStatus: 'ALL',
-      }),
-    );
-
-    console.log('Service discovery response', serviceDiscovery);
-
-    const natsInstanceIp =
-      serviceDiscovery.Instances?.[0].Attributes?.AWS_INSTANCE_IPV4;
-
-    if (!natsInstanceIp) {
-      throw new Error('NATS instance IP could not be resolved');
+    const nc = await getNatsConnection();
+    if (!nc) {
+      console.error('Failed to connect to NATS');
+      // Respond with 500
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Internal server error' }),
+      };
     }
 
-    console.log('Got NATS instance IP', natsInstanceIp);
-
-    const nc = await connect({ servers: natsInstanceIp });
     const js = nc.jetstream();
 
     await js.publish('cashier.chainEvent', JSON.stringify({ topics, data }));
+
+    console.log(`Published event to NATS (cashier.chainEvent)`, {
+      topics,
+      data,
+    });
   }
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ success: true }),
+  };
 };

@@ -5,6 +5,10 @@ export const validateBody = (
   signature: string,
   signingKey: string,
 ) => {
+  if (!signingKey) {
+    return true;
+  }
+
   const hmac = crypto.createHmac('sha256', signingKey);
   hmac.update(body, 'utf8');
   const digest = hmac.digest('hex');
