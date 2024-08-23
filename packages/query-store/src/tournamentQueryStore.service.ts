@@ -159,13 +159,16 @@ export class TournamentQueryStoreService {
       },
     );
 
-    if (tournamentEntryWinAmount) {
+    if (
+      typeof tournamentEntryWinAmount === 'number' &&
+      !isNaN(tournamentEntryWinAmount)
+    ) {
       const key = `tournamentEntryWinAmount:${tournament}`;
       await this.cache.zrem(key, userId);
       await this.cache.zadd(key, tournamentEntryWinAmount, userId);
     }
 
-    if (xp) {
+    if (typeof xp === 'number' && !isNaN(xp)) {
       const key = `tournamentEntryXp:${tournament}`;
       await this.cache.zrem(key, userId);
       await this.cache.zadd(key, xp, userId);
@@ -355,163 +358,5 @@ export class TournamentQueryStoreService {
       endDate,
       currentRound,
     };
-
-    // if (searchQuery) {
-    //   return null; // todo
-    //   // return await this.getLeaderboardBySearchQuery(
-    //   //   tournamentCodeName,
-    //   //   type,
-    //   //   searchQuery,
-    //   // );
-    // }
-    //
-    // let items;
-    // if (type === 'winAmount') {
-    //   items = this.getWinAmountLeaderboard(
-    //     tournamentCodeName,
-    //     pageSize,
-    //     pageNumber,
-    //   );
-    // }
-    // if (type === 'xp') {
-    //   items = this.getXpLeaderboard(tournamentCodeName, pageSize, pageNumber);
-    // }
-    //
-    // const {
-    //   codeName,
-    //   displayName,
-    //   description,
-    //   prizes,
-    //   startDate,
-    //   endDate,
-    //   currentRound,
-    // } = tournament;
-    //
-    // let currentPage = 1;
-    // let rank = 1;
-    // let lastKey;
-    // let currentUserItem;
-    //
-    // const index = 'pkTournamentEntryWinAmount';
-    //
-    // do {
-    //   const query = this.tournamentEntryModel
-    //     .query({
-    //       pk: `tournamentEntry#${codeName}`,
-    //     })
-    //     .using(index)
-    //     .limit(pageSize)
-    //     .sort(SortOrder.descending);
-    //
-    //   if (lastKey) {
-    //     query.startAt(lastKey);
-    //   }
-    //
-    //   const response = await query.exec();
-    //   lastKey = response.lastKey;
-    //   currentPage += 1;
-    //
-    //   if (searchQuery) {
-    //     const matches: (TournamentEntry & { rank: number })[] = [];
-    //     for (const item of response) {
-    //       let walletAddress = item.primaryWalletAddress;
-    //       if (
-    //         walletAddress &&
-    //         walletAddress.toLowerCase().includes(searchQuery.toLowerCase())
-    //       ) {
-    //         matches.push({ ...item, rank });
-    //       }
-    //
-    //       rank++;
-    //     }
-    //
-    //     const usernames = await this.userProfilesService.getUsernames(
-    //       matches.map((m) => m.sk),
-    //     );
-    //
-    //     return {
-    //       displayName,
-    //       description,
-    //       prizes,
-    //       startDate,
-    //       endDate,
-    //       currentRound,
-    //       items: matches.map(
-    //         ({
-    //           sk,
-    //           rank,
-    //           primaryWalletAddress,
-    //           tournamentEntryWinAmount,
-    //           balance,
-    //           xp,
-    //         }) => ({
-    //           rank,
-    //           username: usernames[sk] ?? '',
-    //           walletAddress: primaryWalletAddress,
-    //           winAmount: tournamentEntryWinAmount?.toString() ?? '0',
-    //           balance,
-    //           xp: xp?.toString() ?? '0',
-    //         }),
-    //       ),
-    //     };
-    //   } else {
-    //     const usernames = await this.userProfilesService.getUsernames(
-    //       response.map((m) => m.sk),
-    //     );
-    //
-    //     if (userId) {
-    //       const userItemIndex = response.findIndex(
-    //         (x) => x.sk === `account#${userId}`,
-    //       );
-    //       if (userItemIndex !== -1) {
-    //         const userItem = response[userItemIndex];
-    //         const userRank = rank + userItemIndex;
-    //         currentUserItem = {
-    //           rank: userRank,
-    //           username: usernames[userItem.sk],
-    //           walletAddress: userItem.primaryWalletAddress,
-    //           balance: userItem.balance,
-    //           xp: userItem.xp?.toString() ?? '0',
-    //         };
-    //       }
-    //     }
-    //
-    //     if (currentPage > pageNumber) {
-    //       const totalCount = 0; // todo
-    //
-    //       return {
-    //         displayName,
-    //         description,
-    //         prizes,
-    //         startDate,
-    //         endDate,
-    //         currentRound,
-    //         totalCount,
-    //         currentUserItem,
-    //         items: response.map((item) => ({
-    //           rank: rank++,
-    //           username: usernames[item.sk],
-    //           walletAddress: item.primaryWalletAddress,
-    //           balance: item.balance,
-    //           winAmount: item.tournamentEntryWinAmount?.toString() ?? '0',
-    //           xp: item.xp?.toString() ?? '0',
-    //         })),
-    //       };
-    //     } else {
-    //       rank += response.length;
-    //     }
-    //   }
-    // } while (lastKey);
-    //
-    // return {
-    //   displayName,
-    //   description,
-    //   prizes,
-    //   startDate,
-    //   currentRound,
-    //   endDate,
-    //   totalCount: 0,
-    //   items: [],
-    // };
   }
 }

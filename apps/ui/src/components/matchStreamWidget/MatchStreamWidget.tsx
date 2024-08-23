@@ -55,9 +55,7 @@ export const MatchStreamWidget: FC = () => {
         <YouTubeStream streamId={youTubeStreamId} />
       )}
 
-      {streamSource === 'red5' && (
-        <Red5Stream streamViewExpected={streamViewExpected} />
-      )}
+      {streamSource === 'red5' && <Red5Stream enabled={streamViewExpected} />}
 
       {streamViewExpected && (
         <Tooltip content="24/7 Live Stream">

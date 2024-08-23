@@ -258,4 +258,25 @@ resource "aws_s3_bucket" "stream_assets_bucket" {
   bucket = "${local.prefix}-stream-assets-${var.environment}"
 }
 
+resource "aws_s3_bucket" "posthog_bucket" {
+  bucket = "${local.prefix}-posthog-${var.environment}"
+}
 
+# Bucket policy to allow posthog lambda to access the bucket
+resource "aws_s3_bucket_policy" "posthog_bucket_policy" {
+  bucket = aws_s3_bucket.posthog_bucket.bucket
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = module.posthog_webhook_listener.exec_role_arn
+        }
+        Action   = ["s3:GetObject", "s3:PutObject"]
+        Resource = ["${aws_s3_bucket.posthog_bucket.arn}/*"]
+      }
+    ]
+  })
+}

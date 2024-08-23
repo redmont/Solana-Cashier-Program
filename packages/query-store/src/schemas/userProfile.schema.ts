@@ -7,4 +7,8 @@ export const UserProfileSchema = new Schema({
     type: String,
     required: true,
   },
+  primaryWalletAddress: {
+    type: String,
+    required: true,
+  },
 });

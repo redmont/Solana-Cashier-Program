@@ -7,7 +7,7 @@ import dayjs from '@/dayjs';
 import { Gateway } from '@/gateway';
 import { Queue } from './queue';
 
-const cachedTickerSize = 30;
+const cachedTickerSize = 35;
 
 @Injectable()
 export class PriceFeedService {
@@ -33,42 +33,35 @@ export class PriceFeedService {
       return;
     }
 
-    // Check the timestamp in cache. If it's newer, discard the event.
+    // Check if the symbol is being tracked
+    const trackedTicker = this.trackedTickers.find(
+      (t) => t.ticker.toLowerCase() === symbolLower,
+    );
+    if (trackedTicker) {
+      this.gateway.publish(
+        new TickerPriceEvent(
+          ts.toISOString(),
+          trackedTicker.fighter,
+          trackedTicker.ticker,
+          price,
+        ),
+      );
+    }
+    // Check the timestamp in cache. If the cached timestamp is newer, discard the event.
     let cached = this.cache.get(symbolLower);
     if (cached && cached.size > 0 && cached.last.timestamp > timestamp) {
       return;
     }
 
-    // Update cache if the timestamp is at least 10 seconds newer
-    if (
-      cached &&
-      cached.size > 0 &&
-      cached.last.timestamp + 10_000 < timestamp
-    ) {
-      if (!cached) {
-        cached = new Queue(cachedTickerSize);
-        this.cache.set(symbolLower, cached);
-      }
+    if (!cached) {
+      this.cache.set(symbolLower, new Queue(cachedTickerSize));
+      cached = this.cache.get(symbolLower);
+    }
 
+    // Update cache if the timestamp is at least 1 second newer
+    if (cached.size === 0 || cached.last.timestamp + 1_000 < timestamp) {
       cached.enqueue({ price, timestamp });
     }
-
-    // Check if the symbol is being tracked
-    const trackedTicker = this.trackedTickers.find(
-      (t) => t.ticker.toLowerCase() === symbolLower,
-    );
-    if (!trackedTicker) {
-      return;
-    }
-
-    this.gateway.publish(
-      new TickerPriceEvent(
-        ts.toISOString(),
-        trackedTicker.fighter,
-        trackedTicker.ticker,
-        price,
-      ),
-    );
   }
 
   async handleCurrentTickers(tickers: { fighter: string; ticker: string }[]) {

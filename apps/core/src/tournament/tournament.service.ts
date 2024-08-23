@@ -7,7 +7,7 @@ import { TournamentQueryStoreService } from 'query-store';
 import { TournamentEntry } from './interfaces/tournamentEntry.interface';
 import { TournamentWinnings } from './interfaces/tournamentWinnings.interface';
 import { Cron } from '@nestjs/schedule';
-import { ActivityStreamService, BetXpActivityEvent } from '@/activityStream';
+import { ActivityStreamService } from '@/activityStream';
 import { WinXpActivityEvent } from '@/activityStream/events/winXpActivity.event';
 
 @Injectable()
@@ -401,6 +401,7 @@ export class TournamentService {
       },
       {} as Record<string, number>,
     );
+
     // Get top 100 winners
     const topWinners = Object.entries(winningsByUser)
       .sort(([, a], [, b]) => b - a)
@@ -409,14 +410,18 @@ export class TournamentService {
     // Reduce tournamentEntry win amounts by winnings for the round.
     // This ensures that any winnings from the next round are retained.
     for (const [userId, winAmount] of Object.entries(winningsByUser)) {
+      let winAmountCreditedXp = Math.floor(winAmount / 100) * 100;
+
       let updateExpression: {
         $ADD: {
           winAmount: number;
+          winAmountCreditedXp: number;
           xp?: number;
         };
       } = {
         $ADD: {
           winAmount: -winAmount,
+          winAmountCreditedXp: -winAmountCreditedXp,
         },
       };
 
@@ -451,6 +456,144 @@ export class TournamentService {
           returnValues: 'ALL_NEW',
         },
       );
+
+      await this.tournamentQueryStore.updateTournamentEntry({
+        tournament: currentTournament.codeName,
+        userId,
+        primaryWalletAddress: item.primaryWalletAddress,
+        tournamentEntryWinAmount: item.winAmount,
+        balance: item.balance,
+        xp: item.xp,
+      });
+    }
+  }
+
+  async tempRefreshTournamentXp() {
+    const currentTournament = await this.getCurrentTournament();
+
+    const userWinAmounts: {
+      [userId: string]: number;
+    } = {};
+
+    const lastRoundWinAmounts: {
+      [userId: string]: number;
+    } = {};
+
+    const extraXp: {
+      [userId: string]: number;
+    } = {};
+
+    const rounds = currentTournament.currentRound;
+    const startDate = dayjs.utc(currentTournament.startDate);
+
+    for (var i = 1; i <= rounds; i++) {
+      const currentRound = i;
+      const roundStart = startDate.add(currentRound - 1, 'day');
+      const roundEnd = startDate.add(currentRound, 'day');
+      const winnings = await this.tournamentWinningsModel
+        .query({
+          pk: `tournamentWinnings#${currentTournament.codeName}`,
+          createdAt: {
+            between: [roundStart.toISOString(), roundEnd.toISOString()],
+          },
+        })
+        .using('pkCreatedAt')
+        .all(10)
+        .exec();
+
+      // Group winnings by user
+      const winningsByUser = winnings.reduce(
+        (acc, curr) => {
+          if (!acc[curr.userId]) {
+            acc[curr.userId] = 0;
+          }
+
+          acc[curr.userId] += curr.winAmount;
+
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
+
+      for (const [userId, winAmount] of Object.entries(winningsByUser)) {
+        if (userWinAmounts[userId] === undefined) {
+          userWinAmounts[userId] = 0;
+        }
+        userWinAmounts[userId] += winAmount;
+      }
+
+      if (currentRound === rounds) {
+        for (const [userId, winAmount] of Object.entries(winningsByUser)) {
+          if (lastRoundWinAmounts[userId] === undefined) {
+            lastRoundWinAmounts[userId] = 0;
+          }
+          lastRoundWinAmounts[userId] += winAmount;
+        }
+      }
+
+      // Get top 100 winners
+      const topWinners = Object.entries(winningsByUser)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 100);
+
+      if (topWinners.length > 0) {
+        if (extraXp[topWinners[0][0]] === undefined) {
+          extraXp[topWinners[0][0]] = 0;
+        }
+        extraXp[topWinners[0][0]] += 150;
+      }
+      if (topWinners.length > 1) {
+        if (extraXp[topWinners[1][0]] === undefined) {
+          extraXp[topWinners[1][0]] = 0;
+        }
+        extraXp[topWinners[1][0]] += 100;
+      }
+      if (topWinners.length > 2) {
+        if (extraXp[topWinners[2][0]] === undefined) {
+          extraXp[topWinners[2][0]] = 0;
+        }
+        extraXp[topWinners[2][0]] += 50;
+      }
+
+      if (topWinners.length > 3) {
+        for (let i = 3; i < topWinners.length; i++) {
+          if (extraXp[topWinners[i][0]] === undefined) {
+            extraXp[topWinners[i][0]] = 0;
+          }
+          extraXp[topWinners[i][0]] += 25;
+        }
+      }
+    }
+
+    for (const [userId, winAmount] of Object.entries(userWinAmounts)) {
+      let xp = Math.floor(winAmount / 100);
+
+      const lastRoundWinAmount = lastRoundWinAmounts[userId] ?? 0;
+      const winAmountCreditedXp = Math.floor(lastRoundWinAmount / 100) * 100;
+      //let winAmountCreditedXp = Math.floor(winAmount / 100) * 100;
+
+      if (extraXp[userId]) {
+        xp += extraXp[userId];
+      }
+
+      const item = await this.tournamentEntryModel.update(
+        {
+          pk: `tournamentEntry#${currentTournament.codeName}`,
+          sk: userId,
+        },
+        {
+          $SET: {
+            xp,
+            winAmountCreditedXp,
+          },
+        },
+        {
+          return: 'item',
+          returnValues: 'ALL_NEW',
+        },
+      );
+
+      console.log(`Updated ${userId} with ${xp} XP`);
 
       await this.tournamentQueryStore.updateTournamentEntry({
         tournament: currentTournament.codeName,

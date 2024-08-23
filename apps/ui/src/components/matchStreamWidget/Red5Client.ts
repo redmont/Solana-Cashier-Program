@@ -1,5 +1,15 @@
+/* eslint-disable no-console */
 import { streamingServerHostname } from '@/config';
 import { WHEPClient } from 'red5pro-webrtc-sdk';
+
+const TIMEOUT_MS = 3000;
+
+class TimeoutError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'TimeoutError';
+  }
+}
 
 export class Red5Client {
   private whepClient?: WHEPClient;
@@ -10,11 +20,20 @@ export class Red5Client {
     private readonly mediaElementId: string,
   ) {}
 
-  async connect() {
-    if (this.whepClient) {
-      this.whepClient.unsubscribe();
-    }
+  connected = false;
+  errored = false;
 
+  private async withTimeout<T>(
+    promise: Promise<T>,
+    ms = TIMEOUT_MS,
+  ): Promise<T> {
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new TimeoutError('Timeout')), ms),
+    );
+    return await Promise.race([promise, timeout]);
+  }
+
+  async initialize() {
     this.whepClient = new WHEPClient();
 
     await this.whepClient.init({
@@ -34,11 +53,28 @@ export class Red5Client {
       },
       mediaElementId: this.mediaElementId,
     });
+  }
 
-    await this.whepClient.subscribe();
+  async subscribe() {
+    await this.withTimeout(this.whepClient!.subscribe());
+  }
+
+  async connect() {
+    this.errored = false;
+    this.whepClient?.unsubscribe();
+
+    try {
+      await this.initialize();
+      await this.subscribe();
+      this.connected = true;
+    } catch (e) {
+      console.warn('Error connecting to stream:', (e as Error).message);
+      this.errored = true;
+    }
   }
 
   async disconnect() {
     this.whepClient?.unsubscribe();
+    this.connected = false;
   }
 }

@@ -27,6 +27,8 @@ export class MatchPersistenceService {
     startTime,
     fighters,
     winner,
+    winnerTokenPriceDelta,
+    loserTokenPriceDelta,
   }: {
     seriesCodeName: string;
     matchId: string;
@@ -41,6 +43,14 @@ export class MatchPersistenceService {
     winner: {
       codeName: string;
     };
+    winnerTokenPriceDelta: {
+      relative: number;
+      absolute: number;
+    };
+    loserTokenPriceDelta: {
+      relative: number;
+      absolute: number;
+    };
   }) {
     await this.matchModel.create({
       pk: 'match',
@@ -50,6 +60,8 @@ export class MatchPersistenceService {
       startTime,
       fighters,
       winner,
+      winnerTokenPriceDelta,
+      loserTokenPriceDelta,
     });
 
     await this.queryStore.createMatch({
