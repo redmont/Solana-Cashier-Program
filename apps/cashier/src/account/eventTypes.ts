@@ -6,7 +6,12 @@ export const accountCreatedEventType = new EventType<'ACCOUNT_CREATED', {}>({
 
 export const creditEventType = new EventType<
   'ACCOUNT_CREDITED',
-  { accountId: string; amount: number }
+  {
+    accountId: string;
+    amount: number;
+    reason: string;
+    transactionHash?: string;
+  }
 >({ type: 'ACCOUNT_CREDITED' });
 
 export const debitEventType = new EventType<

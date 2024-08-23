@@ -153,23 +153,6 @@ describe('TournamentService', () => {
       },
     ];
 
-    let tournamentEntries: TournamentEntry[] = [
-      {
-        pk: 'tournamentEntry#tournament1',
-        sk: 'user1234',
-        tournament: 'tournament1',
-        userId: 'user1234',
-        primaryWalletAddress: '0x1234',
-        winAmount: 0,
-        winAmountCreditedXp: 0,
-        entryBetAmount: 0,
-        entryBetAmountCreditedXp: 0,
-        balance: '100',
-        xp: 1,
-        updatedAt: now,
-      },
-    ];
-
     jest
       .spyOn(tournamentModel, 'get')
       .mockImplementation((_key) => Promise.resolve(tournament));
@@ -217,6 +200,7 @@ describe('TournamentService', () => {
 
     // Should switch the round,
     // reset win amounts,
+    // reset credited XP values,
     // allocate XP
     await service.processRoundChange();
 
@@ -238,9 +222,72 @@ describe('TournamentService', () => {
     expect(updateTournamentEntry.mock.lastCall?.[1]).toEqual({
       $ADD: {
         winAmount: -100,
+        winAmountCreditedXp: -100,
         xp: 150,
       },
     });
     expect(queryStoreService.updateTournament).toHaveBeenCalledTimes(1);
+  });
+
+  describe('updateTournamentEntry', () => {
+    it('should correctly allocate XP for wins', async () => {
+      let tournamentEntry = {
+        winAmount: 0,
+        winAmountCreditedXp: 0,
+      };
+
+      let updateTournamentEntry = jest
+        .spyOn(tournamentEntryModel, 'update')
+        .mockImplementation((key, obj) => {
+          if (obj['$ADD']?.winAmount) {
+            tournamentEntry.winAmount += obj['$ADD'].winAmount;
+          }
+          if (obj['$ADD']?.winAmountCreditedXp) {
+            tournamentEntry.winAmountCreditedXp +=
+              obj['$ADD'].winAmountCreditedXp;
+          }
+
+          return Promise.resolve(tournamentEntry);
+        });
+
+      jest
+        .spyOn(tournamentWinningsModel, 'create')
+        .mockImplementation(() => Promise.resolve());
+
+      await service.updateTournamentEntry({
+        timestamp: '2024-06-25T01:32:33Z',
+        userId: 'user1',
+        tournament: 'tournament1',
+        winAmount: 90,
+      });
+
+      expect(updateTournamentEntry.mock.lastCall?.[1]).toHaveProperty('$ADD', {
+        winAmount: 90,
+      });
+
+      await service.updateTournamentEntry({
+        timestamp: '2024-06-25T01:32:33Z',
+        userId: 'user1',
+        tournament: 'tournament1',
+        winAmount: 90,
+      });
+
+      expect(updateTournamentEntry.mock.lastCall?.[1]).toHaveProperty('$ADD', {
+        xp: 1,
+        winAmountCreditedXp: 100,
+      });
+
+      await service.updateTournamentEntry({
+        timestamp: '2024-06-25T01:32:33Z',
+        userId: 'user1',
+        tournament: 'tournament1',
+        winAmount: 120,
+      });
+
+      expect(updateTournamentEntry.mock.lastCall?.[1]).toHaveProperty('$ADD', {
+        xp: 2,
+        winAmountCreditedXp: 200,
+      });
+    });
   });
 });

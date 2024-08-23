@@ -14,4 +14,12 @@ export interface Match extends Key {
   winner: {
     codeName: string;
   };
+  winnerTokenPriceDelta: {
+    relative: number;
+    absolute: number;
+  };
+  loserTokenPriceDelta: {
+    relative: number;
+    absolute: number;
+  };
 }

@@ -8,7 +8,6 @@ import { Nonce } from './nonce.interface';
 import { Key } from '@/interfaces/key';
 import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { UserProfilesQueryStoreService } from 'query-store';
-import dayjs from '@/dayjs';
 import { v4 as uuid } from 'uuid';
 
 jest.mock('uuid', () => ({

@@ -4,7 +4,6 @@ import { NatsJetStreamServer } from '@nestjs-plugins/nestjs-nats-jetstream-trans
 import configuration from './configuration';
 import { AppModule } from './app.module';
 import { RedisIoAdapter } from './gateway/websocket/redisIoAdapter';
-import { nanos } from 'nats';
 import { GatewayInstanceDecoratorProcessorService } from './nats/gatewayInstanceDecoratorProcessorService';
 import { AppController } from './app.controller';
 
@@ -37,7 +36,6 @@ async function bootstrap() {
       connectionOptions: {
         servers: config.natsUri.split(','),
         name: 'gateway-listener',
-        debug: true,
       },
       consumerOptions: {
         deliverGroup: 'gateway-group',

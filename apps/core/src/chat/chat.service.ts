@@ -19,7 +19,9 @@ export class ChatService {
   ) {
     this.chatEnabled = this.doesKeyExist(config);
 
-    if (!this.chatEnabled) return;
+    if (!this.chatEnabled) {
+      return;
+    }
 
     this.pubNub = new PubNub({
       subscribeKey: config.get<string>('pubNubSubscribeKey'),
@@ -84,7 +86,9 @@ export class ChatService {
     userId?: string;
     message: string;
   }) {
-    if (!this.chatEnabled) return;
+    if (!this.chatEnabled) {
+      return;
+    }
 
     await this.ensureToken();
 

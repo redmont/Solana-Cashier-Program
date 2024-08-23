@@ -47,6 +47,10 @@ export class MatchBettingService {
     this.logger.log(
       `Distributing winnings, winning fighter is '${winningFighter}'`,
     );
+    const winningFighterTicker = seriesConfig.fighters.find(
+      (fighter) => fighter.codeName === winningFighter.codeName,
+    )?.ticker;
+
     const losingFighter = seriesConfig.fighters.find(
       (fighter) => fighter.codeName !== winningFighter.codeName,
     );
@@ -212,6 +216,10 @@ export class MatchBettingService {
       });
     }
 
+    const winnerTokenPriceDelta =
+      priceDelta[winningFighterTicker.toLowerCase()];
+    const loserTokenPriceDelta = priceDelta[losingFighter.ticker.toLowerCase()];
+
     // Record fight history
     await this.matchPersistenceService.recordFightHistory({
       seriesCodeName,
@@ -219,10 +227,9 @@ export class MatchBettingService {
       startTime,
       winner: winningFighter,
       fighters: fightersWithBetCounts,
+      winnerTokenPriceDelta,
+      loserTokenPriceDelta,
     });
-
-    const winnerTokenPriceDelta = priceDelta[winningFighter.codeName];
-    const loserTokenPriceDelta = priceDelta[losingFighter.codeName];
 
     this.activityStreamService.track(
       new MatchCompletedActivityEvent(

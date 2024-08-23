@@ -33,4 +33,18 @@ export const MatchSchema = new Schema({
       codeName: String,
     },
   },
+  winnerTokenPriceDelta: {
+    type: Object,
+    schema: {
+      relative: Number,
+      absolute: Number,
+    },
+  },
+  loserTokenPriceDelta: {
+    type: Object,
+    schema: {
+      relative: Number,
+      absolute: Number,
+    },
+  },
 });

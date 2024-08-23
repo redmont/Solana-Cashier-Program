@@ -2,20 +2,22 @@ import { Injectable } from '@nestjs/common';
 import { RedisCacheService } from 'global-cache';
 import { InjectModel, Model } from 'nestjs-dynamoose';
 import { Key } from 'src/interfaces/key.interface';
-import { UserProfile } from './interfaces/userProfile.interface';
+import { UserProfile as UserProfileModel } from './interfaces/userProfile.interface';
+
+interface UserProfile {
+  username: string;
+  primaryWalletAddress: string;
+}
 
 @Injectable()
 export class UserProfilesQueryStoreService {
   constructor(
     private readonly cache: RedisCacheService,
     @InjectModel('userProfile')
-    private readonly userProfileModel: Model<UserProfile, Key>,
+    private readonly userProfileModel: Model<UserProfileModel, Key>,
   ) {}
 
-  async setUserProfile(
-    userId: string,
-    profile: { username: string; primaryWalletAddress: string },
-  ): Promise<void> {
+  async setUserProfile(userId: string, profile: UserProfile): Promise<void> {
     const key = `userProfile:${userId}`;
     const sortedKeySet = 'usernames';
 
@@ -34,10 +36,7 @@ export class UserProfilesQueryStoreService {
   async getUserProfile(userId: string): Promise<any> {
     const key = `userProfile:${userId}`;
 
-    let userProfile: {
-      username: string;
-      primaryWalletAddress: string;
-    } | null = null;
+    let userProfile: UserProfile = null;
 
     const data = await this.cache.hgetall(key);
     if (data) {
