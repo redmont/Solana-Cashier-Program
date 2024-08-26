@@ -176,5 +176,5 @@ jobs:
       - name: Apply Terraform
         working-directory: ./infra
         run: |
-          terraform init
+          terraform init -upgrade
           terraform apply -auto-approve -var-file="pipeline.auto.tfvars"
