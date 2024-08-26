@@ -72,9 +72,7 @@ jobs:
 
       - name: Log in to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          region: ap-southeast-1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Get current image tag from ECS
         id: get-current-image-tag
