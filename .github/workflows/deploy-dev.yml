@@ -17,9 +17,9 @@ jobs:
         run: |
           echo "Running on branch ${{ github.ref }}"
           if [ "${{ github.ref }}" = "refs/heads/develop" ]; then
-            echo "::set-output name=env_name::dev"
+            echo "env_name=dev" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "::set-output name=env_name::prod"
+            echo "env_name=prod" >> $GITHUB_OUTPUT
           fi
 
   build-and-push:
