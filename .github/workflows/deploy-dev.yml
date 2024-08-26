@@ -151,6 +151,13 @@ jobs:
           cp apps/ui/.env.example apps/ui/.env
           pnpm --filter="modules/*" build
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ap-southeast-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+
       - name: Set up Terraform variables
         working-directory: ./infra
         run: |-
