@@ -1,4 +1,4 @@
-import { useEthWallet } from '@/hooks';
+import { useEthWallet, usePostHog } from '@/hooks';
 import { useMemo } from 'react';
 import { bytesToHex, erc20Abi, padBytes, stringToBytes } from 'viem';
 import { useClient, useReadContract, useWriteContract } from 'wagmi';
@@ -6,7 +6,7 @@ import { waitForTransactionReceipt } from 'viem/actions';
 import CashierDeposit from '@bltzr-gg/brawlers-evm-contracts/artifacts/contracts/CashierDeposit.sol/CashierDeposit.json';
 import { cashierDepositContractAddress, usdcContractAddress } from '@/config';
 import { useAtomValue } from 'jotai';
-import { userIdAtom } from '@/store/account';
+import { balanceAtom, userIdAtom } from '@/store/account';
 import { useMutation } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
@@ -24,7 +24,9 @@ export const PurchaseForm = ({
   onClose?: () => void;
 }) => {
   const { toast } = useToast();
+  const balance = useAtomValue(balanceAtom);
   const userId = useAtomValue(userIdAtom);
+  const posthog = usePostHog();
   const { address } = useEthWallet();
   const allowance = useReadContract({
     query: {
@@ -87,6 +89,11 @@ export const PurchaseForm = ({
         title: 'Purchase completed',
         description: `${credits.credits} credits purchased.`,
         variant: 'default',
+      });
+      posthog?.capture('Credits Purchased', {
+        credits: credits.credits,
+        cost: credits.total,
+        prevCreditBalance: balance,
       });
     },
     mutationFn: async () => {
