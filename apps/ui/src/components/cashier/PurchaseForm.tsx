@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { bytesToHex, erc20Abi, padBytes, stringToBytes } from 'viem';
 import { useClient, useReadContract, useWriteContract } from 'wagmi';
 import { waitForTransactionReceipt } from 'viem/actions';
-import CashierDeposit from '@bltzr-gg/brawlers-evm-contracts/artifacts/contracts/CashierDeposit.sol/CashierDeposit.json';
+import CashierDeposit from '@bltzr-gg/brawlers-evm-contracts/ignition/deployments/chain-11155111/artifacts/CashierDeposit#CashierDeposit.json';
 import { cashierDepositContractAddress, usdcContractAddress } from '@/config';
 import { useAtomValue } from 'jotai';
 import { balanceAtom, userIdAtom } from '@/store/account';
