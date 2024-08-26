@@ -96,7 +96,7 @@ locals {
     ]
   }
 
-  cashier_ecr_image = aws_ecr_repository.cashier_cr.repository_url
+  cashier_ecr_image = "${aws_ecr_repository.cashier_cr.repository_url}:${var.cashier_image_tag}"
 
   cashier_local_container_overrides = {
     image   = "node:21"

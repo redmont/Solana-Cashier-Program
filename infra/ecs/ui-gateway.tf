@@ -127,7 +127,7 @@ locals {
     ]
   }
 
-  ui_gateway_ecr_image = aws_ecr_repository.ui_gateway_cr.repository_url
+  ui_gateway_ecr_image = "${aws_ecr_repository.ui_gateway_cr.repository_url}:${var.ui_gateway_image_tag}"
 
   ui_gateway_local_container_overrides = {
     image   = "node:21"

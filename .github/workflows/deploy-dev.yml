@@ -1,0 +1,155 @@
+name: Deploy to dev
+
+on:
+  push:
+    branches:
+      - develop
+
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        app:
+          - ui-gateway
+          - core
+          - cashier
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set ECR repository URL
+        run: |
+          # Set ECR repository URL based on matrix.app
+          if [ ${{ matrix.app }} == "ui-gateway" ]; then
+            echo "ECR_REPOSITORY_URL=${{ vars.AWS_ECR_REPOSITORY_UI_GATEWAY }}" >> $GITHUB_ENV
+          elif [ ${{ matrix.app }} == "core" ]; then
+            echo "ECR_REPOSITORY_URL=${{ vars.AWS_ECR_REPOSITORY_CORE }}" >> $GITHUB_ENV
+          elif [ ${{ matrix.app }} == "cashier" ]; then
+            echo "ECR_REPOSITORY_URL=${{ vars.AWS_ECR_REPOSITORY_CASHIER }}" >> $GITHUB_ENV
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          region: ${{ vars.AWS_REGION }}
+
+      - name: Get current image tag from ECS
+        id: get-current-image-tag
+        run: |
+          CURRENT_IMAGE_TAG=$(aws ecs describe-services --cluster ${{ vars.ECS_CLUSTER_ID }} --services ${{ matrix.app }}-svc-${{ vars.ENVIRONMENT_NAME }} --query 'services[0].taskDefinition' --output text | xargs aws ecs describe-task-definition --task-definition | jq -r '.taskDefinition.containerDefinitions[0].image' | awk -F: '{print $2}')
+          echo "::set-output name=image_tag::$CURRENT_IMAGE_TAG"
+
+      - name: Check if code changed for ${{ matrix.app }}
+        id: code-changed
+        run: |
+          if git diff --quiet HEAD^ HEAD -- apps/${{ matrix.app }}/ packages/; then
+            echo "Code didn't change for ${{ matrix.app }}. Skipping build."
+            exit 0
+          else
+            echo "Code changed for ${{ matrix.app }}."
+          fi
+
+      - name: Build and push ${{ matrix.app }} image
+        id: build
+        if: steps.code-changed.outcome == 'success'
+        run: |
+          docker buildx build \
+                 --cache-from=type=local,src=/tmp/.buildx-cache \
+                 --cache-to=type=local,dest=/tmp/.buildx-cache-new \
+                 --build-arg NPM_TOKEN=${{ secrets.NPM_TOKEN }} \
+                 --target ${{ matrix.app }} \
+                 --push -t ${{ env.ECR_REPOSITORY_URL }}:${{ github.sha }} .
+          echo "::set-output name=image_tag::${{ github.sha }}"
+
+  deploy-terraform:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9.1.2
+
+      - name: Set up Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Authenticate with npmjs
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+
+      - name: Install NestJS CLI
+        run: pnpm install -g @nestjs/cli
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: |
+          cp apps/admin/.env.example apps/admin/.env
+          cp apps/ui/.env.example apps/ui/.env
+          pnpm build
+
+      - name: Set up Terraform variables
+        working-directory: ./infra
+        run: |-
+          cat > pipeline.auto.tfvars <<EOF
+          environment                     = "${{ env.ENVIRONMENT_NAME }}"
+          ui_gateway_image_tag            = "${{ needs.build-ui-gateway.outputs.image_tag }}"
+          core_image_tag                  = "${{ needs.build-core.outputs.image_tag }}"
+          cashier_image_tag               = "${{ needs.build-cashier.outputs.image_tag }}"
+          root_dir                        = "${{ github.workspace }}"
+          dynamic_public_key              = "${{ vars.DYNAMIC_PUBLIC_KEY }}"
+          public_assets_hostname          = "${{ vars.PUBLIC_ASSETS_HOSTNAME }}"
+          alchemy_webhook_signing_key     = "${{ secrets.ALCHEMY_WEBHOOK_SIGNING_KEY }}"
+          public_assets_cors_origins      = ["*"]
+          cors_origins                    = ["https://admin.socket.io", "http://localhost:3040", "https://*.vercel.app"]
+          pubnub_publish_key              = "pub-c-02276704-fdb5-404f-a7be-2d3822b7ab62"
+          pubnub_subscribe_key            = "sub-c-b92222c0-d817-4341-960d-b2916955c853"
+          pubnub_secret_key               = "${{ secrets.PUBNUB_SECRET_KEY }}"
+          stream_auth_parent_token_id     = "dev_stream"
+          stream_auth_parent_token_secret = "${{ secrets.STREAM_AUTH_PARENT_TOKEN_SECRET }}"
+          zealy_webhook_secret            = "${{ secrets.ZEALY_WEBHOOK_SECRET }}"
+
+      - name: Apply Terraform
+        run: |
+          terraform init
+          terraform apply -auto-approve -var-file="pipeline.auto.tfvars"

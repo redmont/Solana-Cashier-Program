@@ -13,6 +13,21 @@ variable "environment" {
   type        = string
 }
 
+variable "ui_gateway_image_tag" {
+  description = "UI gateway image tag"
+  type        = string
+}
+
+variable "core_image_tag" {
+  description = "Core image tag"
+  type        = string
+}
+
+variable "cashier_image_tag" {
+  description = "Cashier image tag"
+  type        = string
+}
+
 variable "vpc_id" {
   description = "VPC ID"
   type        = string

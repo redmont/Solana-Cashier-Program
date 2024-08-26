@@ -46,6 +46,10 @@ module "ecs" {
 
   lb_arn = aws_alb.lb.arn
 
+  ui_gateway_image_tag = var.ui_gateway_image_tag
+  core_image_tag       = var.core_image_tag
+  cashier_image_tag    = var.cashier_image_tag
+
   ui_gateway_table_name         = aws_dynamodb_table.ui_gateway_table.name
   ui_gateway_table_arn          = aws_dynamodb_table.ui_gateway_table.arn
   core_table_name               = aws_dynamodb_table.core_table.name

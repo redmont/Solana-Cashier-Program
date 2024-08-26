@@ -144,7 +144,7 @@ locals {
     ]
   }
 
-  core_ecr_image = aws_ecr_repository.core_cr.repository_url
+  core_ecr_image = "${aws_ecr_repository.core_cr.repository_url}:${var.core_image_tag}"
 
   core_local_container_overrides = {
     image   = "node:21"
