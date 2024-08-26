@@ -147,7 +147,7 @@ jobs:
         run: |
           cp apps/admin/.env.example apps/admin/.env
           cp apps/ui/.env.example apps/ui/.env
-          pnpm build
+          pnpm --filter="modules/*" build
 
       - name: Set up Terraform variables
         working-directory: ./infra
@@ -169,6 +169,7 @@ jobs:
           stream_auth_parent_token_id     = "dev_stream"
           stream_auth_parent_token_secret = "${{ secrets.STREAM_AUTH_PARENT_TOKEN_SECRET }}"
           zealy_webhook_secret            = "${{ secrets.ZEALY_WEBHOOK_SECRET }}"
+          EOF
 
       - name: Apply Terraform
         run: |
