@@ -8,8 +8,27 @@ on:
   workflow_dispatch:
 
 jobs:
+  determine-env:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set environment name
+        id: set_env_name
+        run: |
+          echo "Running on branch ${{ github.ref }}"
+          if [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+            echo "::set-output name=env_name::dev"
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "::set-output name=env_name::prod"
+          fi
+
   build-and-push:
     runs-on: ubuntu-latest
+
+    needs: [determine-env]
+
+    environment:
+      name: ${{ needs.determine-env.outputs.env_name }}
 
     strategy:
       matrix:
@@ -87,7 +106,9 @@ jobs:
 
   deploy-terraform:
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs: [determine-env, build-and-push]
+    environment:
+      name: ${{ needs.determine-env.outputs.env_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
