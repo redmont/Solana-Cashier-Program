@@ -42,6 +42,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
 
       - name: Set ECR repository URL
         run: |
@@ -172,6 +174,7 @@ jobs:
           EOF
 
       - name: Apply Terraform
+        working-directory: ./infra
         run: |
           terraform init
           terraform apply -auto-approve -var-file="pipeline.auto.tfvars"
