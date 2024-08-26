@@ -22,7 +22,7 @@ export const MatchProgress: FC = () => {
   const [matchTime, setMatchTime] = useState('0m : 00s');
   const [progress, setProgress] = useState(0);
   const [statusTimestamp, setStatusTimestamp] = useState(0);
-  const rootRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!matchStartTime || !poolOpenStartTime) {
@@ -72,30 +72,32 @@ export const MatchProgress: FC = () => {
 
   useEffect(() => {
     const timestamp = dayjs().valueOf();
-
     setProgress(0);
     setStatusTimestamp(timestamp);
 
-    const widgetBodyEl = rootRef.current;
-    const stageEl = document.querySelector(`.match-stage.current`);
+    const container = containerRef.current;
+    const activeStage = container?.querySelector('.match-stage.current');
 
-    if (!stageEl) {
-      return widgetBodyEl?.scrollTo({ left: 0, behavior: 'smooth' });
+    if (container && activeStage) {
+      setTimeout(() => {
+        const containerWidth = container.offsetWidth;
+        const activeStageLeft =
+          activeStage.getBoundingClientRect().left -
+          container.getBoundingClientRect().left;
+        const activeStageWidth = (activeStage as HTMLElement).offsetWidth;
+        const scrollLeft =
+          activeStageLeft - containerWidth / 2 + activeStageWidth / 2;
+
+        container.scrollTo({
+          left: scrollLeft,
+          behavior: 'smooth',
+        });
+      }, 500);
     }
-
-    const { left: containerX = 0 } =
-      widgetBodyEl?.getBoundingClientRect() ?? {};
-
-    const { x } = stageEl.getBoundingClientRect();
-
-    return widgetBodyEl?.scrollTo({
-      left: x - containerX + (widgetBodyEl?.scrollLeft ?? 0),
-      behavior: 'smooth',
-    });
   }, [matchStatus]);
 
   return (
-    <div ref={rootRef} className="match-progress">
+    <div ref={containerRef} className="match-progress">
       <MatchStage
         order={1}
         futureLabel="Pool Closed"

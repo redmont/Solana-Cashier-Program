@@ -1,8 +1,11 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { expect } from "chai";
+import { expect, use } from "chai";
+import chaiAsPromised from "chai-as-promised";
 import { bytesToHex, padBytes, parseUnits, stringToBytes } from "viem";
 
 import { deployCashierDepositFixture } from "./CashierDeposit.fixture";
+
+use(chaiAsPromised);
 
 describe("CashierDeposit", function () {
   describe("Deposits", function () {
@@ -44,7 +47,7 @@ describe("CashierDeposit", function () {
           testToken.address,
           amount,
         ]),
-      ).to.be.rejectedWith(`TooLowAmount`);
+      ).to.eventually.be.rejectedWith(`TooLowAmount`);
     });
   });
 });

@@ -5,6 +5,10 @@ terraform {
       version = "~> 5.0"
     }
   }
+  backend "s3" {
+    key    = "state"
+    region = "ap-southeast-1"
+  }
 }
 
 provider "aws" {
@@ -45,6 +49,10 @@ module "ecs" {
   redis_port = local.redis_port
 
   lb_arn = aws_alb.lb.arn
+
+  ui_gateway_image_tag = var.ui_gateway_image_tag
+  core_image_tag       = var.core_image_tag
+  cashier_image_tag    = var.cashier_image_tag
 
   ui_gateway_table_name         = aws_dynamodb_table.ui_gateway_table.name
   ui_gateway_table_arn          = aws_dynamodb_table.ui_gateway_table.arn

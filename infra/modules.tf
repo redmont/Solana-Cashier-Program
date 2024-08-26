@@ -132,21 +132,24 @@ resource "aws_iam_role_policy" "posthog_webhook_listener" {
 
 # Schedule PostHog function to run every hour, 5 minutes after the hour
 resource "aws_cloudwatch_event_rule" "posthog_webhook_listener" {
+  count               = var.environment == "prod" ? 1 : 0
   name                = "${local.prefix}-posthog-webhook-listener-${var.environment}"
   description         = "Schedule PostHog webhook listener to run every hour"
   schedule_expression = "cron(5 * * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "posthog_webhook_listener" {
-  rule      = aws_cloudwatch_event_rule.posthog_webhook_listener.name
+  count     = var.environment == "prod" ? 1 : 0
+  rule      = aws_cloudwatch_event_rule.posthog_webhook_listener[0].name
   target_id = module.posthog_webhook_listener.lambda_name
   arn       = module.posthog_webhook_listener.lambda_arn
 }
 
 resource "aws_lambda_permission" "posthog_webhook_listener" {
+  count         = var.environment == "prod" ? 1 : 0
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
-  function_name = module.posthog_webhook_listener.lambda_name
+  function_name = module.posthog_webhook_listener[0].lambda_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.posthog_webhook_listener.arn
+  source_arn    = aws_cloudwatch_event_rule.posthog_webhook_listener[0].arn
 }

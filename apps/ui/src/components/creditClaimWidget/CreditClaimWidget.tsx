@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { Button } from '@/components/ui/button';
 import { classNames } from 'primereact/utils';
-import { useCountdown, useEthWallet, useSocket } from '@/hooks';
+import { useCountdown, useEthWallet, usePostHog, useSocket } from '@/hooks';
 import {
   GetDailyClaimsMessage,
   GetDailyClaimsMessageResponse,
@@ -16,6 +16,7 @@ export const CreditClaimWidget: FC = () => {
   const [canScrollLeft, allowScrollLeft] = useState(false);
   const [canScrollRight, allowScrollRight] = useState(false);
   const { send, connected } = useSocket();
+  const posthog = usePostHog();
   const [isClaiming, setClaiming] = useState(false);
   const [claims, setClaims] = useState<GetDailyClaimsMessageResponse | null>(
     null,
@@ -99,6 +100,11 @@ export const CreditClaimWidget: FC = () => {
       if (!success) {
         return;
       }
+
+      posthog?.capture('Daily Credits Claimed', {
+        streak: streak + 1,
+        amount: dailyClaimAmounts[streak],
+      });
 
       setClaims({
         ...claims,

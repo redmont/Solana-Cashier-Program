@@ -19,26 +19,34 @@ import { FighterSwitch } from './FighterSwitch';
 import { PriceVisualisation } from './PriceVisualisation';
 import { Tooltip } from '../Tooltip';
 import { balanceAtom } from '@/store/account';
-import { matchSeriesAtom, matchStatusAtom } from '@/store/match';
+import {
+  matchSeriesAtom,
+  matchStatusAtom,
+  poolOpenStartTimeAtom,
+} from '@/store/match';
 import {
   betAmountAtom,
   selectedFighterAtom,
+  selectedFighterIndexAtom,
   winningRatesWithBetAmountAtom,
 } from '@/store/app';
 import Typography from '../ui/typography';
 import { Input } from '../ui/input';
+import dayjs from 'dayjs';
 
 export const BetPlacementWidget: FC = () => {
   const [actionTitle, setActionTitle] = useState('Join the Fight');
   const balance = useAtomValue(balanceAtom);
   const matchSeries = useAtomValue(matchSeriesAtom);
   const matchStatus = useAtomValue(matchStatusAtom);
+  const poolOpenStartTime = useAtomValue(poolOpenStartTimeAtom);
   const [projectedWinRate1, projectedWinRate2] = useAtomValue(
     winningRatesWithBetAmountAtom,
   );
   const [betAmount, setBetAmount] = useAtom(betAmountAtom);
 
   const selectedFighter = useAtomValue(selectedFighterAtom);
+  const selectedFighterIndex = useAtomValue(selectedFighterIndexAtom);
 
   const { isConnected, isAuthenticated } = useEthWallet();
   const { setShowAuthFlow } = useDynamicContext();
@@ -117,6 +125,10 @@ export const BetPlacementWidget: FC = () => {
     posthog?.capture('Stake Placed', {
       fighter: selectedFighter.codeName,
       stake: betAmount,
+      balance,
+      winRate:
+        selectedFighterIndex === 0 ? projectedWinRate1 : projectedWinRate2,
+      relativeTime: dayjs().diff(dayjs(poolOpenStartTime)),
     });
   }, [matchSeries, selectedFighter?.codeName, send, betAmount, posthog]);
 
