@@ -5,6 +5,10 @@ terraform {
       version = "~> 5.0"
     }
   }
+  backend "s3" {
+    key    = "state"
+    region = "ap-southeast-1"
+  }
 }
 
 provider "aws" {

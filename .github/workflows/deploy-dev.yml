@@ -190,5 +190,5 @@ jobs:
       - name: Apply Terraform
         working-directory: ./infra
         run: |
-          terraform init -upgrade
+          terraform init -upgrade -backend-config="${{ env.ENVIRONMENT_NAME }}.config"
           terraform apply -auto-approve -var-file="pipeline.auto.tfvars"
