@@ -92,14 +92,15 @@ jobs:
         run: |
           if git diff --quiet HEAD^ HEAD -- apps/${{ matrix.app }}/ packages/; then
             echo "Code didn't change for ${{ matrix.app }}. Skipping build."
-            exit 0
+            echo "build_required=false" >> $GITHUB_ENV
           else
             echo "Code changed for ${{ matrix.app }}."
+            echo "build_required=true" >> $GITHUB_ENV
           fi
 
       - name: Build and push ${{ matrix.app }} image
         id: build
-        if: steps.code-changed.outcome == 'success'
+        if: env.build_required == 'true'
         run: |
           docker buildx build \
                  --cache-from=type=local,src=/tmp/.buildx-cache \
