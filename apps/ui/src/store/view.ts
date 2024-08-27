@@ -6,3 +6,14 @@ export const tutorialCompletedAtom = atomWithStorage<'no' | 'yes'>(
   undefined,
   { getOnInit: true },
 );
+import { atom } from 'jotai';
+
+export enum ActiveWidget {
+  MatchStreamWidget = 'MatchStreamWidget',
+  BetListWidget = 'BetListWidget',
+  ChatWidget = 'ChatWidget',
+}
+
+export const activeBlock = atom({
+  activeWidget: ActiveWidget.BetListWidget,
+});

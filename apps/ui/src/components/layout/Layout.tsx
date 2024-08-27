@@ -4,6 +4,7 @@ import React from 'react';
 import { ChildContainerProps } from '@/types';
 import { TutorialDialog } from '@/components/tutorialDialog';
 import { Navbar } from '../navbar/Navbar';
+import { MobileFooter } from '@/components/mobileFooter';
 
 export const Layout = (props: ChildContainerProps) => {
   return (
@@ -11,6 +12,7 @@ export const Layout = (props: ChildContainerProps) => {
       <TutorialDialog />
       <Navbar />
       {props.children}
+      <MobileFooter />
     </div>
   );
 };
