@@ -85,7 +85,7 @@ jobs:
         id: get-current-image-tag
         run: |
           CURRENT_IMAGE_TAG=$(aws ecs describe-services --cluster ${{ vars.ECS_CLUSTER_ID }} --services brawl-${{ matrix.app }}-svc-${{ env.ENVIRONMENT_NAME }} --query 'services[0].taskDefinition' --output text | xargs aws ecs describe-task-definition --task-definition | jq -r '.taskDefinition.containerDefinitions[0].image' | awk -F: '{print $2}')
-          echo "::set-output name=image_tag::$CURRENT_IMAGE_TAG"
+          echo "CURRENT_IMAGE_TAG=$CURRENT_IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Check if code changed for ${{ matrix.app }}
         id: code-changed
@@ -108,11 +108,32 @@ jobs:
                  --build-arg NPM_TOKEN=${{ secrets.NPM_TOKEN }} \
                  --target ${{ matrix.app }} \
                  --push -t ${{ env.ECR_REPOSITORY_URL }}:${{ github.sha }} .
-          echo "::set-output name=image_tag::${{ github.sha }}"
+          echo "CURRENT_IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Write output
+        uses: cloudposse/github-action-matrix-outputs-write@v1
+        id: out
+        with:
+          matrix-step-name: build
+          matrix-key: ${{ matrix.app }}
+          outputs: |-
+            image_tag: ${{ env.CURRENT_IMAGE_TAG }}
+
+  read:
+    runs-on: ubuntu-latest
+    needs: [determine-env, build-and-push]
+    steps:
+      - uses: cloudposse/github-action-matrix-outputs-read@v1
+        id: read
+        with:
+          matrix-step-name: build
+
+    outputs:
+      result: "${{ steps.read.outputs.result }}"
 
   deploy-terraform:
     runs-on: ubuntu-latest
-    needs: [determine-env, build-and-push]
+    needs: [read]
 
     environment: ${{ needs.determine-env.outputs.env_name }}
 
@@ -171,9 +192,9 @@ jobs:
         run: |-
           cat > pipeline.auto.tfvars <<EOF
           environment                     = "${{ env.ENVIRONMENT_NAME }}"
-          ui_gateway_image_tag            = "${{ needs.build-ui-gateway.outputs.image_tag }}"
-          core_image_tag                  = "${{ needs.build-core.outputs.image_tag }}"
-          cashier_image_tag               = "${{ needs.build-cashier.outputs.image_tag }}"
+          ui_gateway_image_tag            = "${{ fromJson(needs.read.outputs.result).image_tag['ui-gateway'] }}"
+          core_image_tag                  = "${{ fromJson(needs.read.outputs.result).image_tag['core'] }}"
+          cashier_image_tag               = "${{ fromJson(needs.read.outputs.result).image_tag['cashier'] }}"
           root_dir                        = "${{ github.workspace }}"
           dynamic_public_key              = <<-EOM
           ${{ vars.DYNAMIC_PUBLIC_KEY }}
