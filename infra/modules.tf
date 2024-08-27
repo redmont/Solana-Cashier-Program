@@ -163,9 +163,9 @@ module "webhook_listener_helius" {
   lambda_dir  = "${var.root_dir}/modules/cashier/dist"
   filename    = "webhookListenerHelius"
   env_variables = {
-    SERVICE_DISCOVERY_NAMESPACE_NAME  = aws_service_discovery_private_dns_namespace.discovery_namespace.name
-    SERVICE_DISCOVERY_SERVICE_NAMES   = var.service_discovery_service_names
-    HELIUS_SECRET_KEY                 = var.helius_secret_key
+    SERVICE_DISCOVERY_NAMESPACE_NAME = aws_service_discovery_private_dns_namespace.discovery_namespace.name
+    SERVICE_DISCOVERY_SERVICE_NAMES  = "nats-n1-c1,nats-n2-c1,nats-n3-c1"
+    HELIUS_SECRET_KEY                = var.helius_secret_key
   }
   vpc_config = {
     subnet_ids         = module.vpc.private_subnets
