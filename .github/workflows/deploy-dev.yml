@@ -133,7 +133,7 @@ jobs:
 
   deploy-terraform:
     runs-on: ubuntu-latest
-    needs: [read]
+    needs: [determine-env, read]
 
     environment: ${{ needs.determine-env.outputs.env_name }}
 
