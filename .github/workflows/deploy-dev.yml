@@ -175,7 +175,9 @@ jobs:
           core_image_tag                  = "${{ needs.build-core.outputs.image_tag }}"
           cashier_image_tag               = "${{ needs.build-cashier.outputs.image_tag }}"
           root_dir                        = "${{ github.workspace }}"
-          dynamic_public_key              = "${{ vars.DYNAMIC_PUBLIC_KEY }}"
+          dynamic_public_key              = <<-EOM
+          ${{ vars.DYNAMIC_PUBLIC_KEY }}
+          EOM
           public_assets_hostname          = "${{ vars.PUBLIC_ASSETS_HOSTNAME }}"
           alchemy_webhook_signing_key     = "${{ secrets.ALCHEMY_WEBHOOK_SIGNING_KEY }}"
           public_assets_cors_origins      = ["*"]
