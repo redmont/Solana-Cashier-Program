@@ -8,7 +8,7 @@ import {
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { useDeferredState } from '@/hooks/useDeferredState';
-import { useEthWallet } from '@/hooks';
+import { useWallet } from '@/hooks';
 import { useAtomValue } from 'jotai';
 import { matchIdAtom, matchSeriesAtom, matchStatusAtom } from '@/store/match';
 
@@ -33,7 +33,7 @@ export function useActivityStream() {
   const matchId = useAtomValue(matchIdAtom);
   const matchStatus = useAtomValue(matchStatusAtom);
   const { send, subscribe, connected: socketIsConnected } = useSocket();
-  const { isConnected: walletIsConnected } = useEthWallet();
+  const { isConnected: walletIsConnected } = useWallet();
   const isReady = useRef<boolean>(false);
 
   const [state, patchState, setState] = useDeferredState<ActivityStreamData>({

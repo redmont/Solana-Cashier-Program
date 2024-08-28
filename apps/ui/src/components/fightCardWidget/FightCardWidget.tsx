@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { useEthWallet } from '@/hooks';
+import { useWallet } from '@/hooks';
 import { truncateEthAddress } from '../../utils';
 import { classNames } from 'primereact/utils';
 import { TabView, TabPanel } from 'primereact/tabview';
@@ -13,7 +13,7 @@ import { useFightCardData } from './useFightCardData';
 
 export const FightCardWidget: FC = () => {
   const bettingInfos = useAtomValue(fighterBettingInformationAtom);
-  const { address } = useEthWallet();
+  const { address } = useWallet();
   const { previousFights, roster } = useFightCardData();
 
   return (

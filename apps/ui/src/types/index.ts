@@ -28,3 +28,5 @@ export const MatchStatusEnum = z.enum([
 ]);
 
 export type MatchStatus = z.infer<typeof MatchStatusEnum>;
+
+export type Environment = 'production' | 'preview' | 'development';

@@ -4,7 +4,7 @@ import { FC, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 
 import { youTubeStreamId } from '@/config';
-import { useEthWallet } from '@/hooks';
+import { useWallet } from '@/hooks';
 
 import { YouTubeStream } from './YoutubeStream';
 import { Tooltip } from '../Tooltip';
@@ -22,7 +22,7 @@ const Red5Stream = dynamic(() => import('./Red5Stream'), {
 type StreamSource = 'cloudflare' | 'youtube' | 'red5' | 'static';
 
 export const MatchStreamWidget: FC = () => {
-  const { isConnected } = useEthWallet();
+  const { isConnected } = useWallet();
   const fighters = useAtomValue(fightersAtom);
   const matchStatus = useAtomValue(matchStatusAtom);
 

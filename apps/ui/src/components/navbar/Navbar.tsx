@@ -3,7 +3,7 @@ import { useAtom, useAtomValue } from 'jotai';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { JoinButton } from '../JoinButton';
-import { useEthWallet } from '@/hooks';
+import { useWallet } from '@/hooks';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { tutorialCompletedAtom } from '@/store/view';
@@ -20,7 +20,7 @@ import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { Plus } from 'lucide-react';
 
 export const Navbar = () => {
-  const { isAuthenticated } = useEthWallet();
+  const { isAuthenticated } = useWallet();
   const [tutorialCompleted, setTutorialCompleted] = useAtom(
     tutorialCompletedAtom,
   );
@@ -33,8 +33,8 @@ export const Navbar = () => {
 
   const [isCashierOpen, setCashierOpen] = useState(false);
   const cashierRef = useRef<HTMLDivElement>(null);
-  useOnClickOutside(cashierRef, () => setCashierOpen(false));
   const cashierEnabled = useFeatureFlag('enable-cashier');
+  useOnClickOutside(cashierRef, () => setCashierOpen(false));
 
   const currentPath = usePathname();
   const linkClasses = (active: boolean) =>

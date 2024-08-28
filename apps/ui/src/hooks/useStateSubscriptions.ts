@@ -33,8 +33,7 @@ import {
   tickersAtom,
 } from '@/store/match';
 import { accountAddressAtom, balanceAtom, userIdAtom } from '@/store/account';
-import { useEthWallet } from '../providers/EthWalletProvider';
-
+import { useWallet } from '@/hooks/useWallet';
 const GetBalanceMessageResponseSchema = z.object({
   success: z.boolean(),
   balance: z.number(),
@@ -43,7 +42,7 @@ const GetBalanceMessageResponseSchema = z.object({
 const MAX_TICKERS = 10000;
 
 export function useStateSubscriptions() {
-  const { address } = useEthWallet();
+  const { address } = useWallet();
   const { send, subscribe, connected } = useSocket();
 
   const setAccountAddress = useSetAtom(accountAddressAtom);

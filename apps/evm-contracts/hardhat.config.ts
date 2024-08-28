@@ -7,22 +7,10 @@ import type { NetworkUserConfig } from "hardhat/types";
 import * as chains from "viem/chains";
 
 const mnemonic: string = vars.get("MNEMONIC", "test test test test test test test test test test test junk");
-
 const alchemyApiKey: string = vars.get("ALCHEMY_API_KEY", "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF");
+const etherscanApiKey: string = vars.get("ETHERSCAN_API_KEY", "");
 
-const getUrl = (chain: keyof typeof chains): string => {
-  switch (chain) {
-    case "avalanche":
-      return "https://api.avax.network/ext/bc/C/rpc";
-    case "bsc":
-      return "https://bsc-dataseed1.binance.org";
-    case "sepolia":
-      return `https://eth-sepolia.g.alchemy.com/v2/${alchemyApiKey}`;
-
-    default:
-      return `https://${chain}.g.alchemy.com/v2/${alchemyApiKey}`;
-  }
-};
+const getUrl = (chain: keyof typeof chains): string => chains[chain].rpcUrls.default.http[0];
 
 const getChainConfig = (chain: keyof typeof chains, url = getUrl(chain)): NetworkUserConfig => ({
   accounts: {
@@ -36,6 +24,9 @@ const getChainConfig = (chain: keyof typeof chains, url = getUrl(chain)): Networ
 
 const config: HardhatUserConfig = {
   solidity: "0.8.24",
+  etherscan: {
+    apiKey: etherscanApiKey,
+  },
   networks: {
     hardhat: {
       accounts: {
@@ -43,8 +34,9 @@ const config: HardhatUserConfig = {
       },
       chainId: chains.hardhat.id,
     },
-    sepolia: getChainConfig("sepolia"),
-    mainnet: getChainConfig("mainnet"),
+    sepolia: getChainConfig("sepolia", `https://eth-sepolia.g.alchemy.com/v2/${alchemyApiKey}`),
+    mainnet: getChainConfig("mainnet", `https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey}`),
+    polygonAmoy: getChainConfig("polygonAmoy"),
   },
 };
 

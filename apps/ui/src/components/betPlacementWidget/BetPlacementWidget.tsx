@@ -13,7 +13,7 @@ import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { useAtom, useAtomValue } from 'jotai';
 
 import { Slider } from '../slider';
-import { useSocket, usePostHog, useEthWallet } from '@/hooks';
+import { useSocket, usePostHog, useWallet } from '@/hooks';
 import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { FighterSwitch } from './FighterSwitch';
 import { PriceVisualisation } from './PriceVisualisation';
@@ -48,7 +48,7 @@ export const BetPlacementWidget: FC = () => {
   const selectedFighter = useAtomValue(selectedFighterAtom);
   const selectedFighterIndex = useAtomValue(selectedFighterIndexAtom);
 
-  const { isConnected, isAuthenticated } = useEthWallet();
+  const { isConnected, isAuthenticated } = useWallet();
   const { setShowAuthFlow } = useDynamicContext();
   const [error, setError] = useState('');
   const [isDirty, setDirty] = useState(false);

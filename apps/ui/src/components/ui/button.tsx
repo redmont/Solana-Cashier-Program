@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { Loader2 } from 'lucide-react';
+import { ChevronDown, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
@@ -17,6 +17,8 @@ const buttonVariants = cva(
           'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-primary text-primary hover:text-primary-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
+        dropdown:
+          'border border-primary-900/75 bg-primary/20 text-text hover:bg-dropdown/90',
       },
       size: {
         default: 'h-10 px-4 py-2',
@@ -52,6 +54,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading && <Loader2 className="mr-2 size-6 animate-spin" />}
         {props.children}
+        {variant === 'dropdown' && <ChevronDown className="ml-2 size-4" />}
       </Comp>
     );
   },

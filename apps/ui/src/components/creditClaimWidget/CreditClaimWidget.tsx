@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { Button } from '@/components/ui/button';
 import { classNames } from 'primereact/utils';
-import { useCountdown, useEthWallet, usePostHog, useSocket } from '@/hooks';
+import { useCountdown, useWallet, usePostHog, useSocket } from '@/hooks';
 import {
   GetDailyClaimsMessage,
   GetDailyClaimsMessageResponse,
@@ -192,7 +192,7 @@ interface CreditClaimCard {
 }
 
 const CreditClaimCard: FC<CreditClaimCard> = (props) => {
-  const { isAuthenticated, isConnected } = useEthWallet();
+  const { isAuthenticated, isConnected } = useWallet();
 
   const { setShowAuthFlow, setShowDynamicUserProfile } = useDynamicContext();
 

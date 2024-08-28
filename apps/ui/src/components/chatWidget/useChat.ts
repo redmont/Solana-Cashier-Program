@@ -6,7 +6,7 @@ import {
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { Chat, Message } from './Chat';
 
-import { useEthWallet, useSocket } from '@/hooks';
+import { useWallet, useSocket } from '@/hooks';
 import { pubNubPubKey, pubNubSubKey } from '@/config';
 import { useAtom } from 'jotai';
 import { chatChannelsAtom, chatMessagesAtom, chatModeAtom } from '@/store/chat';
@@ -24,7 +24,7 @@ const useChat = () => {
   const [mode, setMode] = useAtom(chatModeAtom);
   const [messages, setMessages] = useAtom(chatMessagesAtom);
   const [channels, setChannels] = useAtom(chatChannelsAtom);
-  const { address } = useEthWallet();
+  const { address } = useWallet();
   const { connected, send } = useSocket();
   const { user } = useDynamicContext();
 

@@ -17,8 +17,7 @@ import { FC, useCallback, useState } from 'react';
 import { Input } from '../ui/input';
 import { useReadContract } from 'wagmi';
 import { erc20Abi } from 'viem';
-import { usdcContractAddress } from '@/config';
-import { useEthWallet } from '@/hooks';
+import { useWallet } from '@/hooks';
 import {
   AmountSchema,
   CreditAmount,
@@ -28,21 +27,33 @@ import {
   PricedCredits,
 } from './utils';
 import { cn } from '@/lib/utils';
+import { useContracts } from '@/hooks/useContracts';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import networks from '@/config/chains';
+import { Wallet2Icon } from 'lucide-react';
 
 type Props = {
   onSubmit: (data: PricedCredits) => void;
 };
 
 export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
+  const { depositor } = useContracts();
   const [customEnabled, setCustomEnabled] = useState(false);
-  const { address } = useEthWallet();
+  const { address, network, switchNetwork, networkId } = useWallet();
 
   const balance = useReadContract({
     query: {
       enabled: !!address,
     },
     abi: erc20Abi,
-    address: usdcContractAddress,
+    address: depositor?.parameters.allowedTokenAddress as
+      | `0x${string}`
+      | undefined,
     functionName: 'balanceOf',
     args: [address!],
   });
@@ -96,7 +107,42 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(_onSubmit)} className="space-y-6 px-2">
+      <form
+        onSubmit={form.handleSubmit(_onSubmit)}
+        className="space-y-6 px-2 pt-5"
+      >
+        <div className="flex items-center justify-between gap-3 font-normal">
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Button
+                loading={networkId.isLoading || switchNetwork.isPending}
+                variant="dropdown"
+                className="w-full"
+              >
+                {network?.name ?? 'Select Network'}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {networks
+                .filter((n) => n.id !== networkId.data)
+                .map((network) => (
+                  <DropdownMenuItem
+                    key={network.id}
+                    onClick={() => {
+                      switchNetwork.mutate(network.id);
+                    }}
+                  >
+                    {network.name}
+                  </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <div className="flex items-center gap-2">
+            <span>{formatUSDC(balance.data)} USDC</span>
+            <Wallet2Icon />
+          </div>
+        </div>
         <FormField
           control={form.control}
           name="amount"
@@ -196,13 +242,10 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
           )}
         />
         <FormMessages className="text-center" />
-        <div className="flex justify-between gap-3 font-normal">
-          <span>Your balance</span>
-          <span>{formatUSDC(balance.data)} USDC</span>
-        </div>
         <Button
           loading={balance.isLoading}
           disabled={
+            switchNetwork.isPending ||
             form.formState.isSubmitting ||
             balance.isLoading ||
             insufficientBalance

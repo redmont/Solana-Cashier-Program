@@ -64,8 +64,8 @@ const config = {
           foreground: 'hsl(240, 5.9%, 10%)',
         },
         popover: {
-          DEFAULT: 'hsl(0, 0%, 100%)',
-          foreground: 'hsl(240, 10%, 3.9%)',
+          DEFAULT: '#0E0D15',
+          foreground: '#FEFEFE',
         },
         card: {
           DEFAULT: 'hsl(0, 0%, 100%)',
