@@ -7,5 +7,6 @@ export interface CreateTournamentRequest {
   prizes: {
     title: string;
     description: string;
+    imagePath?: string;
   }[];
 }

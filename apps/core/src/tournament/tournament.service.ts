@@ -229,10 +229,13 @@ export class TournamentService {
     prizes: {
       title: string;
       description: string;
+      imagePath?: string;
     }[];
   }) {
     // Calculate endDate
     const endDate = dayjs.utc(startDate).add(rounds, 'day').toISOString();
+
+    const now = dayjs.utc().toISOString();
 
     await this.tournamentModel.create({
       pk: 'tournament',
@@ -244,8 +247,8 @@ export class TournamentService {
       displayName,
       description,
       prizes,
-      createdAt: dayjs.utc().toISOString(),
-      updatedAt: dayjs.utc().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     });
 
     await this.tournamentQueryStore.createTournament({
@@ -299,6 +302,7 @@ export class TournamentService {
       prizes: {
         title: string;
         description: string;
+        imagePath?: string;
       }[];
     }>,
   ) {

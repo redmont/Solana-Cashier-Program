@@ -12,5 +12,6 @@ export interface Tournament extends Key {
   prizes: {
     title: string;
     description: string;
+    imagePath?: string;
   }[];
 }
