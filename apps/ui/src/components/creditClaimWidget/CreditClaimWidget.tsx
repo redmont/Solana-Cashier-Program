@@ -137,8 +137,7 @@ export const CreditClaimWidget: FC = () => {
     <div className="widget credit-claim-widget rounded-md bg-foreground">
       <div className="widget-header">
         <div className="widget-title">Daily Credits Claim</div>
-
-        <p className="widget-info">
+        <p>
           Boost your rewards daily! Claim credits to grow your streak - miss a
           day, and it resets.
         </p>

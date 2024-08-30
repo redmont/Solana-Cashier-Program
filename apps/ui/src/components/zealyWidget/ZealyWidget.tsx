@@ -2,7 +2,7 @@ import { FC } from 'react';
 
 export const ZealyWidget: FC = () => {
   return (
-    <div className="widget zealy-widget">
+    <div className="widget zealy-widget rounded-md">
       <div className="widget-header">
         Earn additional credits via our Zealy campaign
       </div>

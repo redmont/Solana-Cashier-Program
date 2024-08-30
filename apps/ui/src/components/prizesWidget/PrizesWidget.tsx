@@ -1,13 +1,15 @@
 'use client';
 
 import { FC, useState } from 'react';
-import { classNames } from 'primereact/utils';
 import { WidgetCountdown } from '@/components/widgetCountdown';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 export interface PrizesWidgetProps {
   prizes: {
     title: string;
     description: string;
+    imageUrl?: string;
   }[];
   endDateTime: string | number;
 }
@@ -30,29 +32,28 @@ export const PrizesWidget: FC<PrizesWidgetProps> = ({
           </div>
         </div>
 
-        <p className="widget-info">
-          Top 3 by XP win main prizes. All players enter raffle (1 XP = 1
-          entry). XP resets each tournament.
+        <p className="flex">
+          All players are eligible for the Tournament Prize Raffle (
+          <p className="text-primary">&nbsp;1 XP&nbsp;</p>=
+          <p className="text-primary">&nbsp;1 entry&nbsp;</p>
+          ).
         </p>
       </div>
 
       <div className="widget-body">
         <div>
           <div className="table-container">
-            <div className="table-section">
-              {prizes.slice(0, 10).map((item, index) => (
-                <div className="table" key={index}>
-                  <div className="cell">{item.title}</div>
-                  <div className="cell">{item.description}</div>
-                </div>
-              ))}
-            </div>
-            <PrizeTile
-              place="4"
-              imageSrc="/raffle.svg"
-              description={prizes[prizes.length - 1]?.description}
-              className="prize-tile"
-            />
+            {prizes.map((prize, index) => (
+              <PrizeTile
+                key={index}
+                place="4"
+                imageSrc={prize.imageUrl}
+                imageClassName="size-12 rounded-md"
+                title={prize.title}
+                description={prize?.description}
+                className="prize-tile border-2 border-border py-12"
+              />
+            ))}
           </div>
         </div>
 
@@ -68,7 +69,7 @@ export const PrizesWidget: FC<PrizesWidgetProps> = ({
             </p>
           )}
         <div
-          className={classNames('prev-winner', {
+          className={cn('prev-winner', {
             collapsed: !showPrev,
           })}
         >
@@ -154,29 +155,50 @@ interface PrizeTileProps {
   place: '1' | '2' | '3' | '4';
   value?: string;
   description?: string;
+  title?: string;
   imageSrc?: string;
+  imageClassName?: string;
   size?: 'large' | 'medium' | 'small';
   className?: string;
+  externalLink?: boolean;
 }
 
 const PrizeTile: FC<PrizeTileProps> = (props) => {
   return (
     <div
-      className={classNames(
-        `${props.className}`,
-        `prize-${props.place}`,
-        props.size,
-      )}
+      className={cn(`${props.className}`, `prize-${props.place}`, props.size)}
     >
       {props.imageSrc && (
-        <div className={classNames('prize-icon', `prize-${props.place}`)}>
-          <img src={props.imageSrc} />
+        <div className={cn('prize-icon', `prize-${props.place}`, 'w-20')}>
+          {props.title === 'Ordinal Maxi Biz #3564' ? (
+            <Link
+              href="https://magiceden.io/ordinals/item-details/859841ae9351a9ffc4676ebf2a9479e1867823bb50a7cb0fd2d00188688a517ei0"
+              target="_blank"
+            >
+              <img src={props.imageSrc} className={cn('size-20 rounded-md')} />
+            </Link>
+          ) : (
+            <img src={props.imageSrc} className={cn(props.imageClassName)} />
+          )}
         </div>
       )}
 
-      <div className="prize-info">
-        {props.value && <div className="prize-value">{props.value}</div>}
-        <div className="prize-description">{props.description}</div>
+      <div className="prize-info flex w-full justify-center">
+        <div className="text-left text-white">
+          <p className="text-lg font-bold">{props.title}</p>
+          {props.description && (
+            <p className="text-sm">
+              {props.description.split(/(\$\d+k?)/).map((part, index) => (
+                <span
+                  key={index}
+                  className={/^\$\d+k?$/.test(part) ? 'text-primary' : ''}
+                >
+                  {part}
+                </span>
+              ))}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
