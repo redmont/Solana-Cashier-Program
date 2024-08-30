@@ -139,6 +139,25 @@ export function useStateSubscriptions() {
     [setTickers, subscribe],
   );
 
+  useEffect(() => {
+    if (connected) {
+      subscribe(TickerPricesEvent.messageType, (message: TickerPricesEvent) => {
+        if (message.prices.length > 0) {
+          const lastPrice = message.prices[message.prices.length - 1];
+          setTickers((prev) =>
+            [...(prev ?? []), lastPrice]
+              .slice(-MAX_TICKERS)
+              .sort(
+                (a, b) =>
+                  new Date(a.timestamp).getTime() -
+                  new Date(b.timestamp).getTime(),
+              ),
+          );
+        }
+      });
+    }
+  }, [connected, subscribe, setTickers]);
+
   useEffect(
     () =>
       subscribe(BetsUpdatedEvent.messageType, (message: BetsUpdatedEvent) => {
