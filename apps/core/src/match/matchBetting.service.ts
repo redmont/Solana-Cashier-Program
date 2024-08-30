@@ -3,7 +3,6 @@ import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-
 import { sendBrokerCommand } from 'broker-comms';
 import { CreditMessage } from 'cashier-messages';
 import { ActivityStreamService } from '@/activityStream/activityStream.service';
-import dayjs from '@/dayjs';
 import { SeriesConfig } from '@/series/seriesConfig.model';
 import { GatewayManagerService } from '@/gatewayManager/gatewayManager.service';
 import { MatchResultEvent } from 'core-messages';
@@ -11,8 +10,10 @@ import { MatchPersistenceService } from './matchPersistence.service';
 import { TournamentService } from '@/tournament/tournament.service';
 import {
   MatchCompletedActivityEvent,
+  PlayerMatchCompletedActivityEvent,
   WinActivityEvent,
 } from '@/activityStream';
+import { UsersService } from '@/users/users.service';
 
 @Injectable()
 export class MatchBettingService {
@@ -23,6 +24,7 @@ export class MatchBettingService {
     private readonly broker: NatsJetStreamClientProxy,
     private readonly activityStreamService: ActivityStreamService,
     private readonly gatewayManagerService: GatewayManagerService,
+    private readonly usersService: UsersService,
     private readonly tournamentService: TournamentService,
   ) {}
 
@@ -112,6 +114,63 @@ export class MatchBettingService {
       return { ...fighter, betCount };
     });
 
+    // Calculate net bet amounts for each user.
+    // The net bet amount is the absolute value of sum of bets on fighter 1 minus the sum of bets on fighter 2.
+    // Betting on both sides negates the bet amount.
+    const betsByUser = bets.reduce(
+      (acc, bet) => {
+        const userId = bet.userId;
+        if (!acc[userId]) {
+          acc[userId] = [bet];
+        } else {
+          acc[userId].push(bet);
+        }
+        return acc;
+      },
+      {} as Record<string, any[]>,
+    );
+
+    for (const userId of Object.keys(betsByUser)) {
+      let netBetAmount = 0;
+
+      const bets = betsByUser[userId];
+      const betAmountsPerFighter = bets.reduce(
+        (acc, bet) => {
+          const fighter = bet.fighter;
+          if (!acc[fighter]) {
+            acc[fighter] = bet.amount;
+          } else {
+            acc[fighter] += bet.amount;
+          }
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
+
+      for (let i = 0; i < Object.keys(betAmountsPerFighter).length; i++) {
+        if (i === 0) {
+          netBetAmount =
+            betAmountsPerFighter[Object.keys(betAmountsPerFighter)[0]];
+        } else {
+          // Reduce bet amount
+          netBetAmount -=
+            betAmountsPerFighter[Object.keys(betAmountsPerFighter)[i]];
+        }
+      }
+
+      netBetAmount = Math.abs(netBetAmount);
+
+      const creditedXp = await this.usersService.creditXp(userId, netBetAmount);
+
+      await this.tournamentService.trackXp(userId, creditedXp, startTime);
+
+      if (creditedXp > 0) {
+        this.activityStreamService.track(
+          new PlayerMatchCompletedActivityEvent(userId, creditedXp),
+        );
+      }
+    }
+
     for (const userId of Object.keys(winsPerUser)) {
       const amount = winsPerUser[userId];
 
@@ -124,16 +183,6 @@ export class MatchBettingService {
       const betAmount = bets
         .filter((x) => x.userId === userId)
         .reduce((acc, bet) => acc + bet.amount, 0);
-
-      // Calculate net winnings
-      const netWinAmount = Math.floor(amount - betAmount);
-      if (netWinAmount > 0) {
-        this.tournamentService.trackWin({
-          userId,
-          timestamp: dayjs.utc().toISOString(),
-          netWinAmount,
-        });
-      }
 
       const timestamp =
         await this.matchPersistenceService.createUserMatchResult(

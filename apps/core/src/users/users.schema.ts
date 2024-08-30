@@ -15,12 +15,13 @@ export const UserSchema = new Schema({
       rangeKey: 'userId',
     },
   },
-  userId: {
-    type: String,
-  },
-  ethereumWalletAddress: {
-    type: String,
-  },
+  userId: String,
+  ethereumWalletAddress: String,
+  totalNetBetAmount: Number,
+  totalNetBetAmountCreditedXp: Number,
+  xp: Number,
+  matchCount: Number,
+  totalBetAmount: Number,
 });
 
 export const UserWalletSchema = new Schema({

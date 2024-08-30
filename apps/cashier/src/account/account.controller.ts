@@ -38,7 +38,7 @@ export class AccountController {
       {
         accountId: data.accountId,
         primaryWalletAddress: data.primaryWalletAddress,
-        initialDeposit: 1000,
+        initialDeposit: 100,
       },
       [this.eventStore],
       {},

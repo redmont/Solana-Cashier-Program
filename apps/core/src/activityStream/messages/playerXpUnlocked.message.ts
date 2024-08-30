@@ -1,15 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { MessageConverter } from './messageConverter';
-import { BetXpActivityEvent } from '../events';
+import { PlayerMatchCompletedActivityEvent } from '../events';
 
 @Injectable()
 export class PlayerXpUnlockedMessage
-  implements MessageConverter<BetXpActivityEvent>
+  implements MessageConverter<PlayerMatchCompletedActivityEvent>
 {
-  async convert(event: BetXpActivityEvent) {
-    const { userId, amount } = event;
+  async convert(event: PlayerMatchCompletedActivityEvent) {
+    const { userId, xp } = event;
 
-    const message = `**XP unlocked!** You've earned ${amount} more XP from this fight. Check out your new tournament rank. 🥊`;
+    if (xp === 0) {
+      return null;
+    }
+
+    const message = `**XP unlocked!** You've earned ${xp} more XP from this fight. Check out your new tournament rank. 🥊`;
 
     return { userId, message };
   }

@@ -70,6 +70,11 @@ export class UsersService {
       sk: `user`,
       userId: id,
       ethereumWalletAddress: walletAddress,
+      totalNetBetAmount: 0,
+      totalNetBetAmountCreditedXp: 0,
+      matchCount: 0,
+      xp: 0,
+      totalBetAmount: 0,
     };
 
     const createdUser = await this.userModel.create(user);
@@ -89,5 +94,50 @@ export class UsersService {
     // Todo - delete user if account creation fails
 
     return createdUser;
+  }
+
+  async creditXp(userId: string, netBetAmount: number): Promise<number> {
+    const updatedUser = await this.userModel.update(
+      {
+        pk: `user#${userId}`,
+        sk: 'user',
+      },
+      {
+        $ADD: {
+          totalNetBetAmount: netBetAmount,
+        },
+      },
+      {
+        return: 'item',
+        returnValues: 'ALL_NEW',
+      },
+    );
+
+    const creditsPerXp = 10_000;
+    let xp = 0;
+
+    const betAmountsToProcess =
+      updatedUser.totalNetBetAmount -
+      (updatedUser.totalNetBetAmountCreditedXp ?? 0);
+    if (betAmountsToProcess > 0) {
+      // Credit 1 XP per creditsPerXp bet amount
+      xp = Math.floor(betAmountsToProcess / creditsPerXp);
+      if (xp > 0) {
+        await this.userModel.update(
+          {
+            pk: `user#${userId}`,
+            sk: 'user',
+          },
+          {
+            $ADD: {
+              xp: xp,
+              totalNetBetAmountCreditedXp: xp * creditsPerXp,
+            },
+          },
+        );
+      }
+    }
+
+    return xp;
   }
 }

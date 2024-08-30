@@ -13,7 +13,7 @@ export const slides: TutorialSlideProps[] = [
   {
     id: 'connect-slide',
     title: 'Join the Fight',
-    text: 'Get 1,000 free credits to start Brawling! Login using your email, google, or web3 wallet.',
+    text: 'Get 100 free credits to start Brawling! Login using your email, google, or web3 wallet.',
   },
   {
     id: 'brawlers-slide',
