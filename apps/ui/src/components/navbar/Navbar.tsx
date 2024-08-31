@@ -100,7 +100,7 @@ export const Navbar = () => {
             setCashierOpen((open) => !open);
           }}
         >
-          <span className={cn('inline sm:!inline xs:hidden')}>Cashier</span>
+          <span className={cn('inline sm:!inline xs:hidden')}>Buy Credits</span>
           <span className="hidden sm:!hidden xs:inline">
             <Plus />
           </span>

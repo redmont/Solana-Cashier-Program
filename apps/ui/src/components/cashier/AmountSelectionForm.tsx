@@ -83,7 +83,7 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
         )
         .refine(
           balanceInsufficientRefinement,
-          `You don't have enough balance to proceed. Enter smaller amount or top up your balance.`,
+          `Insufficient USDC balance. Select a smaller amount or top up your balance.`,
         ),
     ),
   });
@@ -173,8 +173,8 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
                           <RadioGroupItem value={credits.toString()} />
                         </FormControl>
                         <div className="flex grow justify-between">
-                          <FormLabel className="font-semibold">
-                            {credits} credits
+                          <FormLabel className="font-semibold text-white">
+                            {credits.toLocaleString('en-US')} credits
                           </FormLabel>
                           <FormLabel className="font-normal">
                             {(price * credits).toFixed(2)} USDC
@@ -186,7 +186,9 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
                     <FormControl>
                       <RadioGroupItem value="Custom" />
                     </FormControl>
-                    <FormLabel className="font-normal">Custom</FormLabel>
+                    <FormLabel className="font-normal text-white">
+                      Custom
+                    </FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>
@@ -253,7 +255,7 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
           className="w-full"
           type="submit"
         >
-          {insufficientBalance ? 'Insufficient Balance' : 'Purchase Credits'}
+          {insufficientBalance ? 'Insufficient USDC balance' : 'Checkout'}
         </Button>
       </form>
     </Form>
