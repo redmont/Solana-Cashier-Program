@@ -3,7 +3,7 @@
 import { FC, useCallback, useEffect, useState } from 'react';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { truncateEthAddress } from '@/utils';
-import { useEthWallet } from '@/hooks';
+import { useWallet } from '@/hooks';
 import { Button } from './ui/button';
 
 export interface EthConnectButtonProps {
@@ -15,7 +15,7 @@ const defaultText = 'Join the Fight';
 export const JoinButton: FC<EthConnectButtonProps> = ({ className }) => {
   const { setShowAuthFlow, setShowDynamicUserProfile, user } =
     useDynamicContext();
-  const { isAuthenticated, address } = useEthWallet();
+  const { isAuthenticated, address } = useWallet();
   const [buttonText, setButtonText] = useState<string>(defaultText);
 
   const walletAddress = truncateEthAddress(address ?? '');

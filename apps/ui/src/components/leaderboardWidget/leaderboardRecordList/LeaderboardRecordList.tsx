@@ -32,17 +32,11 @@ const LeaderboardRecordCard: FC<LeaderboardRecord> = (props) => {
   return (
     <div
       className={classNames('leaderboard-record-card', {
-        winning: props.rank <= 3,
         highlighted: props.highlighted,
       })}
     >
       <div className="card-header">
         <div className="card-rank">{props.rank}</div>
-        {props.rank <= 3 && (
-          <div className="card-top-rank">
-            <img src={`/rank-${props.rank}.svg`} />
-          </div>
-        )}
         <div className="card-wallet">{props.username ?? walletAddress}</div>
       </div>
 

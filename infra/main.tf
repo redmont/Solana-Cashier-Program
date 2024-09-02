@@ -86,4 +86,3 @@ module "ecs" {
   pubnub_subscribe_key = var.pubnub_subscribe_key
   pubnub_secret_key    = var.pubnub_secret_key
 }
-

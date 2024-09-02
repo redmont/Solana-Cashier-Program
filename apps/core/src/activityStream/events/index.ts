@@ -6,3 +6,4 @@ export * from './poolOpen.event';
 export * from './winActivity.event';
 export * from './winXpActivity.event';
 export * from './betXpActivity.event';
+export * from './playerMatchCompleted.event';

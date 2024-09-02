@@ -36,6 +36,7 @@ export const TournamentSchema = new Schema({
         schema: {
           title: String,
           description: String,
+          imagePath: String,
         },
       },
     ],

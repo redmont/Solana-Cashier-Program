@@ -405,6 +405,14 @@ export class Gateway
         .toISOString();
     }
 
+    const prizesWithImageUrls = prizes.map(
+      ({ title, description, imagePath }) => ({
+        title,
+        description,
+        imageUrl: imagePath ? this.getMediaUrl(imagePath) : null,
+      }),
+    );
+
     return {
       success: true,
       displayName,
@@ -413,7 +421,7 @@ export class Gateway
       endDate,
       currentRound,
       roundEndDate,
-      prizes,
+      prizes: prizesWithImageUrls,
       totalCount,
       items,
       currentUserItem,

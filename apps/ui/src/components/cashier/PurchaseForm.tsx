@@ -1,10 +1,8 @@
-import { useEthWallet, usePostHog } from '@/hooks';
+import { usePostHog, useWallet } from '@/hooks';
 import { useMemo } from 'react';
 import { bytesToHex, erc20Abi, padBytes, stringToBytes } from 'viem';
 import { useClient, useReadContract, useWriteContract } from 'wagmi';
 import { waitForTransactionReceipt } from 'viem/actions';
-import CashierDeposit from '@bltzr-gg/brawlers-evm-contracts/ignition/deployments/chain-11155111/artifacts/CashierDeposit#CashierDeposit.json';
-import { cashierDepositContractAddress, usdcContractAddress } from '@/config';
 import { useAtomValue } from 'jotai';
 import { balanceAtom, userIdAtom } from '@/store/account';
 import { useMutation } from '@tanstack/react-query';
@@ -12,6 +10,8 @@ import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import { formatUSDC, parseUSDC, PricedCredits } from './utils';
+import { useContracts } from '@/hooks/useContracts';
+import assert from 'assert';
 
 const MINIMUM_ALLOWANCE = BigInt(parseUSDC(100));
 
@@ -26,16 +26,18 @@ export const PurchaseForm = ({
   const { toast } = useToast();
   const balance = useAtomValue(balanceAtom);
   const userId = useAtomValue(userIdAtom);
+  const contracts = useContracts();
+  const { address } = useWallet();
   const posthog = usePostHog();
-  const { address } = useEthWallet();
   const allowance = useReadContract({
     query: {
-      enabled: !!address,
+      enabled: !!address && !!contracts.depositor,
     },
     abi: erc20Abi,
-    address: usdcContractAddress,
+    address: contracts.depositor!.parameters
+      .allowedTokenAddress as `0x${string}`,
     functionName: 'allowance',
-    args: [address!, cashierDepositContractAddress],
+    args: [address!, contracts.depositor!.address as `0x${string}`],
   });
 
   const approvedAmount = formatUSDC(allowance.data);
@@ -56,14 +58,16 @@ export const PurchaseForm = ({
       });
     },
     mutationFn: async () => {
+      assert(contracts.depositor, 'Depositor contract not found');
       const amount = BigInt(parseUSDC(credits.total));
 
       const receipt = await writeContractAsync({
         abi: erc20Abi,
-        address: usdcContractAddress,
+        address: contracts.depositor?.parameters
+          .allowedTokenAddress as `0x${string}`,
         functionName: 'approve',
         args: [
-          cashierDepositContractAddress,
+          contracts.depositor!.address,
           amount < MINIMUM_ALLOWANCE ? MINIMUM_ALLOWANCE : amount,
         ],
       });
@@ -97,13 +101,12 @@ export const PurchaseForm = ({
       });
     },
     mutationFn: async () => {
-      if (!userId) {
-        throw new Error('User ID is required');
-      }
+      assert(contracts.depositor, 'Depositor contract not found');
+      assert(userId !== undefined, 'User ID is required');
 
       const receipt = await writeContractAsync({
-        abi: CashierDeposit.abi,
-        address: cashierDepositContractAddress,
+        abi: contracts.depositor.abi,
+        address: contracts.depositor.address,
         functionName: 'deposit',
         args: [
           bytesToHex(
@@ -111,7 +114,7 @@ export const PurchaseForm = ({
               size: 32,
             }),
           ) as `0x${string}`,
-          usdcContractAddress,
+          contracts.depositor.parameters.allowedTokenAddress as `0x${string}`,
           parseUSDC(credits.total),
         ],
       });
@@ -148,6 +151,7 @@ export const PurchaseForm = ({
           </Button>
         </div>
       </div>
+      {contracts.depositor?.parameters.allowedTokenAddress}
       <div className="flex items-center justify-between gap-3">
         <div>
           <h5 className="font-bold">Purchase Points</h5>
@@ -161,7 +165,11 @@ export const PurchaseForm = ({
           onClick={() => {
             deposit.mutate();
           }}
-          disabled={!enoughWasApproved || deposit.isPending}
+          disabled={
+            !enoughWasApproved ||
+            increaseAllowance.isPending ||
+            deposit.isPending
+          }
         >
           Purchase
         </Button>

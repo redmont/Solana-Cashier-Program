@@ -7,5 +7,6 @@ export interface UpdateTournamentRequest {
   prizes: {
     title: string;
     description: string;
+    imagePath?: string;
   }[];
 }

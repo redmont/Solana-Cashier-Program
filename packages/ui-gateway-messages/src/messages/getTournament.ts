@@ -17,6 +17,7 @@ export interface GetTournamentMessageResponse extends Message, MessageResponse {
   prizes: {
     title: string;
     description: string;
+    imageUrl?: string;
   }[];
   totalCount: number;
   items: TournamentLeaderboardItem[];

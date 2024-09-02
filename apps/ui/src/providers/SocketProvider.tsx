@@ -17,7 +17,7 @@ import {
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 import { serverUrl } from '@/config';
-import { useEthWallet } from '@/hooks';
+import { useWallet } from '@/hooks';
 
 export const socket: Socket = io(serverUrl, {
   transports: ['websocket'],
@@ -51,7 +51,7 @@ interface MessageConstructor {
 
 export const SocketProvider: FC<PropsWithChildren> = ({ children }) => {
   const [connected, setConnected] = useState<boolean>(false);
-  const { authToken } = useEthWallet();
+  const { authToken } = useWallet();
 
   useEffect(() => {
     socket.auth = { token: authToken ?? null };

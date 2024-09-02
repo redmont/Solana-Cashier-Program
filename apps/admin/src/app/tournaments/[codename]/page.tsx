@@ -1,15 +1,16 @@
 'use client';
 
 import validator from '@rjsf/validator-ajv8';
-import { RJSFSchema } from '@rjsf/utils';
+import { RegistryWidgetsType, RJSFSchema, WidgetProps } from '@rjsf/utils';
 import Form, { UiSchema } from '@rjsf/chakra-ui';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { baseUrl } from '@/config';
 import axios from 'axios';
-import { useToast } from '@chakra-ui/react';
+import { Box, FormControl, FormLabel, Image, useToast } from '@chakra-ui/react';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { MediaPickerModal } from '@/components/mediaLibrary/MediaPickerModal';
 
 interface CreateTournamentRequest {
   codeName: string;
@@ -53,10 +54,47 @@ const schema: RJSFSchema = {
         properties: {
           title: { type: 'string', title: 'Title' },
           description: { type: 'string', title: 'Description' },
+          imageUrl: { type: 'string', title: '' },
+          imagePath: { type: 'string', title: 'Image' },
         },
       },
     },
   },
+};
+
+const MediaPreviewWidget = ({ value }: WidgetProps) => {
+  if (!value) {
+    return null;
+  }
+
+  return (
+    <FormControl>
+      <FormLabel>Image</FormLabel>
+      <Box w={32}>
+        <Image src={value} />
+      </Box>
+    </FormControl>
+  );
+};
+
+const MediaSelectorWidget = ({
+  label,
+  required,
+  value,
+  onChange,
+}: WidgetProps) => {
+  return (
+    <FormControl isRequired={required}>
+      <MediaPickerModal
+        buttonLabel={value ? `Change ${label}` : `Select ${label}`}
+        onSelect={(path) => onChange(path)}
+      />
+    </FormControl>
+  );
+};
+
+const widgets: RegistryWidgetsType = {
+  mediaSelectorWidget: MediaSelectorWidget,
 };
 
 const uiSchema: UiSchema = {
@@ -67,6 +105,12 @@ const uiSchema: UiSchema = {
     items: {
       description: {
         'ui:widget': 'textarea',
+      },
+      imageUrl: {
+        'ui:widget': MediaPreviewWidget,
+      },
+      imagePath: {
+        'ui:widget': MediaSelectorWidget,
       },
     },
   },
@@ -123,6 +167,7 @@ const EditTournamentPage = ({ params }: { params: { codename: string } }) => {
         onChange={(e) => setFormData(e.formData)}
         schema={schema}
         uiSchema={uiSchema}
+        widgets={widgets}
         validator={validator}
         onSubmit={onSubmit}
       />

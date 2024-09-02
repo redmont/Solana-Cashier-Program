@@ -153,3 +153,48 @@ resource "aws_lambda_permission" "posthog_webhook_listener" {
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.posthog_webhook_listener[0].arn
 }
+
+# New Module for webhookListenerHelius
+module "webhook_listener_helius" {
+  source      = "./modules/function"
+  name        = "cashier-helius-webhook"
+  prefix      = local.prefix
+  environment = var.environment
+  lambda_dir  = "${var.root_dir}/modules/cashier/dist"
+  filename    = "webhookListenerHelius"
+  env_variables = {
+    SERVICE_DISCOVERY_NAMESPACE_NAME = aws_service_discovery_private_dns_namespace.discovery_namespace.name
+    SERVICE_DISCOVERY_SERVICE_NAMES  = "nats-n1-c1,nats-n2-c1,nats-n3-c1"
+    HELIUS_SECRET_KEY                = var.helius_secret_key
+  }
+  vpc_config = {
+    subnet_ids         = module.vpc.private_subnets
+    security_group_ids = [module.vpc.default_security_group_id]
+  }
+}
+
+resource "aws_iam_role_policy" "webhook_listener_helius" {
+  name = "${local.prefix}-cashier-helius-webhook-listener-${var.environment}"
+
+  role = module.webhook_listener_helius.exec_role_name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "servicediscovery:DiscoverInstances"
+        ]
+        Resource = [
+          "*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_lambda_function_url" "webhook_listener_helius" {
+  function_name      = module.webhook_listener_helius.lambda_name
+  authorization_type = "NONE"
+}

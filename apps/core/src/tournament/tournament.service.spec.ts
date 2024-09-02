@@ -230,63 +230,32 @@ describe('TournamentService', () => {
   });
 
   describe('updateTournamentEntry', () => {
-    it('should correctly allocate XP for wins', async () => {
+    it('should increase XP', async () => {
       let tournamentEntry = {
-        winAmount: 0,
-        winAmountCreditedXp: 0,
+        xp: 100,
       };
 
       let updateTournamentEntry = jest
         .spyOn(tournamentEntryModel, 'update')
         .mockImplementation((key, obj) => {
-          if (obj['$ADD']?.winAmount) {
-            tournamentEntry.winAmount += obj['$ADD'].winAmount;
+          if (obj['$ADD']?.xp) {
+            tournamentEntry.xp += obj['$ADD'].xp;
           }
-          if (obj['$ADD']?.winAmountCreditedXp) {
-            tournamentEntry.winAmountCreditedXp +=
-              obj['$ADD'].winAmountCreditedXp;
-          }
-
           return Promise.resolve(tournamentEntry);
         });
 
-      jest
-        .spyOn(tournamentWinningsModel, 'create')
-        .mockImplementation(() => Promise.resolve());
-
       await service.updateTournamentEntry({
         timestamp: '2024-06-25T01:32:33Z',
         userId: 'user1',
         tournament: 'tournament1',
-        winAmount: 90,
+        xp: 50,
       });
 
       expect(updateTournamentEntry.mock.lastCall?.[1]).toHaveProperty('$ADD', {
-        winAmount: 90,
+        xp: 50,
       });
-
-      await service.updateTournamentEntry({
-        timestamp: '2024-06-25T01:32:33Z',
-        userId: 'user1',
-        tournament: 'tournament1',
-        winAmount: 90,
-      });
-
-      expect(updateTournamentEntry.mock.lastCall?.[1]).toHaveProperty('$ADD', {
-        xp: 1,
-        winAmountCreditedXp: 100,
-      });
-
-      await service.updateTournamentEntry({
-        timestamp: '2024-06-25T01:32:33Z',
-        userId: 'user1',
-        tournament: 'tournament1',
-        winAmount: 120,
-      });
-
-      expect(updateTournamentEntry.mock.lastCall?.[1]).toHaveProperty('$ADD', {
-        xp: 2,
-        winAmountCreditedXp: 200,
+      expect(updateTournamentEntry.mock.lastCall?.[1]).toHaveProperty('$SET', {
+        updatedAt: '2024-06-25T01:32:33Z',
       });
     });
   });

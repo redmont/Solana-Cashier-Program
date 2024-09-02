@@ -19,14 +19,18 @@ module.exports = {
 };
 ```
 
-Add a parameters json file to the `apps/evm-contracts/ignition/parameters` folder. The file should be named after the
-network you want to deploy to. For example, to deploy to the Sepolia testnet, create a `sepolia.json` file in the
-`apps/evm-contracts/ignition/parameters` folder.
+You can choose to add a parameters json file to the `apps/evm-contracts/ignition/parameters` using all available
+parameters for the module in `ignition/modules` folder or the command will prompt you the required variables to enter.
 
 Then run the following command:
 
 ```shell
-pnpm run deploy <network>
+pnpm run deploy "<network>"
 ```
 
 Replace `<network>` with the name of the network you want to deploy to.
+
+Then, enable the chain go for dynamic auth provider. Be mindful of the environment you want to enable it for:
+https://app.dynamic.xyz/dashboard/chains-and-networks#evm.
+
+Finally, add the chain to `apps/ui/src/config/chains.ts` to the environment you want.

@@ -17,7 +17,7 @@ export const CashierForm: FC<Props> = ({ onClose }) => {
     credits: 0,
     total: 0,
     pricePerCredit: 0,
-    discount: '0%',
+    presets: [],
   });
 
   const onAmountSelected = useCallback((priced: PricedCredits) => {
@@ -36,7 +36,7 @@ export const CashierForm: FC<Props> = ({ onClose }) => {
 
   return (
     <div className="relative">
-      <div className="absolute -right-2 -top-2">
+      <div className="absolute -right-3 -top-3">
         <button className="rounded-full p-1 hover:bg-text/10" onClick={onClose}>
           <X />
         </button>

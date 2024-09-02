@@ -6,16 +6,24 @@ const useOnClickOutside = <T extends HTMLElement>(
 ) => {
   useEffect(() => {
     const listener = (event: MouseEvent | TouchEvent) => {
+      const eventTarget = event.target as Node;
+
+      if (
+        // dropdowns use portals, so we just exclude them so they dont trigger outside click
+        (event.target as HTMLElement)?.closest('[role="menu"]') ||
+        // we want to be able to clear alerts without emitting outside click
+        (event.target as HTMLElement)?.closest('[role="status"]')
+      ) {
+        return;
+      }
+
       if (Array.isArray(ref)) {
         for (const refItem of ref) {
-          if (
-            !refItem.current ||
-            refItem.current.contains(event.target as Node)
-          ) {
+          if (!refItem.current || refItem.current.contains(eventTarget)) {
             return;
           }
         }
-      } else if (!ref.current || ref.current.contains(event.target as Node)) {
+      } else if (!ref.current || ref.current.contains(eventTarget)) {
         return;
       }
       handler(event);

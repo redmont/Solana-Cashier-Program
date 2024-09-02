@@ -50,7 +50,7 @@ export default function Tournament() {
   );
 
   useEffect(() => {
-    getData('winAmount');
+    getData('xp');
   }, [getData]);
 
   const leaderboardWidgetProps = useMemo(() => {
@@ -116,11 +116,13 @@ export default function Tournament() {
       )}
 
       <Scrollable className="tournament-page-section rewards-section">
-        {prizesWidgetProps && <PrizesWidget {...prizesWidgetProps} />}
+        <div className="space-y-4">
+          {prizesWidgetProps && <PrizesWidget {...prizesWidgetProps} />}
 
-        <CreditClaimWidget />
-        <div className="tournament-page-section-inner">
-          <ZealyWidget />
+          <CreditClaimWidget />
+          <div className="tournament-page-section-inner rounded-md bg-foreground">
+            <ZealyWidget />
+          </div>
         </div>
       </Scrollable>
 

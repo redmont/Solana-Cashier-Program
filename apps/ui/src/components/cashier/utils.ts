@@ -25,79 +25,32 @@ export const formatUSDC = (amount = BigInt(0)) =>
  * // 420000000n
  */
 export const parseUSDC = (usdc: number) => {
-  // truncate all decimals because smart contract doesnt allow them
-  const truncated = parseFloat(usdc.toFixed(0));
-  return parseFloat((truncated * 10 ** TOKEN_DECIMALS).toFixed(0));
+  return parseFloat((usdc * 10 ** TOKEN_DECIMALS).toFixed(0));
 };
 
 type PricingConfig = {
-  hidden?: boolean;
   credits: number;
   pricePerCredit: number;
-  discount: string;
+  presets: number[];
 };
 
-export const priceConfigurations: PricingConfig[] = [
-  {
-    credits: 10000,
-    pricePerCredit: 0.000099,
-    discount: '0%',
-  },
-  {
-    hidden: true,
-    credits: 55000,
-    pricePerCredit: 0.000091,
-    discount: '8%',
-  },
-  {
-    credits: 115000,
-    pricePerCredit: 0.000087,
-    discount: '12%',
-  },
-  {
-    hidden: true,
-    credits: 600000,
-    pricePerCredit: 0.000083,
-    discount: '16%',
-  },
-  {
-    credits: 1250000,
-    pricePerCredit: 0.00008,
-    discount: '19%',
-  },
-  {
-    hidden: true,
-    credits: 4000000,
-    pricePerCredit: 0.000075,
-    discount: '24%',
-  },
-  {
-    hidden: true,
-    credits: 15000000,
-    pricePerCredit: 0.000067,
-    discount: '33%',
-  },
-  {
-    credits: 125000000,
-    pricePerCredit: 0.00006,
-    discount: '39%',
-  },
-] as const;
+export const priceConfiguration: PricingConfig = {
+  credits: 10000,
+  pricePerCredit: 0.000099,
+  presets: [10_000, 100_000, 1_000_000, 100_000_000],
+};
 
 export const getPricingConfig = (credits: number) => {
   if (isNaN(credits)) {
     return null;
   }
-  const config = priceConfigurations.find((c) => credits <= c.credits);
-
-  if (!config) {
-    throw new Error('Price configuration not found');
-  }
   return {
-    ...config,
+    ...priceConfiguration,
     credits,
     total: parseFloat(
-      (credits * (config?.pricePerCredit ?? 0)).toFixed(TOKEN_DECIMALS),
+      (credits * (priceConfiguration?.pricePerCredit ?? 0)).toFixed(
+        TOKEN_DECIMALS,
+      ),
     ),
   };
 };
@@ -113,8 +66,8 @@ export const AmountSchema = z.object({
     .positive('Amount needs to be a positive number')
     .int('Whole credits only')
     .min(
-      priceConfigurations[0]?.credits,
-      `Minimum amount is ${priceConfigurations[0]?.credits} credits`,
+      priceConfiguration.credits,
+      `Minimum amount is ${priceConfiguration.credits} credits`,
     ),
 });
 

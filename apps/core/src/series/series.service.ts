@@ -374,22 +374,14 @@ export class SeriesService {
       fighterCodeName,
     );
 
-    await Promise.all([
-      this.tournamentService.trackBetPlaced({
-        userId,
-        walletAddress,
-        timestamp: dayjs.utc().toISOString(),
-        betAmount: amount,
-      }),
-      this.gatewayManagerService.handleBetPlaced(
-        userId,
-        dayjs.utc().toISOString(),
-        currentState.context.codeName,
-        walletAddress,
-        amount.toString(),
-        fighterCodeName,
-      ),
-    ]);
+    await this.gatewayManagerService.handleBetPlaced(
+      userId,
+      dayjs.utc().toISOString(),
+      currentState.context.codeName,
+      walletAddress,
+      amount.toString(),
+      fighterCodeName,
+    );
 
     this.activityStreamService.track(
       new BetPlacedActivityEvent(userId, amount, fighter.displayName),

@@ -1,8 +1,8 @@
 import { usePostHog as usePH } from 'posthog-js/react';
-import { useEthWallet } from '@/hooks';
+import { useWallet } from '@/hooks';
 
 export function usePostHog() {
-  const { address: walletAddress, isAuthenticated } = useEthWallet();
+  const { address: walletAddress, isAuthenticated } = useWallet();
   const posthog = usePH();
 
   if (isAuthenticated && walletAddress) {

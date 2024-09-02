@@ -1,5 +1,8 @@
 'use client';
 
+import { useAtom } from 'jotai';
+import { activeBlock, ActiveWidget } from '@/store/view';
+
 import { BetPlacementWidget } from '@/components/betPlacementWidget';
 import { StakeWidget } from '@/components/stakeWidget';
 import { FightCardWidget } from '@/components/fightCardWidget';
@@ -9,12 +12,19 @@ import { MatchStatusWidget } from '@/components/matchStatusWidget';
 import { ChatWidget } from '@/components/chatWidget/ChatWidget';
 
 export default function Home() {
+  const [currentWidget] = useAtom(activeBlock);
+
+  const chatVisibility =
+    currentWidget.activeWidget === ActiveWidget.ChatWidget
+      ? 'show-chat'
+      : 'hide-chat';
+
   return (
-    <main className="main-page">
+    <main className={`main-page ${chatVisibility}`}>
       <div className="main-page-content">
         <MatchStreamWidget />
-        <FightCardWidget />
         <MatchStatusWidget />
+        <FightCardWidget />
         <MatchResultWidget />
         <BetPlacementWidget />
         <StakeWidget />

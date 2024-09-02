@@ -11,4 +11,5 @@ export const UserMatchResultSchema = new Schema({
   },
   createdAt: String,
   amount: Number,
+  xp: Number,
 });

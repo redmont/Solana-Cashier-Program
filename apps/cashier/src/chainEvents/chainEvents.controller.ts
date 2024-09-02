@@ -1,7 +1,11 @@
 import { NatsJetStreamContext } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { Controller } from '@nestjs/common';
 import { Ctx, EventPattern, Payload } from '@nestjs/microservices';
-import { ChainEvent, ChainEventsService } from './chainEvents.service';
+import {
+  ChainEvent,
+  chainEventSolana,
+  ChainEventsService,
+} from './chainEvents.service';
 
 @Controller()
 export class ChainEventsController {
@@ -13,6 +17,16 @@ export class ChainEventsController {
     @Ctx() ctx: NatsJetStreamContext,
   ) {
     await this.service.processEvent(data);
+
+    ctx.message.ack();
+  }
+
+  @EventPattern('cashier.chainEventSolana')
+  public async handleDepositEventSolana(
+    @Payload() data: chainEventSolana,
+    @Ctx() ctx: NatsJetStreamContext,
+  ) {
+    await this.service.processEventSolana(data);
 
     ctx.message.ack();
   }

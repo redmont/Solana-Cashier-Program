@@ -6,8 +6,6 @@ import { TournamentEntrySchema } from './schemas/tournamentEntry.schema';
 import { TournamentService } from './tournament.service';
 import { TournamentController } from './tournament.controller';
 import { TournamentWinningsSchema } from './schemas/tournamentWinnings.schema';
-import { QueryStoreModule, TournamentQueryStoreService } from 'query-store';
-import { ActivityStreamModule } from '@/activityStream/activityStream.module';
 
 @Module({
   imports: [

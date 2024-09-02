@@ -30,18 +30,11 @@ export const LeaderboardTableRow: FC<LeaderboardRecord> = (props) => (
   <div
     className={classNames('table-row', {
       highlighted: props.highlighted,
-      winning: props.rank <= 3,
     })}
     key={props.walletAddress}
   >
     <div className={`col-rank rank-${props.rank}`}>
       <div className="rank-value">{props.rank}</div>
-
-      {props.rank <= 3 && (
-        <div className="rank-image">
-          <img src={`/rank-${props.rank}.svg`} />
-        </div>
-      )}
     </div>
 
     <div className="col-player">

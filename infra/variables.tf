@@ -77,3 +77,8 @@ variable "zealy_webhook_secret" {
   description = "Zealy webhook secret"
   type        = string
 }
+
+variable "helius_secret_key" {
+  description = "Helius webhook secret key for authorization"
+  type        = string
+}

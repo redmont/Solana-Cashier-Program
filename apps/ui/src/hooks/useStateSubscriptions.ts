@@ -33,8 +33,7 @@ import {
   tickersAtom,
 } from '@/store/match';
 import { accountAddressAtom, balanceAtom, userIdAtom } from '@/store/account';
-import { useEthWallet } from '../providers/EthWalletProvider';
-
+import { useWallet } from '@/hooks/useWallet';
 const GetBalanceMessageResponseSchema = z.object({
   success: z.boolean(),
   balance: z.number(),
@@ -43,7 +42,7 @@ const GetBalanceMessageResponseSchema = z.object({
 const MAX_TICKERS = 10000;
 
 export function useStateSubscriptions() {
-  const { address } = useEthWallet();
+  const { address } = useWallet();
   const { send, subscribe, connected } = useSocket();
 
   const setAccountAddress = useSetAtom(accountAddressAtom);
@@ -139,6 +138,25 @@ export function useStateSubscriptions() {
       }),
     [setTickers, subscribe],
   );
+
+  useEffect(() => {
+    if (connected) {
+      subscribe(TickerPricesEvent.messageType, (message: TickerPricesEvent) => {
+        if (message.prices.length > 0) {
+          const lastPrice = message.prices[message.prices.length - 1];
+          setTickers((prev) =>
+            [...(prev ?? []), lastPrice]
+              .slice(-MAX_TICKERS)
+              .sort(
+                (a, b) =>
+                  new Date(a.timestamp).getTime() -
+                  new Date(b.timestamp).getTime(),
+              ),
+          );
+        }
+      });
+    }
+  }, [connected, subscribe, setTickers]);
 
   useEffect(
     () =>

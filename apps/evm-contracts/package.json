@@ -16,7 +16,8 @@
     "lint:ts": "eslint --ignore-path ./.eslintignore --ext .js,.ts .",
     "prettier:check": "prettier --check \"**/*.{js,json,md,sol,ts,yml}\"",
     "prettier:write": "prettier --write \"**/*.{js,json,md,sol,ts,yml}\"",
-    "build": "pnpm run clean && pnpm run compile && pnpm run lint"
+    "build": "pnpm run clean && pnpm run compile && pnpm run lint",
+    "verify": "node verify.js"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.7",
@@ -25,7 +26,6 @@
     "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",
     "@nomicfoundation/hardhat-viem": "^2.0.3",
     "@openzeppelin/contracts": "^5.0.2",
-    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/chai": "^4.3.17",
     "@types/chai-as-promised": "^7.1.8",
     "chai": "^4.5.0",

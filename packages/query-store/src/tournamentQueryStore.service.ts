@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { SortOrder } from 'dynamoose/dist/General';
 import { InjectModel, Model } from 'nestjs-dynamoose';
 import { Tournament, TournamentEntry } from 'src/interfaces';
 import { Key } from 'src/interfaces/key.interface';
@@ -79,6 +78,7 @@ export class TournamentQueryStoreService {
     prizes: {
       title: string;
       description: string;
+      imagePath?: string;
     }[];
   }) {
     await this.tournamentModel.create({
@@ -111,6 +111,7 @@ export class TournamentQueryStoreService {
     prizes: {
       title: string;
       description: string;
+      imagePath?: string;
     }[];
   }) {
     await this.tournamentModel.update(
@@ -247,6 +248,7 @@ export class TournamentQueryStoreService {
     prizes: {
       title: string;
       description: string;
+      imagePath?: string;
     }[];
     startDate: string;
     endDate: string;
