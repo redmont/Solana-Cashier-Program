@@ -128,7 +128,7 @@ function generateExports() {
     // HARDCODED MAINNET DEPLOYMENT, IF REDEPLOYED REMOVE THIS
     fileContents += `    1: {\n`;
     fileContents += `      abi: sepoliaCashierDepositAbi,\n`;
-    fileContents += `      address: "0x1A7aCDb9f17c0ad456d34dD6203C6EdC59a771b1" as \`0x\${string}\`,\n`;
+    fileContents += `      address: "0x52FbEd51F99549F3C55CD2611C30A7Df29d259cd" as \`0x\${string}\`,\n`;
     fileContents += `      parameters: { allowedTokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" },\n`;
     fileContents += `    },\n`;
 
