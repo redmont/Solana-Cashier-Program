@@ -1,26 +1,15 @@
 import { ConnectedEventStore } from '@castore/core';
-import { Injectable } from '@nestjs/common';
-import { creditAccountCommand } from 'src/account/commands/creditAccount.command';
+import { Injectable, Logger } from '@nestjs/common';
+import { creditAccountCommand } from '@/account/commands/creditAccount.command';
 import { decodeEventLog, formatUnits, hexToString } from 'viem';
 import { ReadModelService } from 'cashier-read-model';
 
 export interface ChainEvent {
+  transactionHash: `0x${string}`;
   topics: [signature: `0x${string}`, ...args: `0x${string}`[]];
   data: `0x${string}`;
 }
 
-// 6 decimal places
-// amount spent: price per credit
-const priceBrackets = {
-  0: 99,
-  5000000: 91,
-  10000000: 87,
-  50000000: 83,
-  100000000: 80,
-  300000000: 75,
-  1000000000: 67,
-  7500000000: 60,
-};
 export interface chainEventSolana {
   fromTokenAccount: string;
   fromUserAccount: string;
@@ -33,12 +22,16 @@ export interface chainEventSolana {
 
 @Injectable()
 export class ChainEventsService {
+  private readonly logger = new Logger(ChainEventsService.name);
+
   constructor(
     private readonly eventStore: ConnectedEventStore,
     private readonly readModelService: ReadModelService,
   ) {}
 
   async processEvent(event: ChainEvent) {
+    const { transactionHash } = event;
+
     const depositEvent = decodeEventLog({
       abi: [
         {
@@ -74,22 +67,16 @@ export class ChainEventsService {
 
     const args = depositEvent.args as any;
 
-    // Determine price
-    let creditPrice = 0;
-    for (const [minAmount, bracket] of Object.entries(priceBrackets)) {
-      if (args.amount >= parseInt(minAmount)) {
-        creditPrice = bracket;
-      }
-    }
+    const creditPrice = 99;
 
     // Calculate credit amount, considering everything is 6 decimal places
-    const creditAmount = Math.ceil(parseInt(args.amount) / creditPrice);
+    const creditAmount = Math.ceil(parseFloat(args.amount) / creditPrice);
 
-    const amount = parseInt(formatUnits(args.amount, 6)); // USDC is 6 ecimal places
+    const amount = parseFloat(formatUnits(args.amount, 6)); // USDC is 6 decimal places
 
     const accountId = hexToString(args.userId);
 
-    console.log(
+    this.logger.log(
       `Deposited ${creditAmount} credits for ${amount} to '${accountId}'`,
     );
 
@@ -98,18 +85,22 @@ export class ChainEventsService {
         accountId,
         amount: creditAmount,
         reason: 'CHAIN_DEPOSIT',
+        transactionHash,
       },
       [this.eventStore],
       {},
     );
   }
+
   async processEventSolana(event: chainEventSolana) {
     const { fromUserAccount: walletAddress, tokenAmount: amount } = event;
 
     const accounts =
       await this.readModelService.getAccountByWalletAddress(walletAddress);
     if (accounts.length === 0) {
-      console.log('Account not found');
+      this.logger.error(
+        `Account not found for wallet address ${walletAddress}`,
+      );
       return { success: false, error: 'Account not found' };
     }
 

@@ -23,10 +23,9 @@ import {
   CreditAmount,
   formatUSDC,
   getPricingConfig,
-  priceConfigurations,
+  priceConfiguration,
   PricedCredits,
 } from './utils';
-import { cn } from '@/lib/utils';
 import { useContracts } from '@/hooks/useContracts';
 import {
   DropdownMenu,
@@ -40,6 +39,8 @@ import { Wallet2Icon } from 'lucide-react';
 type Props = {
   onSubmit: (data: PricedCredits) => void;
 };
+
+const formatAmount = (amount: number) => amount.toLocaleString('en-US');
 
 export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
   const { depositor } = useContracts();
@@ -71,7 +72,7 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
   );
 
   const form = useForm<CreditAmount>({
-    defaultValues: { amount: priceConfigurations[0].credits },
+    defaultValues: { amount: priceConfiguration.credits },
     resolver: zodResolver(
       AmountSchema.refine(
         () => balance.status !== 'pending',
@@ -159,29 +160,30 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
                       form.setValue('amount', parseInt(value));
                     }
                   }}
-                  defaultValue={priceConfigurations[0].credits.toString()}
+                  defaultValue={priceConfiguration.credits.toString()}
                   className="flex flex-col space-y-1"
                 >
-                  {priceConfigurations
-                    .filter((config) => !config.hidden)
-                    .map(({ credits, pricePerCredit: price }) => (
-                      <FormItem
-                        key={credits}
-                        className="flex items-center space-x-3 space-y-0"
-                      >
-                        <FormControl>
-                          <RadioGroupItem value={credits.toString()} />
-                        </FormControl>
-                        <div className="flex grow justify-between">
-                          <FormLabel className="font-semibold text-white">
-                            {credits.toLocaleString('en-US')} credits
-                          </FormLabel>
-                          <FormLabel className="font-normal">
-                            {(price * credits).toFixed(2)} USDC
-                          </FormLabel>
-                        </div>
-                      </FormItem>
-                    ))}
+                  {priceConfiguration.presets.map((credits) => (
+                    <FormItem
+                      key={credits}
+                      className="flex items-center space-x-3 space-y-0"
+                    >
+                      <FormControl>
+                        <RadioGroupItem value={credits.toString()} />
+                      </FormControl>
+                      <div className="flex grow justify-between">
+                        <FormLabel className="font-semibold text-white">
+                          {formatAmount(credits)} credits
+                        </FormLabel>
+                        <FormLabel className="font-normal">
+                          {(
+                            priceConfiguration.pricePerCredit * credits
+                          ).toFixed(2)}{' '}
+                          USDC
+                        </FormLabel>
+                      </div>
+                    </FormItem>
+                  ))}
                   <FormItem className="flex items-center space-x-3 space-y-0">
                     <FormControl>
                       <RadioGroupItem value="Custom" />
@@ -200,36 +202,7 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
           name="amount"
           render={({ formState }) => (
             <FormItem>
-              <div className="flex justify-between">
-                <FormLabel>Amount</FormLabel>
-                {priceConfig?.discount &&
-                  parseInt(priceConfig.discount) > 0 && (
-                    <FormLabel
-                      className={cn('flex gap-1 font-bold', {
-                        hidden: parseInt(priceConfig?.discount) === 0,
-                        'text-secondary': parseInt(priceConfig?.discount) < 20,
-                        'animate-pulse-fast text-[#d84315]':
-                          parseInt(priceConfig?.discount) >= 20,
-                      })}
-                    >
-                      <span
-                        className={cn({
-                          hidden: parseInt(priceConfig?.discount) < 20,
-                        })}
-                      >
-                        🔥
-                      </span>
-                      Discounted: {priceConfig?.discount}
-                      <span
-                        className={cn({
-                          hidden: parseInt(priceConfig?.discount) < 20,
-                        })}
-                      >
-                        🔥
-                      </span>
-                    </FormLabel>
-                  )}
-              </div>
+              <FormLabel>Amount</FormLabel>
               <FormControl>
                 <Input
                   endAdornment={`${priceConfig?.total.toFixed(2) ?? ''} USDC`}

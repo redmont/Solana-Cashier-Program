@@ -79,6 +79,7 @@ interface AlchemyWebhookPayload {
       block: {
         logs: {
           transaction: {
+            hash: string;
             logs: {
               topics: string[];
               data: string;
@@ -120,30 +121,35 @@ export const handler: Handler = async (event: LambdaFunctionURLEvent) => {
   console.log('Received valid request', event.body);
 
   const request = JSON.parse(event.body) as AlchemyWebhookPayload;
-  const logs = request.event.data.block.logs.flatMap((x) => x.transaction.logs);
+  const transactions = request.event.data.block.logs.map((x) => x.transaction);
 
-  const log = logs.find((x: Log) => x.topics[0] === topicHash);
-  if (log) {
-    const { topics, data } = log;
+  for (const transaction of transactions) {
+    const log = transaction.logs.find((x: Log) => x.topics[0] === topicHash);
+    if (log) {
+      const { topics, data } = log;
 
-    const nc = await getNatsConnection();
-    if (!nc) {
-      console.error('Failed to connect to NATS');
-      // Respond with 500
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'Internal server error' }),
-      };
+      const nc = await getNatsConnection();
+      if (!nc) {
+        console.error('Failed to connect to NATS');
+        // Respond with 500
+        return {
+          statusCode: 500,
+          body: JSON.stringify({ error: 'Internal server error' }),
+        };
+      }
+
+      const js = nc.jetstream();
+
+      await js.publish(
+        'cashier.chainEvent',
+        JSON.stringify({ transactionHash: transaction.hash, topics, data }),
+      );
+
+      console.log(`Published event to NATS (cashier.chainEvent)`, {
+        topics,
+        data,
+      });
     }
-
-    const js = nc.jetstream();
-
-    await js.publish('cashier.chainEvent', JSON.stringify({ topics, data }));
-
-    console.log(`Published event to NATS (cashier.chainEvent)`, {
-      topics,
-      data,
-    });
   }
 
   return {
