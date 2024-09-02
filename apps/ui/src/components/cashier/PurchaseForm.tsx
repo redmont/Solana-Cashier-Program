@@ -127,8 +127,8 @@ export const PurchaseForm = ({
     <div>
       <h4 className="mb-4 text-lg font-bold">Purchase Credits</h4>
       <p className="mb-3 font-normal">
-        You are about to buy Game Points. You will have to approve your USDCs in
-        your Wallet and then Confirm the Points Purchase
+        You're about to buy {credits.total} Credits for {credits.total} USDC.
+        Complete the purchase using the two step process:
       </p>
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className={cn({ 'text-muted': enoughWasApproved })}>
@@ -136,7 +136,7 @@ export const PurchaseForm = ({
           <p className="font-normal">
             {enoughWasApproved
               ? `You still have ${approvedAmount} USDC approved for this transaction.`
-              : 'This transaction is conducted once per purchase.'}
+              : 'Approval for your wallet to access the BRAWL3RS payment contract.'}
           </p>
         </div>
         <div>
@@ -151,13 +151,11 @@ export const PurchaseForm = ({
           </Button>
         </div>
       </div>
-      {contracts.depositor?.parameters.allowedTokenAddress}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h5 className="font-bold">Purchase Points</h5>
+          <h5 className="font-bold">Send Payment</h5>
           <p className="font-normal">
-            Confirm the purchase in your wallet. Additional fees can be
-            included.
+            Complete your purchase by sending USDC (gas fees may apply).
           </p>
         </div>
         <Button
@@ -171,7 +169,7 @@ export const PurchaseForm = ({
             deposit.isPending
           }
         >
-          Purchase
+          Buy Now
         </Button>
       </div>
     </div>
