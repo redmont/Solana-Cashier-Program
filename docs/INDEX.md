@@ -1,5 +1,7 @@
 # BRAWL3RS
 
+- [Database schema](./database.md)
+
 ## Service connections
 
 ![Service connections](./diagrams/service-connections.png)
