@@ -24,19 +24,37 @@ export const resetAccountBalanceCommand = (eventStore: EventStore) =>
 
       const { version: accountVersion } = accountAggregate;
 
-      const amount = (accountAggregate as any).balance;
+      const balance = Math.floor((accountAggregate as any).balance);
 
-      await eventStore.pushEvent(
-        {
-          aggregateId: accountId,
-          version: accountVersion + 1,
-          type: 'ACCOUNT_DEBITED',
-          payload: { accountId, amount, reason },
-        },
-        {
-          prevAggregate: accountAggregate,
-        },
-      );
+      if (balance > 100) {
+        const amount = balance - 100;
+
+        await eventStore.pushEvent(
+          {
+            aggregateId: accountId,
+            version: accountVersion + 1,
+            type: 'ACCOUNT_DEBITED',
+            payload: { accountId, amount, reason },
+          },
+          {
+            prevAggregate: accountAggregate,
+          },
+        );
+      } else if (balance < 100) {
+        const amount = 100 - balance;
+
+        await eventStore.pushEvent(
+          {
+            aggregateId: accountId,
+            version: accountVersion + 1,
+            type: 'ACCOUNT_CREDITED',
+            payload: { accountId, amount, reason },
+          },
+          {
+            prevAggregate: accountAggregate,
+          },
+        );
+      }
 
       return { accountId };
     },
