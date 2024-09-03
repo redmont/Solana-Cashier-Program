@@ -149,7 +149,7 @@ resource "aws_lambda_permission" "posthog_webhook_listener" {
   count         = var.environment == "prod" ? 1 : 0
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
-  function_name = module.posthog_webhook_listener[0].lambda_name
+  function_name = module.posthog_webhook_listener.lambda_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.posthog_webhook_listener[0].arn
 }

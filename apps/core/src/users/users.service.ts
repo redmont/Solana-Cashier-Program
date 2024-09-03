@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel, Model } from 'nestjs-dynamoose';
+import { InjectModel, Model, ObjectType } from 'nestjs-dynamoose';
 import { v4 as uuid } from 'uuid';
 import { NatsJetStreamClientProxy } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
 import { User, UserWallet } from './users.interface';
@@ -29,15 +29,23 @@ export class UsersService {
     return this.userModel.get({ pk: `user#${id}`, sk: `user` });
   }
 
-  async getAllUserIds() {
+  async getAllUserIds(startKey?: ObjectType): Promise<{
+    userIds: string[];
+    lastKey?: ObjectType;
+  }> {
     // Query users
-    const users = await this.userModel
-      .query({ sk: 'user' })
-      .using('skUserId')
-      .all()
-      .exec();
+    let usersQuery = this.userModel.query({ sk: 'user' }).using('skUserId');
 
-    return users.map((user) => user.userId);
+    if (startKey) {
+      usersQuery = usersQuery.startAt(startKey);
+    }
+
+    const users = await usersQuery.exec();
+
+    return {
+      lastKey: users.lastKey,
+      userIds: users.map((user) => user.userId),
+    };
   }
 
   async getUserIdByWalletAddress(walletAddress: string) {

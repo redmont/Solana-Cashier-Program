@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Header,
+  Logger,
   Put,
   StreamableFile,
   UseGuards,
@@ -51,6 +52,8 @@ import { UsersService } from '@/users/users.service';
 
 @Controller('admin')
 export class AdminController {
+  private readonly logger = new Logger(AdminController.name);
+
   private readonly mediaUri: string;
 
   constructor(
@@ -326,25 +329,35 @@ export class AdminController {
   @UseGuards(AdminAuthGuard)
   @Post('/reset-balances')
   async resetBalances() {
-    const userIds = await this.usersService.getAllUserIds();
+    let lastKey = null;
 
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
 
-    for (const userId of userIds) {
-      const result = await sendBrokerCommand<
-        ResetBalanceMessage,
-        ResetBalanceMessageResponse
-      >(this.broker, new ResetBalanceMessage(userId, 'TOURNAMENT_RESET'));
+    do {
+      const result = await this.usersService.getAllUserIds(lastKey);
+      const userIds = result.userIds;
+      lastKey = result.lastKey;
 
-      if (result.success) {
-        successCount++;
-      } else {
-        errorCount++;
-        errors.push(result.message);
+      for (const userId of userIds) {
+        const result = await sendBrokerCommand<
+          ResetBalanceMessage,
+          ResetBalanceMessageResponse
+        >(this.broker, new ResetBalanceMessage(userId, 'TOURNAMENT_RESET'));
+
+        if (result.success) {
+          successCount++;
+        } else {
+          errorCount++;
+          errors.push(result.message);
+        }
       }
-    }
+
+      this.logger.log(
+        `Resetting balances, success: ${successCount}, error: ${errorCount}`,
+      );
+    } while (lastKey);
 
     return { successCount, errorCount, errors };
   }
