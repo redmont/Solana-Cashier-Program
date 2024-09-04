@@ -1,9 +1,9 @@
 import { Environment } from '@/types';
-import { mainnet, polygonAmoy, sepolia } from 'viem/chains';
+import { mainnet, polygon, polygonAmoy, sepolia } from 'viem/chains';
 
 export * from 'viem/chains';
 
-export const production = [mainnet] as const;
+export const production = [mainnet, polygon] as const;
 
 export const development = [sepolia, polygonAmoy] as const;
 

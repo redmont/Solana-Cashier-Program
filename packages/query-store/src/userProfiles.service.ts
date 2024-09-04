@@ -7,6 +7,7 @@ import { UserProfile as UserProfileModel } from './interfaces/userProfile.interf
 interface UserProfile {
   username: string;
   primaryWalletAddress: string;
+  xp: number;
 }
 
 @Injectable()
@@ -17,20 +18,43 @@ export class UserProfilesQueryStoreService {
     private readonly userProfileModel: Model<UserProfileModel, Key>,
   ) {}
 
-  async setUserProfile(userId: string, profile: UserProfile): Promise<void> {
+  async updateUserProfile(userId: string, profile: Partial<UserProfile>) {
+    const set = {};
+
+    for (const [key, value] of Object.entries(profile)) {
+      set[key] = value;
+    }
+
+    const updatedProfile = await this.userProfileModel.update(
+      {
+        pk: 'userProfile',
+        sk: userId,
+      },
+      {
+        $SET: set,
+      },
+      {
+        return: 'item',
+        returnValues: 'ALL_NEW',
+      },
+    );
+
+    await this.setUserProfileCache(userId, updatedProfile);
+  }
+
+  async setUserProfileCache(
+    userId: string,
+    profile: UserProfile,
+  ): Promise<void> {
+    const { username, primaryWalletAddress, xp } = profile;
+
     const key = `userProfile:${userId}`;
     const sortedKeySet = 'usernames';
 
-    await this.cache.hset(key, profile);
-    if (profile.username?.length > 0) {
-      await this.cache.zadd(sortedKeySet, 0, `${profile.username}:${userId}`);
+    await this.cache.hset(key, { username, primaryWalletAddress, xp });
+    if (username?.length > 0) {
+      await this.cache.zadd(sortedKeySet, 0, `${username}:${userId}`);
     }
-
-    await this.userProfileModel.update({
-      pk: 'userProfile',
-      sk: userId,
-      ...profile,
-    });
   }
 
   async getUserProfile(userId: string): Promise<any> {
@@ -43,6 +67,7 @@ export class UserProfilesQueryStoreService {
       userProfile = {
         username: data['username'],
         primaryWalletAddress: data['primaryWalletAddress'],
+        xp: parseInt(data['xp'] ?? '0'),
       };
     }
 

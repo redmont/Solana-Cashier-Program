@@ -9,6 +9,7 @@ import {
   EnsureAccountExistsMessage,
   EnsureAccountExistsMessageResponse,
 } from 'cashier-messages';
+import { UserProfilesQueryStoreService } from 'query-store';
 
 export class UserCreatedEvent {
   public userId: string;
@@ -23,6 +24,7 @@ export class UsersService {
     @InjectModel('userWallet')
     private readonly userWalletModel: Model<UserWallet, Key>,
     private readonly broker: NatsJetStreamClientProxy,
+    private readonly userProfilesQueryStore: UserProfilesQueryStoreService,
   ) {}
 
   getUserById(id: string) {
@@ -143,6 +145,8 @@ export class UsersService {
             },
           },
         );
+
+        await this.userProfilesQueryStore.updateUserProfile(userId, { xp });
       }
     }
 

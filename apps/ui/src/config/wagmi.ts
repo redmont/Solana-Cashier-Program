@@ -27,6 +27,7 @@ export const production = createConfig({
   multiInjectedProviderDiscovery: false,
   transports: {
     [mainnet.id]: http(),
+    [chains.polygon.id]: http(),
   },
 });
 
