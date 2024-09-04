@@ -16,7 +16,6 @@ import { Burger } from './Burger';
 
 const formatCredits = (credits: number) =>
   new Intl.NumberFormat(undefined, { notation: 'compact' }).format(credits);
-import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { Plus } from 'lucide-react';
 
 export const Navbar = () => {
@@ -33,7 +32,6 @@ export const Navbar = () => {
 
   const [isCashierOpen, setCashierOpen] = useState(false);
   const cashierRef = useRef<HTMLDivElement>(null);
-  const cashierEnabled = useFeatureFlag('enable-cashier');
   useOnClickOutside(cashierRef, () => setCashierOpen(false));
 
   const currentPath = usePathname();
@@ -92,20 +90,18 @@ export const Navbar = () => {
         )}
       </span>
 
-      {cashierEnabled && (
-        <Button
-          className="sm:!size-fit sm:!px-5 sm:!py-2 xs:size-8 xs:px-1 xs:py-0"
-          loading={balance === undefined}
-          onClick={() => {
-            setCashierOpen((open) => !open);
-          }}
-        >
-          <span className={cn('inline sm:!inline xs:hidden')}>Buy Credits</span>
-          <span className="hidden sm:!hidden xs:inline">
-            <Plus />
-          </span>
-        </Button>
-      )}
+      <Button
+        className="sm:!size-fit sm:!px-5 sm:!py-2 xs:size-8 xs:px-1 xs:py-0"
+        loading={balance === undefined}
+        onClick={() => {
+          setCashierOpen((open) => !open);
+        }}
+      >
+        <span className={cn('inline sm:!inline xs:hidden')}>Buy Credits</span>
+        <span className="hidden sm:!hidden xs:inline">
+          <Plus />
+        </span>
+      </Button>
     </div>
   );
 
