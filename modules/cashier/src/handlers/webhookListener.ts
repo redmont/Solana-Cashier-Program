@@ -12,7 +12,8 @@ const serviceDiscoveryNamespaceName =
   process.env.SERVICE_DISCOVERY_NAMESPACE_NAME!;
 const serviceDiscoveryServiceNames =
   process.env.SERVICE_DISCOVERY_SERVICE_NAMES?.split(',') ?? [];
-const alchemyWebhookSigningKey = process.env.ALCHEMY_WEBHOOK_SIGNING_KEY!;
+const alchemyWebhookSigningKeys =
+  process.env.ALCHEMY_WEBHOOK_SIGNING_KEYS?.split(',') ?? [];
 
 let natsInstanceIps: string[] = [];
 
@@ -107,7 +108,7 @@ export const handler: Handler = async (event: LambdaFunctionURLEvent) => {
   const valid = validateBody(
     event.body,
     event.headers['x-alchemy-signature'],
-    alchemyWebhookSigningKey,
+    alchemyWebhookSigningKeys,
   );
 
   if (!valid) {

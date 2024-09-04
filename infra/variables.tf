@@ -33,8 +33,8 @@ variable "dynamic_public_key" {
   type        = string
 }
 
-variable "alchemy_webhook_signing_key" {
-  description = "Alchemy webhook signing key"
+variable "alchemy_webhook_signing_keys" {
+  description = "Alchemy webhook signing keys"
   type        = string
 }
 

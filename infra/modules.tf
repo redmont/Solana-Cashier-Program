@@ -7,7 +7,7 @@ module "cashier_webhook_listener" {
   lambda_dir  = "${var.root_dir}/modules/cashier/dist"
   filename    = "webhookListener"
   env_variables = {
-    ALCHEMY_WEBHOOK_SIGNING_KEY      = var.alchemy_webhook_signing_key
+    ALCHEMY_WEBHOOK_SIGNING_KEYS     = var.alchemy_webhook_signing_keys
     SERVICE_DISCOVERY_NAMESPACE_NAME = aws_service_discovery_private_dns_namespace.discovery_namespace.name
     SERVICE_DISCOVERY_SERVICE_NAMES  = "nats-n1-c1,nats-n2-c1,nats-n3-c1"
   }

@@ -37,6 +37,7 @@ const config: HardhatUserConfig = {
     sepolia: getChainConfig("sepolia", `https://eth-sepolia.g.alchemy.com/v2/${alchemyApiKey}`),
     mainnet: getChainConfig("mainnet", `https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey}`),
     polygonAmoy: getChainConfig("polygonAmoy"),
+    polygon: getChainConfig("polygon", `https://polygon-mainnet.g.alchemy.com/v2/${alchemyApiKey}`),
   },
 };
 

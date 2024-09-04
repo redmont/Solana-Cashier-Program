@@ -3,14 +3,20 @@ import * as crypto from 'crypto';
 export const validateBody = (
   body: string,
   signature: string,
-  signingKey: string,
+  signingKeys: string[],
 ) => {
-  if (!signingKey) {
+  if (signingKeys.length === 0) {
     return true;
   }
 
-  const hmac = crypto.createHmac('sha256', signingKey);
-  hmac.update(body, 'utf8');
-  const digest = hmac.digest('hex');
-  return signature === digest;
+  for (const signingKey of signingKeys) {
+    const hmac = crypto.createHmac('sha256', signingKey);
+    hmac.update(body, 'utf8');
+    const digest = hmac.digest('hex');
+    if (signature === digest) {
+      return true;
+    }
+  }
+
+  return false;
 };
