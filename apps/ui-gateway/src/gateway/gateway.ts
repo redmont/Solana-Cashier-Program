@@ -531,7 +531,7 @@ export class Gateway
     };
   }
 
-  @SubscribeMessage(GetUserProfileMessage.responseType)
+  @SubscribeMessage(GetUserProfileMessage.messageType)
   public async getUserProfile(
     @ConnectedSocket() client: Socket,
   ): Promise<GetUserProfileMessageResponse> {
