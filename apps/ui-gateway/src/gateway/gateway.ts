@@ -38,6 +38,8 @@ import {
   ClaimDailyClaimMessageResponse as ClaimDailyClaimUiGatewayMessageResponse,
   ChatAuthMessage,
   ChatAuthMessageResponse,
+  GetUserProfileMessage,
+  GetUserProfileMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
@@ -139,7 +141,7 @@ export class Gateway
             EnsureUserIdMessageReturnType
           >(this.broker, new EnsureUserIdMessage(address));
 
-          await this.userProfilesQueryStore.setUserProfile(userId, {
+          await this.userProfilesQueryStore.updateUserProfile(userId, {
             username,
             primaryWalletAddress: address,
           });
@@ -154,7 +156,7 @@ export class Gateway
           const walletAddress = decodedToken.claims.walletAddress;
           const username = decodedToken.claims.username;
 
-          await this.userProfilesQueryStore.setUserProfile(userId, {
+          await this.userProfilesQueryStore.updateUserProfile(userId, {
             username: username?.length > 0 ? username : '',
             primaryWalletAddress: walletAddress,
           });
@@ -526,6 +528,20 @@ export class Gateway
       token,
       authorizedUuid,
       channels,
+    };
+  }
+
+  @SubscribeMessage(GetUserProfileMessage.responseType)
+  public async getUserProfile(
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetUserProfileMessageResponse> {
+    const { userId } = client.data.authorizedUser;
+
+    const profile = await this.userProfilesQueryStore.getUserProfile(userId);
+
+    return {
+      success: true,
+      xp: profile?.xp ?? 0,
     };
   }
 

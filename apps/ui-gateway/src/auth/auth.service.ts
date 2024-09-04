@@ -87,7 +87,7 @@ export class AuthService {
     const { userId } = result;
 
     if (username?.length > 0) {
-      await this.userProfilesQueryStore.setUserProfile(userId, {
+      await this.userProfilesQueryStore.updateUserProfile(userId, {
         username,
         primaryWalletAddress: walletAddress,
       });

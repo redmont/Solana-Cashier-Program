@@ -13,3 +13,4 @@ export * from './getStreamAuthToken';
 export * from './getDailyClaims';
 export * from './claimDailyClaim';
 export * from './chatAuth';
+export * from './getUserProfile';

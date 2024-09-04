@@ -11,4 +11,5 @@ export const UserProfileSchema = new Schema({
     type: String,
     required: true,
   },
+  xp: Number,
 });
