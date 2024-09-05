@@ -535,6 +535,16 @@ export class Gateway
   public async getUserProfile(
     @ConnectedSocket() client: Socket,
   ): Promise<GetUserProfileMessageResponse> {
+    if (!client.data.authorizedUser) {
+      return {
+        success: false,
+        xp: 0,
+        error: {
+          message: 'User not authorized',
+        },
+      };
+    }
+
     const { userId } = client.data.authorizedUser;
 
     const profile = await this.userProfilesQueryStore.getUserProfile(userId);
