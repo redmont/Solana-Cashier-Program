@@ -28,6 +28,16 @@ const heliusRpcUrl = process.env.HELIUS_RPC_URL;
 
 const deployerPrivateKey = process.env.DEPLOYER_PRIVATE_KEY;
 const testUserPrivateKey = process.env.TEST_USER_PRIVATE_KEY;
+const treasuryPrivateKey = process.env.TREASURY_PRIVATE_KEY;
+
+const deployerAccount = Keypair.fromSecretKey(
+  base58.decode(deployerPrivateKey),
+);
+
+const signerAccount = Keypair.fromSecretKey(base58.decode(testUserPrivateKey));
+const treasurySignerAccount = Keypair.fromSecretKey(
+  base58.decode(treasuryPrivateKey),
+);
 
 const usdcTreasuryWalletAddress = process.env.USDC_TREASURY_WALLET_ADDRESS;
 const usdcMintAddress = process.env.USDC_MINT_ADDRESS;
@@ -36,6 +46,7 @@ const programDeployedID = process.env.PROGRAM_DEPLOYED_ID;
 const programStateAddress = process.env.PROGRAM_STATE_ADDRESS;
 
 const treasuryAccount = new PublicKey(usdcTreasuryWalletAddress);
+const mint = new PublicKey(usdcMintAddress);
 
 describe('solana_cashier', () => {
   const connection = new Connection(heliusRpcUrl, 'confirmed');
@@ -50,9 +61,6 @@ describe('solana_cashier', () => {
     provider.wallet.publicKey.toString(),
   );
 
-  const deployerAccount = Keypair.fromSecretKey(
-    base58.decode(deployerPrivateKey),
-  );
   console.log('Deployer Account:', deployerAccount.publicKey.toString());
 
   const program = anchor.workspace.SolanaCashier as Program<SolanaCashier>;
@@ -86,6 +94,7 @@ describe('solana_cashier', () => {
 
   const stateAccountFilePath = path.join(__dirname, 'stateAccount.json');
   const deployerAccountFilePath = path.join(__dirname, 'deployerAccount.json');
+  const treasuryAccountFilePath = path.join(__dirname, 'deployerAccount.json');
 
   var stateAccount: PublicKey;
 
@@ -114,6 +123,7 @@ describe('solana_cashier', () => {
 
       saveKeypairToFile(stateAccountKeypair, stateAccountFilePath);
       saveKeypairToFile(deployerAccount, deployerAccountFilePath);
+      saveKeypairToFile(treasurySignerAccount, treasuryAccountFilePath);
     }
     const state = await program.account.state.fetch(stateAccount);
     console.log('Program State:', state);
@@ -153,8 +163,21 @@ describe('solana_cashier', () => {
     // const newTreasury = Keypair.generate();
     const newTreasury = treasuryAccount;
 
+    // Derive the associated USDC token account address of treasury account
+    const treasuryTokenAccount = await getAssociatedTokenAddress(
+      mint,
+      newTreasury,
+      true,
+      TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+    );
+    console.log(
+      'treasury USDC token account:',
+      treasuryTokenAccount.toString(),
+    );
+
     await program.methods
-      .setTreasury(newTreasury)
+      .setTreasury(treasuryTokenAccount)
       .accounts({
         state: stateAccount,
         owner: newOwner.publicKey,
@@ -163,7 +186,7 @@ describe('solana_cashier', () => {
       .rpc();
 
     const state = await program.account.state.fetch(stateAccount);
-    assert.ok(state.treasury.equals(newTreasury));
+    assert.ok(state.treasury.equals(treasuryTokenAccount));
     console.log('Treasury address set successfully');
   });
 
@@ -224,21 +247,9 @@ describe('solana_cashier', () => {
   });
 
   it('Deposits a token and send it to treasury', async () => {
-    const signerAccount = Keypair.fromSecretKey(
-      base58.decode(testUserPrivateKey),
-    );
-    const mint = new PublicKey(usdcMintAddress);
-
     // Derive the associated USDC token account address of user
-    const userTokenAccount = await getAssociatedTokenAddress(
-      mint,
-      signerAccount.publicKey,
-      false,
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-    );
 
-    const userUsdcTokenAccount = await initializeUserTokenAccount(
+    const userUsdcTokenAccount = await initializeTokenAccount(
       provider,
       mint,
       signerAccount,
@@ -246,6 +257,19 @@ describe('solana_cashier', () => {
 
     console.log(
       'user USDC token account initialized successfully',
+      userUsdcTokenAccount.toString(),
+    );
+
+    // Derive the associated USDC token account address of treasury account
+
+    const treasuryUsdcTokenAccount = await initializeTokenAccount(
+      provider,
+      mint,
+      treasurySignerAccount,
+    );
+
+    console.log(
+      'treasury USDC token account initialized successfully',
       userUsdcTokenAccount.toString(),
     );
 
@@ -270,7 +294,7 @@ describe('solana_cashier', () => {
     console.log('initialUserBalance', initialUserBalance);
 
     const initialTreasuryBalance = (
-      await getAccount(provider.connection, treasuryAccount)
+      await getAccount(provider.connection, treasuryUsdcTokenAccount)
     ).amount;
     console.log('initialTreasuryBalance', initialTreasuryBalance);
 
@@ -278,8 +302,8 @@ describe('solana_cashier', () => {
       .depositAndSwap(new anchor.BN(depositAmount))
       .accounts({
         state: stateAccount,
-        treasury: treasuryAccount,
-        userTokenAccount: userTokenAccount,
+        treasury: treasuryUsdcTokenAccount,
+        userTokenAccount: userUsdcTokenAccount,
         tokenProgram: TOKEN_PROGRAM_ID,
         userAuthority: signerAccount.publicKey,
       })
@@ -291,7 +315,7 @@ describe('solana_cashier', () => {
       await getAccount(provider.connection, userUsdcTokenAccount)
     ).amount;
     const finalTreasuryBalance = (
-      await getAccount(provider.connection, treasuryAccount)
+      await getAccount(provider.connection, treasuryUsdcTokenAccount)
     ).amount;
 
     console.log('finalUserBalance', finalUserBalance);
@@ -457,7 +481,7 @@ describe('solana_cashier', () => {
 */
 });
 
-async function initializeUserTokenAccount(provider, mint, owner) {
+async function initializeTokenAccount(provider, mint, owner) {
   const connection = provider.connection;
   const wallet = provider.wallet;
 
@@ -473,7 +497,7 @@ async function initializeUserTokenAccount(provider, mint, owner) {
   // Check if the account already exists
   const accountInfo = await connection.getAccountInfo(userTokenAccount);
   if (accountInfo === null) {
-    console.log('User token account does not exist. Creating it...');
+    console.log('Token account does not exist. Creating it...');
 
     // Create the associated token account
     const tx = new Transaction().add(

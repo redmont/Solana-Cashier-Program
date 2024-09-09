@@ -19,13 +19,13 @@ import {
 } from '@/components/ui/form';
 import chains, { ChainId } from '@/config/chains';
 import { Input } from '../ui/input';
-import { useWallet } from '@/hooks';
 import { NetworkSelector } from '@/components/networkSelector';
 import { z } from 'zod';
 import { useAtomValue } from 'jotai';
 import { balanceAtom } from '@/store/account';
 import { getPrice } from '../cashier/utils';
 import { FEE_PERCENT } from '@/config/withdrawals';
+import { useWallet } from '@/hooks';
 
 type FormValues = {
   credits: number;
@@ -42,8 +42,8 @@ const toLocaleAndFixed = (value: number) =>
   });
 
 const WithdrawalForm: FC<WithdrawalFormProps> = ({ onSubmit }) => {
-  const { networkId } = useWallet();
   const balance = useAtomValue(balanceAtom);
+  const { networkId } = useWallet();
 
   const FormValuesSchema = useMemo(
     () =>
@@ -56,7 +56,7 @@ const WithdrawalForm: FC<WithdrawalFormProps> = ({ onSubmit }) => {
             'Insufficient balance',
           ),
         networkId: z.number().refine((n): n is ChainId => {
-          const found = chains.find((c) => c.id === n);
+          const found = chains.eip155.find((c) => c.id === n);
           return found !== undefined;
         }, 'Invalid network selected'),
       }),
@@ -64,7 +64,7 @@ const WithdrawalForm: FC<WithdrawalFormProps> = ({ onSubmit }) => {
   );
 
   const form = useForm<FormValues>({
-    defaultValues: { credits: 0, networkId: networkId?.data },
+    defaultValues: { credits: 0, networkId: networkId.data as ChainId },
     resolver: zodResolver(FormValuesSchema),
   });
 

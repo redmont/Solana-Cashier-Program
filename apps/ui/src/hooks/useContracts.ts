@@ -11,7 +11,7 @@ export const useContracts = () => {
     networkKey !== undefined ? contracts.CashierDeposit[networkKey] : undefined;
 
   if (networkId?.isSuccess && !depositor) {
-    throw new Error(`No contract found for network ${networkKey}`);
+    //throw new Error(`No contract found for network ${networkKey}`);
   }
 
   return {

@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-solana_cashier = "EPVrSttfvQ8Xtkje3UuCWKRmZXCFjvPaMWZZWMAwDzfU"
+solana_cashier = "CizWDMr17EATDas9gerTNCT7Z1t95zRxVtPDDmTtFEvb"
 
 [registry]
 url = "https://api.apr.dev"

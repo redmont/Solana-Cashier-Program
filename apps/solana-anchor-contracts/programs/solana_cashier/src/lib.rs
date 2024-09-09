@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Transfer, TokenAccount, Token};
 
-declare_id!("EPVrSttfvQ8Xtkje3UuCWKRmZXCFjvPaMWZZWMAwDzfU");
+declare_id!("CizWDMr17EATDas9gerTNCT7Z1t95zRxVtPDDmTtFEvb");
 
 #[program]
 pub mod solana_cashier {

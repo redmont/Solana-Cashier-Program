@@ -1,7 +1,7 @@
 import { ConnectedEventStore } from '@castore/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { creditAccountCommand } from '@/account/commands/creditAccount.command';
-import { decodeEventLog, formatUnits, hexToString } from 'viem';
+import { decodeEventLog, formatUnits, parseUnits, hexToString } from 'viem';
 import { ReadModelService } from 'cashier-read-model';
 
 export interface ChainEvent {
@@ -19,6 +19,14 @@ export interface chainEventSolana {
   tokenAmount: number;
   tokenStandard: string;
 }
+
+const getCreditAmount = (amount: number) => {
+  const creditPrice = 99;
+
+  // Calculate credit amount, considering everything is 6 decimal places
+  const creditAmount = Math.ceil(parseInt(amount.toString()) / creditPrice);
+  return creditAmount;
+};
 
 @Injectable()
 export class ChainEventsService {
@@ -67,10 +75,8 @@ export class ChainEventsService {
 
     const args = depositEvent.args as any;
 
-    const creditPrice = 99;
-
-    // Calculate credit amount, considering everything is 6 decimal places
-    const creditAmount = Math.ceil(parseFloat(args.amount) / creditPrice);
+    // Determine price
+    const creditAmount = getCreditAmount(args.amount);
 
     const amount = parseFloat(formatUnits(args.amount, 6)); // USDC is 6 decimal places
 
@@ -93,7 +99,7 @@ export class ChainEventsService {
   }
 
   async processEventSolana(event: chainEventSolana) {
-    const { fromUserAccount: walletAddress, tokenAmount: amount } = event;
+    const { fromUserAccount: walletAddress, tokenAmount } = event;
 
     const accounts =
       await this.readModelService.getAccountByWalletAddress(walletAddress);
@@ -105,11 +111,21 @@ export class ChainEventsService {
     }
 
     const accountId = accounts[0].sk.split('#')[1];
+    const usdcAmount = parseInt(
+      parseUnits(tokenAmount.toString(), 6).toString(),
+    ); // USDC is 6 decimal places
+
+    // Determine price
+    const creditAmount = getCreditAmount(usdcAmount);
+
+    console.log(
+      `Deposited ${creditAmount} credits from solana chain for ${usdcAmount} to ${walletAddress}:${accountId}`,
+    );
 
     await creditAccountCommand(this.eventStore).handler(
       {
         accountId,
-        amount,
+        amount: creditAmount,
         reason: 'CHAIN_DEPOSIT',
       },
       [this.eventStore],

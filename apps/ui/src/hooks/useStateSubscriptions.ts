@@ -107,6 +107,10 @@ export function useStateSubscriptions() {
     }
   }, [connected, send, setUserId]);
 
+  useEffect(() => {
+    setAccountAddress(address as `0x${string}`);
+  }, [address, setAccountAddress]);
+
   useEffect(
     () =>
       subscribe(BetPlacedEvent.messageType, (message: BetPlacedEvent) => {
