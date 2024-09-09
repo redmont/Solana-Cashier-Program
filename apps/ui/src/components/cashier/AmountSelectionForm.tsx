@@ -27,14 +27,8 @@ import {
   PricedCredits,
 } from './utils';
 import { useContracts } from '@/hooks/useContracts';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import networks from '@/config/chains';
 import { Wallet2Icon } from 'lucide-react';
+import { NetworkSelector } from '../networkSelector';
 
 type Props = {
   onSubmit: (data: PricedCredits) => void;
@@ -45,7 +39,7 @@ const formatAmount = (amount: number) => amount.toLocaleString('en-US');
 export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
   const { depositor } = useContracts();
   const [customEnabled, setCustomEnabled] = useState(false);
-  const { address, network, switchNetwork, networkId } = useWallet();
+  const { address, switchNetwork, networkId } = useWallet();
 
   const balance = useReadContract({
     query: {
@@ -113,31 +107,11 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
         className="space-y-6 px-2 pt-5"
       >
         <div className="flex items-center justify-between gap-3 font-normal">
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Button
-                loading={networkId.isLoading || switchNetwork.isPending}
-                variant="dropdown"
-                className="w-full"
-              >
-                {network?.name ?? 'Select Network'}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {networks
-                .filter((n) => n.id !== networkId.data)
-                .map((network) => (
-                  <DropdownMenuItem
-                    key={network.id}
-                    onClick={() => {
-                      switchNetwork.mutate(network.id);
-                    }}
-                  >
-                    {network.name}
-                  </DropdownMenuItem>
-                ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <NetworkSelector
+            selected={networkId.data}
+            onSelect={(id) => switchNetwork.mutate(id)}
+            loading={networkId.isLoading || switchNetwork.isPending}
+          />
 
           <div className="flex items-center gap-2">
             <span>{formatUSDC(balance.data)} USDC</span>

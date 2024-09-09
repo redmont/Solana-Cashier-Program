@@ -1,0 +1,105 @@
+$intensity: 80%;
+$length: 2.5s;
+
+@keyframes punch {
+  0% {
+    transform: rotate(0);
+  }
+  10% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: translateX($intensity) rotate(-90deg);
+  }
+  22% {
+    transform: translate(calc(#{$intensity} + 0.7%), 0.7%) rotate(-90deg);
+  }
+  24% {
+    transform: translate(calc(#{$intensity} - 1.4%), -1.3%) rotate(-91deg);
+  }
+  26% {
+    transform: translate(calc(#{$intensity} + 5.4%), 0%) rotate(-89deg);
+  }
+  28% {
+    transform: translate(calc(#{$intensity} - 2%), 1.3%) rotate(-90deg);
+  }
+  30% {
+    transform: translate($intensity, -0.7%) rotate(-91deg);
+  }
+  38% {
+    transform: translate($intensity, -0.7%) rotate(-90deg);
+  }
+  40% {
+    transform: translateX($intensity) scale(1.3) rotate(-90deg);
+  }
+  42% {
+    transform: translate(calc(#{$intensity} - 1.4%), -1.3%) scale(1.3)
+      rotate(-91deg);
+  }
+  44% {
+    transform: translate(calc(#{$intensity} + 0.7%), 1.3%) scale(1.3)
+      rotate(-89deg);
+  }
+  46% {
+    transform: translate(calc(#{$intensity} - 2.6%), 0%) scale(1.3)
+      rotate(-90deg);
+  }
+  48% {
+    transform: translate($intensity, -0.7%) scale(1.3) rotate(-91deg);
+  }
+  50% {
+    transform: translateX($intensity) scale(1.3) rotate(-90deg);
+  }
+  99.99% {
+    transform: translateX($intensity) rotate(-90deg);
+  }
+}
+
+@keyframes fade {
+  0% {
+    transform: scaleY(1);
+  }
+  10% {
+    transform: scaleY(1);
+  }
+  20% {
+    transform: scaleY(0);
+  }
+
+  99.99% {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 0;
+  }
+  40.1% {
+    opacity: 0.8;
+  }
+  70% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.crack {
+  animation: appear $length linear infinite;
+}
+
+.B {
+  transform-origin: bottom;
+  animation: fade $length linear infinite;
+}
+
+.Three {
+  animation: punch $length linear infinite;
+  position: relative;
+  transform-origin: left bottom;
+}

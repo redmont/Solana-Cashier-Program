@@ -1,3 +1,5 @@
+'use client';
+
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { Button } from '@/components/ui/button';
@@ -10,8 +12,11 @@ import {
   ClaimDailyClaimMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { cn } from '@/lib/utils';
 
-export const CreditClaimWidget: FC = () => {
+export const CreditClaimWidget: FC<{ className?: string }> = ({
+  className,
+}) => {
   const viewportRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, allowScrollLeft] = useState(false);
   const [canScrollRight, allowScrollRight] = useState(false);
@@ -113,7 +118,7 @@ export const CreditClaimWidget: FC = () => {
     } finally {
       setClaiming(false);
     }
-  }, [claims, streak, send]);
+  }, [claims, send, streak, posthog]);
 
   const checkScroll = useCallback(() => {
     const viewportEl = viewportRef.current;
@@ -134,9 +139,16 @@ export const CreditClaimWidget: FC = () => {
   useEffect(() => checkScroll(), [checkScroll]);
 
   return (
-    <div className="widget credit-claim-widget rounded-md bg-foreground">
+    <div
+      className={cn(
+        'widget credit-claim-widget w-full rounded-md bg-foreground',
+        className,
+      )}
+    >
       <div className="widget-header">
-        <div className="widget-title">Daily Credits Claim</div>
+        <h2 className="mb-4 text-2xl font-semibold text-white">
+          Daily Credits Claim
+        </h2>
         <p>
           Boost your rewards daily! Claim credits to grow your streak - miss a
           day, and it resets.
@@ -145,7 +157,7 @@ export const CreditClaimWidget: FC = () => {
       <div className="widget-body">
         <div
           ref={viewportRef}
-          className="credit-claims-viewport flex-wrap"
+          className="credit-claims-viewport justify-evenly"
           onScroll={checkScroll}
         >
           {claims?.dailyClaimAmounts.map((amount, i) => (
@@ -211,7 +223,7 @@ const CreditClaimCard: FC<CreditClaimCard> = (props) => {
 
   return (
     <div
-      className={classNames('credit-claim-card', {
+      className={classNames('credit-claim-card min-w-[7rem]', {
         claimed: props.claimed,
         current: props.current,
       })}

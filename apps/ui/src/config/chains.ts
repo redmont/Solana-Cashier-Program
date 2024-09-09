@@ -17,3 +17,9 @@ const chains = {
 
 export default chains[process.env.NEXT_PUBLIC_VERCEL_ENV as Environment] ??
   development;
+
+export type ChainId =
+  | typeof sepolia.id
+  | typeof mainnet.id
+  | typeof polygonAmoy.id
+  | typeof polygon.id;

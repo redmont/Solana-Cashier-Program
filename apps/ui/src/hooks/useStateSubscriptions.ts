@@ -32,20 +32,27 @@ import {
   streamIdAtom,
   tickersAtom,
 } from '@/store/match';
-import { accountAddressAtom, balanceAtom, userIdAtom } from '@/store/account';
+import {
+  accountAddressAtom,
+  balanceAtom,
+  userIdAtom,
+  usernameAtom,
+} from '@/store/account';
 import { useWallet } from '@/hooks/useWallet';
+import { shortenAddress } from '@/utils';
 const GetBalanceMessageResponseSchema = z.object({
-  success: z.boolean(),
+  success: z.literal(true),
   balance: z.number(),
 });
 
 const MAX_TICKERS = 10000;
 
 export function useStateSubscriptions() {
-  const { address } = useWallet();
+  const { address, user, isAuthenticated } = useWallet();
   const { send, subscribe, connected } = useSocket();
 
   const setAccountAddress = useSetAtom(accountAddressAtom);
+  const setUsername = useSetAtom(usernameAtom);
   const setBets = useSetAtom(betsAtom);
   const setMatchId = useSetAtom(matchIdAtom);
   const setTickers = useSetAtom(tickersAtom);
@@ -60,6 +67,16 @@ export function useStateSubscriptions() {
   const setMatchWinner = useSetAtom(matchWinnerAtom);
   const setMatchResult = useSetAtom(matchResultAtom);
   const setUserId = useSetAtom(userIdAtom);
+
+  useEffect(() => {
+    setAccountAddress(address);
+  }, [address, setAccountAddress]);
+
+  useEffect(() => {
+    setUsername(
+      isAuthenticated ? (user?.username ?? shortenAddress(address ?? '')) : '',
+    );
+  }, [address, isAuthenticated, setUsername, user?.username]);
 
   const timestamps = useRef<Map<string, number>>(new Map());
   const timestampIsSubsequent = useCallback(
@@ -89,10 +106,6 @@ export function useStateSubscriptions() {
       getUserId();
     }
   }, [connected, send, setUserId]);
-
-  useEffect(() => {
-    setAccountAddress(address);
-  }, [address, setAccountAddress]);
 
   useEffect(
     () =>

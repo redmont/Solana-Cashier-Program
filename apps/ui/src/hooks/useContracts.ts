@@ -18,5 +18,6 @@ export const useContracts = () => {
     isLoading: networkId.isLoading,
     isSuccess: networkId.isSuccess,
     depositor,
+    contracts,
   };
 };

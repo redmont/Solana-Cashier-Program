@@ -1,17 +1,25 @@
+'use client';
+
 import { useAccount } from 'wagmi';
 import {
   useDynamicContext,
   useSwitchNetwork,
 } from '@dynamic-labs/sdk-react-core';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import * as chains from 'viem/chains';
 import { useMemo } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import { ChainId, default as chains } from '@/config/chains';
 
 export function useWallet() {
   const { isConnected, address } = useAccount();
-  const { authToken, isAuthenticated, walletConnector, primaryWallet } =
-    useDynamicContext();
+  const {
+    authToken,
+    isAuthenticated,
+    walletConnector,
+    primaryWallet,
+    user,
+    handleLogOut,
+  } = useDynamicContext();
   const switchNetwork = useSwitchNetwork();
   const { toast } = useToast();
 
@@ -19,7 +27,11 @@ export function useWallet() {
     queryKey: ['network'],
     enabled: !!walletConnector,
     queryFn: async () => {
-      return walletConnector!.getNetwork();
+      const current = await walletConnector!.getNetwork();
+      if (!chains.find((n) => n.id === current)) {
+        throw Error('Invalid network selected');
+      }
+      return walletConnector!.getNetwork() as Promise<ChainId>;
     },
   });
 
@@ -50,12 +62,15 @@ export function useWallet() {
   });
 
   return {
+    logout: handleLogOut,
+    user,
     isConnected,
     address,
     authToken,
     isAuthenticated,
     networkId,
     network,
+    walletKey: primaryWallet?.connector.key,
     switchNetwork: switchNetworkMutation,
   };
 }

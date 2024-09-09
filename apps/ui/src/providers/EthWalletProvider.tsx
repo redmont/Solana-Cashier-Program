@@ -12,7 +12,7 @@ import { DynamicWagmiConnector } from '@dynamic-labs/wagmi-connector';
 import { usePostHog } from 'posthog-js/react';
 
 import { ChildContainerProps } from '@/types';
-import { dynamicWalletEnvironmentId } from '@/config';
+import { dynamicWalletEnvironmentId } from '@/config/env';
 
 import config from '@/config/wagmi';
 

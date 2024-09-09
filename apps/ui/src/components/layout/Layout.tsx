@@ -2,17 +2,15 @@
 
 import React from 'react';
 import { ChildContainerProps } from '@/types';
-import { TutorialDialog } from '@/components/tutorialDialog';
+import { TutorialModal } from '@/components/modals/tutorialModal';
 import { Navbar } from '../navbar/Navbar';
-import { MobileFooter } from '@/components/mobileFooter';
 
 export const Layout = (props: ChildContainerProps) => {
   return (
     <div className="mx-auto w-full max-w-[1568px] px-2 pt-1">
-      <TutorialDialog />
+      <TutorialModal />
       <Navbar />
       {props.children}
-      <MobileFooter />
     </div>
   );
 };

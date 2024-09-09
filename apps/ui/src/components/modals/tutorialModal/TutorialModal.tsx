@@ -9,7 +9,7 @@ import { slides } from './slides';
 import { useAtom } from 'jotai';
 import { tutorialCompletedAtom } from '@/store/view';
 
-export const TutorialDialog: FC = () => {
+export const TutorialModal: FC = () => {
   const [tutorialCompleted, setTutorialCompleted] = useAtom(
     tutorialCompletedAtom,
   );
