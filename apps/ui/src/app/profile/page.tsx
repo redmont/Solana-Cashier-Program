@@ -8,6 +8,8 @@ import {
   GetTournamentMessageResponse,
   GetUserMatchHistoryMessage,
   GetUserMatchHistoryMessageResponse,
+  GetUserProfileMessage,
+  GetUserProfileMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { useQuery } from '@tanstack/react-query';
 import ProfileWidget from '@/components/profileWidget';
@@ -32,6 +34,15 @@ export default function Profile() {
     enabled: connected,
   });
 
+  const userXp = useQuery({
+    queryKey: ['userXp'],
+    queryFn: () =>
+      send<GetUserProfileMessage, GetUserProfileMessageResponse>(
+        new GetUserProfileMessage(),
+      ),
+    enabled: connected,
+  });
+
   // TODO uncouple with challenges data?
   const tournamentData = useQuery({
     queryKey: ['tournamentData'],
@@ -52,8 +63,6 @@ export default function Profile() {
     [matchHistory.data],
   );
 
-  const progressBar = (23000 / 53000) * 100;
-
   if (connected && !isAuthenticated) {
     // there's no guarantee that dynamicauth has loaded by the time the socket is connected
     // so could be dangerous. Open to suggestions here, but I say wait until server side auth.
@@ -66,7 +75,7 @@ export default function Profile() {
         <ProfileWidget
           className="sm:col-span-2"
           playedGames={matchHistory.data?.matches.length ?? 0}
-          progress={progressBar}
+          progress={userXp.data?.xp ?? 0}
           totalAmountWon={totalAmountWon}
         />
         <BalanceWidget className="w-full" />

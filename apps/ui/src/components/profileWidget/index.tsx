@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils';
 import { CircleHelp, Copy } from 'lucide-react';
 import { formatCompact } from '@/utils';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
+import { calculateRankLeaderboard } from '@/hooks/useRankCal';
+import RankModal from '../modals/RankModal';
 
 type ProfileWidgetProps = {
   className?: string;
@@ -28,6 +30,8 @@ const ProfileWidget: FC<ProfileWidgetProps> = ({
   const username = useAtomValue(usernameAtom);
   const address = useAtomValue(accountAddressAtom);
   const progressionFeature = useFeatureFlag('progression');
+  const { currentRank, nextRankXp } = calculateRankLeaderboard(progress);
+  const progressBar = (progress / (nextRankXp ?? 1)) * 100;
 
   return (
     <div
@@ -40,9 +44,9 @@ const ProfileWidget: FC<ProfileWidgetProps> = ({
         {progressionFeature && (
           <DonutChart
             size={220}
-            progress={progress}
+            progress={progressBar}
             progressClassName="text-gold"
-            textProp="Gold Brawler"
+            textProp={currentRank}
           />
         )}
         <div className="flex grow flex-col items-center justify-center gap-5 self-stretch sm:items-start">
@@ -57,13 +61,14 @@ const ProfileWidget: FC<ProfileWidgetProps> = ({
           </div>
           {progressionFeature && (
             <div className="flex flex-col items-center justify-center sm:items-start">
-              <button className="flex items-center gap-2 text-xl text-gold">
-                <span className="font-semibold leading-none">
-                  23,000 / 53,000 XP
-                </span>
-                <CircleHelp className="inline size-6" />
-              </button>
-              <p>To Platinum Brawler</p>
+              <RankModal currentRank={currentRank}>
+                <button className="flex items-center gap-2 text-xl text-gold">
+                  <span className="font-semibold leading-none">
+                    {progress} / {nextRankXp} XP
+                  </span>
+                  <CircleHelp className="inline size-6" />
+                </button>
+              </RankModal>
             </div>
           )}
 
