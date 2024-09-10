@@ -167,6 +167,10 @@ export type SolanaCashier = {
           name: 'amount';
           type: 'u64';
         },
+        {
+          name: 'userId';
+          type: 'bytes';
+        },
       ];
     },
   ];
@@ -215,6 +219,11 @@ export type SolanaCashier = {
         {
           name: 'token';
           type: 'publicKey';
+          index: false;
+        },
+        {
+          name: 'userId';
+          type: 'bytes';
           index: false;
         },
       ];
@@ -403,6 +412,10 @@ export const IDL: SolanaCashier = {
           name: 'amount',
           type: 'u64',
         },
+        {
+          name: 'userId',
+          type: 'bytes',
+        },
       ],
     },
   ],
@@ -451,6 +464,11 @@ export const IDL: SolanaCashier = {
         {
           name: 'token',
           type: 'publicKey',
+          index: false,
+        },
+        {
+          name: 'userId',
+          type: 'bytes',
           index: false,
         },
       ],

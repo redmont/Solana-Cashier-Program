@@ -11,6 +11,7 @@ export interface ChainEvent {
 }
 
 export interface chainEventSolana {
+  userId: string;
   fromTokenAccount: string;
   fromUserAccount: string;
   mint: string;
@@ -99,18 +100,9 @@ export class ChainEventsService {
   }
 
   async processEventSolana(event: chainEventSolana) {
-    const { fromUserAccount: walletAddress, tokenAmount } = event;
+    const { fromUserAccount: walletAddress, tokenAmount, userId } = event;
 
-    const accounts =
-      await this.readModelService.getAccountByWalletAddress(walletAddress);
-    if (accounts.length === 0) {
-      this.logger.error(
-        `Account not found for wallet address ${walletAddress}`,
-      );
-      return { success: false, error: 'Account not found' };
-    }
-
-    const accountId = accounts[0].sk.split('#')[1];
+    const accountId = userId;
     const usdcAmount = parseInt(
       parseUnits(tokenAmount.toString(), 6).toString(),
     ); // USDC is 6 decimal places
@@ -119,7 +111,7 @@ export class ChainEventsService {
     const creditAmount = getCreditAmount(usdcAmount);
 
     console.log(
-      `Deposited ${creditAmount} credits from solana chain for ${usdcAmount} to ${walletAddress}:${accountId}`,
+      `Deposited ${creditAmount} credits from solana chain for ${usdcAmount} USDC to walletAddress: ${walletAddress}: userId: ${accountId}`,
     );
 
     await creditAccountCommand(this.eventStore).handler(

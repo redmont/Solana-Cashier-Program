@@ -1,5 +1,6 @@
 import { Handler, LambdaFunctionURLEvent } from 'aws-lambda';
 import { connect, JSONCodec } from 'nats';
+import { BorshCoder } from '@project-serum/anchor';
 import {
   DiscoverInstancesCommand,
   ServiceDiscoveryClient,
@@ -19,6 +20,24 @@ const client = new ServiceDiscoveryClient({
   region: 'ap-southeast-1',
   logger: console,
 });
+
+const programIdl = {
+  instructions: [
+    {
+      name: 'depositAndSwap',
+      args: [
+        {
+          name: 'amount',
+          type: 'u64',
+        },
+        {
+          name: 'userId',
+          type: 'bytes',
+        },
+      ],
+    },
+  ],
+};
 
 const resolveNatsIps = async () => {
   // Clear existing NATS instance IPs
@@ -68,7 +87,12 @@ interface TokenTransfer {
   tokenAmount: number;
 }
 
+interface instruction {
+  data: string;
+}
+
 interface HeliusWebhookPayload {
+  instructions: instruction[];
   tokenTransfers: TokenTransfer[];
 }
 
@@ -89,11 +113,27 @@ export const handler: Handler = async (event: LambdaFunctionURLEvent) => {
         body: JSON.stringify({ error: 'Invalid request authorization' }),
       };
     }
+    const parsed = JSON.parse(event.body)[0];
 
-    const request = JSON.parse(event.body) as HeliusWebhookPayload;
+    const request = parsed as HeliusWebhookPayload;
 
     // Extract tokenTransfers data
-    const { tokenTransfers } = request[0];
+    const { tokenTransfers, instructions } = request;
+
+    let userId: string;
+    try {
+      const data = instructions[2]?.data;
+
+      const coder = new BorshCoder(programIdl);
+      const ix = coder.instruction.decode(data, 'base58');
+      userId = ix.data?.userId?.toString();
+    } catch (error) {
+      console.error('Error decoding instruction data', error);
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Invalid request data' }),
+      };
+    }
 
     if (tokenTransfers && tokenTransfers.length > 0) {
       const nc = await getNatsConnection();
@@ -112,6 +152,7 @@ export const handler: Handler = async (event: LambdaFunctionURLEvent) => {
         const eventJSON = {
           fromUserAccount,
           tokenAmount,
+          userId,
         };
         const jc = JSONCodec();
         const encodedJSON = jc.encode(eventJSON);

@@ -8,6 +8,8 @@ import { ISolana } from '@dynamic-labs/solana';
 import { Button } from '../ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { PricedCredits } from './utils';
+import { useAtomValue } from 'jotai';
+import { userIdAtom } from '@/store/account';
 import {
   solanaProgramStateAddress,
   solanaCashierContractID,
@@ -27,6 +29,7 @@ export const PurchaseFormSolana: FC<{
   onClose?: () => void;
 }> = ({ credits, onPurchaseCompleted }) => {
   const { toast } = useToast();
+  const userId = useAtomValue(userIdAtom);
   const { primaryWallet } = useDynamicContext();
   const [isPending, setIsPending] = useState(false);
 
@@ -87,9 +90,13 @@ export const PurchaseFormSolana: FC<{
 
       const decimals = TOKEN_DECIMALS;
       const amountInLamports = credits.total * Math.pow(10, decimals);
+      if (!userId) {
+        throw new Error('');
+      }
+      const bytesUserId = Buffer.from(userId, 'utf-8');
 
       await program.methods
-        .depositAndSwap(new BN(amountInLamports))
+        .depositAndSwap(new BN(amountInLamports), bytesUserId)
         .accounts({
           state: statePubkey,
           userTokenAccount: userTokenAccount,
