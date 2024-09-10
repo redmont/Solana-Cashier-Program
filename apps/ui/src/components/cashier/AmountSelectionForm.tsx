@@ -158,12 +158,13 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
         className="space-y-6 px-2 pt-5"
       >
         <div className="flex items-center justify-between gap-3 font-normal">
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger>
               <Button
                 loading={networkId.isLoading || switchChainAndNetwork.isPending}
                 variant="dropdown"
                 className="w-full"
+                type="button"
               >
                 {network?.name ?? 'Select Network'}
               </Button>
