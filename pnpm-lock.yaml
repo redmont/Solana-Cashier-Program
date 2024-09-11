@@ -912,10 +912,6 @@ importers:
         version: 5.5.3
 
   modules/cashier:
-    dependencies:
-      '@project-serum/anchor':
-        specifier: ^0.26.0
-        version: 0.26.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
     devDependencies:
       '@aws-sdk/client-servicediscovery':
         specifier: ^3.583.0
@@ -923,6 +919,9 @@ importers:
       '@bltzr-gg/lambda-local':
         specifier: ^2.2.2
         version: 2.2.2
+      '@project-serum/anchor':
+        specifier: ^0.26.0
+        version: 0.26.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@types/aws-lambda':
         specifier: ^8.10.138
         version: 8.10.141
