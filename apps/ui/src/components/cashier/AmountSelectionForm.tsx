@@ -23,6 +23,7 @@ import {
   AmountSchema,
   CreditAmount,
   formatUSDC,
+  parseUSDC,
   getPricingConfig,
   priceConfiguration,
   PricedCredits,
@@ -135,10 +136,13 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
   });
 
   const priceConfig = getPricingConfig(form.watch('amount'));
+
+  // Just a temporary fix. Handled it properly in the Multi Token PR.
+  const totalPriceToDecimals = parseUSDC(priceConfig?.total ?? 0);
   const insufficientBalance =
     balance.status === 'success' &&
     !!priceConfig &&
-    balance.data < +priceConfig.total;
+    balance.data < +totalPriceToDecimals;
 
   const _onSubmit = useCallback(
     (data: CreditAmount) => {
