@@ -252,9 +252,7 @@ const WithdrawalHistoryWidget: FC<{ className?: string }> = ({ className }) => {
         {withdrawals.isLoading && <B3Spinner withDots size="lg" />}
         {withdrawals.isError && <SomethingWentWrong size="lg" />}
       </div>
-      <h2 className="mb-4 text-2xl font-semibold text-white">
-        Withdrawal History
-      </h2>
+      <h2 className="mb-4 text-2xl font-semibold text-white">Withdrawals</h2>
       <Scrollable className="-mx-4 grow overflow-auto px-4">
         <div className="flex flex-col gap-3 sm:grid sm:grid-cols-4 sm:gap-1">
           {withdrawals.data?.length === 0 && (

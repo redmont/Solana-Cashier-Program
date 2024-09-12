@@ -55,7 +55,7 @@ const BalanceWidget: FC<{ className?: string }> = ({ className }) => {
           variant="outline-secondary"
           className="w-full"
         >
-          Submit for withdrawal
+          Withdraw
         </Button>
       </WithdrawalModal>
     </div>
