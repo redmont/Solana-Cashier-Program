@@ -17,7 +17,7 @@ import {
   GetWithdrawalsMessageResponse,
   MarkWithdrawalAsCompleteMessage,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
-import { useClient, useWriteContract } from 'wagmi';
+import { useChainId, useClient, useWriteContract } from 'wagmi';
 import { useContracts } from '@/hooks/useContracts';
 import { waitForTransactionReceipt } from 'viem/actions';
 import assert from 'assert';
@@ -119,6 +119,7 @@ const Withdrawal: FC<WithdrawalProps> = ({
   const { toast } = useToast();
   const { send } = useSocket();
   const queryClient = useQueryClient();
+  const chainId = useChainId();
 
   const approveWithdrawal = useMutation({
     onError: (error) => {
@@ -158,6 +159,7 @@ const Withdrawal: FC<WithdrawalProps> = ({
           tokenAmount,
           validFromUnix,
           validToUnix,
+          chainId,
           signature,
         ],
       });

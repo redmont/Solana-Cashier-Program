@@ -230,6 +230,10 @@ export class RosterService {
     while (fightersToAdd > 0 && count < 50) {
       const randomIndex = Math.floor(Math.random() * fighterProfiles.length);
       const fighter = fighterProfiles[randomIndex];
+      if (!fighter.enabled) {
+        continue;
+      }
+
       if (
         !fighters.find((f) => f.codeName === fighter.codeName) &&
         !tickers.includes(fighter.ticker.toLowerCase())

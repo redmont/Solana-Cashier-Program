@@ -21,6 +21,7 @@ interface CreateFighterProfileRequest {
     torso: string;
     legs: string;
   };
+  enabled: boolean;
 }
 
 interface UpdateFighterProfileRequest {
@@ -32,6 +33,7 @@ interface UpdateFighterProfileRequest {
     torso: string;
     legs: string;
   };
+  enabled: boolean;
 }
 
 const MediaPreviewWidget = ({ value }: WidgetProps) => {
@@ -144,6 +146,7 @@ const EditFighterProfile = ({ params }: { params: { codename: string } }) => {
         ticker: { type: 'string', title: 'Ticker' },
         imageUrl: { type: 'string', title: '' },
         imagePath: { type: 'string', title: 'Image' },
+        enabled: { type: 'boolean', title: 'Enabled' },
         model: {
           type: 'object',
           title: 'Model',
