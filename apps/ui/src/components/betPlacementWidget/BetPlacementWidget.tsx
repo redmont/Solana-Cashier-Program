@@ -13,7 +13,7 @@ import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { useAtom, useAtomValue } from 'jotai';
 
 import { Slider } from '../slider';
-import { useSocket, usePostHog, useWallet } from '@/hooks';
+import { useSocket, usePostHog, useWallet, useSfx } from '@/hooks';
 import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { FighterSwitch } from './FighterSwitch';
 import { PriceVisualisation } from './PriceVisualisation';
@@ -57,6 +57,8 @@ export const BetPlacementWidget: FC = () => {
   const { send } = useSocket();
   const posthog = usePostHog();
   const isBalanceReady = balance !== undefined;
+
+  const sfx = useSfx();
 
   useEffect(() => {
     if (balance !== undefined && balance < betAmount) {
@@ -114,12 +116,14 @@ export const BetPlacementWidget: FC = () => {
       return;
     }
 
+    sfx.stakePlaced();
     setLoading(true);
 
     await send(
       new PlaceBetMessage(matchSeries, betAmount, selectedFighter.codeName),
     );
 
+    sfx.stakeConfirmed();
     setLoading(false);
 
     posthog?.capture('Stake Placed', {
@@ -130,7 +134,7 @@ export const BetPlacementWidget: FC = () => {
         selectedFighterIndex === 0 ? projectedWinRate1 : projectedWinRate2,
       relativeTime: dayjs().diff(dayjs(poolOpenStartTime)),
     });
-  }, [matchSeries, selectedFighter?.codeName, send, betAmount, posthog]);
+  }, [matchSeries, selectedFighter?.codeName, send, betAmount, posthog, sfx]);
 
   const join = useCallback(() => setShowAuthFlow(true), [setShowAuthFlow]);
 

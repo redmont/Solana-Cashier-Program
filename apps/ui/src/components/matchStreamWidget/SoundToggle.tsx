@@ -1,27 +1,26 @@
 import { cn } from '@/lib/utils';
-import { FC, useCallback } from 'react';
+import { FC } from 'react';
+import { useAtom } from 'jotai';
+import { soundsOnAtom } from '@/store/app';
 
-interface SoundToggleProps {
-  muted?: boolean;
-  onChange?: (isMuted: boolean) => void;
-}
+interface SoundToggleProps {}
 
-export const SoundToggle: FC<SoundToggleProps> = ({ muted, onChange }) => {
-  const handleChange = useCallback(() => onChange?.(!muted), [muted, onChange]);
+export const SoundToggle: FC<SoundToggleProps> = () => {
+  const [soundsOn, setSoundsOn] = useAtom(soundsOnAtom);
 
   return (
     <button
       className={cn(
-        !muted && 'bg-primary text-black',
-        muted && 'bg-slate-200/20',
+        soundsOn && 'bg-primary text-black',
+        !soundsOn && 'bg-slate-200/20',
         'absolute bottom-3 left-4 flex size-10 items-center justify-center rounded-full ring-primary ring-offset-2 ring-offset-black hover:border hover:border-primary-500 hover:bg-primary-300/40 focus:ring-2',
       )}
-      onClick={handleChange}
+      onClick={() => setSoundsOn(!soundsOn)}
     >
       <i
-        className={`pi ${muted ? 'pi-volume-off' : 'pi-volume-up text-xl'}`}
+        className={`pi ${!soundsOn ? 'pi-volume-off' : 'pi-volume-up text-xl'}`}
       ></i>
-      {muted && <i className="pi pi-times"></i>}
+      {!soundsOn && <i className="pi pi-times"></i>}
     </button>
   );
 };

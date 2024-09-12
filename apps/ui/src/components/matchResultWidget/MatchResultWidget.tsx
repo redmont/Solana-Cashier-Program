@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button';
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useAtomValue } from 'jotai';
 import {
+  fighterBettingInformationAtom,
   fightersAtom,
   matchIdAtom,
   MatchResult,
@@ -9,6 +10,7 @@ import {
   matchStatusAtom,
 } from '@/store/match';
 import { Fighter } from '@/types';
+import { useSfx } from '@/hooks';
 
 type ResultCache = {
   result: MatchResult;
@@ -23,18 +25,37 @@ export const MatchResultWidget: FC = () => {
   const fighters = useAtomValue(fightersAtom);
   const results = useAtomValue(matchResultAtom);
 
+  const bets = useAtomValue(fighterBettingInformationAtom);
+  const sfx = useSfx();
+
+  const matchHasStake = useMemo(() => {
+    const [{ stake: stake1 = 0 } = {}, { stake: stake2 = 0 } = {}] = bets;
+
+    return stake1 + stake2 !== 0;
+  }, [bets]);
+
   useEffect(() => {
-    const isWin =
-      results?.matchId === matchId &&
-      results?.winAmount &&
-      +results.winAmount > 0;
-    if (matchStatus === 'matchFinished' && isWin) {
+    if (
+      matchStatus !== 'matchFinished' ||
+      results?.matchId !== matchId ||
+      !matchHasStake
+    ) {
+      return;
+    }
+
+    const isWin = results?.winAmount && +results.winAmount > 0;
+
+    if (isWin) {
+      sfx.stakeWon();
+
       const winner = fighters.find(
         (f) => f?.codeName && f.codeName === results?.winner,
       );
+
       const loser = fighters.find(
         (f) => f?.codeName && f.codeName !== results?.winner,
       );
+
       if (winner && loser) {
         setCachedResult({
           result: results,
@@ -42,8 +63,10 @@ export const MatchResultWidget: FC = () => {
           loser,
         });
       }
+    } else {
+      return sfx.stakeLost();
     }
-  }, [fighters, matchId, matchStatus, results]);
+  }, [fighters, matchId, matchStatus, results, matchHasStake, sfx]);
 
   const dismiss = useCallback(() => {
     setCachedResult(null);

@@ -1,4 +1,4 @@
-import { FC, useCallback, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Button } from '@/components/ui/button';
 import { Carousel } from 'primereact/carousel';
@@ -8,11 +8,23 @@ import { TutorialSlide } from './TutorialSlide';
 import { slides } from './slides';
 import { useAtom } from 'jotai';
 import { tutorialCompletedAtom } from '@/store/view';
+import { useSfx } from '@/hooks';
 
 export const TutorialModal: FC = () => {
+  const sfx = useSfx();
+
   const [tutorialCompleted, setTutorialCompleted] = useAtom(
     tutorialCompletedAtom,
   );
+
+  useEffect(() => {
+    if (tutorialCompleted === 'yes') {
+      return;
+    }
+
+    sfx.tutorialOpen();
+    setSlideNum(0);
+  }, [tutorialCompleted, sfx]);
 
   const [slideNum, setSlideNum] = useState(0);
   const { setShowAuthFlow } = useDynamicContext();
