@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { SoundToggle } from './SoundToggle';
 import Image from 'next/image';
 import {
@@ -10,11 +10,12 @@ import { Red5Client } from './Red5Client';
 import { useAtomValue } from 'jotai';
 import { streamIdAtom } from '@/store/match';
 import { useQuery } from '@tanstack/react-query';
+import { soundsOnAtom } from '@/store/app';
 
 const Red5Stream = ({ enabled }: { enabled: boolean }) => {
   const streamId = useAtomValue(streamIdAtom);
+  const soundsOn = useAtomValue(soundsOnAtom);
   const { connected, send } = useSocket();
-  const [isMuted, setMuted] = useState(true);
 
   const token = useQuery({
     enabled: enabled && connected,
@@ -67,7 +68,7 @@ const Red5Stream = ({ enabled }: { enabled: boolean }) => {
           width="100%"
           height="100%"
           playsInline={true}
-          muted={isMuted}
+          muted={!soundsOn}
           autoPlay
         />
       ) : (
@@ -79,7 +80,7 @@ const Red5Stream = ({ enabled }: { enabled: boolean }) => {
           className="fight-starting-soon"
         />
       )}
-      <SoundToggle muted={isMuted} onChange={setMuted} />
+      <SoundToggle />
     </>
   );
 };

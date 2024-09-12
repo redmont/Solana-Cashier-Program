@@ -11,8 +11,11 @@ import { MatchStreamWidget } from '@/components/matchStreamWidget';
 import { MatchStatusWidget } from '@/components/matchStatusWidget';
 import { ChatWidget } from '@/components/chatWidget/ChatWidget';
 import { MobileFooter } from '@/components/mobileFooter';
+import { useMatchSfx } from '@/hooks';
 
 export default function Home() {
+  useMatchSfx();
+
   const [currentWidget] = useAtom(activeBlock);
 
   const chatVisibility =

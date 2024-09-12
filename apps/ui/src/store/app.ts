@@ -26,3 +26,5 @@ export const winningRatesWithBetAmountAtom = atom((get) => {
     return calculateWinRate(fighterTotal, opponentTotal);
   });
 });
+
+export const soundsOnAtom = atom<boolean>(false);

@@ -6,7 +6,7 @@ import {
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { Chat, Message } from './Chat';
 
-import { useWallet, useSocket } from '@/hooks';
+import { useWallet, useSocket, useSfx } from '@/hooks';
 import { pubNubPubKey, pubNubSubKey } from '@/config/env';
 import { useAtom } from 'jotai';
 import { chatChannelsAtom, chatMessagesAtom, chatModeAtom } from '@/store/chat';
@@ -27,6 +27,7 @@ const useChat = () => {
   const { address } = useWallet();
   const { connected, send } = useSocket();
   const { user } = useDynamicContext();
+  const sfx = useSfx();
 
   const appendMessage = useCallback(
     (newMessage: Message) => {
@@ -158,9 +159,10 @@ const useChat = () => {
         return;
       }
 
+      sfx.sendMessage();
       await channels.general.sendText(message);
     },
-    [channels.general, sendingIsEnabled, user?.username],
+    [channels.general, sendingIsEnabled, user?.username, sfx],
   );
 
   const filteredMessages = useMemo(

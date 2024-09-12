@@ -7,6 +7,7 @@ import { abi as sepoliaCashierWithdrawAbi } from "./ignition/deployments/chain-1
 import sepoliaDeployments from "./ignition/deployments/chain-11155111/deployed_addresses.json";
 import sepoliaParameters from "./ignition/parameters/sepolia.json";
 import { abi as polygonCashierDepositAbi } from "./ignition/deployments/chain-137/artifacts/CashierDeposit#CashierDeposit.json";
+import { abi as polygonCashierWithdrawAbi } from "./ignition/deployments/chain-137/artifacts/CashierWithdraw#CashierWithdraw.json";
 import polygonDeployments from "./ignition/deployments/chain-137/deployed_addresses.json";
 import polygonParameters from "./ignition/parameters/polygon.json";
 import { abi as polygonAmoyCashierDepositAbi } from "./ignition/deployments/chain-80002/artifacts/CashierDeposit#CashierDeposit.json";
@@ -26,7 +27,11 @@ export default {
       address: sepoliaDeployments["CashierWithdraw#CashierWithdraw"] as `0x${string}`,
       parameters: sepoliaParameters["CashierWithdraw"],
     },
-    137: undefined,
+    137: {
+      abi: polygonCashierWithdrawAbi,
+      address: polygonDeployments["CashierWithdraw#CashierWithdraw"] as `0x${string}`,
+      parameters: polygonParameters["CashierWithdraw"],
+    },
     80002: {
       abi: polygonAmoyCashierWithdrawAbi,
       address: polygonAmoyDeployments["CashierWithdraw#CashierWithdraw"] as `0x${string}`,
