@@ -7,4 +7,5 @@ export class UpdateFighterProfileRequest {
     legs: string;
   };
   ticker: string;
+  enabled: boolean;
 }

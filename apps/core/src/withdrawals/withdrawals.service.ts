@@ -28,6 +28,7 @@ interface SignWithdrawalParams {
   amount: bigint;
   validFrom: bigint;
   validTo: bigint;
+  chainId: bigint;
 }
 
 export enum WithdrawalError {
@@ -129,6 +130,7 @@ export class WithdrawalsService implements OnModuleInit {
       amount,
       validFrom: BigInt(validFrom.unix()),
       validTo: BigInt(validTo.unix()),
+      chainId: BigInt(parseInt(reference)),
     });
 
     const result = await sendBrokerCommand<
@@ -165,11 +167,12 @@ export class WithdrawalsService implements OnModuleInit {
     amount,
     validFrom,
     validTo,
+    chainId,
   }: SignWithdrawalParams) {
     const message = keccak256(
       encodePacked(
-        ['bytes16', 'address', 'uint256', 'uint256', 'uint256'],
-        [receiptId, walletAddress, amount, validFrom, validTo],
+        ['bytes16', 'address', 'uint256', 'uint256', 'uint256', 'uint256'],
+        [receiptId, walletAddress, amount, validFrom, validTo, chainId],
       ),
     );
 

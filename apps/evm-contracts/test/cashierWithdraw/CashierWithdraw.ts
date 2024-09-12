@@ -8,6 +8,8 @@ import { deployCashierWithdrawFixture } from "./CashierWithdraw.fixture";
 use(chaiAsPromised);
 
 describe("CashierWithdraw", function () {
+  const chainId = BigInt(31337);
+
   describe("Withdrawals", function () {
     it("should allow admin to pause contract", async function () {
       const { publicClient, cashierWithdraw } = await loadFixture(deployCashierWithdrawFixture);
@@ -52,8 +54,8 @@ describe("CashierWithdraw", function () {
 
       const message = keccak256(
         encodePacked(
-          ["bytes16", "address", "uint256", "uint256", "uint256"],
-          [receiptId, user.account.address, parseEther("1"), validFrom, validTo],
+          ["bytes16", "address", "uint256", "uint256", "uint256", "uint256"],
+          [receiptId, user.account.address, parseEther("1"), validFrom, validTo, chainId],
         ),
       );
       const signature = await signer.signMessage({
@@ -63,7 +65,7 @@ describe("CashierWithdraw", function () {
       const previousBalance = await testToken.read.balanceOf([user.account.address]);
 
       const payoutTx = await cashierWithdraw.write.withdrawWithReceipt(
-        [receiptId, parseEther("1"), validFrom, validTo, signature],
+        [receiptId, parseEther("1"), validFrom, validTo, chainId, signature],
         {
           account: user.account,
         },
@@ -86,8 +88,8 @@ describe("CashierWithdraw", function () {
 
       const message = keccak256(
         encodePacked(
-          ["bytes16", "address", "uint256", "uint256", "uint256"],
-          [receiptId, user.account.address, parseEther("1"), validFrom, validTo],
+          ["bytes16", "address", "uint256", "uint256", "uint256", "uint256"],
+          [receiptId, user.account.address, parseEther("1"), validFrom, validTo, chainId],
         ),
       );
       const signature = await signer.signMessage({
@@ -97,9 +99,12 @@ describe("CashierWithdraw", function () {
       const previousBalance = await testToken.read.balanceOf([user.account.address]);
 
       await expect(
-        cashierWithdraw.write.withdrawWithReceipt([receiptId, parseEther("1"), validFrom, validTo, signature], {
-          account: user.account,
-        }),
+        cashierWithdraw.write.withdrawWithReceipt(
+          [receiptId, parseEther("1"), validFrom, validTo, chainId, signature],
+          {
+            account: user.account,
+          },
+        ),
       ).to.eventually.be.rejectedWith("WithdrawalTooEarly");
 
       const newBalance = await testToken.read.balanceOf([user.account.address]);
@@ -117,8 +122,8 @@ describe("CashierWithdraw", function () {
 
       const message = keccak256(
         encodePacked(
-          ["bytes16", "address", "uint256", "uint256", "uint256"],
-          [receiptId, user.account.address, parseEther("1"), validFrom, validTo],
+          ["bytes16", "address", "uint256", "uint256", "uint256", "uint256"],
+          [receiptId, user.account.address, parseEther("1"), validFrom, validTo, chainId],
         ),
       );
       const signature = await signer.signMessage({
@@ -128,9 +133,12 @@ describe("CashierWithdraw", function () {
       const previousBalance = await testToken.read.balanceOf([user.account.address]);
 
       await expect(
-        cashierWithdraw.write.withdrawWithReceipt([receiptId, parseEther("1"), validFrom, validTo, signature], {
-          account: user.account,
-        }),
+        cashierWithdraw.write.withdrawWithReceipt(
+          [receiptId, parseEther("1"), validFrom, validTo, chainId, signature],
+          {
+            account: user.account,
+          },
+        ),
       ).to.eventually.be.rejectedWith("WithdrawalTooLate");
 
       const newBalance = await testToken.read.balanceOf([user.account.address]);
@@ -148,8 +156,8 @@ describe("CashierWithdraw", function () {
 
       const message = keccak256(
         encodePacked(
-          ["bytes16", "address", "uint256", "uint256", "uint256"],
-          [receiptId, user.account.address, parseEther("1"), validFrom, validTo],
+          ["bytes16", "address", "uint256", "uint256", "uint256", "uint256"],
+          [receiptId, user.account.address, parseEther("1"), validFrom, validTo, chainId],
         ),
       );
       const signature = await signer.signMessage({
@@ -161,9 +169,12 @@ describe("CashierWithdraw", function () {
       await cashierWithdraw.write.pause();
 
       await expect(
-        cashierWithdraw.write.withdrawWithReceipt([receiptId, parseEther("1"), validFrom, validTo, signature], {
-          account: user.account,
-        }),
+        cashierWithdraw.write.withdrawWithReceipt(
+          [receiptId, parseEther("1"), validFrom, validTo, chainId, signature],
+          {
+            account: user.account,
+          },
+        ),
       ).to.eventually.be.rejected;
 
       const newBalance = await testToken.read.balanceOf([user.account.address]);
@@ -186,13 +197,14 @@ describe("CashierWithdraw", function () {
       const validFroms = Array(receiptIds.length).fill(validFrom);
       const validTo = validFrom + BigInt(1000);
       const validTos = Array(receiptIds.length).fill(validTo);
+      const chainIds = Array(receiptIds.length).fill(chainId);
 
       const messages: `0x${string}`[] = [];
       for (const receiptId of receiptIds) {
         const message = keccak256(
           encodePacked(
-            ["bytes16", "address", "uint256", "uint256", "uint256"],
-            [receiptId, user.account.address, parseEther("1"), validFrom, validTo],
+            ["bytes16", "address", "uint256", "uint256", "uint256", "uint256"],
+            [receiptId, user.account.address, parseEther("1"), validFrom, validTo, chainId],
           ),
         );
         messages.push(message);
@@ -208,9 +220,12 @@ describe("CashierWithdraw", function () {
 
       const previousBalance = await testToken.read.balanceOf([user.account.address]);
 
-      await cashierWithdraw.write.batchWithdrawWithReceipts([receiptIds, amounts, validFroms, validTos, signatures], {
-        account: user.account,
-      });
+      await cashierWithdraw.write.batchWithdrawWithReceipts(
+        [receiptIds, amounts, validFroms, validTos, chainIds, signatures],
+        {
+          account: user.account,
+        },
+      );
 
       const newBalance = await testToken.read.balanceOf([user.account.address]);
 

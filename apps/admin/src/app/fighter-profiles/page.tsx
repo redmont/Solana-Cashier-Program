@@ -35,6 +35,7 @@ const FighterProfiles = () => {
     fighterProfiles: {
       displayName: string;
       codeName: string;
+      enabled: boolean;
       model: { head: string };
     }[];
   }>({
@@ -50,6 +51,7 @@ const FighterProfiles = () => {
               <Th></Th>
               <Th>Name</Th>
               <Th>Head model</Th>
+              <Th>Enabled</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -69,6 +71,7 @@ const FighterProfiles = () => {
                 </Td>
                 <Td>{fighterProfile.displayName}</Td>
                 <Td>{fighterProfile.model.head}</Td>
+                <Td>{fighterProfile.enabled ? 'Yes' : 'No'}</Td>
               </Tr>
             ))}
             {isPending && <TableSkeleton columns={2} />}

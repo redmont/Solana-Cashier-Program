@@ -21,4 +21,8 @@ export const FighterProfileSchema = new Schema({
       legs: { type: String, required: false },
     },
   },
+  enabled: {
+    type: Boolean,
+    required: true,
+  },
 });

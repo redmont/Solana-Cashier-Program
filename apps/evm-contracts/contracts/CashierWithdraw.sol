@@ -14,6 +14,7 @@ error WithdrawalTooEarly();
 error WithdrawalTooLate();
 error WithdrawalAlreadyPaidOut();
 error InputParameterLengthMismatch();
+error InvalidChainId();
 
 contract CashierWithdraw is AccessControl, ReentrancyGuard, Pausable {
     using ECDSA for bytes32;
@@ -67,14 +68,19 @@ contract CashierWithdraw is AccessControl, ReentrancyGuard, Pausable {
         uint256 amount,
         uint256 validFrom,
         uint256 validTo,
+        uint256 chainId,
         bytes memory signature
     ) public whenNotPaused nonReentrant {
         address walletAddress = msg.sender;
 
-        bytes32 message = keccak256(abi.encodePacked(receiptId, walletAddress, amount, validFrom, validTo));
+        bytes32 message = keccak256(abi.encodePacked(receiptId, walletAddress, amount, validFrom, validTo, chainId));
 
         if (!_verifySignature(message, signature, authorizedSigner)) {
             revert InvalidSignature();
+        }
+
+        if (chainId != block.chainid) {
+            revert InvalidChainId();
         }
 
         if (paidOutWithdrawals[receiptId]) {
@@ -101,19 +107,21 @@ contract CashierWithdraw is AccessControl, ReentrancyGuard, Pausable {
         uint256[] memory amounts,
         uint256[] memory validFroms,
         uint256[] memory validTos,
+        uint256[] memory chainIds,
         bytes[] memory signatures
     ) public {
         if (
             receiptIds.length != amounts.length ||
             receiptIds.length != validFroms.length ||
             receiptIds.length != validTos.length ||
+            receiptIds.length != chainIds.length ||
             receiptIds.length != signatures.length
         ) {
             revert InputParameterLengthMismatch();
         }
 
         for (uint256 i = 0; i < receiptIds.length; i++) {
-            withdrawWithReceipt(receiptIds[i], amounts[i], validFroms[i], validTos[i], signatures[i]);
+            withdrawWithReceipt(receiptIds[i], amounts[i], validFroms[i], validTos[i], chainIds[i], signatures[i]);
         }
     }
 

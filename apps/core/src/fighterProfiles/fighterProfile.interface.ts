@@ -10,4 +10,5 @@ export interface FighterProfile extends Key {
     torso: string;
     legs: string;
   };
+  enabled: boolean;
 }

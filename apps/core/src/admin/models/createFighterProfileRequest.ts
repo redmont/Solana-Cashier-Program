@@ -8,4 +8,5 @@ export class CreateFighterProfileRequest {
     legs: string;
   };
   ticker: string;
+  enabled: boolean;
 }
