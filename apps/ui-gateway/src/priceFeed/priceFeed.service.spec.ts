@@ -24,8 +24,6 @@ describe('PriceFeedService', () => {
         );
       }
 
-      console.log(priceFeedService['cache']);
-
       // Expect only the last 35 to be kept
       const cache = priceFeedService['cache'].get('symbol');
       expect(cache.size).toBe(35);

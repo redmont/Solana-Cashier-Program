@@ -1,10 +1,14 @@
 import { ConnectedEventStore } from '@castore/core';
-import { Injectable, Logger } from '@nestjs/common';
-import { creditAccountCommand } from '@/account/commands/creditAccount.command';
 import { decodeEventLog, formatUnits, parseUnits, hexToString } from 'viem';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ReadModelService } from 'cashier-read-model';
+import {
+  creditAccountCommand,
+  markWithdrawalAsCompleteCommand,
+} from '@/commands';
 
 export interface ChainEvent {
+  eventName: string;
   transactionHash: `0x${string}`;
   topics: [signature: `0x${string}`, ...args: `0x${string}`[]];
   data: `0x${string}`;
@@ -34,11 +38,12 @@ export class ChainEventsService {
   private readonly logger = new Logger(ChainEventsService.name);
 
   constructor(
+    @Inject('AccountsConnectedEventStore')
     private readonly eventStore: ConnectedEventStore,
     private readonly readModelService: ReadModelService,
   ) {}
 
-  async processEvent(event: ChainEvent) {
+  async processDeposit(event: ChainEvent) {
     const { transactionHash } = event;
 
     const depositEvent = decodeEventLog({
@@ -97,6 +102,71 @@ export class ChainEventsService {
       [this.eventStore],
       {},
     );
+  }
+
+  async processWithdrawal(event: ChainEvent) {
+    const withdrawalPaidOutEvent = decodeEventLog({
+      abi: [
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: 'address',
+              name: 'walletAddress',
+              type: 'address',
+            },
+            {
+              indexed: true,
+              internalType: 'bytes16',
+              name: 'receiptId',
+              type: 'bytes16',
+            },
+            {
+              indexed: false,
+              internalType: 'uint256',
+              name: 'amount',
+              type: 'uint256',
+            },
+          ],
+          name: 'WithdrawalPaidOut',
+          type: 'event',
+        },
+      ],
+      eventName: 'WithdrawalPaidOut',
+      data: event.data,
+      topics: event.topics,
+    });
+
+    const accounts = await this.readModelService.getAccountByWalletAddress(
+      withdrawalPaidOutEvent.args.walletAddress,
+    );
+    if (accounts?.length > 0) {
+      const accountId = accounts[0].sk.split('#')[1];
+
+      await markWithdrawalAsCompleteCommand(this.eventStore).handler(
+        {
+          accountId,
+          receiptId: withdrawalPaidOutEvent.args.receiptId,
+          transactionHash: event.transactionHash,
+          confirmed: true,
+        },
+        [this.eventStore],
+        {},
+      );
+    }
+  }
+
+  async processEvent(event: ChainEvent) {
+    const { eventName } = event;
+
+    if (eventName === 'DepositReceived') {
+      await this.processDeposit(event);
+    }
+
+    if (eventName === 'WithdrawalPaidOut') {
+      await this.processWithdrawal(event);
+    }
   }
 
   async processEventSolana(event: chainEventSolana) {

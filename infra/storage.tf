@@ -58,6 +58,21 @@ resource "aws_dynamodb_table" "cashier_read_model_table" {
     type = "N"
   }
 
+  attribute {
+    name = "status"
+    type = "S"
+  }
+
+  attribute {
+    name = "itemType"
+    type = "S"
+  }
+
+  attribute {
+    name = "createdAt"
+    type = "S"
+  }
+
   global_secondary_index {
     name            = "primaryWalletAddress"
     hash_key        = "primaryWalletAddress"
@@ -68,6 +83,27 @@ resource "aws_dynamodb_table" "cashier_read_model_table" {
     name            = "pkBalance"
     hash_key        = "pk"
     range_key       = "balance"
+    projection_type = "ALL"
+  }
+
+  global_secondary_index {
+    name            = "pkCreatedAt"
+    hash_key        = "pk"
+    range_key       = "createdAt"
+    projection_type = "ALL"
+  }
+
+  global_secondary_index {
+    name            = "statusSk"
+    hash_key        = "status"
+    range_key       = "sk"
+    projection_type = "ALL"
+  }
+
+  global_secondary_index {
+    name            = "itemTypeCreatedAt"
+    hash_key        = "itemType"
+    range_key       = "createdAt"
     projection_type = "ALL"
   }
 }

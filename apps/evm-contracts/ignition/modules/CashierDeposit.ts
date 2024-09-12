@@ -1,3 +1,5 @@
+/// <reference types="@nomicfoundation/ignition-core" />
+
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
 const cashierDeposit = buildModule("CashierDeposit", (m) => {

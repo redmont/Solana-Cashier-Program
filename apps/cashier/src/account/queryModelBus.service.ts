@@ -1,19 +1,19 @@
 import { StateCarryingMessageBus } from '@castore/core';
 import { Injectable } from '@nestjs/common';
-import { QueryModelBusAdapter } from './queryModelBusAdapter.service';
-import { EventStoreService } from './eventStore.service';
+import { AccountQueryModelBusAdapter } from './queryModelBusAdapter.service';
+import { AccountsEventStoreService } from './eventStore.service';
 
 @Injectable()
-export class QueryModelBusService {
+export class AccountQueryModelBusService {
   public readonly queryModelBus: StateCarryingMessageBus;
 
   constructor(
-    queryModelBusAdapter: QueryModelBusAdapter,
-    eventStore: EventStoreService,
+    queryModelBusAdapter: AccountQueryModelBusAdapter,
+    eventStore: AccountsEventStoreService,
   ) {
     this.queryModelBus = new StateCarryingMessageBus({
       messageBusId: 'QUERY_MODEL_BUS',
-      sourceEventStores: [eventStore.accountsEventStore],
+      sourceEventStores: [eventStore.eventStore],
       messageBusAdapter: queryModelBusAdapter,
     });
   }

@@ -1,5 +1,5 @@
 import type { Reducer, EventDetail } from '@castore/core';
-import { AccountAggregate } from '../aggregates';
+import { AccountAggregate } from './aggregate';
 
 export interface AccountEventDetails extends EventDetail {}
 
@@ -31,6 +31,18 @@ export const accountsReducer: Reducer<AccountAggregate, AccountEventDetails> = (
     }
 
     case 'ACCOUNT_DEBITED': {
+      return {
+        ...accountAggregate,
+        version,
+        balance: accountAggregate.balance - newEvent.payload.amount,
+      };
+    }
+
+    case 'ACCOUNT_WITHDRAWAL_CREATED': {
+      console.log(
+        'Withdrawal created event, balance will be',
+        accountAggregate.balance - newEvent.payload.amount,
+      );
       return {
         ...accountAggregate,
         version,

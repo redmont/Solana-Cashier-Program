@@ -140,6 +140,9 @@ locals {
       },
       {
         name = "ZEALY_XP_CONVERSION_RATE", value = "1"
+      },
+      {
+        name = "WITHDRAWAL_SIGNER_KMS_KEY_ID", value = var.withdrawal_signer_kms_key_id
       }
     ]
   }

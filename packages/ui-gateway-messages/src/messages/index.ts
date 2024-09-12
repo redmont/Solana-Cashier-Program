@@ -14,3 +14,6 @@ export * from './getDailyClaims';
 export * from './claimDailyClaim';
 export * from './chatAuth';
 export * from './getUserProfile';
+export * from './requestWithdrawal';
+export * from './getWithdrawals';
+export * from './markWithdrawalAsComplete';

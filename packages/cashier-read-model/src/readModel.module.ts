@@ -14,6 +14,7 @@ import { AccountCount } from './interfaces/accountCount.interface';
 import { ReadModelKey } from './interfaces/key.interface';
 import { AccountCountSchema } from './schemas/accountCount.schema';
 import { RedisCacheModule } from 'global-cache';
+import { WithdrawalSchema } from './schemas/withdrawal.schema';
 
 interface ReadModelOptions {
   tableName: string;
@@ -63,6 +64,19 @@ export class ReadModelModule implements OnModuleInit {
         useFactory: (_: any, options: ReadModelOptions) => {
           return {
             schema: AccountCountSchema,
+            options: {
+              tableName: options.tableName,
+            },
+          };
+        },
+        inject: ['READ_MODEL_OPTIONS'],
+      },
+      {
+        name: 'withdrawal',
+        imports: options.imports || [],
+        useFactory: (_: any, options: ReadModelOptions) => {
+          return {
+            schema: WithdrawalSchema,
             options: {
               tableName: options.tableName,
             },

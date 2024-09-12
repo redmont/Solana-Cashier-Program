@@ -6,9 +6,15 @@ export const useContracts = () => {
 
   const networkKey = networkId?.data as
     | keyof typeof contracts.CashierDeposit
+    | keyof typeof contracts.CashierWithdraw
     | undefined;
+
   const depositor =
     networkKey !== undefined ? contracts.CashierDeposit[networkKey] : undefined;
+  const withdrawer =
+    networkKey !== undefined
+      ? contracts.CashierWithdraw[networkKey]
+      : undefined;
 
   if (networkId?.isSuccess && !depositor) {
     //throw new Error(`No contract found for network ${networkKey}`);
@@ -18,6 +24,7 @@ export const useContracts = () => {
     isLoading: networkId.isLoading,
     isSuccess: networkId.isSuccess,
     depositor,
+    withdrawer,
     contracts,
   };
 };

@@ -4,6 +4,8 @@ import { Account } from './interfaces/account.interface';
 import { ReadModelKey } from './interfaces/key.interface';
 import { AccountCount } from './interfaces/accountCount.interface';
 import { RedisCacheService } from 'global-cache';
+import { Withdrawal } from './interfaces/withdrawal.interface';
+import { SortOrder } from 'dynamoose/dist/General';
 
 @Injectable()
 export class ReadModelService {
@@ -13,6 +15,8 @@ export class ReadModelService {
     private readonly accountModel: Model<Account, ReadModelKey>,
     @InjectModel('accountCount')
     private readonly accountCountModel: Model<AccountCount, ReadModelKey>,
+    @InjectModel('withdrawal')
+    private readonly withdrawalModel: Model<Withdrawal, ReadModelKey>,
   ) {}
 
   async createAccount(
@@ -95,5 +99,82 @@ export class ReadModelService {
       .query({ primaryWalletAddress: walletAddress })
       .using('primaryWalletAddress')
       .exec();
+  }
+
+  async createWithdrawal({
+    accountId,
+    receiptId,
+    createdAt,
+    creditAmount,
+    chainId,
+    signature,
+    tokenSymbol,
+    tokenAmount,
+    tokenDecimals,
+    validFrom,
+    validTo,
+  }: {
+    accountId: string;
+    receiptId: string;
+    createdAt: string;
+    creditAmount: number;
+    chainId: string;
+    signature: string;
+    tokenSymbol?: string;
+    tokenAmount: string;
+    tokenDecimals: number;
+    validFrom: string;
+    validTo: string;
+  }) {
+    await this.withdrawalModel.create({
+      pk: `withdrawal#${accountId}`,
+      sk: receiptId,
+      accountId,
+      createdAt,
+      updatedAt: createdAt,
+      creditAmount,
+      chainId,
+      signature,
+      tokenSymbol,
+      tokenAmount,
+      tokenDecimals,
+      validFrom,
+      validTo,
+      status: 'Pending',
+      itemType: 'withdrawal',
+    });
+  }
+
+  async updateWithdrawal(
+    accountId: string,
+    receiptId: string,
+    values: Pick<Withdrawal, 'status' | 'transactionHash'>,
+  ) {
+    const set = {};
+    for (const [key, value] of Object.entries(values)) {
+      set[key] = value;
+    }
+
+    await this.withdrawalModel.update(
+      {
+        pk: `withdrawal#${accountId}`,
+        sk: receiptId,
+      },
+      {
+        $SET: set,
+      },
+    );
+  }
+
+  async getWithdrawals(
+    accountId: string,
+  ): Promise<(Omit<Withdrawal, 'pk' | 'sk'> & { receiptId: string })[]> {
+    const result = await this.withdrawalModel
+      .query({ pk: `withdrawal#${accountId}` })
+      .using('pkCreatedAt')
+      .sort(SortOrder.descending)
+      .exec();
+
+    return result.map(({ pk, sk, ...rest }) => ({ ...rest, receiptId: sk }));
   }
 }

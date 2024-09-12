@@ -40,6 +40,12 @@ import {
   ChatAuthMessageResponse,
   GetUserProfileMessage,
   GetUserProfileMessageResponse,
+  RequestWithdrawalMessage as RequestWithdrawalUiGatewayMessage,
+  RequestWithdrawalMessageResponse as RequestWithdrawalUiGatewayMessageResponse,
+  GetWithdrawalsMessage as GetWithdrawalsUiGatewayMessage,
+  GetWithdrawalsMessageResponse as GetWithdrawalsUiGatewayMessageResponse,
+  MarkWithdrawalAsCompleteMessage as MarkWithdrawalAsCompleteUiGatewayMessage,
+  MarkWithdrawalAsCompleteMessageResponse as MarkWithdrawalAsCompleteUiGatewayMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
@@ -48,6 +54,10 @@ import {
   EnsureUserIdMessageReturnType,
   ClaimDailyClaimMessage,
   ClaimDailyClaimMessageResponse,
+  RequestWithdrawalMessage,
+  RequestWithdrawalMessageResponse,
+  MarkWithdrawalAsCompleteMessage,
+  MarkWithdrawalAsCompleteMessageResponse,
 } from 'core-messages';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
 import { Socket } from './websocket/socket';
@@ -553,6 +563,98 @@ export class Gateway
       success: true,
       xp: profile?.xp ?? 0,
     };
+  }
+
+  @SubscribeMessage(RequestWithdrawalUiGatewayMessage.messageType)
+  public async requestWithdrawal(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    {
+      chainId,
+      tokenSymbol,
+      walletAddress,
+      creditAmount,
+    }: RequestWithdrawalUiGatewayMessage,
+  ): Promise<RequestWithdrawalUiGatewayMessageResponse> {
+    const userId = client.data.authorizedUser?.userId;
+
+    if (!userId) {
+      return { success: false, error: { message: 'User not authorized' } };
+    }
+
+    if (!chainId.startsWith('eip155:')) {
+      return {
+        success: false,
+        error: { message: 'Only Ethereum chains are supported' },
+      };
+    }
+
+    if (tokenSymbol !== 'USDC') {
+      return {
+        success: false,
+        error: { message: 'Only USDC withdrawals are supported' },
+      };
+    }
+
+    const { success, message } = await sendBrokerCommand<
+      RequestWithdrawalMessage,
+      RequestWithdrawalMessageResponse
+    >(
+      this.broker,
+      new RequestWithdrawalMessage(
+        userId,
+        chainId,
+        tokenSymbol,
+        walletAddress,
+        creditAmount,
+      ),
+    );
+
+    const error = message ? { message } : null;
+
+    return { success, error };
+  }
+
+  @SubscribeMessage(GetWithdrawalsUiGatewayMessage.messageType)
+  public async getWithdrawals(
+    @ConnectedSocket() client: Socket,
+  ): Promise<GetWithdrawalsUiGatewayMessageResponse> {
+    const userId = client.data.authorizedUser?.userId;
+
+    if (!userId) {
+      return {
+        success: false,
+        withdrawals: [],
+        error: { message: 'User not authorized' },
+      };
+    }
+
+    const result = await this.gatewayService.getWithdrawals(userId);
+
+    return { success: true, withdrawals: result as any };
+  }
+
+  @SubscribeMessage(MarkWithdrawalAsCompleteUiGatewayMessage.messageType)
+  async markWithdrawalAsComplete(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    { receiptId, transactionHash }: MarkWithdrawalAsCompleteUiGatewayMessage,
+  ) {
+    const userId = client.data.authorizedUser?.userId;
+
+    if (!userId) {
+      return { success: false, error: { message: 'User not authorized' } };
+    }
+
+    const { success } = await sendBrokerCommand<
+      MarkWithdrawalAsCompleteMessage,
+      MarkWithdrawalAsCompleteMessageResponse
+    >(
+      this.broker,
+      new MarkWithdrawalAsCompleteMessage(userId, receiptId, transactionHash),
+    );
+
+    return { success };
   }
 
   public publish<T extends GatewayEvent>(data: T) {

@@ -12,11 +12,11 @@ import {
   BalanceUpdatedEvent,
 } from 'cashier-messages';
 import { ReadModelService } from 'cashier-read-model';
-import { AccountAggregate } from './aggregates';
-import { AccountEventDetails } from './reducers/accountsReducer';
+import { AccountAggregate } from './aggregate';
+import { AccountEventDetails } from './reducer';
 
 @Injectable()
-export class QueryModelBusAdapter implements MessageChannelAdapter {
+export class AccountQueryModelBusAdapter implements MessageChannelAdapter {
   constructor(
     private readonly readModelService: ReadModelService,
     private readonly broker: NatsJetStreamClientProxy,

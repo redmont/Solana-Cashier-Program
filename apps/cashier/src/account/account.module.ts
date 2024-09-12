@@ -1,26 +1,14 @@
 import { Module } from '@nestjs/common';
-import { QueryModelBusService } from './queryModelBus.service';
-import { QueryModelBusAdapter } from './queryModelBusAdapter.service';
 import { AccountController } from './account.controller';
-import { EventStoreService } from './eventStore.service';
 import { ConnectedEventStore } from '@castore/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ReadModelModule } from 'cashier-read-model';
-import { NatsJetStreamTransport } from '@nestjs-plugins/nestjs-nats-jetstream-transport';
+import { AccountQueryModelBusService } from './queryModelBus.service';
+import { AccountQueryModelBusAdapter } from './queryModelBusAdapter.service';
+import { AccountsEventStoreService } from './eventStore.service';
 
 @Module({
   imports: [
-    NatsJetStreamTransport.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => {
-        return {
-          connectionOptions: {
-            servers: configService.get<string>('natsUri').split(','),
-          },
-        };
-      },
-      inject: [ConfigService],
-    }),
     ReadModelModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
@@ -34,23 +22,23 @@ import { NatsJetStreamTransport } from '@nestjs-plugins/nestjs-nats-jetstream-tr
     }),
   ],
   providers: [
-    QueryModelBusService,
-    QueryModelBusAdapter,
-    EventStoreService,
+    AccountQueryModelBusService,
+    AccountQueryModelBusAdapter,
+    AccountsEventStoreService,
     {
-      provide: ConnectedEventStore,
+      provide: 'AccountsConnectedEventStore',
       useFactory: (
-        eventStoreService: EventStoreService,
-        modelBusService: QueryModelBusService,
+        eventStoreService: AccountsEventStoreService,
+        modelBusService: AccountQueryModelBusService,
       ) =>
         new ConnectedEventStore(
-          eventStoreService.accountsEventStore,
+          eventStoreService.eventStore,
           modelBusService.queryModelBus,
         ),
-      inject: [EventStoreService, QueryModelBusService],
+      inject: [AccountsEventStoreService, AccountQueryModelBusService],
     },
   ],
   controllers: [AccountController],
-  exports: [ConnectedEventStore],
+  exports: ['AccountsConnectedEventStore'],
 })
 export class AccountModule {}

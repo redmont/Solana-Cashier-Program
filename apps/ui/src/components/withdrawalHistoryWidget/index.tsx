@@ -1,178 +1,79 @@
-import { ChainId } from '@/config/chains';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import dayjs from '@/dayjs';
-import { formatUnits } from 'viem';
+import { BaseError, ContractFunctionRevertedError, formatUnits } from 'viem';
 import Link from 'next/link';
 import { SquareArrowOutUpRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Scrollable } from '../ui/scrollable';
-import { useCountdown } from '@/hooks';
+import { useCountdown, useSocket } from '@/hooks';
 import { cn } from '@/lib/utils';
 import { FC } from 'react';
 import lfb from './lfb.png';
 import B3Spinner from '../B3Spinner/B3Spinner';
 import SomethingWentWrong from '../somethingWentWrong';
+import {
+  GetWithdrawalsMessage,
+  GetWithdrawalsMessageResponse,
+  MarkWithdrawalAsCompleteMessage,
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
+import { useClient, useWriteContract } from 'wagmi';
+import { useContracts } from '@/hooks/useContracts';
+import { waitForTransactionReceipt } from 'viem/actions';
+import assert from 'assert';
+import { useToast } from '../ui/use-toast';
+import chains from '@/config/chains';
 
 const WithdrawalStatusSchema = z.enum(['Pending', 'Completed', 'Failed']);
 
 type WithdrawalStatus = z.infer<typeof WithdrawalStatusSchema>;
 
-const APPROVAL_WAIT_TIME = 1000 * 60 * 60 * 24; // 1 day
-const isReadyForApproval = (withdrawal: (typeof data)[number]) =>
-  dayjs(withdrawal.createdAt).add(APPROVAL_WAIT_TIME, 'ms').isBefore();
+const isReadyForApproval = (withdrawal: Withdrawal) =>
+  dayjs(withdrawal.validFrom).isBefore();
 
 type Withdrawal = {
   status: WithdrawalStatus;
-  id: number;
+  receiptId: string;
   tokenSymbol: string;
-  decimals: number;
-  chainId: ChainId;
-  txUrl?: string;
+  chainId: string;
+  txUrl: string | null;
   createdAt: string;
   updatedAt: string;
   reason?: string;
-  credits: number;
-  amount: bigint;
+  creditAmount: number;
+  tokenAmount: bigint;
+  tokenDecimals: number;
+  validFrom: string;
+  validTo: string;
+  signature: string;
 };
 
-const data: Withdrawal[] = [
-  {
-    id: 1,
-    tokenSymbol: 'USDC',
-    decimals: 6,
-    chainId: 11155111,
-    txUrl: 'https://etherscan.io/tx/0x1234567890abcdef1234567890abcdef12345678',
-    status: 'Completed',
-    createdAt: '2023-08-01T10:15:30Z',
-    updatedAt: '2023-08-02T11:20:35Z',
-    credits: 120000,
-    amount: BigInt(100000000),
-  },
-  {
-    id: 2,
-    tokenSymbol: 'ETH',
-    decimals: 18,
-    chainId: 11155111,
-    status: 'Pending',
-    createdAt: new Date(
-      new Date().getTime() - APPROVAL_WAIT_TIME,
-    ).toISOString(),
-    updatedAt: new Date(
-      new Date().getTime() - APPROVAL_WAIT_TIME,
-    ).toISOString(),
-    credits: 100000,
-    amount: BigInt('1500000000000000000'),
-  },
-  {
-    id: 3,
-    tokenSymbol: 'MATIC',
-    decimals: 18,
-    chainId: 80002,
-    status: 'Failed',
-    reason: 'Expired',
-    createdAt: '2023-08-01T10:15:30Z',
-    updatedAt: '2023-08-02T11:20:35Z',
-    credits: 3123412,
-    amount: BigInt('200000000000000000000'),
-  },
-  {
-    id: 4,
-    tokenSymbol: 'ETH',
-    decimals: 18,
-    chainId: 11155111,
-    status: 'Pending',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    credits: 100000,
-    amount: BigInt('1500000000000000000'),
-  },
-  {
-    id: 5,
-    tokenSymbol: 'USDC',
-    decimals: 6,
-    chainId: 11155111,
-    txUrl: 'https://etherscan.io/tx/0x1234567890abcdef1234567890abcdef12345678',
-    status: 'Completed',
-    createdAt: '2023-08-01T10:15:30Z',
-    updatedAt: '2023-08-02T11:20:35Z',
-    credits: 120000,
-    amount: BigInt(100000000),
-  },
-  {
-    id: 6,
-    tokenSymbol: 'ETH',
-    decimals: 18,
-    chainId: 11155111,
-    status: 'Pending',
-    createdAt: new Date(
-      new Date().getTime() - APPROVAL_WAIT_TIME,
-    ).toISOString(),
-    updatedAt: new Date(
-      new Date().getTime() - APPROVAL_WAIT_TIME,
-    ).toISOString(),
-    credits: 100000,
-    amount: BigInt('1500000000000000000'),
-  },
-  {
-    id: 7,
-    tokenSymbol: 'MATIC',
-    decimals: 18,
-    chainId: 80002,
-    status: 'Failed',
-    createdAt: '2023-08-01T10:15:30Z',
-    updatedAt: '2023-08-02T11:20:35Z',
-    credits: 3123412,
-    amount: BigInt('200000000000000000000'),
-  },
-  {
-    id: 8,
-    tokenSymbol: 'ETH',
-    decimals: 18,
-    chainId: 11155111,
-    status: 'Pending',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    credits: 100000,
-    amount: BigInt('1500000000000000000'),
-  },
-  {
-    id: 9,
-    tokenSymbol: 'MATIC',
-    decimals: 18,
-    chainId: 80002,
-    status: 'Failed',
-    reason: 'KYC Failure',
-    createdAt: '2023-08-01T10:15:30Z',
-    updatedAt: '2023-08-02T11:20:35Z',
-    credits: 3123412,
-    amount: BigInt('200000000000000000000'),
-  },
-  {
-    id: 10,
-    tokenSymbol: 'MATIC',
-    decimals: 18,
-    chainId: 80002,
-    status: 'Failed',
-    createdAt: '2023-08-01T10:15:30Z',
-    updatedAt: '2023-08-02T11:20:35Z',
-    credits: 3123412,
-    amount: BigInt('200000000000000000000'),
-  },
+const txUrl = (caip2ChainId: string, txHash?: string) => {
+  if (!txHash) {
+    return null;
+  }
 
-  {
-    id: 11,
-    tokenSymbol: 'MATIC',
-    decimals: 18,
-    chainId: 80002,
-    status: 'Failed',
-    reason: 'None Provided',
-    createdAt: '2023-08-01T10:15:30Z',
-    updatedAt: '2023-08-02T11:20:35Z',
-    credits: 3123412,
-    amount: BigInt('200000000000000000000'),
-  },
-] as const;
+  const [namespace, reference] = caip2ChainId.split(':');
+
+  if (!Object.keys(chains).includes(namespace)) {
+    return null;
+  }
+
+  const typedNamespace = namespace as keyof typeof chains;
+  const chainId = parseInt(reference);
+
+  const chain = chains[typedNamespace].find((chain) => chain.id === chainId);
+  if (!chain) {
+    return null;
+  }
+
+  const explorerUrl = chain.blockExplorers?.default?.url;
+  if (!explorerUrl) {
+    return null;
+  }
+
+  return `${explorerUrl}/tx/${txHash}`;
+};
 
 type WithdrawalProps = {
   withdrawal: Withdrawal;
@@ -180,20 +81,99 @@ type WithdrawalProps = {
   onApprove?: () => void;
 };
 
+const errorMessages: Record<string, string> = {
+  WithdrawalTooEarly: 'Too early to complete withdrawal',
+  WithdrawalTooLate: 'Too late to complete withdrawal',
+  WithdrawalAlreadyPaidOut: 'Already paid out',
+  InsufficientBalance: 'Insufficient balance',
+};
+
+const CompletedTxLink: FC<{ withdrawal: Withdrawal }> = ({ withdrawal }) => {
+  const txUrl = withdrawal.txUrl;
+
+  if (!txUrl) {
+    return <span className="text-right">Completed</span>;
+  }
+
+  return (
+    <Link
+      className="w-full text-right"
+      href={txUrl}
+      target="_blank"
+      rel="noreferrer"
+    >
+      Completed
+      <SquareArrowOutUpRight className="ml-1 inline-block size-4" />
+    </Link>
+  );
+};
+
 const Withdrawal: FC<WithdrawalProps> = ({
   className,
   withdrawal,
   onApprove,
 }) => {
+  const { writeContractAsync } = useWriteContract();
+  const client = useClient();
+  const contracts = useContracts();
+  const { toast } = useToast();
+  const { send } = useSocket();
+  const queryClient = useQueryClient();
+
   const approveWithdrawal = useMutation({
-    mutationFn: (_id: Withdrawal['id']) =>
-      new Promise((resolve) => setTimeout(resolve, 1000)),
+    onError: (error) => {
+      let errorMessage = error.message;
+
+      if (
+        error instanceof BaseError &&
+        error.cause instanceof ContractFunctionRevertedError
+      ) {
+        const errorName = error.cause?.data?.errorName;
+        if (errorName) {
+          errorMessage = errorMessages[errorName];
+        }
+      }
+
+      toast({
+        title: 'Withdrawal failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    },
+    mutationFn: async (_id: Withdrawal['receiptId']) => {
+      assert(contracts.withdrawer, 'Withdrawer contract not found');
+
+      const { receiptId, tokenAmount, validFrom, validTo, signature } =
+        withdrawal;
+
+      const validFromUnix = dayjs(validFrom).unix();
+      const validToUnix = dayjs(validTo).unix();
+
+      const receipt = await writeContractAsync({
+        abi: contracts.withdrawer?.abi,
+        address: contracts.withdrawer?.address,
+        functionName: 'withdrawWithReceipt',
+        args: [
+          `0x${receiptId}`,
+          tokenAmount,
+          validFromUnix,
+          validToUnix,
+          signature,
+        ],
+      });
+
+      await waitForTransactionReceipt(client!, { hash: receipt });
+
+      await send(new MarkWithdrawalAsCompleteMessage(receiptId, receipt));
+
+      queryClient.invalidateQueries({
+        queryKey: ['withdrawals'],
+      });
+    },
     onSuccess: onApprove,
   });
 
-  const duration = dayjs.duration(
-    useCountdown(dayjs(withdrawal.createdAt).add(APPROVAL_WAIT_TIME, 'ms')),
-  );
+  const duration = dayjs.duration(useCountdown(dayjs(withdrawal.validFrom)));
 
   return (
     <div
@@ -203,9 +183,9 @@ const Withdrawal: FC<WithdrawalProps> = ({
       )}
     >
       <div>{dayjs(withdrawal.createdAt).format('DD/MM/YYYY')}</div>
-      <div>{withdrawal.credits.toLocaleString()} credits</div>
+      <div>{withdrawal.creditAmount.toLocaleString()} credits</div>
       <div className="font-semibold text-white">
-        {formatUnits(withdrawal.amount, withdrawal.decimals)}{' '}
+        {formatUnits(withdrawal.tokenAmount, withdrawal.tokenDecimals)}{' '}
         {withdrawal.tokenSymbol}
       </div>
       <div className="w-full text-center sm:col-span-1 sm:text-right">
@@ -214,9 +194,11 @@ const Withdrawal: FC<WithdrawalProps> = ({
             loading={approveWithdrawal.isPending}
             className="w-full"
             variant="secondary"
-            onClick={() => approveWithdrawal.mutate(withdrawal.id)}
+            onClick={() => approveWithdrawal.mutate(withdrawal.receiptId)}
           >
-            Complete Withdrawal
+            {approveWithdrawal.isPending
+              ? 'Processing...'
+              : 'Complete Withdrawal'}
           </Button>
         )}
         {withdrawal.status === 'Pending' && !isReadyForApproval(withdrawal) && (
@@ -224,16 +206,8 @@ const Withdrawal: FC<WithdrawalProps> = ({
             Ready in {duration.format('HH:mm:ss')}
           </Button>
         )}
-        {withdrawal.status === 'Completed' && withdrawal.txUrl && (
-          <Link
-            className="w-full text-right"
-            href={withdrawal.txUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Completed
-            <SquareArrowOutUpRight className="ml-1 inline-block size-4" />
-          </Link>
+        {withdrawal.status === 'Completed' && (
+          <CompletedTxLink withdrawal={withdrawal} />
         )}
         {withdrawal.status === 'Failed' && (
           <span className="text-destructive">
@@ -249,9 +223,22 @@ const Withdrawal: FC<WithdrawalProps> = ({
 };
 
 const WithdrawalHistoryWidget: FC<{ className?: string }> = ({ className }) => {
+  const { send } = useSocket();
+
   const withdrawals = useQuery({
     queryKey: ['withdrawals'],
-    queryFn: () => Promise.resolve(data),
+    queryFn: async () => {
+      const data = await send<
+        GetWithdrawalsMessage,
+        GetWithdrawalsMessageResponse
+      >(new GetWithdrawalsMessage());
+
+      return data.withdrawals.map((withdrawal) => ({
+        ...withdrawal,
+        tokenAmount: BigInt(withdrawal.tokenAmount),
+        txUrl: txUrl(withdrawal.chainId, withdrawal.transactionHash),
+      }));
+    },
   });
 
   return (
@@ -279,7 +266,7 @@ const WithdrawalHistoryWidget: FC<{ className?: string }> = ({ className }) => {
             </div>
           )}
           {withdrawals.data?.map((withdrawal) => (
-            <Withdrawal withdrawal={withdrawal} key={withdrawal.id} />
+            <Withdrawal withdrawal={withdrawal} key={withdrawal.receiptId} />
           ))}
         </div>
       </Scrollable>

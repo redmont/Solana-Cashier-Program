@@ -19,13 +19,19 @@ import {
 } from '@/components/ui/form';
 import chains, { ChainId } from '@/config/chains';
 import { Input } from '../ui/input';
+import { useSocket, useWallet } from '@/hooks';
 import { NetworkSelector } from '@/components/networkSelector';
 import { z } from 'zod';
 import { useAtomValue } from 'jotai';
 import { balanceAtom } from '@/store/account';
 import { getPrice } from '../cashier/utils';
 import { FEE_PERCENT } from '@/config/withdrawals';
-import { useWallet } from '@/hooks';
+import {
+  RequestWithdrawalMessage,
+  RequestWithdrawalMessageResponse,
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
+import { useToast } from '../ui/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 type FormValues = {
   credits: number;
@@ -34,6 +40,12 @@ type FormValues = {
 
 type WithdrawalFormProps = {
   onSubmit: (data: FormValues) => void;
+};
+
+const errorMessages: Record<string, string> = {
+  AmountTooLow: 'Withdrawal amount is too low',
+  AmountTooHigh: 'Withdrawal amount is too high',
+  ChainNotSupported: 'Chain not supported',
 };
 
 const toLocaleAndFixed = (value: number) =>
@@ -152,11 +164,46 @@ const WithdrawalForm: FC<WithdrawalFormProps> = ({ onSubmit }) => {
 
 const WithdrawalModal: FC<PropsWithChildren> = ({ children }) => {
   const [open, setOpen] = useState(false);
+  const { send } = useSocket();
+  const { address } = useWallet();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const handleWithdrawalSubmit = (data: FormValues) => {
-    // Handle the withdrawal submission logic here
-    // eslint-disable-next-line no-console
-    console.log('Withdrawal amount:', data.credits);
+  const handleWithdrawalSubmit = async (data: FormValues) => {
+    if (!address) {
+      setOpen(false);
+      return;
+    }
+
+    const chainId = `eip155:${data.networkId}`;
+    const tokenSymbol = 'USDC';
+
+    try {
+      await send<RequestWithdrawalMessage, RequestWithdrawalMessageResponse>(
+        new RequestWithdrawalMessage(
+          chainId,
+          tokenSymbol,
+          address,
+          data.credits,
+        ),
+      );
+    } catch (e) {
+      const msg = (e as Error).message;
+      const errorMessage = errorMessages[msg] ?? msg;
+
+      toast({
+        title: 'Withdrawal failed',
+        description: errorMessage || 'Error withdrawing funds',
+        variant: 'destructive',
+      });
+
+      return;
+    }
+
+    queryClient.invalidateQueries({
+      queryKey: ['withdrawals'],
+    });
+
     setOpen(false);
   };
 

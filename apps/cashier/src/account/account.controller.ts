@@ -1,5 +1,5 @@
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { Controller, Logger } from '@nestjs/common';
+import { Controller, Inject, Logger } from '@nestjs/common';
 import { ConnectedEventStore } from '@castore/core';
 import {
   CreateAccountMessage,
@@ -14,20 +14,21 @@ import {
   ResetBalanceMessage,
 } from 'cashier-messages';
 import { ReadModelService } from 'cashier-read-model';
-import { createAccountCommand } from './commands/createAccount.command';
-import { creditAccountCommand } from './commands/creditAccount.command';
 import {
-  InsufficientBalanceError,
+  createAccountCommand,
+  creditAccountCommand,
   debitAccountCommand,
-} from './commands/debitAccount.command';
-import { ensureAccountExistsCommand } from './commands/ensureAccountExists.command';
-import { resetAccountBalanceCommand } from './commands/resetBalance.command';
+  ensureAccountExistsCommand,
+  InsufficientBalanceError,
+  resetAccountBalanceCommand,
+} from '@/commands';
 
 @Controller()
 export class AccountController {
   private logger = new Logger(AccountController.name);
 
   constructor(
+    @Inject('AccountsConnectedEventStore')
     private readonly eventStore: ConnectedEventStore,
     private readonly readModelService: ReadModelService,
   ) {}
