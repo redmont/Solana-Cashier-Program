@@ -149,8 +149,6 @@ export class AppController {
   ) {
     const { timestamp, seriesCodeName, bets } = data;
 
-    console.log('Got bets updated', data);
-
     this.gateway.publish(
       new BetsUpdatedUiGatewayEvent(timestamp, seriesCodeName, bets),
     );

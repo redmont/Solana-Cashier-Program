@@ -1,3 +1,5 @@
+'use client';
+
 import { usePostHog as usePH } from 'posthog-js/react';
 import { useWallet } from '@/hooks';
 

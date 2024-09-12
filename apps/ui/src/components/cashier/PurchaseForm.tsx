@@ -127,7 +127,7 @@ export const PurchaseForm = ({
     <div>
       <h4 className="mb-4 text-lg font-bold">Purchase Credits</h4>
       <p className="mb-3 font-normal">
-        You're about to buy {credits.total} Credits for {credits.total} USDC.
+        You're about to buy {credits.credits} Credits for {credits.total} USDC.
         Complete the purchase using the two step process:
       </p>
       <div className="mb-4 flex items-center justify-between gap-3">

@@ -49,7 +49,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {endAdornment && (
             <span
               title={endAdornment.toString()}
-              className="absolute right-0 max-w-32 overflow-hidden text-ellipsis text-nowrap px-3 text-sm font-medium text-muted-foreground"
+              className="absolute right-0 overflow-hidden text-ellipsis text-nowrap px-3 text-sm font-medium text-muted-foreground"
             >
               {endAdornment}
             </span>

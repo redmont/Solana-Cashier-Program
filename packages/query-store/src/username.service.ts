@@ -3,9 +3,7 @@ import { RedisCacheService } from 'global-cache';
 
 @Injectable()
 export class UsernameQueryStoreService {
-  constructor(private readonly cache: RedisCacheService) {
-    console.log('Initialised with cache', cache);
-  }
+  constructor(private readonly cache: RedisCacheService) {}
 
   async setUsername(userId: string, username: string): Promise<void> {
     const key = `username:${userId}`;

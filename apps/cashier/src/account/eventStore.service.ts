@@ -7,12 +7,12 @@ import {
   creditEventType,
   debitEventType,
 } from './eventTypes';
-import { accountsReducer } from './reducers/accountsReducer';
 import { Injectable } from '@nestjs/common';
+import { accountsReducer } from './reducer';
 
 @Injectable()
-export class EventStoreService {
-  public accountsEventStore: any;
+export class AccountsEventStoreService {
+  public eventStore: any;
 
   constructor(configService: ConfigService) {
     const dynamoDBClient = new DynamoDBClient({
@@ -26,7 +26,7 @@ export class EventStoreService {
       dynamoDBClient,
     });
 
-    this.accountsEventStore = new EventStore({
+    this.eventStore = new EventStore({
       eventStoreId: 'ACCOUNTS',
       eventTypes: [accountCreatedEventType, creditEventType, debitEventType],
       reducer: accountsReducer,

@@ -6,12 +6,14 @@ export const Burger = forwardRef<
   {
     isNavOpen: boolean;
     setNavOpen: Dispatch<SetStateAction<boolean>>;
+    className?: string;
   }
->(({ isNavOpen, setNavOpen }, ref) => (
+>(({ isNavOpen, setNavOpen, className }, ref) => (
   <button
     ref={ref}
     className={cn(
-      'relative flex h-12 w-12 items-center justify-center transition-all md:hidden',
+      'relative flex size-12 items-center justify-center transition-all',
+      className,
     )}
     id="icon"
     onClick={() => setNavOpen((open) => !open)}

@@ -6,6 +6,7 @@
     "name": "bltzr-gg",
     "url": "https://github.com/bltzr-gg"
   },
+  "main": "dist/exports.js",
   "scripts": {
     "clean": "rimraf ./artifacts ./cache ./coverage ./types ./coverage.json",
     "test": "hardhat test",
@@ -16,7 +17,7 @@
     "lint:ts": "eslint --ignore-path ./.eslintignore --ext .js,.ts .",
     "prettier:check": "prettier --check \"**/*.{js,json,md,sol,ts,yml}\"",
     "prettier:write": "prettier --write \"**/*.{js,json,md,sol,ts,yml}\"",
-    "build": "pnpm run clean && pnpm run compile && pnpm run lint",
+    "build": "pnpm run clean && pnpm run compile && pnpm tsc && pnpm run lint",
     "verify": "node verify.js"
   },
   "devDependencies": {
@@ -25,6 +26,7 @@
     "@nomicfoundation/hardhat-network-helpers": "^1.0.11",
     "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",
     "@nomicfoundation/hardhat-viem": "^2.0.3",
+    "@nomicfoundation/ignition-core": "^0.15.5",
     "@openzeppelin/contracts": "^5.0.2",
     "@types/chai": "^4.3.17",
     "@types/chai-as-promised": "^7.1.8",

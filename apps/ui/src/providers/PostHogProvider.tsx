@@ -4,7 +4,7 @@ import { FC, PropsWithChildren } from 'react';
 import posthog from 'posthog-js';
 import { PostHogProvider as Provider } from 'posthog-js/react';
 
-import { postHogFeatureFlags, postHogHost, postHogKey } from '@/config';
+import { postHogFeatureFlags, postHogHost, postHogKey } from '@/config/env';
 
 interface FeatureFlags {
   [key: string]: boolean;

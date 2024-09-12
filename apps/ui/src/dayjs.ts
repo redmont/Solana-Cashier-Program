@@ -6,3 +6,5 @@ import utc from 'dayjs/plugin/utc';
 
 dayjs.extend(durationPlugin);
 dayjs.extend(utc);
+
+export default dayjs;

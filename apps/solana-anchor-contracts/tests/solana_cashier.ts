@@ -1,6 +1,6 @@
 import * as anchor from '@project-serum/anchor';
-import { Program } from '@project-serum/anchor';
-import { SolanaCashier } from '../target/types/solana_cashier';
+import { Program, BorshCoder } from '@project-serum/anchor';
+import { SolanaCashier, IDL } from '../target/types/solana_cashier';
 import 'dotenv/config';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -26,8 +26,18 @@ import base58 from 'bs58';
 
 const heliusRpcUrl = process.env.HELIUS_RPC_URL;
 
-const deployerPrivateKey = process.env.DEPLOYER_PRIVATE_KEY;
-const testUserPrivateKey = process.env.TEST_USER_PRIVATE_KEY;
+const deployerPrivateKey = process.env.PAYER_PRIVATE_KEY;
+const testUserPrivateKey = process.env.PAYER_PRIVATE_KEY;
+const treasuryPrivateKey = process.env.TREASURY_PRIVATE_KEY;
+
+const deployerAccount = Keypair.fromSecretKey(
+  base58.decode(deployerPrivateKey),
+);
+
+const signerAccount = Keypair.fromSecretKey(base58.decode(testUserPrivateKey));
+const treasurySignerAccount = Keypair.fromSecretKey(
+  base58.decode(treasuryPrivateKey),
+);
 
 const usdcTreasuryWalletAddress = process.env.USDC_TREASURY_WALLET_ADDRESS;
 const usdcMintAddress = process.env.USDC_MINT_ADDRESS;
@@ -36,6 +46,7 @@ const programDeployedID = process.env.PROGRAM_DEPLOYED_ID;
 const programStateAddress = process.env.PROGRAM_STATE_ADDRESS;
 
 const treasuryAccount = new PublicKey(usdcTreasuryWalletAddress);
+const mint = new PublicKey(usdcMintAddress);
 
 describe('solana_cashier', () => {
   const connection = new Connection(heliusRpcUrl, 'confirmed');
@@ -50,44 +61,66 @@ describe('solana_cashier', () => {
     provider.wallet.publicKey.toString(),
   );
 
-  const deployerAccount = Keypair.fromSecretKey(
-    base58.decode(deployerPrivateKey),
-  );
   console.log('Deployer Account:', deployerAccount.publicKey.toString());
 
   const program = anchor.workspace.SolanaCashier as Program<SolanaCashier>;
 
   const newOwner = deployerAccount;
 
-  // it("Initializes State account", async () => {
-  //   // Initialize the state account on-chain
-  //   const stateAccountSize = 8 + 32 + 32;
-
-  //   const tx = new Transaction().add(
-  //     SystemProgram.createAccount({
-  //       fromPubkey: provider.publicKey,
-  //       newAccountPubkey: stateAccount,
-  //       lamports: await provider.connection.getMinimumBalanceForRentExemption(
-  //         stateAccountSize
-  //       ),
-  //       space: stateAccountSize,
-  //       programId: program.programId, // The program that will own the account
-  //     })
-  //   );
-
-  //   // Send the transaction to create and fund the state account
-  //   await provider.sendAndConfirm(tx, [stateAccount]);
-
-  //   console.log(
-  //     "State account initialized:",
-  //     stateAccount.toString()
-  //   );
-  // });
-
   const stateAccountFilePath = path.join(__dirname, 'stateAccount.json');
   const deployerAccountFilePath = path.join(__dirname, 'deployerAccount.json');
+  const treasuryAccountFilePath = path.join(__dirname, 'deployerAccount.json');
 
   var stateAccount: PublicKey;
+
+  it('decodes the transaction data based on idl', async () => {
+    const idl = {
+      instructions: [
+        {
+          name: 'depositAndSwap',
+          args: [
+            {
+              name: 'amount',
+              type: 'u64',
+            },
+            {
+              name: 'userId',
+              type: 'bytes',
+            },
+          ],
+        },
+      ],
+    };
+    const coder = new BorshCoder(idl);
+    const ix = coder.instruction.decode(
+      'Kj35qAFy2MvZT65ftmJH3ukUaJSTUtnx98g5Q',
+      'base58',
+    );
+    console.log('Decoded instruction', ix.data?.userId?.toString());
+  });
+
+  it('Checks if the program is deployed', async () => {
+    try {
+      // Fetch the account information
+      const programAccountInfo = await provider.connection.getAccountInfo(
+        program.programId,
+      );
+
+      // Ensure the account exists
+      assert.ok(programAccountInfo !== null, 'Program account does not exist');
+
+      // Ensure the account is executable
+      assert.ok(
+        programAccountInfo.executable,
+        'Program account is not marked as executable',
+      );
+
+      console.log('Program is deployed and executable.');
+    } catch (err) {
+      console.error('Failed to verify the program account:', err);
+      assert.fail('The program is not deployed correctly.');
+    }
+  });
 
   it('Initializes the program', async () => {
     if (
@@ -114,12 +147,13 @@ describe('solana_cashier', () => {
 
       saveKeypairToFile(stateAccountKeypair, stateAccountFilePath);
       saveKeypairToFile(deployerAccount, deployerAccountFilePath);
+      saveKeypairToFile(treasurySignerAccount, treasuryAccountFilePath);
     }
     const state = await program.account.state.fetch(stateAccount);
     console.log('Program State:', state);
 
     const programAccounts = await connection.getProgramAccounts(
-      new PublicKey(programDeployedID),
+      new PublicKey(program.programId.toString()),
     );
     programAccounts.forEach(({ pubkey, account }) => {
       console.log(`Found account with pubkey: ${pubkey.toString()}`);
@@ -153,8 +187,21 @@ describe('solana_cashier', () => {
     // const newTreasury = Keypair.generate();
     const newTreasury = treasuryAccount;
 
+    // Derive the associated USDC token account address of treasury account
+    const treasuryTokenAccount = await getAssociatedTokenAddress(
+      mint,
+      newTreasury,
+      true,
+      TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+    );
+    console.log(
+      'treasury USDC token account:',
+      treasuryTokenAccount.toString(),
+    );
+
     await program.methods
-      .setTreasury(newTreasury)
+      .setTreasury(treasuryTokenAccount)
       .accounts({
         state: stateAccount,
         owner: newOwner.publicKey,
@@ -163,7 +210,7 @@ describe('solana_cashier', () => {
       .rpc();
 
     const state = await program.account.state.fetch(stateAccount);
-    assert.ok(state.treasury.equals(newTreasury));
+    assert.ok(state.treasury.equals(treasuryTokenAccount));
     console.log('Treasury address set successfully');
   });
 
@@ -224,21 +271,9 @@ describe('solana_cashier', () => {
   });
 
   it('Deposits a token and send it to treasury', async () => {
-    const signerAccount = Keypair.fromSecretKey(
-      base58.decode(testUserPrivateKey),
-    );
-    const mint = new PublicKey(usdcMintAddress);
-
     // Derive the associated USDC token account address of user
-    const userTokenAccount = await getAssociatedTokenAddress(
-      mint,
-      signerAccount.publicKey,
-      false,
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-    );
 
-    const userUsdcTokenAccount = await initializeUserTokenAccount(
+    const userUsdcTokenAccount = await initializeTokenAccount(
       provider,
       mint,
       signerAccount,
@@ -246,6 +281,19 @@ describe('solana_cashier', () => {
 
     console.log(
       'user USDC token account initialized successfully',
+      userUsdcTokenAccount.toString(),
+    );
+
+    // Derive the associated USDC token account address of treasury account
+
+    const treasuryUsdcTokenAccount = await initializeTokenAccount(
+      provider,
+      mint,
+      treasurySignerAccount,
+    );
+
+    console.log(
+      'treasury USDC token account initialized successfully',
       userUsdcTokenAccount.toString(),
     );
 
@@ -270,16 +318,21 @@ describe('solana_cashier', () => {
     console.log('initialUserBalance', initialUserBalance);
 
     const initialTreasuryBalance = (
-      await getAccount(provider.connection, treasuryAccount)
+      await getAccount(provider.connection, treasuryUsdcTokenAccount)
     ).amount;
     console.log('initialTreasuryBalance', initialTreasuryBalance);
 
+    const userId = 'user123';
+
+    // Convert user_id to bytes
+    const bytesUserId = Buffer.from(userId, 'utf-8');
+
     await program.methods
-      .depositAndSwap(new anchor.BN(depositAmount))
+      .depositAndSwap(new anchor.BN(depositAmount), bytesUserId)
       .accounts({
         state: stateAccount,
-        treasury: treasuryAccount,
-        userTokenAccount: userTokenAccount,
+        treasury: treasuryUsdcTokenAccount,
+        userTokenAccount: userUsdcTokenAccount,
         tokenProgram: TOKEN_PROGRAM_ID,
         userAuthority: signerAccount.publicKey,
       })
@@ -291,7 +344,7 @@ describe('solana_cashier', () => {
       await getAccount(provider.connection, userUsdcTokenAccount)
     ).amount;
     const finalTreasuryBalance = (
-      await getAccount(provider.connection, treasuryAccount)
+      await getAccount(provider.connection, treasuryUsdcTokenAccount)
     ).amount;
 
     console.log('finalUserBalance', finalUserBalance);
@@ -457,7 +510,7 @@ describe('solana_cashier', () => {
 */
 });
 
-async function initializeUserTokenAccount(provider, mint, owner) {
+async function initializeTokenAccount(provider, mint, owner) {
   const connection = provider.connection;
   const wallet = provider.wallet;
 
@@ -473,7 +526,7 @@ async function initializeUserTokenAccount(provider, mint, owner) {
   // Check if the account already exists
   const accountInfo = await connection.getAccountInfo(userTokenAccount);
   if (accountInfo === null) {
-    console.log('User token account does not exist. Creating it...');
+    console.log('Token account does not exist. Creating it...');
 
     // Create the associated token account
     const tx = new Transaction().add(

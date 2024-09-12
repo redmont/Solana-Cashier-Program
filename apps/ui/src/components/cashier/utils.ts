@@ -38,7 +38,7 @@ export const priceConfiguration: PricingConfig = {
   credits: 10000,
   pricePerCredit: 0.000099,
   presets: [10_000, 100_000, 1_000_000, 100_000_000],
-};
+} as const;
 
 export const getPricingConfig = (credits: number) => {
   if (isNaN(credits)) {
@@ -58,7 +58,10 @@ export const getPricingConfig = (credits: number) => {
 export type PricedCredits = NonNullable<ReturnType<typeof getPricingConfig>>;
 
 export const getPrice = (credits: number) =>
-  (getPricingConfig(credits)?.pricePerCredit ?? 0) * credits;
+  credits * priceConfiguration.pricePerCredit;
+
+export const getCredits = (price: number) =>
+  price / priceConfiguration.pricePerCredit;
 
 export const AmountSchema = z.object({
   amount: z

@@ -6,7 +6,11 @@ environment and configuration, and `pnpm` as the package manager and task runner
 
 ## Deploy to a chain
 
-Add the chain to the `apps/evm-contracts/hardhat.config.ts` file.
+Create an ignition module for the contract you want to deploy. You can use the
+[CashierDeposit](https://github.com/bltzr-gg/brawlers-evm-contracts/blob/main/ignition/modules/CashierDeposit.ts) as an
+example.
+
+Then, if deploying to a new chain, add the chain to the `apps/evm-contracts/hardhat.config.ts` file.
 
 ```typescript
 // apps/evm-contracts/hardhat.config.ts
@@ -25,12 +29,12 @@ parameters for the module in `ignition/modules` folder or the command will promp
 Then run the following command:
 
 ```shell
-pnpm run deploy "<network>"
+pnpm run deploy "<network>" "<contract>"
 ```
 
 Replace `<network>` with the name of the network you want to deploy to.
 
-Then, enable the chain go for dynamic auth provider. Be mindful of the environment you want to enable it for:
+Then, enable the chain for Dynamic auth provider. Be mindful of the environment you want to enable it for:
 https://app.dynamic.xyz/dashboard/chains-and-networks#evm.
 
-Finally, add the chain to `apps/ui/src/config/chains.ts` to the environment you want.
+Finally, add the chain to `apps/ui/src/config/chains.ts` and `apps/ui/src/config/wagmi.ts` to the environment you want.

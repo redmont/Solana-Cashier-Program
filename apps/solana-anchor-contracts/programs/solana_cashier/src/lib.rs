@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Transfer, TokenAccount, Token};
 
-declare_id!("EPVrSttfvQ8Xtkje3UuCWKRmZXCFjvPaMWZZWMAwDzfU");
+declare_id!("8ebCPZKEwFhe6bhCE4nE2fuPUhZWhh6j6jJ5Ex3DmhJS");
 
 #[program]
 pub mod solana_cashier {
@@ -49,7 +49,7 @@ pub mod solana_cashier {
         Ok(())
     }
 
-    pub fn deposit_and_swap(ctx: Context<DepositAndSwap>, amount: u64) -> Result<()> {
+    pub fn deposit_and_swap(ctx: Context<DepositAndSwap>, amount: u64, user_id: Vec<u8>) -> Result<()> {
         let state = &ctx.accounts.state;
         let user_token = ctx.accounts.user_token_account.mint;
 
@@ -69,6 +69,7 @@ pub mod solana_cashier {
             user: ctx.accounts.user_authority.key(),
             amount: amount,
             token: state.out_token,
+            user_id: user_id.clone(),
         });
 
         Ok(())
@@ -142,6 +143,7 @@ pub struct DepositEvent {
     pub user: Pubkey,
     pub amount: u64,
     pub token: Pubkey,
+    pub user_id: Vec<u8>,
 }
 
 #[error_code]

@@ -3,7 +3,7 @@
 import { FC, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 
-import { youTubeStreamId } from '@/config';
+import { youTubeStreamId } from '@/config/env';
 import { useWallet } from '@/hooks';
 
 import { YouTubeStream } from './YoutubeStream';

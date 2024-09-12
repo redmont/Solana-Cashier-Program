@@ -6,3 +6,5 @@ export * from './ensureUserId';
 export * from './registerGatewayInstance';
 export * from './gameServerDisconnected';
 export * from './claimDailyClaim';
+export * from './requestWithdrawal';
+export * from './markWithdrawalAsComplete';

@@ -1,15 +1,19 @@
 import { FC, useCallback, useState } from 'react';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 
 import { AmountSelectionForm } from './AmountSelectionForm';
 import { PricedCredits } from './utils';
 import { PurchaseForm } from './PurchaseForm';
 import { X } from 'lucide-react';
+import { PurchaseFormSolana } from './PurchaseFormSolana';
 
 type Props = {
   onClose?: () => void;
 };
 
 export const CashierForm: FC<Props> = ({ onClose }) => {
+  const { primaryWallet } = useDynamicContext();
+
   const [state, setState] = useState<
     'selectAmount' | 'allowance' | 'completed'
   >('selectAmount');
@@ -45,13 +49,20 @@ export const CashierForm: FC<Props> = ({ onClose }) => {
       {state === 'selectAmount' && (
         <AmountSelectionForm onSubmit={onAmountSelected} />
       )}
-      {state === 'allowance' && (
-        <PurchaseForm
-          credits={credits}
-          onPurchaseCompleted={onPurchaseCompleted}
-          onClose={reset}
-        />
-      )}
+      {state === 'allowance' &&
+        (primaryWallet?.chain === 'solana' ? (
+          <PurchaseFormSolana
+            credits={credits}
+            onPurchaseCompleted={onPurchaseCompleted}
+            onClose={reset}
+          />
+        ) : (
+          <PurchaseForm
+            credits={credits}
+            onPurchaseCompleted={onPurchaseCompleted}
+            onClose={reset}
+          />
+        ))}
     </div>
   );
 };

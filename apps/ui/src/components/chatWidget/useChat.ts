@@ -7,7 +7,7 @@ import {
 import { Chat, Message } from './Chat';
 
 import { useWallet, useSocket } from '@/hooks';
-import { pubNubPubKey, pubNubSubKey } from '@/config';
+import { pubNubPubKey, pubNubSubKey } from '@/config/env';
 import { useAtom } from 'jotai';
 import { chatChannelsAtom, chatMessagesAtom, chatModeAtom } from '@/store/chat';
 

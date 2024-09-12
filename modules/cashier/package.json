@@ -17,6 +17,7 @@
     "nats": "^2.28.2",
     "tsup": "^8.0.2",
     "typescript": "^5.4.5",
-    "viem": "^2.12.4"
+    "viem": "^2.12.4",
+    "@project-serum/anchor": "^0.26.0"
   }
 }

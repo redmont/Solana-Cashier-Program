@@ -6,7 +6,7 @@ resource "aws_lambda_function" "lambda" {
   filename         = var.environment == "local" ? null : "${local.full_file_path}.zip"
   s3_bucket        = var.environment == "local" ? "hot-reload" : null
   s3_key           = var.environment == "local" ? local.full_file_path : null
-  source_code_hash = var.environment == "local" ? null : base64sha256(var.filename)
+  source_code_hash = var.environment == "local" ? null : filebase64sha256("${local.full_file_path}.zip")
   function_name    = "${var.prefix}-${var.name}-${var.environment}"
   role             = aws_iam_role.lambda_exec.arn
   handler          = "dist/${var.filename}.handler"

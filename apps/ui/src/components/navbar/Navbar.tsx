@@ -1,8 +1,7 @@
-import { balanceAtom } from '@/store/account';
+import { balanceAtom, usernameAtom } from '@/store/account';
 import { useAtom, useAtomValue } from 'jotai';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import { JoinButton } from '../JoinButton';
 import { useWallet } from '@/hooks';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -13,13 +12,17 @@ import { CashierForm } from '../cashier';
 import { Button } from '../ui/button';
 import { Tooltip } from '../Tooltip';
 import { Burger } from './Burger';
-
-const formatCredits = (credits: number) =>
-  new Intl.NumberFormat(undefined, { notation: 'compact' }).format(credits);
+import { Wallet2Icon } from 'lucide-react';
 import { Plus } from 'lucide-react';
+import { formatCompact } from '@/utils';
+import { useDynamicAuthClickHandler } from '@/hooks/useDynamicAuthClickHandler';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 
 export const Navbar = () => {
-  const { isAuthenticated } = useWallet();
+  const progressionFeature = useFeatureFlag('progression');
+  const openDynamicAuth = useDynamicAuthClickHandler();
+  const username = useAtomValue(usernameAtom);
+  const { isAuthenticated, walletKey } = useWallet();
   const [tutorialCompleted, setTutorialCompleted] = useAtom(
     tutorialCompletedAtom,
   );
@@ -37,13 +40,13 @@ export const Navbar = () => {
   const currentPath = usePathname();
   const linkClasses = (active: boolean) =>
     cn(
-      'font-bold flex gap-2 items-center cursor-pointer hover:text-primary py-4 px-3 whitespace-nowrap',
+      'font-bold flex gap-2 items-center cursor-pointer hover:text-primary py-4 px-2 whitespace-nowrap',
       {
         'text-primary': active,
       },
     );
-  const linkProps = (path: string) => ({
-    className: linkClasses(path === currentPath),
+  const linkProps = (path: string, className = '') => ({
+    className: cn(linkClasses(path === currentPath), className),
     href: path,
   });
 
@@ -71,7 +74,13 @@ export const Navbar = () => {
     </span>
   );
 
-  const CashierButton = ({ className }: { className?: string }) => (
+  const CashierButton = ({
+    className,
+    compact = true,
+  }: {
+    className?: string;
+    compact?: boolean;
+  }) => (
     <div
       className={cn(
         'text-text-100 relative flex items-center gap-3 rounded-lg bg-primary-600/10 py-1.5 pl-3 pr-1.5 font-bold text-white',
@@ -84,8 +93,13 @@ export const Navbar = () => {
       <span className="inline-flex gap-1">
         {balance !== undefined && (
           <Tooltip position="bottom" content={Math.floor(balance)}>
-            <span className="hidden sm:inline">Credits:</span>
-            <span>{formatCredits(balance)}</span>
+            <span className={cn(compact && 'hidden sm:inline')}>Credits:</span>
+            <span className={cn(!compact && 'hidden')}>
+              {formatCompact(balance)}
+            </span>
+            <span className={cn(compact && 'hidden')}>
+              {balance.toLocaleString()}
+            </span>
           </Tooltip>
         )}
       </span>
@@ -119,15 +133,50 @@ export const Navbar = () => {
           </Link>
         </div>
         <div className="hidden h-full w-16 bg-background clip-path-skewed xs:flex" />
-        <div className="hidden gap-4 px-1 md:flex">
+        <div className="hidden gap-2 px-1 lg:flex">
           <NavLinks />
         </div>
       </div>
       <div className="flex items-center gap-4 pr-4">
-        <HowToPlay className="hidden sm:flex" />
-        {isAuthenticated && <CashierButton className="hidden xs:flex" />}
-        <JoinButton className="username cursor-pointer md:flex" />
-        <Burger ref={burgerRef} isNavOpen={isNavOpen} setNavOpen={setNavOpen} />
+        <HowToPlay className="hidden md:flex" />
+        {isAuthenticated ? (
+          <>
+            <CashierButton className="hidden xs:flex" />
+            <Button variant={'outline'} onClick={openDynamicAuth}>
+              {walletKey !== 'turnkeyhd' && (
+                <img
+                  className="size-6 min-w-6"
+                  src={`https://iconic.dynamic-static-assets.com/icons/sprite.svg#${walletKey}`}
+                />
+              )}
+              {walletKey === 'turnkeyhd' && <Wallet2Icon className="size-6" />}
+            </Button>
+            <Button className="hidden px-2 sm:block" variant="outline">
+              <span className="sr-only">Profile</span>
+
+              <Link href="/profile">
+                {progressionFeature && (
+                  <img
+                    src="/goldbrawler.svg"
+                    alt=""
+                    className="mr-2 inline-block size-6"
+                  />
+                )}
+                {username}
+              </Link>
+            </Button>
+          </>
+        ) : (
+          <Button variant="outline" onClick={openDynamicAuth}>
+            Join the Fight
+          </Button>
+        )}
+        <Burger
+          className="flex lg:hidden"
+          ref={burgerRef}
+          isNavOpen={isNavOpen}
+          setNavOpen={setNavOpen}
+        />
       </div>
       {isCashierOpen && (
         <div
@@ -143,9 +192,15 @@ export const Navbar = () => {
           className="absolute right-0 top-[calc(100%+1rem)] z-10 w-full rounded-md bg-foreground p-5 shadow-xl md:w-80"
         >
           <div className="top-side flex flex-col items-center text-xl md:items-end">
-            {isAuthenticated && <CashierButton className="xs:hidden" />}
+            {isAuthenticated && (
+              <CashierButton
+                compact={false}
+                className="mb-4 justify-center xs:hidden"
+              />
+            )}
+            <Link {...linkProps('/profile', 'block sm:hidden')}>Profile</Link>
             <NavLinks />
-            <HowToPlay className="mt-6 sm:hidden" />
+            <HowToPlay className="mt-6 md:hidden" />
           </div>
         </div>
       )}

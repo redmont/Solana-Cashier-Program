@@ -65,9 +65,18 @@ const getNatsConnection = async () => {
   return null;
 };
 
-const topicHash = keccak256(
+const depositReceivedTopicHash = keccak256(
   stringToBytes('DepositReceived(bytes32,address,uint256)'),
 );
+
+const withdrawalTopicHash = keccak256(
+  stringToBytes('WithdrawalPaidOut(address,bytes16,uint256)'),
+);
+
+const relevantTopics = {
+  [depositReceivedTopicHash]: 'DepositReceived',
+  [withdrawalTopicHash]: 'WithdrawalPaidOut',
+} as const;
 
 interface Log {
   topics: string[];
@@ -125,9 +134,13 @@ export const handler: Handler = async (event: LambdaFunctionURLEvent) => {
   const transactions = request.event.data.block.logs.map((x) => x.transaction);
 
   for (const transaction of transactions) {
-    const log = transaction.logs.find((x: Log) => x.topics[0] === topicHash);
+    // For each transaction log, find first topic that matches a relevant topic
+    const log = transaction.logs.find(
+      (x: Log) => x.topics[0] in relevantTopics,
+    );
     if (log) {
       const { topics, data } = log;
+      const eventName = relevantTopics[topics[0]];
 
       const nc = await getNatsConnection();
       if (!nc) {
@@ -143,7 +156,12 @@ export const handler: Handler = async (event: LambdaFunctionURLEvent) => {
 
       await js.publish(
         'cashier.chainEvent',
-        JSON.stringify({ transactionHash: transaction.hash, topics, data }),
+        JSON.stringify({
+          transactionHash: transaction.hash,
+          topics,
+          data,
+          eventName,
+        }),
       );
 
       console.log(`Published event to NATS (cashier.chainEvent)`, {

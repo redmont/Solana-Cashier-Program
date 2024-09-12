@@ -13,19 +13,22 @@ import {
   FormMessages,
 } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { FC, useCallback, useState } from 'react';
+import { FC, useCallback, useState, useEffect, useMemo } from 'react';
 import { Input } from '../ui/input';
 import { useReadContract } from 'wagmi';
 import { erc20Abi } from 'viem';
 import { useWallet } from '@/hooks';
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import {
   AmountSchema,
   CreditAmount,
   formatUSDC,
+  parseUSDC,
   getPricingConfig,
   priceConfiguration,
   PricedCredits,
 } from './utils';
+import { useUSDCBalance } from './utilsSolana';
 import { useContracts } from '@/hooks/useContracts';
 import {
   DropdownMenu,
@@ -33,7 +36,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import networks from '@/config/chains';
 import { Wallet2Icon } from 'lucide-react';
 
 type Props = {
@@ -45,9 +47,23 @@ const formatAmount = (amount: number) => amount.toLocaleString('en-US');
 export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
   const { depositor } = useContracts();
   const [customEnabled, setCustomEnabled] = useState(false);
-  const { address, network, switchNetwork, networkId } = useWallet();
+  const {
+    address,
+    network,
+    switchChainAndNetwork,
+    networkId,
+    currentNetworks,
+  } = useWallet();
+  const { primaryWallet } = useDynamicContext();
 
-  const balance = useReadContract({
+  const {
+    balance: solanaBalance,
+    loading: solanaLoading,
+    status: solanaStatus,
+    loadUSDCBalance,
+  } = useUSDCBalance();
+
+  const evmBalance = useReadContract({
     query: {
       enabled: !!address,
     },
@@ -56,8 +72,38 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
       | `0x${string}`
       | undefined,
     functionName: 'balanceOf',
-    args: [address!],
+    args: [(address as `0x${string}`)!],
   });
+
+  useEffect(() => {
+    if (primaryWallet?.chain === 'solana') {
+      loadUSDCBalance();
+    }
+  }, [loadUSDCBalance, primaryWallet?.address, primaryWallet?.chain]);
+
+  const balance = useMemo(() => {
+    if (primaryWallet?.chain === 'solana') {
+      return {
+        status: solanaStatus,
+        data: solanaBalance ? BigInt(solanaBalance) : BigInt(0),
+        isLoading: solanaLoading,
+      };
+    } else {
+      return {
+        status: evmBalance.status,
+        data: evmBalance.data ? BigInt(evmBalance.data) : BigInt(0),
+        isLoading: evmBalance.isLoading,
+      };
+    }
+  }, [
+    primaryWallet?.chain,
+    solanaStatus,
+    solanaBalance,
+    solanaLoading,
+    evmBalance.status,
+    evmBalance.data,
+    evmBalance.isLoading,
+  ]);
 
   const balanceInsufficientRefinement = useCallback(
     (credits: CreditAmount) => {
@@ -90,10 +136,13 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
   });
 
   const priceConfig = getPricingConfig(form.watch('amount'));
+
+  // Just a temporary fix. Handled it properly in the Multi Token PR.
+  const totalPriceToDecimals = parseUSDC(priceConfig?.total ?? 0);
   const insufficientBalance =
     balance.status === 'success' &&
     !!priceConfig &&
-    balance.data < +priceConfig.total;
+    balance.data < +totalPriceToDecimals;
 
   const _onSubmit = useCallback(
     (data: CreditAmount) => {
@@ -113,24 +162,25 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
         className="space-y-6 px-2 pt-5"
       >
         <div className="flex items-center justify-between gap-3 font-normal">
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger>
               <Button
-                loading={networkId.isLoading || switchNetwork.isPending}
+                loading={networkId.isLoading || switchChainAndNetwork.isPending}
                 variant="dropdown"
                 className="w-full"
+                type="button"
               >
                 {network?.name ?? 'Select Network'}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              {networks
+              {currentNetworks
                 .filter((n) => n.id !== networkId.data)
                 .map((network) => (
                   <DropdownMenuItem
                     key={network.id}
                     onClick={() => {
-                      switchNetwork.mutate(network.id);
+                      switchChainAndNetwork.mutate(network.id);
                     }}
                   >
                     {network.name}
@@ -220,7 +270,7 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
         <Button
           loading={balance.isLoading}
           disabled={
-            switchNetwork.isPending ||
+            switchChainAndNetwork.isPending ||
             form.formState.isSubmitting ||
             balance.isLoading ||
             insufficientBalance

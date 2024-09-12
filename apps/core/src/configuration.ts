@@ -21,4 +21,6 @@ export default () => ({
   pubNubUserId: process.env.PUBNUB_USER_ID,
   red5StreamManagerHostname: process.env.RED5_STREAM_MANAGER_HOSTNAME,
   zealyXpConversionRate: process.env.ZEALY_XP_CONVERSION_RATE,
+  isKmsLocal: process.env.IS_KMS_LOCAL === 'true',
+  withdrawalSignerKmsKeyId: process.env.WITHDRAWAL_SIGNER_KMS_KEY_ID,
 });

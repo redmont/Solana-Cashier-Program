@@ -60,6 +60,11 @@ docker run -d -p 4222:4222 -p 6222:6222 -p 8222:8222 --rm nats -js -V
 
 NATS_PID=$!
 
+# run KMS
+docker run -d -p 8089:8089 -e PORT=8089 -e KMS_REGION=ap-southeast-1 --mount type=bind,source="$(pwd)"/infra/local-kms,target=/init --rm --name local-kms bobanetwork/local-kms
+
+KMS_PID=$!
+
 cleanup() {
     echo "Stopping DynamoDB Local..."
     docker stop $DYNAMODB_CONTAINER_NAME &>/dev/null
@@ -67,6 +72,8 @@ cleanup() {
     docker stop $(docker ps -q --filter ancestor=redis) &>/dev/null
     echo "Stopping NATS..."
     docker stop $(docker ps -q --filter ancestor=nats) &>/dev/null
+    echo "Stopping KMS..."
+    docker stop local-kms &>/dev/null
 
     exit 0
 }

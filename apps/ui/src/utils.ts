@@ -61,3 +61,9 @@ export function getNormalizedTimeDifference(args: {
 
 export const calculateWinRate = (fighterTotal: number, opponentTotal: number) =>
   (1 + (fighterTotal > 0 ? opponentTotal / fighterTotal : 0)).toFixed(2);
+
+export const formatCompact = (num: number) =>
+  new Intl.NumberFormat(undefined, { notation: 'compact' }).format(num);
+
+export const shortenAddress = (address: string, size = 6) =>
+  address.slice(0, size) + '...' + address.slice(-size);

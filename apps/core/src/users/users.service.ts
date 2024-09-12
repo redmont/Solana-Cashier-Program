@@ -133,7 +133,7 @@ export class UsersService {
       // Credit 1 XP per creditsPerXp bet amount
       xp = Math.floor(betAmountsToProcess / creditsPerXp);
       if (xp > 0) {
-        await this.userModel.update(
+        const updatedUser = await this.userModel.update(
           {
             pk: `user#${userId}`,
             sk: 'user',
@@ -144,9 +144,15 @@ export class UsersService {
               totalNetBetAmountCreditedXp: xp * creditsPerXp,
             },
           },
+          {
+            return: 'item',
+            returnValues: 'ALL_NEW',
+          },
         );
 
-        await this.userProfilesQueryStore.updateUserProfile(userId, { xp });
+        await this.userProfilesQueryStore.updateUserProfile(userId, {
+          xp: updatedUser.xp,
+        });
       }
     }
 

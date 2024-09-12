@@ -10,6 +10,7 @@ import { MatchResultWidget } from '@/components/matchResultWidget';
 import { MatchStreamWidget } from '@/components/matchStreamWidget';
 import { MatchStatusWidget } from '@/components/matchStatusWidget';
 import { ChatWidget } from '@/components/chatWidget/ChatWidget';
+import { MobileFooter } from '@/components/mobileFooter';
 
 export default function Home() {
   const [currentWidget] = useAtom(activeBlock);
@@ -30,6 +31,7 @@ export default function Home() {
         <StakeWidget />
         <ChatWidget />
       </div>
+      <MobileFooter />
     </main>
   );
 }

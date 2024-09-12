@@ -8,4 +8,8 @@ export class GatewayService {
   getBalance(accountId: string) {
     return this.cashierReadModel.getAccountBalance(accountId);
   }
+
+  getWithdrawals(userId: string) {
+    return this.cashierReadModel.getWithdrawals(userId);
+  }
 }

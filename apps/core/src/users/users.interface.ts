@@ -6,7 +6,7 @@ export interface User extends Key {
   matchCount: number;
   totalNetBetAmount: number;
   totalNetBetAmountCreditedXp: number;
-  xp: Number;
+  xp: number;
   totalBetAmount: number;
 }
 

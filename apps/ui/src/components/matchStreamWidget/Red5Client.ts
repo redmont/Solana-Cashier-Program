@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { streamingServerHostname } from '@/config';
+import { streamingServerHostname } from '@/config/env';
 import { WHEPClient } from 'red5pro-webrtc-sdk';
 
 const TIMEOUT_MS = 3000;

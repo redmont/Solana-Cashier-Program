@@ -32,8 +32,9 @@ const config = {
         ring: 'hsl(240, 10%, 3.9%)',
         background: '#010101',
         foreground: '#0E0D15',
+        gold: '#EACC81',
         primary: {
-          DEFAULT: 'hsl(165, 100%, 40%)',
+          DEFAULT: '#4CDC88',
           foreground: 'black',
           50: 'hsl(153, 8%, 98%)',
           100: 'hsl(154, 16%, 95%)',
@@ -85,6 +86,13 @@ const config = {
         sm: 'calc(0.5rem - 4px)',
       },
       keyframes: {
+        'figure-8': {
+          '0%': { transform: 'translate(0, 0)' },
+          '25%': { transform: 'translate(50px, 50px)' },
+          '50%': { transform: 'translate(0, 100px)' },
+          '75%': { transform: 'translate(-50px, 50px)' },
+          '100%': { transform: 'translate(0, 0)' },
+        },
         'accordion-down': {
           from: { height: '0' },
           to: { height: 'var(--radix-accordion-content-height)' },
@@ -98,6 +106,7 @@ const config = {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'spin-slow': 'spin 2s linear infinite',
       },
       clipPath: {
         mypolygon: 'polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - 1rem))',
@@ -106,6 +115,7 @@ const config = {
       },
     },
   },
+  safelist: ['grid-cols-7', 'grid-cols-8'],
   plugins: [require('tailwindcss-animate'), require('tailwind-clip-path')],
 } satisfies Config;
 

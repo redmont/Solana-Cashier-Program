@@ -1,9 +1,7 @@
 import { Test } from '@nestjs/testing';
-import { ConnectedEventStore } from '@castore/core';
 import { ChainEventsService } from './chainEvents.service';
 import { ReadModelService } from 'cashier-read-model';
-import { randomUUID } from 'crypto';
-import { encodePacked, stringToHex } from 'viem';
+import { stringToHex } from 'viem';
 
 describe('ChainEventsService', () => {
   let service: ChainEventsService;
@@ -14,7 +12,7 @@ describe('ChainEventsService', () => {
     const app = await Test.createTestingModule({
       providers: [
         {
-          provide: ConnectedEventStore,
+          provide: 'AccountsConnectedEventStore',
           useValue: {
             getAggregate: jest.fn().mockImplementation(async () => {
               return {
@@ -55,6 +53,7 @@ describe('ChainEventsService', () => {
         ],
         // $0.99 USDC
         data: '0x00000000000000000000000000000000000000000000000000000000000f1b30',
+        eventName: 'DepositReceived',
       });
 
       expect(pushEvent).toHaveBeenCalledWith(
