@@ -29,12 +29,12 @@ parameters for the module in `ignition/modules` folder or the command will promp
 Then run the following command:
 
 ```shell
-pnpm run deploy "<network>"
+pnpm run deploy "<network>" "<contract>"
 ```
 
 Replace `<network>` with the name of the network you want to deploy to.
 
-Then, enable the chain go for dynamic auth provider. Be mindful of the environment you want to enable it for:
+Then, enable the chain for Dynamic auth provider. Be mindful of the environment you want to enable it for:
 https://app.dynamic.xyz/dashboard/chains-and-networks#evm.
 
 Finally, add the chain to `apps/ui/src/config/chains.ts` and `apps/ui/src/config/wagmi.ts` to the environment you want.
