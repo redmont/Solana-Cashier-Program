@@ -103,7 +103,15 @@ export class UserProfilesQueryStoreService {
     const usernames = await this.cache.hmgetBatch(keys, ['username']);
 
     return userIds.reduce((acc, userId, index) => {
-      acc[userId] = usernames[index][1][0];
+      if (
+        usernames[index] &&
+        usernames[index].length > 1 &&
+        usernames[index][1].length > 0
+      ) {
+        acc[userId] = usernames[index][1][0];
+      } else {
+        acc[userId] = null;
+      }
       return acc;
     }, {});
   }
