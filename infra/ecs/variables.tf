@@ -178,6 +178,11 @@ variable "pubnub_secret_key" {
   type        = string
 }
 
+variable "withdrawal_signer_kms_key_arn" {
+  description = "KMS key ARN for withdrawal signer"
+  type        = string
+}
+
 variable "withdrawal_signer_kms_key_id" {
   description = "KMS key ID for withdrawal signer"
   type        = string

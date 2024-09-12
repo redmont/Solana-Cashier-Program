@@ -46,6 +46,16 @@ resource "aws_iam_policy" "core_policy" {
           "s3:PutObject"
         ],
         Resource = [var.media_library_bucket_arn, "${var.media_library_bucket_arn}/*"]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "kms:GetPublicKey",
+          "kms:Sign",
+        ],
+        Resource = [
+          var.withdrawal_signer_kms_key_arn
+        ]
       }
     ]
   })

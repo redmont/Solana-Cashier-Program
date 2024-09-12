@@ -86,5 +86,6 @@ module "ecs" {
   pubnub_subscribe_key = var.pubnub_subscribe_key
   pubnub_secret_key    = var.pubnub_secret_key
 
-  withdrawal_signer_kms_key_id = aws_kms_key.withdrawal_signer_key.key_id
+  withdrawal_signer_kms_key_arn = aws_kms_key.withdrawal_signer_key.arn
+  withdrawal_signer_kms_key_id  = aws_kms_key.withdrawal_signer_key.key_id
 }
