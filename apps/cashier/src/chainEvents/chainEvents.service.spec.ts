@@ -25,6 +25,10 @@ describe('ChainEventsService', () => {
           },
         },
         {
+          provide: 'WithdrawalsConnectedEventStore',
+          useValue: {},
+        },
+        {
           provide: ReadModelService,
           useValue: {},
         },
