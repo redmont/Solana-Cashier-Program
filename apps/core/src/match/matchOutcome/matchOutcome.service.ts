@@ -7,8 +7,11 @@ import {
 import { AbstractMatchOutcomeService } from './abstractMatchOutcomeService';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { ConfigService } from '@nestjs/config';
+import { Logger } from '@nestjs/common';
 
 export class MatchOutcomeService implements AbstractMatchOutcomeService {
+  private readonly logger = new Logger(MatchOutcomeService.name);
+
   priceDataTableName: string;
 
   constructor(
@@ -46,16 +49,42 @@ export class MatchOutcomeService implements AbstractMatchOutcomeService {
       pools,
     });
 
-    const ticket = await croupier.generateTicket({
-      timestamp: {
-        from,
-        to,
-      },
-    });
+    try {
+      const ticket = await croupier.generateTicket({
+        timestamp: {
+          from,
+          to,
+        },
+      });
 
-    return {
-      winner: ticket.winner,
-      priceDelta: ticket.data.priceDelta,
-    };
+      return {
+        winner: ticket.winner,
+        priceDelta: ticket.data.priceDelta,
+      };
+    } catch (e) {
+      const poolSymbols = pools.map((pool) => pool.symbol).join(', ');
+      this.logger.error(
+        `Error generating croupier ticket for pools '${poolSymbols}'`,
+        e,
+      );
+
+      const randomWinner = pools[Math.floor(Math.random() * pools.length)];
+      const priceDelta = pools.reduce((acc, curr) => {
+        acc[curr.symbol] = {
+          absolute: 0,
+          relative: 0,
+        };
+        return acc;
+      }, {});
+
+      this.logger.warn(
+        `Falling back to random winner '${randomWinner.symbol}'`,
+      );
+
+      return {
+        winner: randomWinner.symbol,
+        priceDelta,
+      };
+    }
   }
 }
