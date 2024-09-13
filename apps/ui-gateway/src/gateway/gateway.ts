@@ -74,6 +74,8 @@ import { emitInternalEvent, UserConnectedEvent } from '@/internalEvents';
 import { StreamAuthService } from '@/streamAuth/streamAuth.service';
 import { ChatAuthService } from '@/chatAuth/chatAuth.service';
 import { GatewayService } from './gateway.service';
+import axios from 'axios';
+import { getLead, registerLead, updateLead } from '@/referral/firstPromoter';
 
 @WebSocketGateway()
 export class Gateway
@@ -143,17 +145,53 @@ export class Gateway
           decodedToken.verified_credentials.length > 0
         ) {
           // Token from dynamic.xyz
-          const { username } = decodedToken;
+          const { username, team = null, newUser } = decodedToken;
           const { address } = decodedToken.verified_credentials[0];
-
           const { userId } = await sendBrokerCommand<
             EnsureUserIdMessage,
             EnsureUserIdMessageReturnType
           >(this.broker, new EnsureUserIdMessage(address));
 
+          const userStore =
+            await this.userProfilesQueryStore.getUserProfile(userId);
+
+          let canonicalTeam = userStore?.team ?? null;
+
+          if (!userStore?.team && team) {
+            try {
+              const res = await registerLead({
+                apiKey: this.configService.get<string>('fpApiKey'),
+                uid: userId,
+                ref_id: team,
+                ip: ipAddress,
+              });
+              canonicalTeam = team;
+            } catch (error) {
+              this.logger.error(
+                'Error signing up lead:',
+                error.response?.data || error.message,
+              );
+            }
+          } else if (userStore?.team !== team && team) {
+            try {
+              const res = await updateLead({
+                apiKey: this.configService.get<string>('fpApiKey'),
+                uid: userId,
+                updates: { ref_id: team },
+              });
+              canonicalTeam = team;
+            } catch (error) {
+              this.logger.error(
+                'Error updating lead:',
+                error.response?.data || error.message,
+              );
+            }
+          }
+
           await this.userProfilesQueryStore.updateUserProfile(userId, {
             username,
             primaryWalletAddress: address,
+            team: canonicalTeam,
           });
 
           client.data.authorizedUser = {

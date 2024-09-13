@@ -1,6 +1,14 @@
 import { getPrice } from '@/components/cashier/utils';
 import { MINIMUM_USDC_WITHDRAWAL } from '@/config/withdrawals';
 import { atom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
+
+export const userReferrerAtom = atomWithStorage<string | null>(
+  'fp_ref',
+  null,
+  undefined,
+  { getOnInit: true },
+);
 
 export const accountAddressAtom = atom<`0x${string}` | undefined>();
 export const balanceAtom = atom<number | undefined>();

@@ -33,6 +33,7 @@ export const WalletProvider: FC<ChildContainerProps> = ({ children }) => {
             posthog.reset();
           },
         },
+        handlers: {},
       }}
     >
       <WagmiProvider config={config}>

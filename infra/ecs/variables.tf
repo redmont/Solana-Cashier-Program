@@ -187,3 +187,8 @@ variable "withdrawal_signer_kms_key_id" {
   description = "KMS key ID for withdrawal signer"
   type        = string
 }
+
+variable "fp_api_key" {
+  description = "First Promoter API key"
+  type        = string
+}

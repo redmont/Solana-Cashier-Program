@@ -129,7 +129,7 @@ jobs:
           matrix-step-name: build
 
     outputs:
-      result: "${{ steps.read.outputs.result }}"
+      result: '${{ steps.read.outputs.result }}'
 
   deploy-terraform:
     runs-on: ubuntu-latest
@@ -210,6 +210,7 @@ jobs:
           stream_auth_parent_token_secret = "${{ secrets.STREAM_AUTH_PARENT_TOKEN_SECRET }}"
           zealy_webhook_secret            = "${{ secrets.ZEALY_WEBHOOK_SECRET }}"
           helius_secret_key               = "${{ secrets.HELIUS_SECRET_KEY }}"
+          fp_api_key                      = "${{ secrets.FP_API_KEY }}"
           EOF
 
       - name: Apply Terraform

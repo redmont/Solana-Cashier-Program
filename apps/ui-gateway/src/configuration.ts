@@ -27,4 +27,5 @@ export default () => ({
   pubNubSubscribeKey: process.env.PUBNUB_SUBSCRIBE_KEY,
   pubNubSecretKey: process.env.PUBNUB_SECRET_KEY,
   pubNubUserId: process.env.PUBNUB_USER_ID,
+  fpApiKey: process.env.FP_API_KEY,
 });
