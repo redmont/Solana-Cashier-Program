@@ -142,12 +142,14 @@ describe('RosterService', () => {
             ticker: 'ABC',
             displayName: 'Fighter 1',
             imagePath: '/fighter1.jpg',
+            enabled: true,
           },
           {
             codeName: 'fighter2',
             ticker: 'DEF',
             displayName: 'Fighter 2',
             imagePath: '/fighter2.jpg',
+            enabled: true,
           },
         ];
       });
@@ -178,8 +180,8 @@ describe('RosterService', () => {
       });
       jest.spyOn(fighterProfilesService, 'list').mockImplementationOnce(() => {
         return [
-          { codeName: 'fighter1', ticker: 'ABC' },
-          { codeName: 'fighter1', ticker: 'DEF' },
+          { codeName: 'fighter1', ticker: 'ABC', enabled: true },
+          { codeName: 'fighter1', ticker: 'DEF', enabled: true },
         ];
       });
 
@@ -198,8 +200,8 @@ describe('RosterService', () => {
       });
       jest.spyOn(fighterProfilesService, 'list').mockImplementationOnce(() => {
         return [
-          { codeName: 'fighter1', ticker: 'ABC' },
-          { codeName: 'fighter2', ticker: 'ABC' },
+          { codeName: 'fighter1', ticker: 'ABC', enabled: true },
+          { codeName: 'fighter2', ticker: 'ABC', enabled: true },
         ];
       });
 
@@ -218,8 +220,8 @@ describe('RosterService', () => {
       });
       jest.spyOn(fighterProfilesService, 'list').mockImplementationOnce(() => {
         return [
-          { codeName: 'fighter1', ticker: 'ABC' },
-          { codeName: 'fighter1', ticker: 'DEF' },
+          { codeName: 'fighter1', ticker: 'ABC', enabled: true },
+          { codeName: 'fighter1', ticker: 'DEF', enabled: true },
         ];
       });
 
@@ -238,8 +240,8 @@ describe('RosterService', () => {
       });
       jest.spyOn(fighterProfilesService, 'list').mockImplementationOnce(() => {
         return [
-          { codeName: 'fighter1', ticker: 'ABC' },
-          { codeName: 'fighter2', ticker: 'ABC' },
+          { codeName: 'fighter1', ticker: 'ABC', enabled: true },
+          { codeName: 'fighter2', ticker: 'ABC', enabled: true },
         ];
       });
 

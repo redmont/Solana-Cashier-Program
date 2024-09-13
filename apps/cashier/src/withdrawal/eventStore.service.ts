@@ -2,7 +2,11 @@ import { EventStore } from '@castore/core';
 import { ConfigService } from '@nestjs/config';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBSingleTableEventStorageAdapter } from '@castore/event-storage-adapter-dynamodb';
-import { withdrawalCreatedEventType } from './eventTypes';
+import {
+  withdrawalCreatedEventType,
+  withdrawalCompletedUnconfirmedEventType,
+  withdrawalCompletedConfirmedEventType,
+} from './eventTypes';
 import { Injectable } from '@nestjs/common';
 import { withdrawalReducer } from './reducer';
 
@@ -24,7 +28,11 @@ export class WithdrawalEventStoreService {
 
     this.eventStore = new EventStore({
       eventStoreId: 'WITHDRAWALS',
-      eventTypes: [withdrawalCreatedEventType],
+      eventTypes: [
+        withdrawalCreatedEventType,
+        withdrawalCompletedUnconfirmedEventType,
+        withdrawalCompletedConfirmedEventType,
+      ],
       reducer: withdrawalReducer,
       eventStorageAdapter: eventStorageAdapter,
     });

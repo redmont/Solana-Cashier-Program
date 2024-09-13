@@ -39,8 +39,9 @@ export class ChainEventsService {
 
   constructor(
     @Inject('AccountsConnectedEventStore')
-    private readonly eventStore: ConnectedEventStore,
-    private readonly readModelService: ReadModelService,
+    private readonly accountsEventStore: ConnectedEventStore,
+    @Inject('WithdrawalsConnectedEventStore')
+    private readonly withdrawalsEventStore: ConnectedEventStore,
   ) {}
 
   async processDeposit(event: ChainEvent) {
@@ -92,14 +93,14 @@ export class ChainEventsService {
       `Deposited ${creditAmount} credits for ${amount} to '${accountId}'`,
     );
 
-    await creditAccountCommand(this.eventStore).handler(
+    await creditAccountCommand(this.accountsEventStore).handler(
       {
         accountId,
         amount: creditAmount,
         reason: 'CHAIN_DEPOSIT',
         transactionHash,
       },
-      [this.eventStore],
+      [this.accountsEventStore],
       {},
     );
   }
@@ -138,25 +139,17 @@ export class ChainEventsService {
       topics: event.topics,
     });
 
-    const accounts = await this.readModelService.getAccountByWalletAddress(
-      withdrawalPaidOutEvent.args.walletAddress,
+    const receiptId = withdrawalPaidOutEvent.args.receiptId.replace('0x', '');
+
+    await markWithdrawalAsCompleteCommand(this.withdrawalsEventStore).handler(
+      {
+        receiptId,
+        transactionHash: event.transactionHash,
+        confirmed: true,
+      },
+      [this.withdrawalsEventStore],
+      {},
     );
-    if (accounts?.length > 0) {
-      const accountId = accounts[0].sk.split('#')[1];
-
-      const receiptId = withdrawalPaidOutEvent.args.receiptId.replace('0x', '');
-
-      await markWithdrawalAsCompleteCommand(this.eventStore).handler(
-        {
-          accountId,
-          receiptId,
-          transactionHash: event.transactionHash,
-          confirmed: true,
-        },
-        [this.eventStore],
-        {},
-      );
-    }
   }
 
   async processEvent(event: ChainEvent) {
@@ -186,13 +179,13 @@ export class ChainEventsService {
       `Deposited ${creditAmount} credits from solana chain for ${usdcAmount} USDC to walletAddress: ${walletAddress}: userId: ${accountId}`,
     );
 
-    await creditAccountCommand(this.eventStore).handler(
+    await creditAccountCommand(this.accountsEventStore).handler(
       {
         accountId,
         amount: creditAmount,
         reason: 'CHAIN_DEPOSIT',
       },
-      [this.eventStore],
+      [this.accountsEventStore],
       {},
     );
   }
