@@ -94,11 +94,10 @@ export default function Tournament() {
       return null;
     }
 
-    const { prizes = [], displayName, endDate } = tournament ?? {};
+    const { prizes = [], displayName } = tournament ?? {};
 
     return {
       prizes,
-      endDateTime: endDate,
       title: displayName ?? '',
     };
   }, [tournament]);

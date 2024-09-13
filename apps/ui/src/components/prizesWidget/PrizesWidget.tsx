@@ -1,7 +1,6 @@
 'use client';
 
 import { FC, useState } from 'react';
-import { WidgetCountdown } from '@/components/widgetCountdown';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -11,13 +10,9 @@ export interface PrizesWidgetProps {
     description: string;
     imageUrl?: string;
   }[];
-  endDateTime: string | number;
 }
 
-export const PrizesWidget: FC<PrizesWidgetProps> = ({
-  endDateTime,
-  prizes,
-}) => {
+export const PrizesWidget: FC<PrizesWidgetProps> = ({ prizes }) => {
   const [showPrev, setShowPrev] = useState(false);
 
   return (
@@ -25,11 +20,6 @@ export const PrizesWidget: FC<PrizesWidgetProps> = ({
       <div className="widget-header">
         <div className="widget-header-section">
           <div className="widget-title">Tournament Prizes</div>
-
-          <div className="widget-header-right">
-            <div>Tournament ends:</div>
-            <WidgetCountdown targetDateTime={endDateTime} />
-          </div>
         </div>
 
         <p className="flex">
