@@ -8,4 +8,5 @@ export default () => ({
   websocketPort: parseInt(process.env.WS_PORT, 10),
   redisHost: process.env.REDIS_HOST,
   redisPort: process.env.REDIS_PORT,
+  fpApiKey: process.env.FP_API_KEY,
 });

@@ -30,6 +30,7 @@
     "@nestjs/platform-express": "^10.3.7",
     "@nestjs/platform-socket.io": "^10.3.7",
     "@nestjs/websockets": "^10.3.7",
+    "axios": "^1.6.8",
     "cashier-messages": "workspace:*",
     "cashier-read-model": "workspace:*",
     "dotenv": "^16.4.5",

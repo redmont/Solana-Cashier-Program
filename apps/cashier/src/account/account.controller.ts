@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { Controller, Inject, Logger } from '@nestjs/common';
 import { ConnectedEventStore } from '@castore/core';
@@ -22,6 +23,7 @@ import {
   InsufficientBalanceError,
   resetAccountBalanceCommand,
 } from '@/commands';
+import { ConfigService } from '@nestjs/config';
 
 @Controller()
 export class AccountController {
@@ -31,6 +33,7 @@ export class AccountController {
     @Inject('AccountsConnectedEventStore')
     private readonly eventStore: ConnectedEventStore,
     private readonly readModelService: ReadModelService,
+    private readonly configService: ConfigService,
   ) {}
 
   @MessagePattern({ cmd: EnsureAccountExistsMessage.messageType })
@@ -101,6 +104,29 @@ export class AccountController {
         this.logger.error('Error debiting account', e);
         return { success: false, error: e.message };
       }
+    }
+    try {
+      const apiKey = this.configService.get<string>('fpApiKey');
+      const acc = await this.readModelService.getAccount(accountId);
+      const event_id = acc.lastUpdated + acc.balance;
+      const usdAmount = (amount * 0.000099 * 100).toString(); // in cents
+      const res = await axios.post(
+        'https://firstpromoter.com/api/v1/track/signup',
+        new URLSearchParams({
+          uid: accountId,
+          event_id,
+          amount: usdAmount,
+          currency: 'USD',
+        }),
+        {
+          headers: {
+            'x-api-key': apiKey,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        },
+      );
+    } catch (e) {
+      this.logger.error('Error sending first promoter event', e);
     }
 
     return { success: true };
