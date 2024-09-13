@@ -144,10 +144,12 @@ export class ChainEventsService {
     if (accounts?.length > 0) {
       const accountId = accounts[0].sk.split('#')[1];
 
+      const receiptId = withdrawalPaidOutEvent.args.receiptId.replace('0x', '');
+
       await markWithdrawalAsCompleteCommand(this.eventStore).handler(
         {
           accountId,
-          receiptId: withdrawalPaidOutEvent.args.receiptId,
+          receiptId,
           transactionHash: event.transactionHash,
           confirmed: true,
         },
