@@ -4,6 +4,8 @@ export interface FighterProfile extends Key {
   codeName: string;
   displayName: string;
   ticker: string;
+  tokenAddress: string;
+  tokenChainId: string;
   imagePath: string;
   model: {
     head: string;

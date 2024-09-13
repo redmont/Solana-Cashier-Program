@@ -7,5 +7,7 @@ export class UpdateFighterProfileRequest {
     legs: string;
   };
   ticker: string;
+  tokenAddress: string;
+  tokenChainId: string;
   enabled: boolean;
 }

@@ -137,6 +137,8 @@ export class QueryStoreService implements OnModuleInit {
       codeName: string;
       displayName: string;
       ticker: string;
+      tokenAddress?: string;
+      tokenChainId?: string;
       imagePath: string;
     }[];
     state: string;

@@ -8,5 +8,7 @@ export class CreateFighterProfileRequest {
     legs: string;
   };
   ticker: string;
+  tokenAddress: string;
+  tokenChainId: string;
   enabled: boolean;
 }

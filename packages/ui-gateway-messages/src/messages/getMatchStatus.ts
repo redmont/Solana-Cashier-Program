@@ -8,6 +8,8 @@ export interface GetMatchStatusMessageResponse extends MessageResponse {
     displayName: string;
     codeName: string;
     ticker: string;
+    tokenAddress?: string;
+    tokenChainId?: string;
     imageUrl: string;
   }[];
   bets: any[];

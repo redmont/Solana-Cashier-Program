@@ -12,6 +12,8 @@ export const FighterProfileSchema = new Schema({
   codeName: { type: String, required: true },
   displayName: { type: String, required: true },
   ticker: { type: String, required: true },
+  tokenAddress: String,
+  tokenChainId: String,
   imagePath: { type: String, required: true },
   model: {
     type: Object,

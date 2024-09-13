@@ -21,6 +21,9 @@ interface CreateFighterProfileRequest {
     torso: string;
     legs: string;
   };
+  ticker: string;
+  tokenAddress: string;
+  tokenChainId: string;
   enabled: boolean;
 }
 
@@ -33,6 +36,9 @@ interface UpdateFighterProfileRequest {
     torso: string;
     legs: string;
   };
+  ticker: string;
+  tokenAddress: string;
+  tokenChainId: string;
   enabled: boolean;
 }
 
@@ -144,6 +150,8 @@ const EditFighterProfile = ({ params }: { params: { codename: string } }) => {
         codeName: { type: 'string', title: 'Code name' },
         displayName: { type: 'string', title: 'Display name' },
         ticker: { type: 'string', title: 'Ticker' },
+        tokenAddress: { type: 'string', title: 'Token address' },
+        tokenChainId: { type: 'string', title: 'Token chain ID (CAIP-2)' },
         imageUrl: { type: 'string', title: '' },
         imagePath: { type: 'string', title: 'Image' },
         enabled: { type: 'boolean', title: 'Enabled' },

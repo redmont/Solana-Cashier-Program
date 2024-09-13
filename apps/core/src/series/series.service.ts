@@ -18,7 +18,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Series } from './series.interface';
 import { FightType } from './seriesConfig.model';
 import { FighterProfilesService } from '@/fighterProfiles/fighterProfiles.service';
-import { TournamentService } from '@/tournament/tournament.service';
 import {
   BetPlacedActivityEvent,
   PoolClosedActivityEvent,
@@ -45,7 +44,6 @@ export class SeriesService {
     private readonly matchManagementService: MatchManagementService,
     private readonly gatewayManagerService: GatewayManagerService,
     private readonly fighterProfilesService: FighterProfilesService,
-    private readonly tournamentService: TournamentService,
     private readonly eventEmitter: EventEmitter2,
     private readonly broker: NatsJetStreamClientProxy,
   ) {}
@@ -70,34 +68,7 @@ export class SeriesService {
         persistedState.value.runMatch = 'retryAllocation';
       }
 
-      /*
-      const codeName = series.sk;
-
-      console.log('Initialising persisted state', persistedState);
-
-      
-      await this.initSeries(series.sk, series.displayName, persistedState);
-      if (persistedState.value?.runMatch) {
-        this.instanceMatches.set(codeName, persistedState.context.matchId);
-      }*/
       await this.initSeries(series.sk, series.displayName, undefined);
-
-      // Jump-start
-      /*
-      if (persistedState.value?.runMatch === 'retryAllocation') {
-        this.sendEvent(codeName, 'RETRY_ALLOCATION');
-      } else if (persistedState.value?.runMatch?.bettingOpen) {
-        this.sendEvent(codeName, 'REOPEN_BETTING');
-      } else if (persistedState.value?.runMatch === 'matchInProgress') {
-        // In this case we don't have a server, so we just distribute winnings
-        this.sendEvent(codeName, 'RUN_MATCH.FINISH_MATCH');
-      } else if (persistedState.value === 'runMatchAfterDelay') {
-        this.sendEvent(codeName, 'RUN');
-      } else if (
-        persistedState.value.runMatch?.bettingClosed === 'onStateChange'
-      ) {
-        this.sendEvent(codeName, 'RUN');
-      }*/
     }
   }
 
@@ -174,10 +145,19 @@ export class SeriesService {
         },
         onStateChange: async (state, context) => {
           const fighters = context.config.fighters.map(
-            ({ codeName, displayName, ticker, imagePath }) => ({
+            ({
               codeName,
               displayName,
               ticker,
+              tokenAddress,
+              tokenChainId,
+              imagePath,
+            }) => ({
+              codeName,
+              displayName,
+              ticker,
+              tokenAddress,
+              tokenChainId,
               imagePath,
             }),
           );
