@@ -539,6 +539,13 @@ $paginatorElementMargin: 0.143rem !default;
 $paginatorElementPadding: 0 !default;
 
 //table
+$tableWrapperPadding: 0 16px 16px 16px !default;
+$tableWrapperBorder: 1px solid $shade700 !default;
+$tableWrapperBorderSpacing: 0 0.5rem !default;
+$tableWrapperBorderRadius: 4px !default;
+$tableWrapperBorderRadius: 4px !default;
+$tableWrapperBackground: #0E0D15 !default;
+
 $tableHeaderBorder: 1px solid $shade700 !default;
 $tableHeaderBorderWidth: 0 0 1px 0 !default;
 $tableHeaderBg: transparent !default;
@@ -546,19 +553,19 @@ $tableHeaderTextColor: $shade200 !default;
 $tableHeaderFontWeight: 500 !default;
 $tableHeaderPadding: 0.571rem 0.571rem !default;
 
-$tableHeaderCellPadding: 0.571rem 0.571rem !default;
+$tableHeaderCellPadding: 0.571rem 0.571rem 1rem  0.571rem !default;
 $tableHeaderCellBg: transparent !default;
 $tableHeaderCellTextColor: $shade200 !default;
 $tableHeaderCellFontWeight: 500 !default;
 $tableHeaderCellBorder: 1px solid $shade700 !default;
 $tableHeaderCellBorderWidth: 0 0 1px 0 !default;
-$tableHeaderCellHoverBg: $shade500 !default;
+$tableHeaderCellHoverBg: transparent !default; //$shade500 !default;
 $tableHeaderCellTextHoverColor: $shade200 !default;
 $tableHeaderCellIconColor: $shade200 !default;
 $tableHeaderCellIconHoverColor: $shade200 !default;
-$tableHeaderCellHighlightBg: $shade600 !default;
+$tableHeaderCellHighlightBg: transparent !default;
 $tableHeaderCellHighlightTextColor: $shade200 !default;
-$tableHeaderCellHighlightHoverBg: $shade600 !default;
+$tableHeaderCellHighlightHoverBg: transparent !default; //$shade600 !default;
 $tableHeaderCellHighlightTextHoverColor: $shade200 !default;
 $tableSortableColumnBadgeSize: 1.143rem !default;
 
@@ -574,8 +581,8 @@ $tableBodyRowHighlightBg: linear-gradient(
   ),
   rgba(255, 255, 255, 0.05);
 $tableBodyRowHighlightTextColor: $shade000;
-$tableBodyCellBorder: 1px solid $shade700 !default;
-$tableBodyCellBorderWidth: 0 0 0 0 !default;
+$tableBodyCellBorder: 1px solid #4CDC8814 !default;
+$tableBodyCellBorderWidth: 1 !default;
 $tableBodyCellPadding: 0.429rem 0.571rem !default;
 
 $tableFooterCellPadding: 0.571rem 0.571rem !default;

@@ -4,6 +4,7 @@ import { DynamooseModule } from 'nestjs-dynamoose';
 import { ConfigService } from '@nestjs/config';
 import { FighterProfileSchema } from './fighterProfile.schema';
 import { FighterProfilesPersistenceService } from './fighterProfilesPersistence.service';
+import { MatchModule } from '@/match/match.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { FighterProfilesPersistenceService } from './fighterProfilesPersistence.
         inject: [ConfigService],
       },
     ]),
+    MatchModule,
   ],
   providers: [FighterProfilesPersistenceService, FighterProfilesService],
   exports: [FighterProfilesService],

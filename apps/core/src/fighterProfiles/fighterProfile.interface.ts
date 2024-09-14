@@ -13,4 +13,8 @@ export interface FighterProfile extends Key {
     legs: string;
   };
   enabled: boolean;
+  showOnRoster: boolean;
+  fightCount: number;
+  winningFightCount: number;
+  wageredSum: number;
 }

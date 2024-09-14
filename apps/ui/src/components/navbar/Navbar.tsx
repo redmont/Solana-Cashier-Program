@@ -56,6 +56,7 @@ export const Navbar = () => {
     <>
       <Link {...linkProps('/')}>Play</Link>
       <Link {...linkProps('/tournament')}>Tournament</Link>
+      <Link {...linkProps('/fighters')}>Fighters</Link>
       <Link
         {...linkProps('https://forms.gle/5uQjMrR419w4cT5w9')}
         target="_blank"

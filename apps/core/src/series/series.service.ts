@@ -123,7 +123,7 @@ export class SeriesService {
         distributeWinnings: async (
           codeName,
           matchId,
-          fighter,
+          winningFighter,
           priceDelta,
           config,
           startTime,
@@ -131,10 +131,21 @@ export class SeriesService {
           await this.matchBettingService.distributeWinnings(
             codeName,
             matchId,
-            fighter,
+            winningFighter,
             priceDelta,
             config,
             startTime,
+          );
+
+          const fighterCodeNames = config.fighters.map(
+            (fighter) => fighter.codeName,
+          );
+          const winningFighterCodename = winningFighter.codeName;
+
+          await this.fighterProfilesService.trackMatch(
+            matchId,
+            fighterCodeNames,
+            winningFighterCodename,
           );
         },
         resetBets: async (codeName) => {

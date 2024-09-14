@@ -45,7 +45,8 @@ import {
   GetWithdrawalsMessage as GetWithdrawalsUiGatewayMessage,
   GetWithdrawalsMessageResponse as GetWithdrawalsUiGatewayMessageResponse,
   MarkWithdrawalAsCompleteMessage as MarkWithdrawalAsCompleteUiGatewayMessage,
-  MarkWithdrawalAsCompleteMessageResponse as MarkWithdrawalAsCompleteUiGatewayMessageResponse,
+  GetFightersMessage,
+  GetFightersMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
@@ -65,6 +66,7 @@ import {
   QueryStoreService,
   UserProfilesQueryStoreService,
   TournamentQueryStoreService,
+  FighterProfilesQueryStoreService,
 } from 'query-store';
 import { IJwtAuthService } from '@/jwtAuth/jwtAuth.interface';
 import { ConfigService } from '@nestjs/config';
@@ -74,8 +76,7 @@ import { emitInternalEvent, UserConnectedEvent } from '@/internalEvents';
 import { StreamAuthService } from '@/streamAuth/streamAuth.service';
 import { ChatAuthService } from '@/chatAuth/chatAuth.service';
 import { GatewayService } from './gateway.service';
-import axios from 'axios';
-import { getLead, registerLead, updateLead } from '@/referral/firstPromoter';
+import { registerLead, updateLead } from '@/referral/firstPromoter';
 
 @WebSocketGateway()
 export class Gateway
@@ -106,6 +107,7 @@ export class Gateway
     private readonly chatAuthService: ChatAuthService,
     private readonly tournamentQueryStore: TournamentQueryStoreService,
     private readonly userProfilesQueryStore: UserProfilesQueryStoreService,
+    private readonly fighterProfilesQueryStore: FighterProfilesQueryStoreService,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
   }
@@ -188,11 +190,18 @@ export class Gateway
             }
           }
 
-          await this.userProfilesQueryStore.updateUserProfile(userId, {
+          const updateValues: Record<string, any> = {
             username,
             primaryWalletAddress: address,
-            team: canonicalTeam,
-          });
+          };
+          if (canonicalTeam) {
+            updateValues.team = canonicalTeam;
+          }
+
+          await this.userProfilesQueryStore.updateUserProfile(
+            userId,
+            updateValues,
+          );
 
           client.data.authorizedUser = {
             userId,
@@ -693,6 +702,24 @@ export class Gateway
     );
 
     return { success };
+  }
+
+  @SubscribeMessage(GetFightersMessage.messageType)
+  public async getFighterProfiles(): Promise<GetFightersMessageResponse> {
+    const fighterProfiles =
+      await this.fighterProfilesQueryStore.getFighterProfiles();
+
+    const fighters = fighterProfiles
+      .filter((fighter) => fighter.showOnRoster)
+      .map((fighter) => ({
+        ...fighter,
+        imageUrl: this.getMediaUrl(fighter.imagePath),
+      }));
+
+    return {
+      success: true,
+      fighters,
+    };
   }
 
   public publish<T extends GatewayEvent>(data: T) {

@@ -27,4 +27,8 @@ export const FighterProfileSchema = new Schema({
     type: Boolean,
     required: true,
   },
+  showOnRoster: Boolean,
+  fightCount: Number,
+  winningFightCount: Number,
+  wageredSum: Number,
 });

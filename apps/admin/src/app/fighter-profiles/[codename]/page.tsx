@@ -25,6 +25,7 @@ interface CreateFighterProfileRequest {
   tokenAddress: string;
   tokenChainId: string;
   enabled: boolean;
+  showOnRoster: boolean;
 }
 
 interface UpdateFighterProfileRequest {
@@ -40,6 +41,7 @@ interface UpdateFighterProfileRequest {
   tokenAddress: string;
   tokenChainId: string;
   enabled: boolean;
+  showOnRoster: boolean;
 }
 
 const MediaPreviewWidget = ({ value }: WidgetProps) => {
@@ -155,6 +157,7 @@ const EditFighterProfile = ({ params }: { params: { codename: string } }) => {
         imageUrl: { type: 'string', title: '' },
         imagePath: { type: 'string', title: 'Image' },
         enabled: { type: 'boolean', title: 'Enabled' },
+        showOnRoster: { type: 'boolean', title: 'Show on roster' },
         model: {
           type: 'object',
           title: 'Model',

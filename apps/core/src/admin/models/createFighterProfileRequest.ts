@@ -11,4 +11,5 @@ export class CreateFighterProfileRequest {
   tokenAddress: string;
   tokenChainId: string;
   enabled: boolean;
+  showOnRoster: boolean;
 }
