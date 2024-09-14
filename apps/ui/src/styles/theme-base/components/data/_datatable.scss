@@ -1,3 +1,11 @@
+.p-datatable-table {
+    padding: $tableWrapperPadding;
+    border: $tableWrapperBorder;
+    border-radius: $tableWrapperBorderRadius;
+    background: $tableWrapperBackground;
+    border-spacing: $tableWrapperBorderSpacing !important;
+}
+
 .p-datatable {
     .p-paginator-top {
         border-width: $tableTopPaginatorBorderWidth;
@@ -28,6 +36,22 @@
     }
 
     .p-datatable-thead > tr > th {
+        text-align: $tableCellContentAlignment;
+        padding: $tableHeaderCellPadding;
+        font-weight: $tableHeaderCellFontWeight;
+        color: $tableHeaderCellTextColor;
+        background: $tableHeaderCellBg;
+        transition: $listItemTransition;
+    }   
+    
+    .p-datatable-tbody > tr {
+        &:hover {
+            background: $tableBodyRowHoverBg;
+            color: $tableBodyRowTextHoverColor;
+        }
+    }
+
+    .p-datatable-tbody > tr > td {
         text-align: $tableCellContentAlignment;
         padding: $tableHeaderCellPadding;
         border: $tableHeaderCellBorder;
@@ -103,11 +127,21 @@
             color: $tableBodyRowTextColor;
             transition: $listItemTransition;
 
+
             > td {
                 text-align: $tableCellContentAlignment;
-                border: $tableBodyCellBorder;
+                border-top: $tableBodyCellBorder;
+                border-bottom: $tableBodyCellBorder;
                 border-width: $tableBodyCellBorderWidth;
                 padding: $tableBodyCellPadding;
+
+                &:first-child {
+                    border-left: $tableBodyCellBorder;
+                } 
+
+                &:last-child {
+                    border-right: $tableBodyCellBorder;
+                }
 
                 .p-row-toggler,
                 .p-row-editor-init,
@@ -131,7 +165,7 @@
             }
 
             &.p-highlight {
-                background: $highlightBg;
+                outline: 1px solid $primary500;
                 color: $highlightTextColor;
             }
 

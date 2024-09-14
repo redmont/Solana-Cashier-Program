@@ -4,6 +4,8 @@ export interface FighterProfile extends Key {
   codeName: string;
   displayName: string;
   ticker: string;
+  tokenAddress: string;
+  tokenChainId: string;
   imagePath: string;
   model: {
     head: string;
@@ -11,4 +13,8 @@ export interface FighterProfile extends Key {
     legs: string;
   };
   enabled: boolean;
+  showOnRoster: boolean;
+  fightCount: number;
+  winningFightCount: number;
+  wageredSum: number;
 }

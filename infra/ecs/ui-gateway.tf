@@ -123,6 +123,9 @@ locals {
       },
       {
         name = "NODE_OPTIONS", value = "--max-old-space-size=1536"
+      },
+      {
+        name = "FP_API_KEY", value = var.fp_api_key
       }
     ]
   }

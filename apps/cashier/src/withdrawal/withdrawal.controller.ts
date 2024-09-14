@@ -74,12 +74,11 @@ export class WithdrawalController {
   })
   async handleMarkWithdrawalAsComplete(
     @Payload()
-    { accountId, receiptId, transactionHash }: MarkWithdrawalAsCompleteMessage,
+    { receiptId, transactionHash }: MarkWithdrawalAsCompleteMessage,
   ) {
     try {
       await markWithdrawalAsCompleteCommand(this.withdrawalsEventStore).handler(
         {
-          accountId,
           receiptId,
           transactionHash,
           confirmed: false,

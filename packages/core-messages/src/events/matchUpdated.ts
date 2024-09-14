@@ -12,6 +12,8 @@ export class MatchUpdatedEvent extends BrokerEvent {
       displayName: string;
       codeName: string;
       ticker: string;
+      tokenAddress?: string;
+      tokenChainId?: string;
       imagePath: string;
     }[],
     public readonly state: string,

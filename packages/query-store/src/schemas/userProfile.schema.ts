@@ -12,4 +12,5 @@ export const UserProfileSchema = new Schema({
     required: true,
   },
   xp: Number,
+  team: String,
 });

@@ -9,3 +9,4 @@ export * from './tournament.interface';
 export * from './tournamentEntry.interface';
 export * from './userMatch.interface';
 export * from './userMatchResult.interface';
+export * from './fighterProfile.interface';

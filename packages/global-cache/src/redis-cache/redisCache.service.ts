@@ -34,10 +34,16 @@ export class RedisCacheService implements OnModuleInit, OnModuleDestroy {
     return await this.client.get(key);
   }
 
+  /**
+   * Set a key-value pair
+   */
   async set(key: string, value: string): Promise<void> {
     await this.client.set(key, value);
   }
 
+  /**
+   * Set multiple key-value pairs
+   */
   async hset(key: string, value: any): Promise<void> {
     await this.client.hset(key, value);
   }
@@ -46,6 +52,10 @@ export class RedisCacheService implements OnModuleInit, OnModuleDestroy {
     return this.client.hgetall(key);
   }
 
+  /**
+   * Set multiple key-value pairs
+   * @deprecated Use `hset` instead
+   */
   async hmset(key: string, value: any): Promise<void> {
     await this.client.hmset(key, value);
   }
@@ -103,9 +113,29 @@ export class RedisCacheService implements OnModuleInit, OnModuleDestroy {
     );
   }
 
-  async getAllItems(prefix: string): Promise<any[]> {
+  /**
+   * Add item to list, for use with `getListItems`.
+   * Item will be serialized to JSON.
+   * @param prefix Prefix to use
+   * @param id ID of the item
+   * @param value Value of the item
+   */
+  async setListItem(prefix: string, id: string, value: any): Promise<void> {
+    // Add the item to the list
+    await this.client.sadd(`${prefix}:__list`, id);
+
+    // Store the item
+    await this.client.set(`${prefix}:${id}`, JSON.stringify(value));
+  }
+
+  /**
+   * Get all items that match the given prefix
+   * @param prefix Prefix to match
+   * @returns Array of objects
+   */
+  async getListItems(prefix: string): Promise<any[]> {
     // Retrieve all IDs for the given prefix
-    const itemIds = await this.client.smembers(`${prefix}:list`);
+    const itemIds = await this.client.smembers(`${prefix}:__list`);
     if (itemIds.length === 0) {
       return [];
     }

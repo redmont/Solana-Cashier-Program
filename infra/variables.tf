@@ -82,3 +82,8 @@ variable "helius_secret_key" {
   description = "Helius webhook secret key for authorization"
   type        = string
 }
+
+variable "fp_api_key" {
+  description = "First Promoter API key"
+  type        = string
+}

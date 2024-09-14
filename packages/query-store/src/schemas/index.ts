@@ -9,3 +9,4 @@ export * from './tournament.schema';
 export * from './tournamentEntry.schema';
 export * from './userMatch.schema';
 export * from './userMatchResult.schema';
+export * from './fighterProfile.schema';

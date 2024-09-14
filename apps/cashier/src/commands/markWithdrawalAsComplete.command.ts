@@ -1,7 +1,6 @@
 import { Command, EventStore, tuple } from '@castore/core';
 
 type Input = {
-  accountId: string;
   receiptId: string;
   transactionHash: string;
   confirmed: boolean;
@@ -20,7 +19,7 @@ export const markWithdrawalAsCompleteCommand = (eventStore: EventStore) =>
       [eventStore],
       {}: Context,
     ): Promise<Output> => {
-      const { accountId, receiptId, transactionHash, confirmed } = commandInput;
+      const { receiptId, transactionHash, confirmed } = commandInput;
 
       const { aggregate: withdrawalAggregate } =
         await eventStore.getAggregate(receiptId);
@@ -29,7 +28,7 @@ export const markWithdrawalAsCompleteCommand = (eventStore: EventStore) =>
         throw new Error(`Withdrawal with id ${receiptId} does not exist`);
       }
 
-      const { version: accountVersion } = withdrawalAggregate;
+      const { version: accountVersion, accountId } = withdrawalAggregate as any;
 
       if (
         (withdrawalAggregate as any).status !== 'PENDING' &&

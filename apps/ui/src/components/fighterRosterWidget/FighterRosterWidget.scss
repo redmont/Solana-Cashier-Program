@@ -1,0 +1,33 @@
+.fighter-roster-table {
+  width: 100%;
+
+  tr > td,
+  tr > th {
+    color: var(--dynamic-text-primary);
+
+    svg {
+      color: var(--dynamic-text-primary);
+    }
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  tr > th {
+    font-weight: bold;
+  }
+
+  tr > td {
+    &:nth-of-type(2) {
+      font-weight: bold;
+    }
+  }
+}
+
+@media screen and (max-width: 36rem) {
+  .fighter-roster-table tr > th {
+    padding: 0 1rem;
+    min-width: 8rem;
+  }
+}

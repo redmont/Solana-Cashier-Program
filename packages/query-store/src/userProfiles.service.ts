@@ -8,6 +8,7 @@ interface UserProfile {
   username: string;
   primaryWalletAddress: string;
   xp: number;
+  team: string;
 }
 
 @Injectable()
@@ -46,12 +47,12 @@ export class UserProfilesQueryStoreService {
     userId: string,
     profile: UserProfile,
   ): Promise<void> {
-    const { username, primaryWalletAddress, xp } = profile;
+    const { username, primaryWalletAddress, xp, team } = profile;
 
     const key = `userProfile:${userId}`;
     const sortedKeySet = 'usernames';
 
-    await this.cache.hset(key, { username, primaryWalletAddress, xp });
+    await this.cache.hset(key, { username, primaryWalletAddress, xp, team });
     if (username?.length > 0) {
       await this.cache.zadd(sortedKeySet, 0, `${username}:${userId}`);
     }
@@ -70,6 +71,7 @@ export class UserProfilesQueryStoreService {
         username: data['username'],
         primaryWalletAddress: data['primaryWalletAddress'],
         xp,
+        team: data['team'],
       };
     }
 

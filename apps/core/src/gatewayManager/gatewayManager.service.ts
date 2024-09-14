@@ -54,6 +54,8 @@ export class GatewayManagerService implements OnModuleInit {
       displayName: string;
       codeName: string;
       ticker: string;
+      tokenAddress?: string;
+      tokenChainId?: string;
       imagePath: string;
     }[];
     state: string;

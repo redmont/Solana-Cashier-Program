@@ -1,4 +1,15 @@
+import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
+
+export interface Fighter {
+  displayName: string;
+  imageUrl: string;
+  fightCount: number;
+  winningFightCount: number;
+  wageredSum: number;
+}
+
+export const activeFighterRosterWidgetRow = atom(null as Fighter | null);
 
 export const tutorialCompletedAtom = atomWithStorage<'no' | 'yes'>(
   'tutorial_complete',
@@ -6,7 +17,6 @@ export const tutorialCompletedAtom = atomWithStorage<'no' | 'yes'>(
   undefined,
   { getOnInit: true },
 );
-import { atom } from 'jotai';
 
 export enum ActiveWidget {
   MatchStreamWidget = 'MatchStreamWidget',

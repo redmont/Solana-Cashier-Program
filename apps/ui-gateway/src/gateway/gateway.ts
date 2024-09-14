@@ -45,7 +45,8 @@ import {
   GetWithdrawalsMessage as GetWithdrawalsUiGatewayMessage,
   GetWithdrawalsMessageResponse as GetWithdrawalsUiGatewayMessageResponse,
   MarkWithdrawalAsCompleteMessage as MarkWithdrawalAsCompleteUiGatewayMessage,
-  MarkWithdrawalAsCompleteMessageResponse as MarkWithdrawalAsCompleteUiGatewayMessageResponse,
+  GetFightersMessage,
+  GetFightersMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
@@ -65,6 +66,7 @@ import {
   QueryStoreService,
   UserProfilesQueryStoreService,
   TournamentQueryStoreService,
+  FighterProfilesQueryStoreService,
 } from 'query-store';
 import { IJwtAuthService } from '@/jwtAuth/jwtAuth.interface';
 import { ConfigService } from '@nestjs/config';
@@ -74,6 +76,7 @@ import { emitInternalEvent, UserConnectedEvent } from '@/internalEvents';
 import { StreamAuthService } from '@/streamAuth/streamAuth.service';
 import { ChatAuthService } from '@/chatAuth/chatAuth.service';
 import { GatewayService } from './gateway.service';
+import { registerLead, updateLead } from '@/referral/firstPromoter';
 
 @WebSocketGateway()
 export class Gateway
@@ -104,6 +107,7 @@ export class Gateway
     private readonly chatAuthService: ChatAuthService,
     private readonly tournamentQueryStore: TournamentQueryStoreService,
     private readonly userProfilesQueryStore: UserProfilesQueryStoreService,
+    private readonly fighterProfilesQueryStore: FighterProfilesQueryStoreService,
   ) {
     this.mediaUri = this.configService.get<string>('mediaUri');
   }
@@ -143,18 +147,61 @@ export class Gateway
           decodedToken.verified_credentials.length > 0
         ) {
           // Token from dynamic.xyz
-          const { username } = decodedToken;
+          const { username, team = null, newUser } = decodedToken;
           const { address } = decodedToken.verified_credentials[0];
-
           const { userId } = await sendBrokerCommand<
             EnsureUserIdMessage,
             EnsureUserIdMessageReturnType
           >(this.broker, new EnsureUserIdMessage(address));
 
-          await this.userProfilesQueryStore.updateUserProfile(userId, {
+          const userStore =
+            await this.userProfilesQueryStore.getUserProfile(userId);
+
+          let canonicalTeam = userStore?.team ?? null;
+
+          if (!userStore?.team && team) {
+            try {
+              const res = await registerLead({
+                apiKey: this.configService.get<string>('fpApiKey'),
+                uid: userId,
+                ref_id: team,
+                ip: ipAddress,
+              });
+              canonicalTeam = team;
+            } catch (error) {
+              this.logger.error(
+                'Error signing up lead:',
+                error.response?.data || error.message,
+              );
+            }
+          } else if (userStore?.team !== team && team) {
+            try {
+              const res = await updateLead({
+                apiKey: this.configService.get<string>('fpApiKey'),
+                uid: userId,
+                updates: { ref_id: team },
+              });
+              canonicalTeam = team;
+            } catch (error) {
+              this.logger.error(
+                'Error updating lead:',
+                error.response?.data || error.message,
+              );
+            }
+          }
+
+          const updateValues: Record<string, any> = {
             username,
             primaryWalletAddress: address,
-          });
+          };
+          if (canonicalTeam) {
+            updateValues.team = canonicalTeam;
+          }
+
+          await this.userProfilesQueryStore.updateUserProfile(
+            userId,
+            updateValues,
+          );
 
           client.data.authorizedUser = {
             userId,
@@ -655,6 +702,24 @@ export class Gateway
     );
 
     return { success };
+  }
+
+  @SubscribeMessage(GetFightersMessage.messageType)
+  public async getFighterProfiles(): Promise<GetFightersMessageResponse> {
+    const fighterProfiles =
+      await this.fighterProfilesQueryStore.getFighterProfiles();
+
+    const fighters = fighterProfiles
+      .filter((fighter) => fighter.showOnRoster)
+      .map((fighter) => ({
+        ...fighter,
+        imageUrl: this.getMediaUrl(fighter.imagePath),
+      }));
+
+    return {
+      success: true,
+      fighters,
+    };
   }
 
   public publish<T extends GatewayEvent>(data: T) {

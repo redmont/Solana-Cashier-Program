@@ -21,7 +21,11 @@ interface CreateFighterProfileRequest {
     torso: string;
     legs: string;
   };
+  ticker: string;
+  tokenAddress: string;
+  tokenChainId: string;
   enabled: boolean;
+  showOnRoster: boolean;
 }
 
 interface UpdateFighterProfileRequest {
@@ -33,7 +37,11 @@ interface UpdateFighterProfileRequest {
     torso: string;
     legs: string;
   };
+  ticker: string;
+  tokenAddress: string;
+  tokenChainId: string;
   enabled: boolean;
+  showOnRoster: boolean;
 }
 
 const MediaPreviewWidget = ({ value }: WidgetProps) => {
@@ -144,9 +152,12 @@ const EditFighterProfile = ({ params }: { params: { codename: string } }) => {
         codeName: { type: 'string', title: 'Code name' },
         displayName: { type: 'string', title: 'Display name' },
         ticker: { type: 'string', title: 'Ticker' },
+        tokenAddress: { type: 'string', title: 'Token address' },
+        tokenChainId: { type: 'string', title: 'Token chain ID (CAIP-2)' },
         imageUrl: { type: 'string', title: '' },
         imagePath: { type: 'string', title: 'Image' },
         enabled: { type: 'boolean', title: 'Enabled' },
+        showOnRoster: { type: 'boolean', title: 'Show on roster' },
         model: {
           type: 'object',
           title: 'Model',

@@ -17,3 +17,4 @@ export * from './getUserProfile';
 export * from './requestWithdrawal';
 export * from './getWithdrawals';
 export * from './markWithdrawalAsComplete';
+export * from './getFighters';

@@ -12,6 +12,8 @@ export class SeriesConfigFighter {
   public displayName: string;
   public codeName: string;
   public ticker: string;
+  public tokenAddress?: string;
+  public tokenChainId?: string;
   public imagePath: string;
   public model: {
     head: string;

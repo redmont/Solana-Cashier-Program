@@ -10,6 +10,7 @@ import {
   CurrentMatchSchema,
   DailyClaimAmountsSchema,
   DailyClaimStatusSchema,
+  FighterProfileSchema,
   MatchSchema,
   RosterSchema,
   SeriesSchema,
@@ -26,7 +27,8 @@ import { UserProfilesQueryStoreService } from './userProfiles.service';
 import { UserProfileSchema } from './schemas/userProfile.schema';
 import { Key } from './interfaces/key.interface';
 import { UserProfile } from './interfaces/userProfile.interface';
-import { Tournament, TournamentEntry } from './interfaces';
+import { FighterProfile, Tournament, TournamentEntry } from './interfaces';
+import { FighterProfilesQueryStoreService } from './fighterProfiles.service';
 
 @Module({})
 export class QueryStoreOptionsModule extends ConfigurableModuleClass {
@@ -48,6 +50,7 @@ export class QueryStoreOptionsModule extends ConfigurableModuleClass {
     RedisCacheModule,
     UserProfilesQueryStoreService,
     TournamentQueryStoreService,
+    FighterProfilesQueryStoreService,
   ],
 })
 export class QueryStoreModule extends ConfigurableModuleClass {
@@ -67,6 +70,7 @@ export class QueryStoreModule extends ConfigurableModuleClass {
       dailyClaimAmounts: DailyClaimAmountsSchema,
       dailyClaimStatus: DailyClaimStatusSchema,
       userProfile: UserProfileSchema,
+      fighterProfile: FighterProfileSchema,
     };
 
     const moduleDefinition = super.registerAsync(options);
@@ -140,6 +144,19 @@ export class QueryStoreModule extends ConfigurableModuleClass {
               userProfilesQueryStoreService,
               tournamentModel,
               tournamentEntryModel,
+            );
+          },
+        },
+        {
+          provide: FighterProfilesQueryStoreService,
+          inject: [RedisCacheService, 'fighterProfileModel'],
+          useFactory: (
+            cache: RedisCacheService,
+            fighterProfileModel: Model<FighterProfile, Key>,
+          ) => {
+            return new FighterProfilesQueryStoreService(
+              cache,
+              fighterProfileModel,
             );
           },
         },

@@ -34,6 +34,7 @@
     "@nestjs/websockets": "^10.3.7",
     "@socket.io/admin-ui": "^0.5.1",
     "@socket.io/redis-adapter": "^8.3.0",
+    "axios": "^1.6.8",
     "broker-comms": "workspace:*",
     "cache-manager-redis-store": "2",
     "cashier-read-model": "workspace:*",

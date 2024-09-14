@@ -92,6 +92,9 @@ locals {
       },
       {
         name = "READ_MODEL_TABLE_NAME", value = var.cashier_read_model_table_name
+      },
+      {
+        name = "FP_API_KEY", value = var.fp_api_key
       }
     ]
   }
