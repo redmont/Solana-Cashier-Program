@@ -14,7 +14,6 @@ import { Tooltip } from '../Tooltip';
 import { useCountdown } from '@/hooks';
 import { TabPanel, TabView } from 'primereact/tabview';
 import { Scrollable } from '@/components/ui/scrollable';
-import { WidgetCountdown } from '../widgetCountdown';
 
 const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
   searchQuery,
@@ -287,10 +286,6 @@ const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
                 <div>
                   <div className="panel-list">
                     <div className="widget-header-section">
-                      <div className="countdown-section">
-                        <div>Ends in:</div>
-                        <WidgetCountdown targetDateTime={endDateTime} />
-                      </div>
                       <div className="widget-info">
                         <p>
                           Earn <span className="xp">1 XP</span>&nbsp;for every
@@ -423,10 +418,6 @@ const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
           <div>
             <div className="panel-list">
               <div className="widget-header-section">
-                <div className="countdown-section">
-                  <div>Ends in:</div>
-                  <WidgetCountdown targetDateTime={endDateTime} />
-                </div>
                 <div className="flex items-center gap-2">
                   <p>
                     Earn <span className="text-primary">1 XP</span>&nbsp;for
