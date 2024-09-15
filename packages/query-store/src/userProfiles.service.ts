@@ -65,7 +65,7 @@ export class UserProfilesQueryStoreService {
 
     const data = await this.cache.hgetall(key);
     if (data) {
-      const xp = data['xp'].length > 0 ? parseInt(data['xp']) : 0;
+      const xp = data['xp']?.length > 0 ? parseInt(data['xp']) : 0;
 
       userProfile = {
         username: data['username'],
