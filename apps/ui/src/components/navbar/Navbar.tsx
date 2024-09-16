@@ -1,4 +1,9 @@
-import { balanceAtom, usernameAtom, userReferrerAtom } from '@/store/account';
+import {
+  balanceAtom,
+  usernameAtom,
+  userReferrerAtom,
+  userIdAtom,
+} from '@/store/account';
 import { useAtom, useAtomValue } from 'jotai';
 import Link from 'next/link';
 import { Suspense, useEffect, useRef, useState } from 'react';
@@ -29,6 +34,7 @@ export const Navbar = () => {
   );
 
   const balance = useAtomValue(balanceAtom);
+  const userId = useAtomValue(userIdAtom);
 
   const [isNavOpen, setNavOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
@@ -131,7 +137,7 @@ export const Navbar = () => {
 
       <Button
         className="sm:!size-fit sm:!px-5 sm:!py-2 xs:size-8 xs:px-1 xs:py-0"
-        loading={balance === undefined}
+        loading={balance === undefined || userId === undefined}
         onClick={() => {
           setCashierOpen((open) => !open);
         }}
