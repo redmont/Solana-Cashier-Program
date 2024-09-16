@@ -1,4 +1,3 @@
-import { useAccount } from 'wagmi';
 import {
   useDynamicContext,
   useSwitchNetwork,
@@ -16,10 +15,11 @@ export function useWallet() {
   const switchNetwork = useSwitchNetwork();
   const switchWallet = useSwitchWallet();
   const { setShowLinkNewWalletModal } = useDynamicModals();
-  const { isConnected, address } = useAccount();
   const { authToken, isAuthenticated, primaryWallet, user } =
     useDynamicContext();
   const { toast } = useToast();
+  const isConnected = primaryWallet?.connected || false;
+  const address = primaryWallet?.address as `0x${string}` | undefined;
   const userWallets = useUserWallets();
 
   const networkId = useQuery({
