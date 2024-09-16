@@ -1,6 +1,5 @@
 'use client';
 
-import { useAccount } from 'wagmi';
 import {
   useDynamicContext,
   useSwitchNetwork,
@@ -14,7 +13,6 @@ import { useToast } from '@/components/ui/use-toast';
 import networks, { ChainProtocols } from '@/config/chains';
 
 export function useWallet() {
-  const { isConnected, address } = useAccount();
   const { authToken, isAuthenticated, primaryWallet, user, handleLogOut } =
     useDynamicContext();
   const switchNetwork = useSwitchNetwork();
@@ -26,6 +24,9 @@ export function useWallet() {
   >(undefined);
 
   const { toast } = useToast();
+  const isConnected = primaryWallet?.connected || false;
+  const address = primaryWallet?.address as `0x${string}` | undefined;
+
   const userWallets = useUserWallets();
   const wallet = primaryWallet?.connector;
 
