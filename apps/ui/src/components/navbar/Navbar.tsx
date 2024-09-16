@@ -7,7 +7,7 @@ import {
 import { useAtom, useAtomValue } from 'jotai';
 import Link from 'next/link';
 import { Suspense, useEffect, useRef, useState } from 'react';
-import { useWallet } from '@/hooks';
+import { useSocket, useWallet } from '@/hooks';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { tutorialCompletedAtom } from '@/store/view';
@@ -23,17 +23,34 @@ import { formatCompact } from '@/utils';
 import { useDynamicAuthClickHandler } from '@/hooks/useDynamicAuthClickHandler';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { useUserUpdateRequest } from '@dynamic-labs/sdk-react-core';
+import { calculateRankLeaderboard } from '@/hooks/useRankCal';
+import { useQuery } from '@tanstack/react-query';
+import {
+  GetUserProfileMessage,
+  GetUserProfileMessageResponse,
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 export const Navbar = () => {
   const progressionFeature = useFeatureFlag('progression');
   const openDynamicAuth = useDynamicAuthClickHandler();
+  const { send, connected } = useSocket();
   const username = useAtomValue(usernameAtom);
   const { isAuthenticated, walletKey } = useWallet();
   const [tutorialCompleted, setTutorialCompleted] = useAtom(
     tutorialCompletedAtom,
   );
 
+  const userXp = useQuery({
+    queryKey: ['userXp'],
+    queryFn: () =>
+      send<GetUserProfileMessage, GetUserProfileMessageResponse>(
+        new GetUserProfileMessage(),
+      ),
+    enabled: connected,
+  });
+
   const balance = useAtomValue(balanceAtom);
+  const { currentRankImage } = calculateRankLeaderboard(userXp.data?.xp ?? 0);
   const userId = useAtomValue(userIdAtom);
 
   const [isNavOpen, setNavOpen] = useState(false);
@@ -188,7 +205,7 @@ export const Navbar = () => {
               <Link href="/profile">
                 {progressionFeature && (
                   <img
-                    src="/goldbrawler.svg"
+                    src={`/progression_system_belts/${currentRankImage}`}
                     alt=""
                     className="mr-2 inline-block size-6"
                   />

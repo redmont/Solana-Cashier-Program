@@ -29,7 +29,11 @@ const RankModal: FC<RankModalProps> = ({ children, currentRank }) => {
         <Scrollable className="h-80 w-full md:h-[30rem]">
           {ranks.map((item, index) => (
             <div className="flex items-center gap-4 p-2" key={index}>
-              <img src="/goldbrawler.svg" alt="brawler" className="w-12" />
+              <img
+                src={`/progression_system_belts/${item.image}`}
+                alt="brawler"
+                className="w-12"
+              />
               <div className="flex flex-col">
                 <p className="flex items-center gap-2">
                   <span className="font-semibold text-gold">{item.name}</span>
