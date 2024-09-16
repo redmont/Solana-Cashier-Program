@@ -45,6 +45,8 @@ export const CurrentMatchSchema = new Schema({
           displayName: { type: String, required: true },
           ticker: { type: String, required: true },
           imagePath: { type: String, required: true },
+          tokenAddress: String,
+          tokenChainId: String,
         },
       },
     ],
