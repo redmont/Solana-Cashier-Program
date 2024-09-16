@@ -1,18 +1,36 @@
 [toolchain]
+anchor_version = "0.30.1"
+solana_version = "1.18.8"
 
 [features]
 resolution = true
 skip-lint = false
+idl-build = [
+    "anchor-lang/idl-build",
+    "anchor-spl/idl-build",
+]
 
 [programs.devnet]
-solana_cashier = "8ebCPZKEwFhe6bhCE4nE2fuPUhZWhh6j6jJ5Ex3DmhJS"
+solana_cashier = { address = "8ebCPZKEwFhe6bhCE4nE2fuPUhZWhh6j6jJ5Ex3DmhJS" }
+
+[programs.mainnet]
+solana_cashier = { address = "9RKGsYb1CyJMs4ehGaGDf55E8YFgAzVwUCYtMwJBV6AM" }
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
-wallet = "~/.config/solana/id.json"
+cluster = "https://api.devnet.solana.com"   # Specify the Solana cluster (devnet, testnet, or mainnet-beta)
+wallet = "~/.config/solana/id22.json"         # Path to your wallet keypair
+
+
+[provider.mainnet]
+cluster = "https://mainnet.helius-rpc.com/?api-key=83ec8540-dfbc-4e25-af05-66e6948ebde7"
+wallet = "~/.config/solana/id22.json" 
+
+[provider.devnet]
+cluster = "https://devnet.helius-rpc.com/?api-key=83ec8540-dfbc-4e25-af05-66e6948ebde7"
+wallet = "~/.config/solana/id22.json" 
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

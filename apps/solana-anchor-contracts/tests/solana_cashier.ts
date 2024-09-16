@@ -1,16 +1,16 @@
-import * as anchor from '@project-serum/anchor';
-import { Program, BorshCoder } from '@project-serum/anchor';
-import { SolanaCashier, IDL } from '../target/types/solana_cashier';
+import * as anchor from '@coral-xyz/anchor';
+import { Program } from '@coral-xyz/anchor';
+import { SolanaCashier } from '../target/types/solana_cashier';
+const IDL = require('../target/idl/solana_cashier.json');
 import 'dotenv/config';
 import * as fs from 'fs';
-import * as path from 'path';
+const envExports = require('../exports.json');
 
 import {
   PublicKey,
   Keypair,
   SystemProgram,
   Transaction,
-  Connection,
 } from '@solana/web3.js';
 import { assert } from 'chai';
 import {
@@ -18,86 +18,44 @@ import {
   getAccount,
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAssociatedTokenAddress,
-  createAssociatedTokenAccount,
   createAssociatedTokenAccountInstruction,
+  getOrCreateAssociatedTokenAccount,
 } from '@solana/spl-token';
 
 import base58 from 'bs58';
 
-const heliusRpcUrl = process.env.HELIUS_RPC_URL;
-
-const deployerPrivateKey = process.env.PAYER_PRIVATE_KEY;
+let heliusRpcUrl;
+let usdcMintAddress;
+const devnetUsdcMintAddress = process.env.DEVNET_USDC_MINT_ADDRESS;
+const mainnetUsdcMintAddress = process.env.MAINNET_USDC_MINT_ADDRESS;
 const testUserPrivateKey = process.env.PAYER_PRIVATE_KEY;
-const treasuryPrivateKey = process.env.TREASURY_PRIVATE_KEY;
-
-const deployerAccount = Keypair.fromSecretKey(
-  base58.decode(deployerPrivateKey),
-);
+const treasuryAccountAddress = process.env.TREASURY_ACCOUNT;
 
 const signerAccount = Keypair.fromSecretKey(base58.decode(testUserPrivateKey));
-const treasurySignerAccount = Keypair.fromSecretKey(
-  base58.decode(treasuryPrivateKey),
-);
-
-const usdcTreasuryWalletAddress = process.env.USDC_TREASURY_WALLET_ADDRESS;
-const usdcMintAddress = process.env.USDC_MINT_ADDRESS;
-
-const programDeployedID = process.env.PROGRAM_DEPLOYED_ID;
-const programStateAddress = process.env.PROGRAM_STATE_ADDRESS;
-
-const treasuryAccount = new PublicKey(usdcTreasuryWalletAddress);
-const mint = new PublicKey(usdcMintAddress);
+const treasuryAccount = new PublicKey(treasuryAccountAddress);
 
 describe('solana_cashier', () => {
-  const connection = new Connection(heliusRpcUrl, 'confirmed');
-  const wallet = anchor.Wallet.local();
-  const provider = new anchor.AnchorProvider(connection, wallet, {
-    commitment: 'confirmed',
-  });
-  anchor.setProvider(provider);
-
-  console.log(
-    'provider.wallet.publicKey:',
-    provider.wallet.publicKey.toString(),
-  );
-
-  console.log('Deployer Account:', deployerAccount.publicKey.toString());
-
+  anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace.SolanaCashier as Program<SolanaCashier>;
 
-  const newOwner = deployerAccount;
+  const provider = anchor.AnchorProvider.env();
 
-  const stateAccountFilePath = path.join(__dirname, 'stateAccount.json');
-  const deployerAccountFilePath = path.join(__dirname, 'deployerAccount.json');
-  const treasuryAccountFilePath = path.join(__dirname, 'deployerAccount.json');
+  const cluster = provider.connection.rpcEndpoint.includes('devnet')
+    ? 'devnet'
+    : 'mainnet-beta';
+
+  console.log('cluster', cluster);
+
+  usdcMintAddress =
+    cluster === 'devnet' ? devnetUsdcMintAddress : mainnetUsdcMintAddress;
+
+  const usdcMint = new PublicKey(usdcMintAddress);
+
+  heliusRpcUrl = provider.connection.rpcEndpoint;
+
+  const newOwner = provider.wallet;
 
   var stateAccount: PublicKey;
-
-  it('decodes the transaction data based on idl', async () => {
-    const idl = {
-      instructions: [
-        {
-          name: 'depositAndSwap',
-          args: [
-            {
-              name: 'amount',
-              type: 'u64',
-            },
-            {
-              name: 'userId',
-              type: 'bytes',
-            },
-          ],
-        },
-      ],
-    };
-    const coder = new BorshCoder(idl);
-    const ix = coder.instruction.decode(
-      'Kj35qAFy2MvZT65ftmJH3ukUaJSTUtnx98g5Q',
-      'base58',
-    );
-    console.log('Decoded instruction', ix.data?.userId?.toString());
-  });
 
   it('Checks if the program is deployed', async () => {
     try {
@@ -114,7 +72,6 @@ describe('solana_cashier', () => {
         programAccountInfo.executable,
         'Program account is not marked as executable',
       );
-
       console.log('Program is deployed and executable.');
     } catch (err) {
       console.error('Failed to verify the program account:', err);
@@ -124,73 +81,68 @@ describe('solana_cashier', () => {
 
   it('Initializes the program', async () => {
     if (
-      programDeployedID &&
-      program.programId.toString() === programDeployedID &&
-      programStateAddress
+      envExports[cluster]?.programId === program.programId.toString() &&
+      envExports[cluster]?.stateAccount
     ) {
-      stateAccount = new PublicKey(programStateAddress);
-      console.log('Program already deployed');
-    } else {
-      console.log('Deploying program: ', program.programId.toString());
-
-      const stateAccountKeypair = Keypair.generate();
-      stateAccount = stateAccountKeypair.publicKey;
-      await program.methods
-        .initialize(treasuryAccount)
-        .accounts({
-          state: stateAccount,
-          owner: deployerAccount.publicKey,
-          systemProgram: SystemProgram.programId,
-        })
-        .signers([deployerAccount, stateAccountKeypair])
-        .rpc();
-
-      saveKeypairToFile(stateAccountKeypair, stateAccountFilePath);
-      saveKeypairToFile(deployerAccount, deployerAccountFilePath);
-      saveKeypairToFile(treasurySignerAccount, treasuryAccountFilePath);
+      console.log('Program already initialized');
+      stateAccount = new PublicKey(envExports[cluster].stateAccount);
+      return;
     }
-    const state = await program.account.state.fetch(stateAccount);
-    console.log('Program State:', state);
 
-    const programAccounts = await connection.getProgramAccounts(
-      new PublicKey(program.programId.toString()),
-    );
-    programAccounts.forEach(({ pubkey, account }) => {
-      console.log(`Found account with pubkey: ${pubkey.toString()}`);
-    });
+    const stateAccountKeypair = Keypair.generate();
+    stateAccount = stateAccountKeypair.publicKey;
 
-    assert.ok(state.owner.equals(deployerAccount.publicKey));
+    console.log('Initializing program: ', program.programId.toString());
+    console.log('treasuryAccount', treasuryAccount.toString());
+    console.log('Deployer Account:', provider.wallet.publicKey.toString());
+    console.log('State Account:', stateAccount.toString());
 
-    console.log('Program initialized successfully');
-  });
-
-  it('Transfers ownership', async () => {
-    const state = await program.account.state.fetch(stateAccount);
-
-    const oldOwner = state.owner;
     await program.methods
-      .transferOwnership(newOwner.publicKey)
+      .initialize(treasuryAccount)
       .accounts({
         state: stateAccount,
-        currentOwner: provider.wallet.publicKey,
+        owner: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId,
       })
-      .signers([])
+      .signers([stateAccountKeypair])
       .rpc();
 
-    assert.ok(state.owner.equals(newOwner.publicKey));
-    console.log('Old owner:', oldOwner.toString());
-    console.log('New owner:', newOwner.publicKey.toString());
-    console.log('Ownership transferred successfully');
+    console.log('Program initialized successfully');
+
+    exportProgramInfo(
+      cluster,
+      stateAccount.toString(),
+      program.programId.toString(),
+    );
+    console.log('Program info exported successfully');
   });
 
-  it('Sets a new treasury address', async () => {
-    // const newTreasury = Keypair.generate();
-    const newTreasury = treasuryAccount;
+  if (cluster === 'devnet') {
+    it('Transfers ownership', async () => {
+      const state = await program.account.state.fetch(stateAccount);
 
+      const oldOwner = state.owner;
+      await program.methods
+        .transferOwnership(newOwner.publicKey)
+        .accounts({
+          state: stateAccount,
+          currentOwner: provider.wallet.publicKey,
+        })
+        .signers([])
+        .rpc();
+
+      assert.ok(state.owner.equals(newOwner.publicKey));
+      console.log('Old owner:', oldOwner.toString());
+      console.log('New owner:', newOwner.publicKey.toString());
+      console.log('Ownership transferred successfully');
+    });
+  }
+
+  it('Sets a new treasury address', async () => {
     // Derive the associated USDC token account address of treasury account
     const treasuryTokenAccount = await getAssociatedTokenAddress(
-      mint,
-      newTreasury,
+      usdcMint,
+      treasuryAccount,
       true,
       TOKEN_PROGRAM_ID,
       ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -206,12 +158,14 @@ describe('solana_cashier', () => {
         state: stateAccount,
         owner: newOwner.publicKey,
       })
-      .signers([newOwner])
       .rpc();
 
     const state = await program.account.state.fetch(stateAccount);
     assert.ok(state.treasury.equals(treasuryTokenAccount));
-    console.log('Treasury address set successfully');
+    console.log(
+      'Treasury address set successfully ',
+      state.treasury.toString(),
+    );
   });
 
   it('Removes all tokens', async () => {
@@ -226,7 +180,6 @@ describe('solana_cashier', () => {
           state: stateAccount,
           owner: newOwner.publicKey,
         })
-        .signers([newOwner])
         .rpc();
 
       console.log(`Token ${token.toString()} removed successfully`);
@@ -238,276 +191,157 @@ describe('solana_cashier', () => {
     console.log('All tokens removed successfully');
   });
 
-  it('Allows and disallows tokens', async () => {
-    const tokenMint = Keypair.generate().publicKey;
+  if (cluster === 'devnet') {
+    it('Allows and disallows tokens', async () => {
+      const tokenMint = Keypair.generate().publicKey;
 
+      // Allow the token
+      await program.methods
+        .addToken(tokenMint)
+        .accounts({
+          state: stateAccount,
+          owner: newOwner.publicKey,
+        })
+        .rpc();
+
+      let state = await program.account.state.fetch(stateAccount);
+      assert.ok(state.inTokens.some((token) => token.equals(tokenMint)));
+      console.log('Token allowed successfully');
+
+      // Disallow the token
+      await program.methods
+        .removeToken(tokenMint)
+        .accounts({
+          state: stateAccount,
+          owner: newOwner.publicKey,
+        })
+        .rpc();
+
+      state = await program.account.state.fetch(stateAccount);
+      assert.ok(!state.inTokens.some((token) => token.equals(tokenMint)));
+      console.log('Token disallowed successfully');
+    });
+  }
+
+  it('Allows USDC usdcMint token', async () => {
     // Allow the token
     await program.methods
-      .addToken(tokenMint)
+      .addToken(usdcMint)
       .accounts({
         state: stateAccount,
         owner: newOwner.publicKey,
       })
-      .signers([newOwner])
       .rpc();
 
-    let state = await program.account.state.fetch(stateAccount);
-    assert.ok(state.inTokens.some((token) => token.equals(tokenMint)));
-    console.log('Token allowed successfully');
-
-    // Disallow the token
-    await program.methods
-      .removeToken(tokenMint)
-      .accounts({
-        state: stateAccount,
-        owner: newOwner.publicKey,
-      })
-      .signers([newOwner])
-      .rpc();
-
-    state = await program.account.state.fetch(stateAccount);
-    assert.ok(!state.inTokens.some((token) => token.equals(tokenMint)));
-    console.log('Token disallowed successfully');
+    const state = await program.account.state.fetch(stateAccount);
+    assert.ok(state.inTokens.some((token) => token.equals(usdcMint)));
+    console.log('USDC Token mint allowed successfully');
+    console.log(state);
   });
 
-  it('Deposits a token and send it to treasury', async () => {
-    // Derive the associated USDC token account address of user
-
-    const userUsdcTokenAccount = await initializeTokenAccount(
-      provider,
-      mint,
-      signerAccount,
-    );
-
-    console.log(
-      'user USDC token account initialized successfully',
-      userUsdcTokenAccount.toString(),
-    );
-
+  it('Initialize USDC associated token account in treasury', async () => {
     // Derive the associated USDC token account address of treasury account
 
-    const treasuryUsdcTokenAccount = await initializeTokenAccount(
-      provider,
-      mint,
-      treasurySignerAccount,
+    const treasuryUsdcTokenAccount = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      signerAccount,
+      usdcMint,
+      treasuryAccount,
     );
 
     console.log(
       'treasury USDC token account initialized successfully',
-      userUsdcTokenAccount.toString(),
+      treasuryUsdcTokenAccount.address.toString(),
     );
-
-    // Add USDC token to allowed list
-    await program.methods
-      .addToken(mint)
-      .accounts({
-        state: stateAccount,
-        owner: newOwner.publicKey,
-      })
-      .signers([newOwner])
-      .rpc();
-
-    console.log('USDC token added to allowed list successfully');
-
-    const depositAmount = 500;
-
-    // Get initial balances
-    const initialUserBalance = (
-      await getAccount(provider.connection, userUsdcTokenAccount)
-    ).amount;
-    console.log('initialUserBalance', initialUserBalance);
-
-    const initialTreasuryBalance = (
-      await getAccount(provider.connection, treasuryUsdcTokenAccount)
-    ).amount;
-    console.log('initialTreasuryBalance', initialTreasuryBalance);
-
-    const userId = 'user123';
-
-    // Convert user_id to bytes
-    const bytesUserId = Buffer.from(userId, 'utf-8');
-
-    await program.methods
-      .depositAndSwap(new anchor.BN(depositAmount), bytesUserId)
-      .accounts({
-        state: stateAccount,
-        treasury: treasuryUsdcTokenAccount,
-        userTokenAccount: userUsdcTokenAccount,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        userAuthority: signerAccount.publicKey,
-      })
-      .signers([signerAccount])
-      .rpc();
-
-    // Get final balances
-    const finalUserBalance = (
-      await getAccount(provider.connection, userUsdcTokenAccount)
-    ).amount;
-    const finalTreasuryBalance = (
-      await getAccount(provider.connection, treasuryUsdcTokenAccount)
-    ).amount;
-
-    console.log('finalUserBalance', finalUserBalance);
-    console.log('finalTreasuryBalance', finalTreasuryBalance);
-
-    //Verify balances
-    assert.equal(
-      finalUserBalance.toString(),
-      (BigInt(initialUserBalance) - BigInt(depositAmount)).toString(),
-    );
-    assert.equal(
-      finalTreasuryBalance.toString(),
-      (BigInt(initialTreasuryBalance) + BigInt(depositAmount)).toString(),
-    );
-
-    const state = await program.account.state.fetch(stateAccount);
-    console.log('State:', state);
-
-    console.log('Deposit and swap executed successfully');
   });
 
-  /*
-  // it("Deposits a token with a third-party fee payer", async () => {
-  //   // Initialize token mint, user token account, and treasury token account
-  //   const mint = await createMint(
-  //     provider.connection,
-  //     provider.wallet.payer,
-  //     provider.wallet.publicKey,
-  //     null,
-  //     9
-  //   );
+  if (cluster === 'devnet') {
+    it('Deposits a token and send it to treasury', async () => {
+      // Derive the associated USDC token account address of user
 
-  //   const userTokenAccount = await createAccount(
-  //     provider.connection,
-  //     provider.wallet.payer,
-  //     mint,
-  //     provider.wallet.publicKey
-  //   );
+      const userUsdcTokenAccount = await initializeTokenAccount(
+        provider,
+        usdcMint,
+        signerAccount,
+      );
 
-  //   const swapAccount1 = await createAccount(
-  //     provider.connection,
-  //     provider.wallet.payer,
-  //     mint,
-  //     swapAccount.publicKey
-  //   );
+      console.log(
+        'user USDC token account initialized successfully',
+        userUsdcTokenAccount.toString(),
+      );
 
-  //   const treasuryTokenAccount = await createAccount(
-  //     provider.connection,
-  //     provider.wallet.payer,
-  //     mint,
-  //     treasuryAccount.publicKey
-  //   );
+      // Derive the associated USDC token account address of treasury account
 
-  //   // Mint tokens to user's token account
-  //   await mintTo(
-  //     provider.connection,
-  //     provider.wallet.payer,
-  //     mint,
-  //     userTokenAccount,
-  //     provider.wallet.publicKey,
-  //     1000000000 // 1 billion tokens (assuming 9 decimals)
-  //   );
+      const treasuryUsdcTokenAccount = await initializeTokenAccount(
+        provider,
+        usdcMint,
+        treasuryAccount,
+      );
 
-  //   // Add token to allowed list
-  //   await program.methods
-  //     .addToken(mint)
-  //     .accounts({
-  //       state: stateAccount,
-  //       owner: newOwner.publicKey,
-  //     })
-  //     .signers([newOwner])
-  //     .rpc();
+      console.log(
+        'treasury USDC token account initialized successfully',
+        treasuryUsdcTokenAccount.toString(),
+      );
 
-  //   const depositAmount = 500; // Example deposit amount
+      // Add USDC token to allowed list
+      await program.methods
+        .addToken(usdcMint)
+        .accounts({
+          state: stateAccount,
+          owner: newOwner.publicKey,
+        })
+        .rpc();
 
-  //   // Get initial balances
-  //   const initialUserBalance = (
-  //     await getAccount(provider.connection, userTokenAccount)
-  //   ).amount;
-  //   const initialTreasuryBalance = (
-  //     await getAccount(provider.connection, treasuryTokenAccount)
-  //   ).amount;
+      console.log('USDC token added to allowed list successfully');
 
-  //   // Airdrop SOL to fee payer for covering transaction fees
-  //   // await provider.connection.requestAirdrop(
-  //   //   feePayer.publicKey,
-  //   //   LAMPORTS_PER_SOL
-  //   // );
+      const depositAmount = 5;
 
-  //   // Create the transaction
-  //   let tx = new Transaction().add(
-  //     await program.methods
-  //       .depositAndSwap(new anchor.BN(depositAmount))
-  //       .accounts({
-  //         state: stateAccount,
-  //         treasury: treasuryTokenAccount,
-  //         userTokenAccount,
-  //         //swapAccount: swapAccount1,
-  //         tokenProgram: TOKEN_PROGRAM_ID,
-  //         userAuthority: provider.wallet.publicKey,
-  //       })
-  //       .instruction()
-  //   );
+      // Get initial balances
+      const initialUserBalance = (
+        await getAccount(provider.connection, userUsdcTokenAccount)
+      ).amount;
 
-  //   tx.feePayer = feePayer.publicKey;
+      const initialTreasuryBalance = (
+        await getAccount(provider.connection, treasuryUsdcTokenAccount)
+      ).amount;
 
-  //   const recentBlockhash = (await provider.connection.getLatestBlockhash())
-  //     .blockhash;
-  //   tx.recentBlockhash = recentBlockhash;
+      const userId = 'user123';
 
-  //   // Sign the transaction with the fee payer's keypair
-  //   tx.partialSign(feePayer);
+      // Convert user_id to bytes
+      const bytesUserId = Buffer.from(userId, 'utf-8');
 
-  //   // **NEW: Sign the transaction with the user's wallet (userAuthority)**
-  //   tx.partialSign(provider.wallet.payer);
+      await program.methods
+        .depositAndSwap(new anchor.BN(depositAmount), bytesUserId)
+        .accounts({
+          state: stateAccount,
+          treasury: treasuryUsdcTokenAccount,
+          userTokenAccount: userUsdcTokenAccount,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          userAuthority: signerAccount.publicKey,
+        })
+        .rpc();
 
-  //   // Estimate the fee for the transaction
-  //   const feeCalculator = await provider.connection.getFeeForMessage(
-  //     tx.compileMessage()
-  //   );
-  //   const estimatedFee = feeCalculator.value / LAMPORTS_PER_SOL;
+      // Get final balances
+      const finalUserBalance = (
+        await getAccount(provider.connection, userUsdcTokenAccount)
+      ).amount;
+      const finalTreasuryBalance = (
+        await getAccount(provider.connection, treasuryUsdcTokenAccount)
+      ).amount;
 
-  //   console.log("Estimated transaction fee:", estimatedFee, "SOL");
+      //Verify balances
+      assert.equal(
+        finalUserBalance.toString(),
+        (BigInt(initialUserBalance) - BigInt(depositAmount)).toString(),
+      );
+      assert.equal(
+        finalTreasuryBalance.toString(),
+        (BigInt(initialTreasuryBalance) + BigInt(depositAmount)).toString(),
+      );
 
-  //   // Submit the transaction
-  //   const signature = await provider.connection.sendTransaction(
-  //     tx,
-  //     [feePayer, provider.wallet.payer], // Include both the fee payer and userAuthority as signers
-  //     {
-  //       skipPreflight: false,
-  //       preflightCommitment: "confirmed",
-  //     }
-  //   );
-
-  //   await provider.connection.confirmTransaction(signature);
-
-  //   // Get final balances
-  //   const finalUserBalance = (
-  //     await getAccount(provider.connection, userTokenAccount)
-  //   ).amount;
-  //   const finalTreasuryBalance = (
-  //     await getAccount(provider.connection, treasuryTokenAccount)
-  //   ).amount;
-
-  //   // Verify balances
-  //   assert.equal(
-  //     finalUserBalance.toString(),
-  //     (BigInt(initialUserBalance) - BigInt(depositAmount)).toString()
-  //   );
-  //   assert.equal(
-  //     finalTreasuryBalance.toString(),
-  //     (BigInt(initialTreasuryBalance) + BigInt(depositAmount)).toString()
-  //   );
-  //   console.log("initialUserBalance", initialUserBalance);
-  //   console.log("initialTreasuryBalance", initialTreasuryBalance);
-  //   console.log("finalUserBalance", finalUserBalance);
-  //   console.log("finalTreasuryBalance", finalTreasuryBalance);
-  //   getBalance(connection, feePayer.publicKey).then((balance) => {
-  //     console.log("finalFeePayerBalance:", balance, "SOL");
-  //   });
-  //   console.log("Deposit with third-party fee payer executed successfully");
-  // });
-*/
+      console.log('Deposit and swap executed successfully');
+    });
+  }
 });
 
 async function initializeTokenAccount(provider, mint, owner) {
@@ -517,7 +351,7 @@ async function initializeTokenAccount(provider, mint, owner) {
   // Derive the associated token account address
   const userTokenAccount = await getAssociatedTokenAddress(
     mint, // Mint address (e.g., USDC)
-    owner.publicKey, // The owner of the token account
+    owner, // The owner of the token account
     true,
     TOKEN_PROGRAM_ID, // SPL Token Program ID
     ASSOCIATED_TOKEN_PROGRAM_ID, // Associated Token Program ID
@@ -533,7 +367,7 @@ async function initializeTokenAccount(provider, mint, owner) {
       createAssociatedTokenAccountInstruction(
         owner.publicKey, // Payer of the transaction
         userTokenAccount,
-        owner.publicKey,
+        owner,
         mint,
         TOKEN_PROGRAM_ID,
         ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -554,10 +388,29 @@ async function initializeTokenAccount(provider, mint, owner) {
   return userTokenAccount;
 }
 
-const saveKeypairToFile = (keypair: Keypair, filepath: string) => {
-  const keypairJson = {
-    publicKey: keypair.publicKey.toString(),
-    secretKey: Array.from(keypair.secretKey),
+const exportProgramInfo = (
+  cluster: string,
+  stateAccount: string,
+  programId: string,
+) => {
+  const filePath = `./exports.json`;
+  // Check if the file exists
+  if (!fs.existsSync(filePath)) {
+    // Create the file with an empty object as content
+    fs.writeFileSync(filePath, JSON.stringify({}, null, 2));
+  }
+
+  let json = fs.readFileSync(filePath).toString();
+  json = JSON.parse(json || '{}');
+  json[cluster] = {
+    stateAccount: stateAccount,
+    programId: programId,
+    owner: anchor.AnchorProvider.env().wallet.publicKey.toString(),
+    treasuryAccount: treasuryAccount.toString(),
+    rpcEndpoint: heliusRpcUrl,
+    usdcMintAddress: usdcMintAddress,
+    testUserAccount: signerAccount.publicKey.toString(),
+    IDL: IDL,
   };
-  fs.writeFileSync(filepath, JSON.stringify(keypairJson, null, 2));
+  fs.writeFileSync(filePath, JSON.stringify(json, null, 2));
 };

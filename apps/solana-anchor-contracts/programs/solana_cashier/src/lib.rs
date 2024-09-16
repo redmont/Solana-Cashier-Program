@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Transfer, TokenAccount, Token};
 
-declare_id!("8ebCPZKEwFhe6bhCE4nE2fuPUhZWhh6j6jJ5Ex3DmhJS");
+declare_id!("9RKGsYb1CyJMs4ehGaGDf55E8YFgAzVwUCYtMwJBV6AM");
 
 #[program]
 pub mod solana_cashier {
@@ -86,7 +86,7 @@ pub struct State {
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
-    #[account(init, payer = owner, space = 8 + 32 + 32 + (32 * 10) + 32)]
+    #[account(init, payer = owner, space = 8 + 32 + 32 + (32 * 3) + 32)]
     pub state: Account<'info, State>,
     #[account(mut)]
     pub owner: Signer<'info>,
