@@ -36,7 +36,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Wallet2Icon } from 'lucide-react';
+import networks from '@/config/networks';
+import { Loader2, Wallet2Icon } from 'lucide-react';
+import Link from 'next/link';
+import * as faucets from '@/config/networks/faucets';
+import { cn } from '@/lib/utils';
 
 type Props = {
   onSubmit: (data: PricedCredits) => void;
@@ -47,14 +51,16 @@ const formatAmount = (amount: number) => amount.toLocaleString('en-US');
 export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
   const { depositor } = useContracts();
   const [customEnabled, setCustomEnabled] = useState(false);
-  const {
-    address,
-    network,
-    switchChainAndNetwork,
-    networkId,
-    currentNetworks,
-  } = useWallet();
+  const { address, network, switchNetwork, networkId } = useWallet();
   const { primaryWallet } = useDynamicContext();
+  const nativeFaucet = faucets.native.find(
+    (faucet) => faucet.networkId === networkId?.data,
+  );
+  const tokenFaucet = faucets.token.find(
+    (faucet) =>
+      faucet.networkId === networkId?.data &&
+      depositor?.parameters.allowedTokenAddress === faucet.contract,
+  );
 
   const {
     balance: solanaBalance,
@@ -155,6 +161,12 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
     [onSubmit],
   );
 
+  const networkSelectorLoading =
+    switchNetwork.isPending ||
+    networkId.isLoading ||
+    form.formState.isSubmitting ||
+    balance.isLoading;
+
   return (
     <Form {...form}>
       <form
@@ -162,25 +174,20 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
         className="space-y-6 px-2 pt-5"
       >
         <div className="flex items-center justify-between gap-3 font-normal">
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger>
-              <Button
-                loading={networkId.isLoading || switchChainAndNetwork.isPending}
-                variant="dropdown"
-                className="w-full"
-                type="button"
-              >
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild disabled={networkSelectorLoading}>
+              <Button loading={networkSelectorLoading} variant="dropdown">
                 {network?.name ?? 'Select Network'}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              {currentNetworks
+              {networks
                 .filter((n) => n.id !== networkId.data)
                 .map((network) => (
                   <DropdownMenuItem
                     key={network.id}
                     onClick={() => {
-                      switchChainAndNetwork.mutate(network.id);
+                      switchNetwork.mutate(network.id);
                     }}
                   >
                     {network.name}
@@ -188,12 +195,37 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
                 ))}
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <div className="flex items-center gap-2">
+          <div
+            className={cn('flex items-center gap-2', {
+              'text-muted': balance.isLoading,
+            })}
+          >
             <span>{formatUSDC(balance.data)} USDC</span>
-            <Wallet2Icon />
+            {balance.status === 'pending' && (
+              <Loader2 className="inline-block animate-spin" />
+            )}
+            {balance.status !== 'pending' && <Wallet2Icon />}
           </div>
         </div>
+        {(nativeFaucet || tokenFaucet) && (
+          <div className="flex justify-between gap-2">
+            {nativeFaucet && (
+              <Button>
+                <Link target="_blank" href={nativeFaucet.url}>
+                  Get {network?.nativeCurrency?.symbol} on {network?.name}
+                </Link>
+              </Button>
+            )}
+            {tokenFaucet && (
+              <Button>
+                <Link target="_blank" href={tokenFaucet.url}>
+                  Get token
+                </Link>
+              </Button>
+            )}
+          </div>
+        )}
+
         <FormField
           control={form.control}
           name="amount"
@@ -270,7 +302,7 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
         <Button
           loading={balance.isLoading}
           disabled={
-            switchChainAndNetwork.isPending ||
+            switchNetwork.isPending ||
             form.formState.isSubmitting ||
             balance.isLoading ||
             insufficientBalance

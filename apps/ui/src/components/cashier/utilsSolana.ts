@@ -8,41 +8,41 @@ import {
 
 import { useQuery } from '@tanstack/react-query';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
-import { solanaUsdcMintAddress, solanaRpcEndpoint } from '@/config/env';
+import { useContracts } from '@/hooks/useContracts';
+import solanaConfig from '@/config/networks/solana';
 
-const connection = new Connection(solanaRpcEndpoint, {
+export const connection = new Connection(solanaConfig.rpcUrls.default.http[0], {
   commitment: 'confirmed',
+  confirmTransactionInitialTimeout: 50000,
 });
 
 export const TOKEN_DECIMALS = 6;
 
-export const fetchUSDCBalance = async (
+export const fetchTokenBalance = async (
   walletAddress: string,
+  tokenAddress: string,
 ): Promise<{ usdcTokenAccount: PublicKey | null; usdcBalance: bigint }> => {
-  try {
-    const walletPublicKey = new PublicKey(walletAddress);
+  const walletPublicKey = new PublicKey(walletAddress);
 
-    const usdcTokenAccount = await getAssociatedTokenAddress(
-      new PublicKey(solanaUsdcMintAddress),
-      walletPublicKey,
-      true,
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-    );
+  const usdcTokenAccount = await getAssociatedTokenAddress(
+    new PublicKey(tokenAddress),
+    walletPublicKey,
+    true,
+    TOKEN_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+  );
 
-    const { amount: usdcBalance } = await getAccount(
-      connection,
-      usdcTokenAccount,
-    );
+  const { amount: usdcBalance } = await getAccount(
+    connection,
+    usdcTokenAccount,
+  );
 
-    return { usdcTokenAccount, usdcBalance };
-  } catch (error) {
-    return { usdcTokenAccount: null, usdcBalance: BigInt(0) };
-  }
+  return { usdcTokenAccount, usdcBalance };
 };
 
 export const useUSDCBalance = () => {
   const { primaryWallet } = useDynamicContext();
+  const contracts = useContracts();
 
   const {
     data,
@@ -51,11 +51,20 @@ export const useUSDCBalance = () => {
     status,
     refetch: loadUSDCBalance,
   } = useQuery({
-    queryKey: ['usdcBalance', primaryWallet?.address],
-    queryFn: () => fetchUSDCBalance(primaryWallet?.address ?? ''),
-    enabled: !!primaryWallet?.address && primaryWallet?.chain === 'solana',
-    retry: false, // disable retry to handle errors manually
-    refetchOnWindowFocus: false, // avoid unnecessary refetching
+    queryKey: [
+      'usdcBalance',
+      primaryWallet?.address,
+      contracts.depositor?.address,
+    ],
+    queryFn: () =>
+      fetchTokenBalance(
+        primaryWallet?.address ?? '',
+        contracts.depositor!.parameters.allowedTokenAddress,
+      ),
+    enabled:
+      !!primaryWallet?.address &&
+      primaryWallet?.chain === 'solana' &&
+      !!contracts.depositor,
   });
 
   const balance = data?.usdcBalance ?? BigInt(0);

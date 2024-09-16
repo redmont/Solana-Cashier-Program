@@ -10,7 +10,6 @@
   "scripts": {
     "clean": "rimraf ./artifacts ./cache ./coverage ./types ./coverage.json",
     "test": "hardhat test",
-    "deploy": "node deploy.js $npm_config_argv",
     "compile": "hardhat compile",
     "lint": "pnpm run lint:sol && pnpm run lint:ts && pnpm run prettier:check",
     "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\"",

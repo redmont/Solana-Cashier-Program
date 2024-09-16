@@ -17,7 +17,7 @@ import {
   FormLabel,
   FormMessages,
 } from '@/components/ui/form';
-import chains, { ChainId } from '@/config/chains';
+import { NetworkId, networkIdExists } from '@/config/networks';
 import { Input } from '../ui/input';
 import { useSocket, useWallet } from '@/hooks';
 import { NetworkSelector } from '@/components/networkSelector';
@@ -35,7 +35,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 type FormValues = {
   credits: number;
-  networkId: ChainId;
+  networkId: NetworkId;
 };
 
 type WithdrawalFormProps = {
@@ -67,16 +67,16 @@ const WithdrawalForm: FC<WithdrawalFormProps> = ({ onSubmit }) => {
             (n) => balance !== undefined && n <= balance,
             'Insufficient balance',
           ),
-        networkId: z.number().refine((n): n is ChainId => {
-          const found = chains.eip155.find((c) => c.id === n);
-          return found !== undefined;
-        }, 'Invalid network selected'),
+        networkId: z
+          .string()
+          .or(z.number())
+          .refine((n) => networkIdExists(n), 'Invalid network selected'),
       }),
     [balance],
   );
 
   const form = useForm<FormValues>({
-    defaultValues: { credits: 0, networkId: networkId.data as ChainId },
+    defaultValues: { credits: 0, networkId: networkId.data as NetworkId },
     resolver: zodResolver(FormValuesSchema),
   });
 

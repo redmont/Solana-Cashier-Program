@@ -35,7 +35,7 @@ export const Navbar = () => {
   const openDynamicAuth = useDynamicAuthClickHandler();
   const { send, connected } = useSocket();
   const username = useAtomValue(usernameAtom);
-  const { isAuthenticated, walletKey } = useWallet();
+  const { isAuthenticated } = useWallet();
   const [tutorialCompleted, setTutorialCompleted] = useAtom(
     tutorialCompletedAtom,
   );
@@ -191,13 +191,7 @@ export const Navbar = () => {
           <>
             <CashierButton className="hidden xs:flex" />
             <Button variant={'outline'} onClick={openDynamicAuth}>
-              {walletKey !== 'turnkeyhd' && (
-                <img
-                  className="size-6 min-w-6"
-                  src={`https://iconic.dynamic-static-assets.com/icons/sprite.svg#${walletKey}`}
-                />
-              )}
-              {walletKey === 'turnkeyhd' && <Wallet2Icon className="size-6" />}
+              <Wallet2Icon className="size-6" />
             </Button>
             <Button className="hidden px-2 sm:block" variant="outline">
               <span className="sr-only">Profile</span>

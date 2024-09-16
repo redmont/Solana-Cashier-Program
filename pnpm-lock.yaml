@@ -584,6 +584,9 @@ importers:
       '@bltzr-gg/brawlers-ui-gateway-messages':
         specifier: workspace:*
         version: link:../../packages/ui-gateway-messages
+      '@bltzr-gg/solana-anchor-contracts':
+        specifier: workspace:*
+        version: link:../solana-anchor-contracts
       '@cloudflare/stream-react':
         specifier: ^1.9.1
         version: 1.9.1(react@18.3.1)
