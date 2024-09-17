@@ -6,12 +6,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
-import networks, { ChainId, ChainProtocols } from '@/config/chains';
+import networks, { NetworkId } from '@/config/networks';
 
 type NetworkSelectorProps = {
-  selected: ChainId | undefined;
-  onSelect: (networkId: ChainId) => void;
+  selected: NetworkId | undefined;
+  onSelect: (networkId: NetworkId) => void;
   loading?: boolean;
 };
 
@@ -20,16 +19,11 @@ export const NetworkSelector: FC<NetworkSelectorProps> = ({
   onSelect,
   loading,
 }) => {
-  const { primaryWallet } = useDynamicContext();
+  const selectedNetwork = useMemo(
+    () => networks.find((n) => n.id === selected),
+    [selected],
+  );
 
-  const currentNetworks = useMemo(() => {
-    return [
-      ...networks[ChainProtocols.eip155],
-      ...networks[ChainProtocols.solana],
-    ];
-  }, [primaryWallet?.chain]);
-
-  const selectedNetwork = currentNetworks.find((n) => n.id === selected);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -38,13 +32,13 @@ export const NetworkSelector: FC<NetworkSelectorProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
-        {currentNetworks
+        {networks
           .filter((n) => n.id !== selected)
           .map((network) => (
             <DropdownMenuItem
               key={network.id}
               onClick={() => {
-                onSelect(network.id as ChainId);
+                onSelect(network.id);
               }}
             >
               {network.name}

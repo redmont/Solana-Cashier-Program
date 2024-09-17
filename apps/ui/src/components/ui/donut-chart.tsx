@@ -15,6 +15,7 @@ interface DonutChartProps {
   className?: string;
   children?: ReactNode;
   textProp?: string;
+  imageProp?: string;
 }
 
 export default function DonutChart({
@@ -28,6 +29,7 @@ export default function DonutChart({
   className,
   children,
   textProp,
+  imageProp,
 }: DonutChartProps) {
   const [shouldUseValue, setShouldUseValue] = useState(false);
 
@@ -103,7 +105,13 @@ export default function DonutChart({
         className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 text-center font-bold leading-none text-white"
         // style={{ fontSize: size / 4 }}
       >
-        <img src="/goldbrawler.svg" alt="" className="w-10" />
+        {imageProp && (
+          <img
+            src={`/progression_system_belts/${imageProp}`}
+            alt=""
+            className={'w-20'}
+          />
+        )}
         {textProp}
       </div>
       {children}

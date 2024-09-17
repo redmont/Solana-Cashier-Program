@@ -30,7 +30,8 @@ const ProfileWidget: FC<ProfileWidgetProps> = ({
   const username = useAtomValue(usernameAtom);
   const address = useAtomValue(accountAddressAtom);
   const progressionFeature = useFeatureFlag('progression');
-  const { currentRank, nextRankXp } = calculateRankLeaderboard(progress);
+  const { currentRank, nextRankXp, currentRankImage } =
+    calculateRankLeaderboard(progress);
   const progressBar = (progress / (nextRankXp ?? 1)) * 100;
 
   return (
@@ -47,6 +48,7 @@ const ProfileWidget: FC<ProfileWidgetProps> = ({
             progress={progressBar}
             progressClassName="text-gold"
             textProp={currentRank}
+            imageProp={currentRankImage}
           />
         )}
         <div className="flex grow flex-col items-center justify-center gap-5 self-stretch sm:items-start">

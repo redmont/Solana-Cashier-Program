@@ -2,7 +2,7 @@ import { Environment } from '@/types';
 import { createConfig } from 'wagmi';
 import { mainnet } from 'wagmi/chains';
 import { http } from 'viem';
-import * as chains from './chains';
+import * as chains from './networks';
 
 const alchemyApiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
 
@@ -15,7 +15,7 @@ const testnetTransports = {
 };
 
 export const development = createConfig({
-  chains: chains.development,
+  chains: [chains.sepolia, chains.polygonAmoy],
   multiInjectedProviderDiscovery: false,
   transports: {
     ...testnetTransports,
@@ -23,7 +23,7 @@ export const development = createConfig({
 });
 
 export const preview = createConfig({
-  chains: chains.preview,
+  chains: [chains.sepolia, chains.polygonAmoy],
   multiInjectedProviderDiscovery: false,
   transports: {
     ...testnetTransports,
@@ -31,10 +31,9 @@ export const preview = createConfig({
 });
 
 export const production = createConfig({
-  chains: chains.production,
+  chains: [chains.mainnet, chains.polygon],
   multiInjectedProviderDiscovery: false,
   transports: {
-    [101]: http(), // ..? Solana?
     [mainnet.id]: getAlchemyTransport('eth-mainnet'),
     [chains.polygon.id]: getAlchemyTransport('polygon-mainnet'),
   },

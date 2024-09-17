@@ -1,8 +1,13 @@
-import { balanceAtom, usernameAtom, userReferrerAtom } from '@/store/account';
+import {
+  balanceAtom,
+  usernameAtom,
+  userReferrerAtom,
+  userIdAtom,
+} from '@/store/account';
 import { useAtom, useAtomValue } from 'jotai';
 import Link from 'next/link';
 import { Suspense, useEffect, useRef, useState } from 'react';
-import { useWallet } from '@/hooks';
+import { useSocket, useWallet } from '@/hooks';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { tutorialCompletedAtom } from '@/store/view';
@@ -18,17 +23,35 @@ import { formatCompact } from '@/utils';
 import { useDynamicAuthClickHandler } from '@/hooks/useDynamicAuthClickHandler';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { useUserUpdateRequest } from '@dynamic-labs/sdk-react-core';
+import { calculateRankLeaderboard } from '@/hooks/useRankCal';
+import { useQuery } from '@tanstack/react-query';
+import {
+  GetUserProfileMessage,
+  GetUserProfileMessageResponse,
+} from '@bltzr-gg/brawlers-ui-gateway-messages';
 
 export const Navbar = () => {
   const progressionFeature = useFeatureFlag('progression');
   const openDynamicAuth = useDynamicAuthClickHandler();
+  const { send, connected } = useSocket();
   const username = useAtomValue(usernameAtom);
-  const { isAuthenticated, walletKey } = useWallet();
+  const { isAuthenticated } = useWallet();
   const [tutorialCompleted, setTutorialCompleted] = useAtom(
     tutorialCompletedAtom,
   );
 
+  const userXp = useQuery({
+    queryKey: ['userXp'],
+    queryFn: () =>
+      send<GetUserProfileMessage, GetUserProfileMessageResponse>(
+        new GetUserProfileMessage(),
+      ),
+    enabled: connected,
+  });
+
   const balance = useAtomValue(balanceAtom);
+  const { currentRankImage } = calculateRankLeaderboard(userXp.data?.xp ?? 0);
+  const userId = useAtomValue(userIdAtom);
 
   const [isNavOpen, setNavOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
@@ -131,7 +154,7 @@ export const Navbar = () => {
 
       <Button
         className="sm:!size-fit sm:!px-5 sm:!py-2 xs:size-8 xs:px-1 xs:py-0"
-        loading={balance === undefined}
+        loading={balance === undefined || userId === undefined}
         onClick={() => {
           setCashierOpen((open) => !open);
         }}
@@ -168,13 +191,7 @@ export const Navbar = () => {
           <>
             <CashierButton className="hidden xs:flex" />
             <Button variant={'outline'} onClick={openDynamicAuth}>
-              {walletKey !== 'turnkeyhd' && (
-                <img
-                  className="size-6 min-w-6"
-                  src={`https://iconic.dynamic-static-assets.com/icons/sprite.svg#${walletKey}`}
-                />
-              )}
-              {walletKey === 'turnkeyhd' && <Wallet2Icon className="size-6" />}
+              <Wallet2Icon className="size-6" />
             </Button>
             <Button className="hidden px-2 sm:block" variant="outline">
               <span className="sr-only">Profile</span>
@@ -182,7 +199,7 @@ export const Navbar = () => {
               <Link href="/profile">
                 {progressionFeature && (
                   <img
-                    src="/goldbrawler.svg"
+                    src={`/progression_system_belts/${currentRankImage}`}
                     alt=""
                     className="mr-2 inline-block size-6"
                   />

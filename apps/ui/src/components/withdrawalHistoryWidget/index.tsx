@@ -22,7 +22,7 @@ import { useContracts } from '@/hooks/useContracts';
 import { waitForTransactionReceipt } from 'viem/actions';
 import assert from 'assert';
 import { useToast } from '../ui/use-toast';
-import chains from '@/config/chains';
+import chains from '@/config/networks';
 
 const WithdrawalStatusSchema = z.enum(['Pending', 'Completed', 'Failed']);
 
@@ -36,7 +36,7 @@ type Withdrawal = {
   receiptId: string;
   tokenSymbol: string;
   chainId: string;
-  txUrl: string | null;
+  txUrl?: string | null;
   createdAt: string;
   updatedAt: string;
   reason?: string;
@@ -53,21 +53,16 @@ const txUrl = (caip2ChainId: string, txHash?: string) => {
     return null;
   }
 
-  const [namespace, reference] = caip2ChainId.split(':');
+  const [, reference] = caip2ChainId.split(':');
 
-  if (!Object.keys(chains).includes(namespace)) {
-    return null;
-  }
+  const chain = chains.find((chain) => chain.id === reference);
 
-  const typedNamespace = namespace as keyof typeof chains;
-  const chainId = parseInt(reference);
-
-  const chain = chains[typedNamespace].find((chain) => chain.id === chainId);
   if (!chain) {
     return null;
   }
 
   const explorerUrl = chain.blockExplorers?.default?.url;
+
   if (!explorerUrl) {
     return null;
   }
@@ -121,6 +116,10 @@ const Withdrawal: FC<WithdrawalProps> = ({
   const queryClient = useQueryClient();
   const chainId = useChainId();
 
+  if (contracts.isSuccess && contracts.type !== 'eip155') {
+    throw new Error('Only EVM chains are supported');
+  }
+
   const approveWithdrawal = useMutation({
     onError: (error) => {
       let errorMessage = error.message;
@@ -142,7 +141,10 @@ const Withdrawal: FC<WithdrawalProps> = ({
       });
     },
     mutationFn: async (_id: Withdrawal['receiptId']) => {
-      assert(contracts.withdrawer, 'Withdrawer contract not found');
+      assert(
+        contracts.isSuccess && contracts.withdrawer,
+        'Withdrawer contract not found',
+      );
 
       const { receiptId, tokenAmount, validFrom, validTo, signature } =
         withdrawal;

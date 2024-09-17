@@ -26,11 +26,4 @@ export const streamingServerHostname =
 export const postHogFeatureFlags =
   process.env.NEXT_PUBLIC_POSTHOG_FEATURE_FLAGS || '';
 
-export const solanaUsdcMintAddress =
-  process.env.NEXT_PUBLIC_USDC_MINT_ADDRESS || '';
-export const solanaRpcEndpoint =
-  process.env.NEXT_PUBLIC_SOLANA_RPC_ENDPOINT || '';
-export const solanaCashierContractID =
-  process.env.NEXT_PUBLIC_PROGRAM_DEPLOYED_ID || '';
-export const solanaProgramStateAddress =
-  process.env.NEXT_PUBLIC_PROGRAM_STATE_ADDRESS || '';
+export const isDev = process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production';

@@ -1,27 +1,19 @@
-import { FC, useState, useEffect } from 'react';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { FC, useMemo } from 'react';
+import { PublicKey } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { IDL } from './solanaProgramIdl/solana_cashier';
-import { Program, Idl, BN, AnchorProvider } from '@project-serum/anchor';
+import { Program, BN, AnchorProvider } from '@project-serum/anchor';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { ISolana } from '@dynamic-labs/solana';
 import { Button } from '../ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { PricedCredits } from './utils';
+
+import { useUSDCBalance, TOKEN_DECIMALS, connection } from './utilsSolana';
+import { useContracts } from '@/hooks/useContracts';
+import { useMutation } from '@tanstack/react-query';
+import { usePostHog } from '@/hooks';
 import { useAtomValue } from 'jotai';
-import { userIdAtom } from '@/store/account';
-import {
-  solanaProgramStateAddress,
-  solanaCashierContractID,
-  solanaRpcEndpoint,
-} from '@/config/env';
-
-import { useUSDCBalance, TOKEN_DECIMALS } from './utilsSolana';
-
-const connection = new Connection(solanaRpcEndpoint, {
-  commitment: 'confirmed',
-  confirmTransactionInitialTimeout: 50000,
-});
+import { balanceAtom } from '@/store/account';
 
 export const PurchaseFormSolana: FC<{
   credits: PricedCredits;
@@ -29,102 +21,100 @@ export const PurchaseFormSolana: FC<{
   onClose?: () => void;
 }> = ({ credits, onPurchaseCompleted }) => {
   const { toast } = useToast();
-  const userId = useAtomValue(userIdAtom);
   const { primaryWallet } = useDynamicContext();
-  const [isPending, setIsPending] = useState(false);
+  const contracts = useContracts();
+  const posthog = usePostHog();
+  const balance = useAtomValue(balanceAtom);
 
-  const { usdcTokenAccount: userUsdcTokenAccount, loadUSDCBalance } =
-    useUSDCBalance();
+  const { usdcTokenAccount: userTokenAccount } = useUSDCBalance();
 
-  useEffect(() => {
-    loadUSDCBalance;
-  }, [loadUSDCBalance, primaryWallet?.address]);
-
-  if (!primaryWallet) {
-    return null;
+  if (
+    !primaryWallet ||
+    contracts.isSuccess === false ||
+    contracts.type !== 'solana'
+  ) {
+    throw new Error('A Solana Wallet not connected');
   }
 
-  const programId = new PublicKey(solanaCashierContractID);
-  const statePubkey = new PublicKey(solanaProgramStateAddress);
-
-  const walletPublicKey = new PublicKey(primaryWallet.address);
-
-  const provider = new AnchorProvider(
-    connection,
-    {
-      publicKey: walletPublicKey,
-      signTransaction: async (transaction) => {
-        const signer = await primaryWallet.connector.getSigner<ISolana>();
-        return await signer.signTransaction(transaction);
-      },
-      signAllTransactions: async (transactions) => {
-        const signer = await primaryWallet.connector.getSigner<ISolana>();
-        return await signer.signAllTransactions(transactions);
-      },
-    },
-    { commitment: 'confirmed' },
+  const keys = useMemo(
+    () => ({
+      wallet: new PublicKey(primaryWallet.address),
+      program: new PublicKey(contracts.depositor.address),
+      state: new PublicKey(contracts.depositor.programState),
+    }),
+    [primaryWallet.address, contracts.depositor],
   );
-  const program = new Program(IDL as Idl, programId, provider);
 
-  const handlePurchase = async () => {
-    if (!primaryWallet) {
-      toast({
-        title: 'Wallet not connected',
-        description: 'Please connect your Solana wallet to proceed.',
-        variant: 'destructive',
-      });
-      return;
-    }
+  const provider = useMemo(
+    () =>
+      new AnchorProvider(
+        connection,
+        {
+          publicKey: keys.wallet,
+          signTransaction: async (transaction) => {
+            const signer = await primaryWallet.connector.getSigner<ISolana>();
+            return await signer.signTransaction(transaction);
+          },
+          signAllTransactions: async (transactions) => {
+            const signer = await primaryWallet.connector.getSigner<ISolana>();
+            return await signer.signAllTransactions(transactions);
+          },
+        },
+        { commitment: 'confirmed' },
+      ),
+    [primaryWallet.connector, keys.wallet],
+  );
 
-    setIsPending(true);
+  const program = useMemo(
+    () => new Program(contracts.depositor.idl, keys.program, provider),
+    [contracts.depositor.idl, keys.program, provider],
+  );
 
-    try {
-      const userTokenAccount = userUsdcTokenAccount;
-
+  const handlePurchase = useMutation({
+    mutationFn: async () => {
       if (!userTokenAccount) {
         throw new Error('User token account not found');
       }
 
-      const state = await program.account.state.fetch(statePubkey);
+      const state = await program.account.state.fetch(keys.state);
       const treasuryTokenAccount: PublicKey = state.treasury as PublicKey;
 
       const decimals = TOKEN_DECIMALS;
       const amountInLamports = credits.total * Math.pow(10, decimals);
-      if (!userId) {
-        throw new Error('');
-      }
-      const bytesUserId = Buffer.from(userId, 'utf-8');
 
       await program.methods
-        .depositAndSwap(new BN(amountInLamports), bytesUserId)
+        .depositAndSwap(new BN(amountInLamports))
         .accounts({
-          state: statePubkey,
-          userTokenAccount: userTokenAccount,
+          state: keys.state,
+          userTokenAccount,
           treasury: treasuryTokenAccount,
-          userAuthority: walletPublicKey,
+          userAuthority: keys.wallet,
           tokenProgram: TOKEN_PROGRAM_ID,
         })
         .signers([])
         .rpc();
-
-      // Notify success
-      toast({
-        title: 'Purchase completed',
-        description: `${credits.credits} credits purchased.`,
-        variant: 'default',
-      });
-
-      onPurchaseCompleted?.();
-    } catch (e) {
+    },
+    onError: () => {
       toast({
         title: 'Purchase failed',
         description: 'Transaction failed. Please try again.',
         variant: 'destructive',
       });
-    } finally {
-      setIsPending(false);
-    }
-  };
+    },
+    onSuccess: () => {
+      onPurchaseCompleted?.();
+      toast({
+        title: 'Purchase completed',
+        description: `${credits.credits} credits purchased.`,
+        variant: 'default',
+      });
+      posthog?.capture('Credits Purchased', {
+        credits: credits.credits,
+        cost: credits.total,
+        prevCreditBalance: balance,
+      });
+    },
+  });
 
   return (
     <div>
@@ -140,9 +130,9 @@ export const PurchaseFormSolana: FC<{
           </p>
         </div>
         <Button
-          loading={isPending}
-          onClick={handlePurchase}
-          disabled={isPending}
+          loading={handlePurchase.isPending}
+          onClick={() => handlePurchase.mutate()}
+          disabled={handlePurchase.isPending}
         >
           Buy Now
         </Button>

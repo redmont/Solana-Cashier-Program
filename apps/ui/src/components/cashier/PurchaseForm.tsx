@@ -40,6 +40,10 @@ export const PurchaseForm = ({
     args: [address!, contracts.depositor!.address as `0x${string}`],
   });
 
+  if (contracts.isSuccess && contracts.type !== 'eip155') {
+    throw new Error('Wrong purchase order flow');
+  }
+
   const approvedAmount = formatUSDC(allowance.data);
 
   const enoughWasApproved = useMemo(() => {
