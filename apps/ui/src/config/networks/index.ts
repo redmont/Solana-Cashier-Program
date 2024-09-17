@@ -11,9 +11,7 @@ export * from './solana';
 export const evm = [mainnet, polygon, polygonAmoy, sepolia] as const;
 export const solana = [solanaMainnet, solanaDevnet] as const;
 export const allNetworks = [...evm, ...solana] as const;
-export const production = allNetworks.filter(
-  (chain) => chain.testnet === false,
-);
+export const production = allNetworks.filter((chain) => !chain.testnet);
 export const development = allNetworks.filter(
   (chain) => chain.testnet === true,
 );
