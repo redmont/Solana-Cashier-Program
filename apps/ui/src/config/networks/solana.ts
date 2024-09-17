@@ -9,7 +9,7 @@ export const solanaMainnet = {
     decimals: 9,
   },
   rpcUrls: {
-    default: { http: ['https://mainnet.helius-rpc.com'] },
+    default: { http: ['https://nelia-u3mx5a-fast-mainnet.helius-rpc.com'] },
   },
   blockExplorers: {
     default: { name: 'Solana Explorer', url: 'https://explorer.solana.com' },
