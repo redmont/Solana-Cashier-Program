@@ -61,7 +61,7 @@ export const AmountSchema = z.object({
   amount: z
     .number({ message: 'Amount needs to be a number' })
     .positive('Amount needs to be a positive number')
-    .min(priceConfiguration.amount, `Minimum amount is $1`),
+    .min(1, `Minimum amount is $1`),
 });
 
 export type CreditAmount = z.infer<typeof AmountSchema>;
