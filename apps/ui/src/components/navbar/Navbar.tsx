@@ -1,14 +1,9 @@
-import {
-  balanceAtom,
-  usernameAtom,
-  userReferrerAtom,
-  userIdAtom,
-} from '@/store/account';
+import { balanceAtom, usernameAtom, userIdAtom } from '@/store/account';
 import { useAtom, useAtomValue } from 'jotai';
 import Link from 'next/link';
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSocket, useWallet } from '@/hooks';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { tutorialCompletedAtom } from '@/store/view';
 import InfoIcon from './InfoIcon';
@@ -22,7 +17,6 @@ import { Plus } from 'lucide-react';
 import { formatCompact } from '@/utils';
 import { useDynamicAuthClickHandler } from '@/hooks/useDynamicAuthClickHandler';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
-import { useUserUpdateRequest } from '@dynamic-labs/sdk-react-core';
 import { calculateRankLeaderboard } from '@/hooks/useRankCal';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -99,28 +93,6 @@ export const Navbar = () => {
       How To Play
     </span>
   );
-
-  const SetUserReferrer = () => {
-    const [, setUserReferrer] = useAtom(userReferrerAtom);
-    const searchParams = useSearchParams();
-    const fp_ref = searchParams.get('fp_ref');
-    const userReferrer = useAtomValue(userReferrerAtom);
-    const { updateUser } = useUserUpdateRequest();
-
-    useEffect(() => {
-      if (userReferrer && isAuthenticated) {
-        updateUser({ team: userReferrer });
-      }
-    }, [updateUser, userReferrer]);
-
-    useEffect(() => {
-      if (fp_ref) {
-        setUserReferrer(fp_ref);
-      }
-    }, [fp_ref, setUserReferrer]);
-
-    return null;
-  };
 
   const CashierButton = ({
     className,
@@ -246,9 +218,6 @@ export const Navbar = () => {
           </div>
         </div>
       )}
-      <Suspense>
-        <SetUserReferrer />
-      </Suspense>
     </div>
   );
 };
