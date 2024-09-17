@@ -4,11 +4,10 @@ export default {
   CashierDeposit: {
     mainnet: {
       idl,
-      // TODO fill this out when solana mainnet is deployed
-      address: '',
-      programState: '',
+      address: '9RKGsYb1CyJMs4ehGaGDf55E8YFgAzVwUCYtMwJBV6AM',
+      programState: 'kZJhBupZ93eTCFvVKu57KSrVGBYh99SSGVwy4ucGWwW',
       parameters: {
-        allowedTokenAddress: '',
+        allowedTokenAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
       },
     },
     devnet: {
