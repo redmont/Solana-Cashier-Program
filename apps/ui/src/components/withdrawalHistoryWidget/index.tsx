@@ -182,12 +182,11 @@ const Withdrawal: FC<WithdrawalProps> = ({
   return (
     <div
       className={cn(
-        'flex flex-col items-center gap-2 rounded-lg p-5 odd:bg-black/25 sm:col-span-4 sm:grid sm:grid-cols-subgrid sm:p-2',
+        'flex flex-col items-center gap-2 rounded-lg p-5 odd:bg-black/25 sm:col-span-3 sm:grid sm:grid-cols-subgrid sm:p-2',
         className,
       )}
     >
       <div>{dayjs(withdrawal.createdAt).format('DD/MM/YYYY')}</div>
-      <div>{withdrawal.creditAmount.toLocaleString()} credits</div>
       <div className="font-semibold text-white">
         {formatUnits(withdrawal.tokenAmount, withdrawal.tokenDecimals)}{' '}
         {withdrawal.tokenSymbol}
@@ -258,7 +257,7 @@ const WithdrawalHistoryWidget: FC<{ className?: string }> = ({ className }) => {
       </div>
       <h2 className="mb-4 text-2xl font-semibold text-white">Withdrawals</h2>
       <Scrollable className="-mx-4 grow overflow-auto px-4">
-        <div className="flex flex-col gap-3 sm:grid sm:grid-cols-4 sm:gap-1">
+        <div className="flex flex-col gap-3 sm:grid sm:grid-cols-3 sm:gap-1">
           {withdrawals.data?.length === 0 && (
             <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-3 px-3 py-5">
               <img src={lfb.src} alt="" className="w-48" />

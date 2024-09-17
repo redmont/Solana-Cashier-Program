@@ -75,7 +75,7 @@ const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
                   <div className="widget-header-section">
                     <div className="widget-info">
                       <p>
-                        Daily bonus XP for most 24hr net Credits won:
+                        Daily bonus XP for most 24hr net winnings:
                         <br />
                         1st: <span className="xp">150 XP</span>, 2nd:{' '}
                         <span className="xp">100 XP</span>, 3rd:{' '}
@@ -154,7 +154,7 @@ const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
                     <div className="widget-header-section">
                       <div className="widget-info">
                         <p>
-                          Daily bonus XP for most 24hr net Credits won:
+                          Daily bonus XP for most 24hr net winnings:
                           <br />
                           1st: <span className="xp">150 XP</span>, 2nd:{' '}
                           <span className="xp">100 XP</span>, 3rd:{' '}
@@ -235,8 +235,8 @@ const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
                   <div className="widget-header-section">
                     <div className="widget-info">
                       <p>
-                        Earn <span className="xp">1 XP</span>&nbsp;for every 100
-                        Credits won.
+                        Earn <span className="xp">1 XP</span>&nbsp;for every
+                        $0.01 won.
                       </p>
                     </div>
                   </div>
@@ -289,7 +289,7 @@ const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
                       <div className="widget-info">
                         <p>
                           Earn <span className="xp">1 XP</span>&nbsp;for every
-                          100 Credits won.
+                          $0.01 won.
                         </p>
                       </div>
                     </div>
@@ -343,14 +343,14 @@ const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
               <div className="flex items-center gap-2">
                 <p>
                   Earn <span className="text-primary">1 XP</span>&nbsp;for every
-                  <span className="text-primary">&nbsp;10,000 credits</span>
+                  <span className="text-primary">&nbsp;$1</span>
                   &nbsp;staked at risk.
                 </p>
                 <Tooltip
                   content={
                     <p className="max-w-80 rounded-xl border border-[#F0AC5D] bg-foreground p-2 text-center text-sm">
-                      e.g. Stake 10k Credits on Fighter A and 20k Credits on
-                      Fighter B = (20k - 10k = 10k = 1 XP)
+                      e.g. Stake $1 on Fighter A and $2 on Fighter B = ($2 - $1
+                      = $1 = 1 XP)
                     </p>
                   }
                 >
@@ -422,14 +422,14 @@ const LeaderboardWidget: FC<LeaderboardWidgetProps> = ({
                   <p>
                     Earn <span className="text-primary">1 XP</span>&nbsp;for
                     every
-                    <span className="text-primary">&nbsp;10,000 credits</span>
+                    <span className="text-primary">&nbsp;$1</span>
                     &nbsp;staked at risk.
                   </p>
                   <Tooltip
                     content={
                       <p className="max-w-80 rounded-xl border border-[#F0AC5D] bg-foreground p-2 text-center text-sm">
-                        e.g. Stake 10k Credits on Fighter A and 20k Credits on
-                        Fighter B = (20k - 10k = 10k = 1 XP)
+                        e.g. Stake $1 on Fighter A and $2 on Fighter B = ($2 -
+                        $1 = $1 = 1 XP)
                       </p>
                     }
                   >

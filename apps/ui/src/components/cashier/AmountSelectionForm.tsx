@@ -12,8 +12,7 @@ import {
   FormLabel,
   FormMessages,
 } from '@/components/ui/form';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { FC, useCallback, useState, useEffect, useMemo } from 'react';
+import { FC, useCallback, useEffect, useMemo } from 'react';
 import { Input } from '../ui/input';
 import { useReadContract } from 'wagmi';
 import { erc20Abi } from 'viem';
@@ -46,11 +45,8 @@ type Props = {
   onSubmit: (data: PricedCredits) => void;
 };
 
-const formatAmount = (amount: number) => amount.toLocaleString('en-US');
-
 export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
   const { depositor } = useContracts();
-  const [customEnabled, setCustomEnabled] = useState(false);
   const { address, network, switchNetwork, networkId } = useWallet();
   const { primaryWallet } = useDynamicContext();
   const nativeFaucet = faucets.native.find(
@@ -117,14 +113,14 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
       return (
         balance.status === 'success' &&
         config &&
-        +config.total <= formatUSDC(balance.data)
+        +config.amount <= formatUSDC(balance.data)
       );
     },
     [balance.status, balance.data],
   );
 
   const form = useForm<CreditAmount>({
-    defaultValues: { amount: priceConfiguration.credits },
+    defaultValues: { amount: priceConfiguration.amount },
     resolver: zodResolver(
       AmountSchema.refine(
         () => balance.status !== 'pending',
@@ -144,7 +140,7 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
   const priceConfig = getPricingConfig(form.watch('amount'));
 
   // Just a temporary fix. Handled it properly in the Multi Token PR.
-  const totalPriceToDecimals = parseUSDC(priceConfig?.total ?? 0);
+  const totalPriceToDecimals = parseUSDC(priceConfig?.amount ?? 0);
   const insufficientBalance =
     balance.status === 'success' &&
     !!priceConfig &&
@@ -229,68 +225,15 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
         <FormField
           control={form.control}
           name="amount"
-          render={() => (
-            <FormItem className="space-y-3">
-              <FormLabel className="mb-4 text-lg">
-                Choose amount to deposit.
-              </FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={(value) => {
-                    setCustomEnabled(value === 'Custom');
-                    if (value !== 'Custom') {
-                      form.setValue('amount', parseInt(value));
-                    }
-                  }}
-                  defaultValue={priceConfiguration.credits.toString()}
-                  className="flex flex-col space-y-1"
-                >
-                  {priceConfiguration.presets.map((credits) => (
-                    <FormItem
-                      key={credits}
-                      className="flex items-center space-x-3 space-y-0"
-                    >
-                      <FormControl>
-                        <RadioGroupItem value={credits.toString()} />
-                      </FormControl>
-                      <div className="flex grow justify-between">
-                        <FormLabel className="font-semibold text-white">
-                          {formatAmount(credits)} credits
-                        </FormLabel>
-                        <FormLabel className="font-normal">
-                          {(
-                            priceConfiguration.pricePerCredit * credits
-                          ).toFixed(2)}{' '}
-                          USDC
-                        </FormLabel>
-                      </div>
-                    </FormItem>
-                  ))}
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="Custom" />
-                    </FormControl>
-                    <FormLabel className="font-normal text-white">
-                      Custom
-                    </FormLabel>
-                  </FormItem>
-                </RadioGroup>
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="amount"
           render={({ formState }) => (
             <FormItem>
               <FormLabel>Amount</FormLabel>
               <FormControl>
                 <Input
-                  endAdornment={`${priceConfig?.total.toFixed(2) ?? ''} USDC`}
+                  startAdornment="$"
                   {...form.register('amount', { valueAsNumber: true })}
-                  disabled={formState.isSubmitting || !customEnabled}
-                  placeholder="Enter amount of credits"
+                  disabled={formState.isSubmitting}
+                  placeholder="Enter amount of USDC"
                   type="number"
                   className="w-full rounded-md border [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />

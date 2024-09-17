@@ -23,8 +23,7 @@ import { useSocket, useWallet } from '@/hooks';
 import { NetworkSelector } from '@/components/networkSelector';
 import { z } from 'zod';
 import { useAtomValue } from 'jotai';
-import { balanceAtom } from '@/store/account';
-import { getPrice } from '../cashier/utils';
+import { usdBalanceAtom } from '@/store/account';
 import { FEE_PERCENT } from '@/config/withdrawals';
 import {
   RequestWithdrawalMessage,
@@ -32,9 +31,10 @@ import {
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { useToast } from '../ui/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
+import { CREDITS_DECIMALS } from '@/config/credits';
 
 type FormValues = {
-  credits: number;
+  amount: number;
   networkId: NetworkId;
 };
 
@@ -54,17 +54,17 @@ const toLocaleAndFixed = (value: number) =>
   });
 
 const WithdrawalForm: FC<WithdrawalFormProps> = ({ onSubmit }) => {
-  const balance = useAtomValue(balanceAtom);
+  const usdBalance = useAtomValue(usdBalanceAtom);
   const { networkId } = useWallet();
 
   const FormValuesSchema = useMemo(
     () =>
       z.object({
-        credits: z
+        amount: z
           .number({ message: 'Amount needs to be a number.' })
           .min(0)
           .refine(
-            (n) => balance !== undefined && n <= balance,
+            (n) => usdBalance !== undefined && n <= usdBalance,
             'Insufficient balance',
           ),
         networkId: z
@@ -72,17 +72,17 @@ const WithdrawalForm: FC<WithdrawalFormProps> = ({ onSubmit }) => {
           .or(z.number())
           .refine((n) => networkIdExists(n), 'Invalid network selected'),
       }),
-    [balance],
+    [usdBalance],
   );
 
   const form = useForm<FormValues>({
-    defaultValues: { credits: 0, networkId: networkId.data as NetworkId },
+    defaultValues: { amount: 0, networkId: networkId.data as NetworkId },
     resolver: zodResolver(FormValuesSchema),
   });
 
-  const creditsValue = form.watch('credits');
-  const usdcValue = isNaN(creditsValue) ? 0 : getPrice(creditsValue);
-  const fee = usdcValue * FEE_PERCENT;
+  const amountValue = form.watch('amount');
+  const cleanAmountValue = isNaN(amountValue) ? 0 : amountValue;
+  const fee = cleanAmountValue * FEE_PERCENT;
 
   return (
     <Form {...form}>
@@ -101,23 +101,24 @@ const WithdrawalForm: FC<WithdrawalFormProps> = ({ onSubmit }) => {
           </FormControl>
         </FormItem>
         <p className="leading-tight text-white">
-          Withdrawing Credits is a two-step process: first submit the withdrawal
-          for processing, then to confirm the transaction in your wallet.
+          Withdrawing is a two-step process: first submit the withdrawal for
+          processing, then to confirm the transaction in your wallet.
         </p>
         <FormField
           control={form.control}
-          name="credits"
+          name="amount"
           render={({ formState }) => (
             <FormItem>
               <FormLabel>
-                Available to withdraw: {toLocaleAndFixed(balance ?? 0)} credits
+                Available to withdraw: ${toLocaleAndFixed(usdBalance ?? 0)}
               </FormLabel>
               <FormControl>
                 <Input
-                  {...form.register('credits', { valueAsNumber: true })}
+                  {...form.register('amount', { valueAsNumber: true })}
+                  startAdornment="$"
                   endAdornment={
                     <Button
-                      onClick={() => form.setValue('credits', balance ?? 0)}
+                      onClick={() => form.setValue('amount', usdBalance ?? 0)}
                       className="-mx-3 rounded-md focus:ring-0 focus:ring-offset-0"
                       variant="ghost"
                       type="button"
@@ -126,7 +127,7 @@ const WithdrawalForm: FC<WithdrawalFormProps> = ({ onSubmit }) => {
                     </Button>
                   }
                   disabled={formState.isSubmitting}
-                  placeholder="Enter amount of credits"
+                  placeholder="Enter amount"
                   type="number"
                   className="w-full rounded-md border [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
@@ -138,20 +139,20 @@ const WithdrawalForm: FC<WithdrawalFormProps> = ({ onSubmit }) => {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm text-white">USDC Value</span>
-            <span>${usdcValue.toFixed(2)} USDC</span>
+            <span>${cleanAmountValue?.toFixed(2)} USDC</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-white">Fee</span>
-            <span>${(usdcValue * FEE_PERCENT).toFixed(2)} USDC</span>
+            <span>${(cleanAmountValue * FEE_PERCENT).toFixed(2)} USDC</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-white">Total to receive</span>
-            <span>${(usdcValue - fee).toFixed(2)} USDC</span>
+            <span>${(cleanAmountValue - fee).toFixed(2)} USDC</span>
           </div>
         </div>
         <Button
-          loading={balance === undefined}
-          disabled={form.formState.isSubmitting || balance === undefined}
+          loading={usdBalance === undefined}
+          disabled={form.formState.isSubmitting || usdBalance === undefined}
           className="w-full"
           type="submit"
         >
@@ -184,7 +185,7 @@ const WithdrawalModal: FC<PropsWithChildren> = ({ children }) => {
           chainId,
           tokenSymbol,
           address,
-          data.credits,
+          data.amount * 10 ** CREDITS_DECIMALS,
         ),
       );
     } catch (e) {

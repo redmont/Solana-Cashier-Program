@@ -109,7 +109,7 @@ export class AccountController {
       const apiKey = this.configService.get<string>('fpApiKey');
       const acc = await this.readModelService.getAccount(accountId);
       const event_id = acc.lastUpdated + acc.balance;
-      const usdAmount = (amount * 0.000099 * 100).toString(); // in cents
+      const usdAmount = (amount * 0.0001 * 100).toString(); // in cents
       const res = await axios.post(
         'https://firstpromoter.com/api/v1/track/sale',
         new URLSearchParams({

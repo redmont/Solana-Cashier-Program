@@ -11,6 +11,7 @@ import {
 } from '@/store/match';
 import { Fighter } from '@/types';
 import { useSfx } from '@/hooks';
+import { formatCreditAmount } from '@/utils';
 
 type ResultCache = {
   result: MatchResult;
@@ -83,7 +84,7 @@ export const MatchResultWidget: FC = () => {
     } = cachedResult;
     const text = encodeURIComponent(
       `🥊 ${winner?.displayName} conquers ${loser?.displayName} in @BRAWL3RS!\
-      \n🪙 Banked +${winAmount} Brawl3r credits and shot up the leaderboard.\
+      \n🪙 Banked +$${formatCreditAmount(winAmount)} and shot up the leaderboard.\
       \n🏆 Eyeing those tournament prizes. Who's next??`,
     );
 
@@ -114,9 +115,8 @@ export const MatchResultWidget: FC = () => {
 
               <div className="inline-flex items-end gap-2 leading-none text-primary">
                 <span className="text-xl leading-none xs:text-4xl">
-                  {`+${+cachedResult?.result.winAmount > 0 ? cachedResult.result?.winAmount : 0}`}
+                  {`+$${formatCreditAmount(+cachedResult?.result.winAmount > 0 ? cachedResult.result?.winAmount : 0)}`}
                 </span>
-                <span className="text-md sm:text-xl">Credits</span>
               </div>
               <div className="my-2 flex w-full justify-center gap-3">
                 <Button

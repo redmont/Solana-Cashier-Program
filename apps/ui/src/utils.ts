@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { CREDITS_DECIMALS } from './config/credits';
 
 export const openNewTab = (url: string) => {
   window?.open(url, '_blank')?.focus();
@@ -67,3 +68,22 @@ export const formatCompact = (num: number) =>
 
 export const shortenAddress = (address: string, size = 6) =>
   address.slice(0, size) + '...' + address.slice(-size);
+
+export const formatCreditAmount = (amount: number | string) => {
+  let display = typeof amount === 'string' ? amount : amount.toString();
+
+  const negative = display.startsWith('-');
+  if (negative) {
+    display = display.slice(1);
+  }
+
+  display = display.padStart(CREDITS_DECIMALS, '0');
+
+  const integer = display.slice(0, display.length - CREDITS_DECIMALS);
+
+  let fraction = display.slice(display.length - CREDITS_DECIMALS);
+  fraction = fraction.replace(/(0+)$/, '');
+  return `${negative ? '-' : ''}${integer || '0'}${
+    fraction ? `.${fraction}` : ''
+  }`;
+};

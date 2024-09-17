@@ -47,8 +47,8 @@ export const PurchaseForm = ({
   const approvedAmount = formatUSDC(allowance.data);
 
   const enoughWasApproved = useMemo(() => {
-    return allowance.status === 'success' && approvedAmount >= credits.total;
-  }, [allowance.status, approvedAmount, credits.total]);
+    return allowance.status === 'success' && approvedAmount >= credits.amount;
+  }, [allowance.status, approvedAmount, credits.amount]);
 
   const client = useClient();
   const { writeContractAsync } = useWriteContract();
@@ -63,7 +63,7 @@ export const PurchaseForm = ({
     },
     mutationFn: async () => {
       assert(contracts.depositor, 'Depositor contract not found');
-      const amount = BigInt(parseUSDC(credits.total));
+      const amount = BigInt(parseUSDC(credits.amount));
 
       const receipt = await writeContractAsync({
         abi: erc20Abi,
@@ -100,7 +100,7 @@ export const PurchaseForm = ({
       });
       posthog?.capture('Credits Purchased', {
         credits: credits.credits,
-        cost: credits.total,
+        cost: credits.amount,
         prevCreditBalance: balance,
       });
     },
@@ -119,7 +119,7 @@ export const PurchaseForm = ({
             }),
           ) as `0x${string}`,
           contracts.depositor.parameters.allowedTokenAddress as `0x${string}`,
-          parseUSDC(credits.total),
+          parseUSDC(credits.amount),
         ],
       });
 
@@ -129,10 +129,10 @@ export const PurchaseForm = ({
 
   return (
     <div>
-      <h4 className="mb-4 text-lg font-bold">Purchase Credits</h4>
+      <h4 className="mb-4 text-lg font-bold">Cash In</h4>
       <p className="mb-3 font-normal">
-        You're about to buy {credits.credits} Credits for {credits.total} USDC.
-        Complete the purchase using the two step process:
+        You're about to cash in ${credits.amount}. Complete the purchase using
+        the two step process:
       </p>
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className={cn({ 'text-muted': enoughWasApproved })}>

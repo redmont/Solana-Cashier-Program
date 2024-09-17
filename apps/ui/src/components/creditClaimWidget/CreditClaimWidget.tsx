@@ -13,6 +13,7 @@ import {
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
 import { cn } from '@/lib/utils';
+import { formatCreditAmount } from '@/utils';
 
 export const CreditClaimWidget: FC<{ className?: string }> = ({
   className,
@@ -146,12 +147,10 @@ export const CreditClaimWidget: FC<{ className?: string }> = ({
       )}
     >
       <div className="widget-header">
-        <h2 className="mb-4 text-2xl font-semibold text-white">
-          Daily Credits Claim
-        </h2>
+        <h2 className="mb-4 text-2xl font-semibold text-white">Daily Claim</h2>
         <p>
-          Boost your rewards daily! Claim credits to grow your streak - miss a
-          day, and it resets.
+          Boost your rewards daily! Claim to grow your streak - miss a day, and
+          it resets.
         </p>
       </div>
       <div className="widget-body">
@@ -230,7 +229,7 @@ const CreditClaimCard: FC<CreditClaimCard> = (props) => {
     >
       <div className="claim-day">Day {props.day}</div>
 
-      <div className="claim-xp">+{props.amount}</div>
+      <div className="claim-xp">+${formatCreditAmount(props.amount)}</div>
 
       {props.current && props.day > 1 && hasCountdown && (
         <div className="claim-countdown">

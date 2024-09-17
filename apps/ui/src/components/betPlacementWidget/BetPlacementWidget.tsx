@@ -18,7 +18,7 @@ import { PlaceBetMessage } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import { FighterSwitch } from './FighterSwitch';
 import { PriceVisualisation } from './PriceVisualisation';
 import { Tooltip } from '../Tooltip';
-import { balanceAtom } from '@/store/account';
+import { balanceAtom, usdBalanceAtom } from '@/store/account';
 import {
   matchSeriesAtom,
   matchStatusAtom,
@@ -33,10 +33,12 @@ import {
 import Typography from '../ui/typography';
 import { Input } from '../ui/input';
 import dayjs from 'dayjs';
+import { CREDITS_DECIMALS } from '@/config/credits';
 
 export const BetPlacementWidget: FC = () => {
   const [actionTitle, setActionTitle] = useState('Join the Fight');
   const balance = useAtomValue(balanceAtom);
+  const usdBalance = useAtomValue(usdBalanceAtom);
   const matchSeries = useAtomValue(matchSeriesAtom);
   const matchStatus = useAtomValue(matchStatusAtom);
   const poolOpenStartTime = useAtomValue(poolOpenStartTimeAtom);
@@ -61,18 +63,18 @@ export const BetPlacementWidget: FC = () => {
   const sfx = useSfx();
 
   useEffect(() => {
-    if (balance !== undefined && balance < betAmount) {
+    if (usdBalance !== undefined && usdBalance < betAmount) {
       if (isDirty) {
-        setError('Insufficient credits balance');
+        setError('Insufficient balance');
       } else {
-        setBetAmount(Math.floor(balance));
+        setBetAmount(Math.floor(usdBalance));
       }
     } else {
       setError('');
     }
 
-    setBetPercent(balance ? Math.floor((betAmount / balance) * 100) : 0);
-  }, [balance, betAmount, isDirty, setBetAmount]);
+    setBetPercent(usdBalance ? Math.floor((betAmount / usdBalance) * 100) : 0);
+  }, [usdBalance, betAmount, isDirty, setBetAmount]);
 
   useEffect(() => {
     if (!isAuthenticated || isBalanceReady) {
@@ -83,7 +85,7 @@ export const BetPlacementWidget: FC = () => {
       return;
     }
 
-    setBetAmount(Math.floor((balance ?? 0) * 0.25));
+    setBetAmount(Math.floor((usdBalance ?? 0) * 0.25));
 
     // We only need to track isBalanceReady
     // to apply this once balance is fetched from server
@@ -102,13 +104,13 @@ export const BetPlacementWidget: FC = () => {
 
   const handlePercentChange = useCallback(
     (percent: number) => {
-      const amount = Math.floor(((balance ?? 0) * percent) / 100);
+      const amount = Math.floor(((usdBalance ?? 0) * percent) / 100);
 
       setDirty(true);
       setBetPercent(percent);
       setBetAmount(amount);
     },
-    [balance, setBetAmount],
+    [usdBalance, setBetAmount],
   );
 
   const placeBet = useCallback(async () => {
@@ -120,7 +122,11 @@ export const BetPlacementWidget: FC = () => {
     setLoading(true);
 
     await send(
-      new PlaceBetMessage(matchSeries, betAmount, selectedFighter.codeName),
+      new PlaceBetMessage(
+        matchSeries,
+        betAmount * 10 ** CREDITS_DECIMALS,
+        selectedFighter.codeName,
+      ),
     );
 
     sfx.stakeConfirmed();
@@ -128,7 +134,7 @@ export const BetPlacementWidget: FC = () => {
 
     posthog?.capture('Stake Placed', {
       fighter: selectedFighter.codeName,
-      stake: betAmount,
+      stake: betAmount * 10 ** CREDITS_DECIMALS,
       balance,
       winRate:
         selectedFighterIndex === 0 ? projectedWinRate1 : projectedWinRate2,
@@ -220,7 +226,7 @@ export const BetPlacementWidget: FC = () => {
               </div>
 
               <Input
-                endAdornment="Credits"
+                startAdornment="$"
                 className="my-6"
                 value={betAmount}
                 onChange={handleBetAmountChange}

@@ -3,6 +3,7 @@ import { BetPlacedActivityEvent } from '../events/betPlaced.event';
 import { MessageConverter } from './messageConverter';
 import { UserProfilesQueryStoreService } from 'query-store';
 import { md } from '../utils';
+import { creditsToUsd } from '@/utils';
 
 @Injectable()
 export class WhaleWatchMessage
@@ -15,7 +16,8 @@ export class WhaleWatchMessage
     amount,
     fighterDisplayName,
   }: BetPlacedActivityEvent) {
-    if (amount < 1000) {
+    const usdAmount = creditsToUsd(amount);
+    if (usdAmount < 1000) {
       return null;
     }
 
@@ -25,7 +27,7 @@ export class WhaleWatchMessage
     if (username?.length > 0) {
       const message = md`**Whale watch!**\n
 🐋 ${username} just bet\n
-💰 ${amount} credits on\n
+💰 $${usdAmount.toFixed(2)} on\n
 🥊 ${fighterDisplayName} to win`;
 
       return { message };

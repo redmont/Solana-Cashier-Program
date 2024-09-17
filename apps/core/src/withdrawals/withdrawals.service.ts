@@ -108,7 +108,7 @@ export class WithdrawalsService implements OnModuleInit {
 
     const tokenAddress = withdrawalContract.address;
 
-    const creditPrice = BigInt(99); // Credit price, considering 6 decimal places.
+    const creditPrice = BigInt(100); // Credit price, considering 6 decimal places.
     const tokenDecimals = 6;
 
     // Account for 5% fee

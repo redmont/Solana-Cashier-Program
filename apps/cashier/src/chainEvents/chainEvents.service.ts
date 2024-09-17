@@ -26,7 +26,7 @@ export interface chainEventSolana {
 }
 
 const getCreditAmount = (amount: number) => {
-  const creditPrice = 99;
+  const creditPrice = 100;
 
   // Calculate credit amount, considering everything is 6 decimal places
   const creditAmount = Math.ceil(parseInt(amount.toString()) / creditPrice);

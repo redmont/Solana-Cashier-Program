@@ -29,29 +29,23 @@ export const parseUSDC = (usdc: number) => {
 };
 
 type PricingConfig = {
-  credits: number;
+  amount: number;
   pricePerCredit: number;
-  presets: number[];
 };
 
 export const priceConfiguration: PricingConfig = {
-  credits: 10000,
-  pricePerCredit: 0.000099,
-  presets: [10_000, 100_000, 1_000_000, 100_000_000],
+  amount: 20,
+  pricePerCredit: 0.0001,
 } as const;
 
-export const getPricingConfig = (credits: number) => {
-  if (isNaN(credits)) {
+export const getPricingConfig = (amount: number) => {
+  if (isNaN(amount)) {
     return null;
   }
   return {
     ...priceConfiguration,
-    credits,
-    total: parseFloat(
-      (credits * (priceConfiguration?.pricePerCredit ?? 0)).toFixed(
-        TOKEN_DECIMALS,
-      ),
-    ),
+    credits: amount * priceConfiguration.pricePerCredit,
+    amount,
   };
 };
 
@@ -67,11 +61,7 @@ export const AmountSchema = z.object({
   amount: z
     .number({ message: 'Amount needs to be a number' })
     .positive('Amount needs to be a positive number')
-    .int('Whole credits only')
-    .min(
-      priceConfiguration.credits,
-      `Minimum amount is ${priceConfiguration.credits} credits`,
-    ),
+    .min(priceConfiguration.amount, `Minimum amount is $1`),
 });
 
 export type CreditAmount = z.infer<typeof AmountSchema>;
