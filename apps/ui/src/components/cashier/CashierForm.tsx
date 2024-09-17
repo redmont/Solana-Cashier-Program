@@ -19,9 +19,8 @@ export const CashierForm: FC<Props> = ({ onClose }) => {
   >('selectAmount');
   const [credits, setCredits] = useState<PricedCredits>({
     credits: 0,
-    total: 0,
+    amount: 0,
     pricePerCredit: 0,
-    presets: [],
   });
 
   const onAmountSelected = useCallback((priced: PricedCredits) => {

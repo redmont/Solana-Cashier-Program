@@ -79,7 +79,7 @@ const ProfileWidget: FC<ProfileWidgetProps> = ({
               <span className="text-4xl font-bold">
                 {formatCompact(totalAmountWon)}
               </span>
-              <span className="leading-tight">Credits Won</span>
+              <span className="leading-tight">Winnings</span>
             </div>
             <div className="flex items-center justify-center gap-3 self-stretch rounded-md border border-[#4CDC8829] bg-[#4CDC880A] px-6 py-2">
               <p className="text-4xl font-semibold">

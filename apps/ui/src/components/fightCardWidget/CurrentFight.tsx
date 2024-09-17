@@ -3,6 +3,7 @@ import Typography from '@/components/ui/typography';
 import { Tooltip } from '@/components/Tooltip';
 import { useAtomValue } from 'jotai';
 import { fighterBettingInformationAtom, fightersAtom } from '@/store/match';
+import { formatCreditAmount } from '@/utils';
 
 export const CurrentFight: FC = () => {
   const fighters = useAtomValue(fightersAtom);
@@ -20,7 +21,9 @@ export const CurrentFight: FC = () => {
         <Tooltip
           content={`Total global stakes in ${fighters[0]?.displayName}'s pool`}
         >
-          <div className="bet-total">{bettingInfos[0]?.total || 0} Credits</div>
+          <div className="bet-total">
+            ${formatCreditAmount(bettingInfos[0]?.total || 0)}
+          </div>
         </Tooltip>
       </div>
 
@@ -39,7 +42,7 @@ export const CurrentFight: FC = () => {
         <Tooltip
           content={`Total global stakes in ${fighters[0]?.displayName}'s pool`}
         >
-          <div className="bet-total">{bettingInfos[1]?.total || 0} Credits</div>
+          <div className="bet-total">${bettingInfos[1]?.total || 0}</div>
         </Tooltip>
       </div>
     </div>

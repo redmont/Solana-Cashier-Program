@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { useWallet } from '@/hooks';
-import { truncateEthAddress } from '../../utils';
+import { formatCreditAmount, truncateEthAddress } from '../../utils';
 import { classNames } from 'primereact/utils';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { Scrollable } from '@/components/ui/scrollable';
@@ -45,7 +45,7 @@ export const FightCardWidget: FC = () => {
                           })}
                         >
                           <span>{truncateEthAddress(walletAddress)}</span>
-                          <span>{amount.toLocaleString()}</span>
+                          <span>${formatCreditAmount(amount)}</span>
                         </div>
                       ))}
                     </div>

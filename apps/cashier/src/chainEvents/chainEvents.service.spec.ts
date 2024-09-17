@@ -55,8 +55,8 @@ describe('ChainEventsService', () => {
           accountIdBytes32,
           '0x00000000000000000000000094a9d9ac8a22534e3faca9f4e7f2e2cf85d5e4c8',
         ],
-        // $0.99 USDC
-        data: '0x00000000000000000000000000000000000000000000000000000000000f1b30',
+        // $1.00 USDC
+        data: '0x00000000000000000000000000000000000000000000000000000000000f4240',
         eventName: 'DepositReceived',
       });
 

@@ -80,7 +80,7 @@ export const PurchaseFormSolana: FC<{
       const treasuryTokenAccount: PublicKey = state.treasury as PublicKey;
 
       const decimals = TOKEN_DECIMALS;
-      const amountInLamports = credits.total * Math.pow(10, decimals);
+      const amountInLamports = credits.amount * Math.pow(10, decimals);
 
       await program.methods
         .depositAndSwap(new BN(amountInLamports))
@@ -110,7 +110,7 @@ export const PurchaseFormSolana: FC<{
       });
       posthog?.capture('Credits Purchased', {
         credits: credits.credits,
-        cost: credits.total,
+        cost: credits.amount,
         prevCreditBalance: balance,
       });
     },
@@ -118,10 +118,10 @@ export const PurchaseFormSolana: FC<{
 
   return (
     <div>
-      <h4 className="mb-4 text-lg font-bold">Purchase Credits</h4>
+      <h4 className="mb-4 text-lg font-bold">Cash In</h4>
       <p className="mb-3 font-normal">
-        You are about to buy <b>{credits.credits}</b> Credits for{' '}
-        <b>{credits.total}</b> USDC on the <b>Solana</b> chain.
+        You are about to cash in <b>${credits.amount}</b> on the <b>Solana</b>{' '}
+        chain.
       </p>
       <div className="flex items-center justify-between gap-3">
         <div>

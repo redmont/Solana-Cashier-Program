@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { MatchCompletedActivityEvent } from '../events/matchCompleted.event';
 import { MessageConverter } from './messageConverter';
 import { md, signedNumberFormat } from '../utils';
+import { creditsToUsd } from '@/utils';
 
 @Injectable()
 export class MatchCompletedMessage
@@ -15,7 +16,7 @@ export class MatchCompletedMessage
     prizePool,
   }: MatchCompletedActivityEvent) {
     const prizePoolFormatted = Intl.NumberFormat('en-US').format(
-      Math.round(prizePool),
+      Math.round(creditsToUsd(prizePool)),
     );
 
     if (!winnerPriceChange || !loserPriceChange) {

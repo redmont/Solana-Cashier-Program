@@ -113,9 +113,9 @@ export const Navbar = () => {
       <span className="inline-flex gap-1">
         {balance !== undefined && (
           <Tooltip position="bottom" content={Math.floor(balance)}>
-            <span className={cn(compact && 'hidden sm:inline')}>Credits:</span>
+            <span className={cn(compact && 'hidden sm:inline')}>Balance:</span>
             <span className={cn(!compact && 'hidden')}>
-              {formatCompact(balance)}
+              ${formatCompact(Math.floor(balance / 10000))}
             </span>
             <span className={cn(compact && 'hidden')}>
               {balance.toLocaleString()}
@@ -131,7 +131,7 @@ export const Navbar = () => {
           setCashierOpen((open) => !open);
         }}
       >
-        <span className={cn('inline sm:!inline xs:hidden')}>Buy Credits</span>
+        <span className={cn('inline sm:!inline xs:hidden')}>Cash In</span>
         <span className="hidden sm:!hidden xs:inline">
           <Plus />
         </span>

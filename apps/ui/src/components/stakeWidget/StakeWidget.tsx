@@ -2,6 +2,7 @@ import { FC, Fragment } from 'react';
 import { Tooltip } from '../Tooltip';
 import { useAtomValue } from 'jotai';
 import { fighterBettingInformationAtom } from '@/store/match';
+import { formatCreditAmount } from '@/utils';
 
 export const StakeWidget: FC = () => {
   const bettingInfos = useAtomValue(fighterBettingInformationAtom);
@@ -22,7 +23,7 @@ export const StakeWidget: FC = () => {
               >
                 <div className="bet-purchase-price mt-3 flex justify-between text-white">
                   <span className="font-semibold">My Stake:</span>{' '}
-                  <span>{stake ?? 0} credits</span>
+                  <span>${formatCreditAmount(stake ?? 0)}</span>
                 </div>
               </Tooltip>
 

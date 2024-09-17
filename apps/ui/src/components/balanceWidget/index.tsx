@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import {
   balanceAtom,
-  usdcBalanceAtom,
+  usdBalanceAtom,
   sufficientBalanceForWithdrawalsAtom,
 } from '@/store/account';
 import { useAtomValue } from 'jotai';
@@ -9,7 +9,7 @@ import { FC } from 'react';
 import { Button } from '../ui/button';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import B3Spinner from '../B3Spinner/B3Spinner';
-import { MINIMUM_USDC_WITHDRAWAL } from '@/config/withdrawals';
+import { MINIMUM_USD_WITHDRAWAL } from '@/config/withdrawals';
 import WithdrawalModal from '../modals/WithdrawalModal';
 
 const BalanceWidget: FC<{ className?: string }> = ({ className }) => {
@@ -18,7 +18,7 @@ const BalanceWidget: FC<{ className?: string }> = ({ className }) => {
     sufficientBalanceForWithdrawalsAtom,
   );
   const balance = useAtomValue(balanceAtom);
-  const usdcBalance = useAtomValue(usdcBalanceAtom);
+  const usdBalance = useAtomValue(usdBalanceAtom);
 
   return (
     <div
@@ -35,16 +35,12 @@ const BalanceWidget: FC<{ className?: string }> = ({ className }) => {
         </div>
       ) : (
         <div className="flex grow flex-col items-center justify-center gap-3">
-          <div className="text-xl text-white">
-            {balance?.toLocaleString()} Credits
-          </div>
           <div className="text-5xl font-semibold text-white">
-            ${usdcBalance?.toFixed(2)}
+            ${usdBalance?.toFixed(2)}
           </div>
           {!sufficientBalanceForWithdrawal && (
             <div className="text-center">
-              Keep playing! ${MINIMUM_USDC_WITHDRAWAL} in Credits needed to cash
-              out
+              Keep playing! ${MINIMUM_USD_WITHDRAWAL} needed to cash out
             </div>
           )}
         </div>

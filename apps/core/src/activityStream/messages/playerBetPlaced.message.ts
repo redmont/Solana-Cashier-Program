@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BetPlacedActivityEvent } from '../events/betPlaced.event';
-import { pluralise } from '../utils';
 import { MessageConverter } from './messageConverter';
+import { creditsToUsd } from '@/utils';
 
 @Injectable()
 export class PlayerBetPlacedMessage
@@ -12,7 +12,9 @@ export class PlayerBetPlacedMessage
     amount,
     fighterDisplayName,
   }: BetPlacedActivityEvent) {
-    const message = `**Stake confirmed:** ${amount} ${pluralise(amount, 'credit', 'credits')} on ${fighterDisplayName}. 💸`;
+    const usdAmount = creditsToUsd(amount);
+
+    const message = `**Stake confirmed:** $${usdAmount.toFixed(2)}  on ${fighterDisplayName}. 💸`;
     return { userId, message };
   }
 }
