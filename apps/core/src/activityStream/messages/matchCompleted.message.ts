@@ -15,9 +15,10 @@ export class MatchCompletedMessage
     loserPriceChange,
     prizePool,
   }: MatchCompletedActivityEvent) {
-    const prizePoolFormatted = Intl.NumberFormat('en-US').format(
-      Math.round(creditsToUsd(prizePool)),
-    );
+    const prizePoolFormatted = Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(creditsToUsd(prizePool));
 
     if (!winnerPriceChange || !loserPriceChange) {
       return {
@@ -26,7 +27,7 @@ export class MatchCompletedMessage
     }
 
     return {
-      message: md`${winnerDisplayName} ${signedNumberFormat.format(winnerPriceChange)}% beats ${loserDisplayName} ${signedNumberFormat.format(loserPriceChange)}% for the win! 🥊\n\nTotal prize pool won is ${prizePoolFormatted} 🏦`,
+      message: md`${winnerDisplayName} ${signedNumberFormat.format(winnerPriceChange)}% beats ${loserDisplayName} ${signedNumberFormat.format(loserPriceChange)}% for the win! 🥊\n\nTotal prize pool won is $${prizePoolFormatted} 🏦`,
     };
   }
 }

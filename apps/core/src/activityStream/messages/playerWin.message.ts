@@ -9,7 +9,7 @@ export class PlayerWinMessage implements MessageConverter<WinActivityEvent> {
     const { userId, amount } = event;
     const usdAmount = creditsToUsd(amount);
 
-    const message = `**You won $${usdAmount}}!** Check the [leaderboard](/tournament) to see your latest rank.`;
+    const message = `**You won $${usdAmount}!** Check the [leaderboard](/tournament) to see your latest rank.`;
 
     return { userId, message };
   }
