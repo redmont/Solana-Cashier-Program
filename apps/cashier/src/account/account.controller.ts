@@ -111,7 +111,7 @@ export class AccountController {
       const event_id = acc.lastUpdated + acc.balance;
       const usdAmount = (amount * 0.000099 * 100).toString(); // in cents
       const res = await axios.post(
-        'https://firstpromoter.com/api/v1/track/signup',
+        'https://firstpromoter.com/api/v1/track/sale',
         new URLSearchParams({
           uid: accountId,
           event_id,
