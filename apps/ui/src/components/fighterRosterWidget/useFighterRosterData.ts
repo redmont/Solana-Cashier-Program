@@ -33,7 +33,7 @@ export function useFighterRosterData() {
 
     const fightersWithUsdWageredSums = fighters.map((fighter) => ({
       ...fighter,
-      wageredSum: formatCreditAmount(fighter.wageredSum),
+      wageredSum: formatCreditAmount(fighter.wageredSum ?? 0),
     }));
 
     if (success) {
