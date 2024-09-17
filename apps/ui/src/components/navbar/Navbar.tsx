@@ -58,11 +58,11 @@ export const Navbar = () => {
       <Link {...linkProps('/tournament')}>Tournament</Link>
       <Link {...linkProps('/fighters')}>Fighters</Link>
       <Link
-        {...linkProps('https://forms.gle/5uQjMrR419w4cT5w9')}
+        {...linkProps('https://brawl3rs.firstpromoter.com/')}
         target="_blank"
         rel="noopener noreferrer"
       >
-        Add Your Character
+        Affiliate
       </Link>
     </>
   );
