@@ -10,6 +10,7 @@ export class EnsureAccountExistsMessage extends BrokerMessage<{
   constructor(
     public readonly accountId: string,
     public readonly primaryWalletAddress: string,
+    public readonly initialBalance?: number,
   ) {
     super();
   }

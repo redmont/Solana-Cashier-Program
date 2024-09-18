@@ -72,7 +72,7 @@ export class UsersService {
     return user.length === 0 ? null : user[0];
   }
 
-  async createUser(walletAddress: string) {
+  async createUser(walletAddress: string, initialBalance?: number) {
     const id = uuid().replace(/-/g, '');
 
     const user: User = {
@@ -99,7 +99,10 @@ export class UsersService {
     await sendBrokerCommand<
       EnsureAccountExistsMessage,
       EnsureAccountExistsMessageResponse
-    >(this.broker, new EnsureAccountExistsMessage(id, walletAddress));
+    >(
+      this.broker,
+      new EnsureAccountExistsMessage(id, walletAddress, initialBalance),
+    );
 
     // Todo - delete user if account creation fails
 

@@ -18,6 +18,7 @@ export class GetTokenDto {
   message: string;
   signedMessage: string;
   username: string;
+  initialBalance?: number;
 }
 
 @Controller('auth')
@@ -53,7 +54,14 @@ export class AuthController {
   @Post('get-token')
   async getToken(
     @Ip() ip: string,
-    @Body() { walletAddress, message, signedMessage, username }: GetTokenDto,
+    @Body()
+    {
+      walletAddress,
+      message,
+      signedMessage,
+      username,
+      initialBalance,
+    }: GetTokenDto,
   ) {
     if (!this.isPrivateNetworkRequest(ip)) {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
@@ -64,6 +72,7 @@ export class AuthController {
       message,
       signedMessage,
       username,
+      initialBalance,
     );
   }
 }

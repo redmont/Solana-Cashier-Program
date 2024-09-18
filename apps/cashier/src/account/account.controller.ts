@@ -37,12 +37,19 @@ export class AccountController {
   ) {}
 
   @MessagePattern({ cmd: EnsureAccountExistsMessage.messageType })
-  async handleEnsureAccountExists(@Payload() data: EnsureAccountExistsMessage) {
+  async handleEnsureAccountExists(
+    @Payload()
+    {
+      accountId,
+      primaryWalletAddress,
+      initialBalance,
+    }: EnsureAccountExistsMessage,
+  ) {
     await ensureAccountExistsCommand(this.eventStore).handler(
       {
-        accountId: data.accountId,
-        primaryWalletAddress: data.primaryWalletAddress,
-        initialDeposit: 100,
+        accountId: accountId,
+        primaryWalletAddress: primaryWalletAddress,
+        initialDeposit: initialBalance ?? 100,
       },
       [this.eventStore],
       {},
