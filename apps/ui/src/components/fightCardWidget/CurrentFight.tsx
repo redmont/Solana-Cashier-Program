@@ -42,7 +42,9 @@ export const CurrentFight: FC = () => {
         <Tooltip
           content={`Total global stakes in ${fighters[0]?.displayName}'s pool`}
         >
-          <div className="bet-total">${bettingInfos[1]?.total || 0}</div>
+          <div className="bet-total">
+            ${formatCreditAmount(bettingInfos[1]?.total || 0)}
+          </div>
         </Tooltip>
       </div>
     </div>
