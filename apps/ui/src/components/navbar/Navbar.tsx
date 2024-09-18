@@ -131,7 +131,7 @@ export const Navbar = () => {
           setCashierOpen((open) => !open);
         }}
       >
-        <span className={cn('inline sm:!inline xs:hidden')}>Cash In</span>
+        <span className={cn('inline sm:!inline xs:hidden')}>Deposit</span>
         <span className="hidden sm:!hidden xs:inline">
           <Plus />
         </span>

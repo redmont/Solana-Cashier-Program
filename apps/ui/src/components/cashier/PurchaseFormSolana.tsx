@@ -124,9 +124,9 @@ export const PurchaseFormSolana: FC<{
 
   return (
     <div>
-      <h4 className="mb-4 text-lg font-bold">Cash In</h4>
+      <h4 className="mb-4 text-lg font-bold">Deposit</h4>
       <p className="mb-3 font-normal">
-        You are about to cash in <b>${credits.amount}</b> on the <b>Solana</b>{' '}
+        You are about to deposit <b>${credits.amount}</b> on the <b>Solana</b>{' '}
         chain.
       </p>
       <div className="flex items-center justify-between gap-3">
