@@ -84,6 +84,7 @@ describe('AuthController', () => {
         getTokenDto.message,
         getTokenDto.signedMessage,
         getTokenDto.username,
+        undefined,
       );
       expect(result).toEqual(expectedToken);
     });

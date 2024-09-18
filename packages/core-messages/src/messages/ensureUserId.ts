@@ -8,7 +8,10 @@ export type EnsureUserIdMessageReturnType = BaseResponse & {
 export class EnsureUserIdMessage extends BrokerMessage<EnsureUserIdMessageReturnType> {
   static messageType = `${prefix}.ensureUserId`;
 
-  constructor(public walletAddress: string) {
+  constructor(
+    public walletAddress: string,
+    public initialBalance?: number,
+  ) {
     super();
   }
 }

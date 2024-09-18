@@ -48,6 +48,7 @@ export class AuthService {
     message: string,
     signedMessage: string,
     username: string,
+    initialBalance?: number,
   ) {
     const recoveredAddress = await recoverMessageAddress({
       message,
@@ -82,7 +83,7 @@ export class AuthService {
     const result = await sendBrokerCommand<
       EnsureUserIdMessage,
       EnsureUserIdMessageReturnType
-    >(this.broker, new EnsureUserIdMessage(walletAddress));
+    >(this.broker, new EnsureUserIdMessage(walletAddress, initialBalance));
 
     const { userId } = result;
 
