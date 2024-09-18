@@ -169,6 +169,10 @@ export default {
           name: 'amount',
           type: 'u64',
         },
+        {
+          name: 'userId',
+          type: 'bytes',
+        },
       ],
     },
   ],
@@ -217,6 +221,11 @@ export default {
         {
           name: 'token',
           type: 'publicKey',
+          index: false,
+        },
+        {
+          name: 'userId',
+          type: 'bytes',
           index: false,
         },
       ],
