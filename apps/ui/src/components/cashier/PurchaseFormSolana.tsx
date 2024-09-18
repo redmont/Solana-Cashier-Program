@@ -105,7 +105,7 @@ export const PurchaseFormSolana: FC<{
       onPurchaseCompleted?.();
       toast({
         title: 'Purchase completed',
-        description: `${credits.credits} credits purchased.`,
+        description: `$${credits.amount} deposited.`,
         variant: 'default',
       });
       posthog?.capture('Credits Purchased', {
