@@ -8,7 +8,6 @@ import { useEffect } from 'react';
 const isClient = typeof window !== 'undefined';
 const storedReferrer = isClient && localStorage.getItem('fp_ref');
 const referrer =
-  storedReferrer ||
   (isClient && new URLSearchParams(window.location.search).get('fp_ref')) ||
   null;
 
