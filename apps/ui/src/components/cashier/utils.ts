@@ -38,13 +38,23 @@ export const priceConfiguration: PricingConfig = {
   pricePerCredit: 0.0001,
 } as const;
 
+const getCreditAmount = (amountInUsdc: number) => {
+  const creditPrice = 100;
+
+  // Calculate credit amount, considering USDC is 6 decimal places
+  const creditAmount = Math.ceil(
+    (parseInt(amountInUsdc.toString()) * 10 ** 6) / creditPrice,
+  );
+  return creditAmount;
+};
+
 export const getPricingConfig = (amount: number) => {
   if (isNaN(amount)) {
     return null;
   }
   return {
-    ...priceConfiguration,
-    credits: amount * priceConfiguration.pricePerCredit,
+    pricePerCredit: priceConfiguration.pricePerCredit,
+    credits: getCreditAmount(amount),
     amount,
   };
 };
