@@ -12,6 +12,7 @@ import { MatchStatusWidget } from '@/components/matchStatusWidget';
 import { ChatWidget } from '@/components/chatWidget/ChatWidget';
 import { MobileFooter } from '@/components/mobileFooter';
 import { useMatchSfx } from '@/hooks';
+import DevMenu from '@/components/DevMenu';
 
 export default function Home() {
   useMatchSfx();
@@ -35,6 +36,7 @@ export default function Home() {
         <ChatWidget />
       </div>
       <MobileFooter />
+      <DevMenu />
     </main>
   );
 }

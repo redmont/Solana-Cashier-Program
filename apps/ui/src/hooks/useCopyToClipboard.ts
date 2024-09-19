@@ -16,6 +16,7 @@ const useCopyToClipboard = () => {
         toast({
           title: 'Copied to clipboard',
           variant: 'default',
+          duration: 5000,
         });
         setCopyError(null);
         setTimeout(() => setIsCopied(false), 2000);
