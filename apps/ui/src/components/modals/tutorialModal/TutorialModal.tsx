@@ -81,9 +81,15 @@ export const TutorialModal: FC = () => {
             </Button>
           )}
 
-          {!isLastSlide && (
+          {!isLastSlide && slideNum !== 0 && (
             <Button variant="outline" onClick={goNext}>
               Next
+            </Button>
+          )}
+
+          {!isLastSlide && slideNum === 0 && (
+            <Button variant="outline" onClick={goNext}>
+              Tell me more
             </Button>
           )}
 

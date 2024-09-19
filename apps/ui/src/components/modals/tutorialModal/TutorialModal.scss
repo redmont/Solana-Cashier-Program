@@ -62,33 +62,20 @@
     padding: 1rem;
   }
 
-  #intro-slide-image {
-    background-image: url('/tutorial/welcome.png');
-    background-size: cover;
-  }
-
   #connect-slide-image {
-    background-image: url('/tutorial/connect-mob.png');
+    background-image: url('/tutorial/betting-zone.png');
   }
 
   #brawlers-slide-image {
-    background-image: url('/tutorial/brawlers_mob.png');
+    background-image: url('/tutorial/back-brawlers.png');
   }
 
   #stakes-slide-image {
-    background-image: url('/tutorial/stakes_mob.png');
+    background-image: url('/tutorial/withdrawal-modal.png');
   }
 
   #win-slide-image {
-    background-image: url('/tutorial/win.png');
-  }
-
-  #leaderboard-slide-image {
-    background-image: url('/tutorial/leaderboard.png');
-  }
-
-  #community-slide-image {
-    background-image: url('/tutorial/community.png');
+    background-image: url('/tutorial/bonus-prizes.png');
   }
 
   .dialog-footer {
@@ -136,16 +123,16 @@
     }
 
     #connect-slide-image {
-      background-image: url('/tutorial/connect.png');
+      background-image: url('/tutorial/betting-zone.png');
       background-size: contain;
     }
 
     #brawlers-slide-image {
-      background-image: url('/tutorial/brawlers.png');
+      background-image: url('/tutorial/back-brawlers.png');
     }
 
     #stakes-slide-image {
-      background-image: url('/tutorial/stakes.png');
+      background-image: url('/tutorial/withdrawal-modal.png');
     }
 
     .dialog-footer {
