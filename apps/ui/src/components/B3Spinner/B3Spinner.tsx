@@ -8,7 +8,7 @@ import DotSpinner from '../dotSpinner/DotSpinner';
 
 type Props = {
   withDots?: boolean;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 };
 
 const B3Spinner: React.FC<Props> = ({ withDots, size }) => {
@@ -22,6 +22,7 @@ const B3Spinner: React.FC<Props> = ({ withDots, size }) => {
           'w-24': size === 'sm',
           'w-48': size === 'lg',
           'w-64': size === 'xl',
+          'w-80': size === '2xl',
         },
       )}
     >

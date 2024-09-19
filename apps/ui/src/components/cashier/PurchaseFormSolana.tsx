@@ -13,7 +13,7 @@ import { useContracts } from '@/hooks/useContracts';
 import { useMutation } from '@tanstack/react-query';
 import { usePostHog } from '@/hooks';
 import { useAtomValue } from 'jotai';
-import { balanceAtom } from '@/store/account';
+import { balanceAtom, userIdAtom } from '@/store/account';
 
 export const PurchaseFormSolana: FC<{
   credits: PricedCredits;
@@ -25,6 +25,7 @@ export const PurchaseFormSolana: FC<{
   const contracts = useContracts();
   const posthog = usePostHog();
   const balance = useAtomValue(balanceAtom);
+  const userId = useAtomValue(userIdAtom);
 
   const { usdcTokenAccount: userTokenAccount } = useUSDCBalance();
 
@@ -82,8 +83,13 @@ export const PurchaseFormSolana: FC<{
       const decimals = TOKEN_DECIMALS;
       const amountInLamports = credits.amount * Math.pow(10, decimals);
 
+      if (!userId) {
+        throw new Error('');
+      }
+      const bytesUserId = Buffer.from(userId, 'utf-8');
+
       await program.methods
-        .depositAndSwap(new BN(amountInLamports))
+        .depositAndSwap(new BN(amountInLamports), bytesUserId)
         .accounts({
           state: keys.state,
           userTokenAccount,
@@ -118,9 +124,9 @@ export const PurchaseFormSolana: FC<{
 
   return (
     <div>
-      <h4 className="mb-4 text-lg font-bold">Cash In</h4>
+      <h4 className="mb-4 text-lg font-bold">Deposit</h4>
       <p className="mb-3 font-normal">
-        You are about to cash in <b>${credits.amount}</b> on the <b>Solana</b>{' '}
+        You are about to deposit <b>${credits.amount}</b> on the <b>Solana</b>{' '}
         chain.
       </p>
       <div className="flex items-center justify-between gap-3">

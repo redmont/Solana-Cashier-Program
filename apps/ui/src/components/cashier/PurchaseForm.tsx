@@ -129,9 +129,9 @@ export const PurchaseForm = ({
 
   return (
     <div>
-      <h4 className="mb-4 text-lg font-bold">Cash In</h4>
+      <h4 className="mb-4 text-lg font-bold">Deposit</h4>
       <p className="mb-3 font-normal">
-        You're about to cash in ${credits.amount}. Complete the purchase using
+        You're about to deposit ${credits.amount}. Complete the purchase using
         the two step process:
       </p>
       <div className="mb-4 flex items-center justify-between gap-3">

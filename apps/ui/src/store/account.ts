@@ -1,15 +1,20 @@
 import { getPrice } from '@/components/cashier/utils';
 import { MINIMUM_USD_WITHDRAWAL } from '@/config/withdrawals';
 import { atom } from 'jotai';
-import { atomWithStorage } from 'jotai/utils';
 
-export const userReferrerAtom = atomWithStorage<string | null>(
-  'fp_ref',
-  null,
-  undefined,
-  { getOnInit: true },
+const isClient = typeof window !== 'undefined';
+const fpRef =
+  (isClient && new URLSearchParams(window.location.search).get('fp_ref')) ||
+  (isClient && localStorage.getItem('fp_ref')) ||
+  null;
+
+if (fpRef) {
+  localStorage.setItem('fp_ref', fpRef);
+}
+
+export const userReferrerAtom = atom<string | null>(
+  () => (isClient && localStorage.getItem('fp_ref')) || null,
 );
-
 export const accountAddressAtom = atom<`0x${string}` | undefined>();
 export const balanceAtom = atom<number | undefined>();
 export const userIdAtom = atom<string | undefined>();

@@ -9,6 +9,8 @@ import 'primeicons/primeicons.css';
 import '@/styles/app.scss';
 
 import { AppProviders } from '@/providers';
+import { Suspense } from 'react';
+import B3Spinner from '@/components/B3Spinner/B3Spinner';
 
 export const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -29,11 +31,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={plusJakartaSans.className}>
-        <AppProviders>
-          <Layout>{children}</Layout>
-          <Toaster />
-        </AppProviders>
-        <Analytics />
+        <Suspense
+          fallback={
+            <div className="flex h-screen items-center justify-center">
+              <B3Spinner size="xl" />
+            </div>
+          }
+        >
+          <AppProviders>
+            <Layout>{children}</Layout>
+            <Toaster />
+          </AppProviders>
+          <Analytics />
+        </Suspense>
       </body>
     </html>
   );
