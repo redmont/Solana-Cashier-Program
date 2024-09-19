@@ -4,8 +4,8 @@ export interface GetDailyClaimsMessageResponse extends MessageResponse {
   success: boolean;
   dailyClaimAmounts: number[];
   streak: number;
-  nextClaimDate: string;
-  claimExpiryDate: string;
+  nextClaimDate?: string;
+  claimExpiryDate?: string;
 }
 
 export class GetDailyClaimsMessage extends Message<GetDailyClaimsMessageResponse> {

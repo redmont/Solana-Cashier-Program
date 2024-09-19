@@ -47,6 +47,7 @@ import {
   MarkWithdrawalAsCompleteMessage as MarkWithdrawalAsCompleteUiGatewayMessage,
   GetFightersMessage,
   GetFightersMessageResponse,
+  GetRosterMessageResponse,
 } from '@bltzr-gg/brawlers-ui-gateway-messages';
 import {
   PlaceBetMessage,
@@ -264,40 +265,60 @@ export class Gateway
 
   @SubscribeMessage(GetMatchStatusMessage.messageType)
   public async getMatchStatus(): Promise<GetMatchStatusMessageResponse> {
-    const {
-      matchId,
-      seriesCodeName,
-      fighters,
-      state,
-      bets,
-      poolOpenStartTime,
-      startTime,
-      winner,
-      preMatchVideoPath,
-      streamId,
-      lastUpdated,
-    } = await this.query.getCurrentMatch();
+    try {
+      const {
+        matchId,
+        seriesCodeName,
+        fighters,
+        state,
+        bets,
+        poolOpenStartTime,
+        startTime,
+        winner,
+        preMatchVideoPath,
+        streamId,
+        lastUpdated,
+      } = await this.query.getCurrentMatch();
 
-    const preMatchVideoUrl =
-      preMatchVideoPath?.length > 0 ? this.getMediaUrl(preMatchVideoPath) : '';
+      const preMatchVideoUrl =
+        preMatchVideoPath?.length > 0
+          ? this.getMediaUrl(preMatchVideoPath)
+          : '';
 
-    return {
-      matchId,
-      series: seriesCodeName,
-      fighters: fighters.map(({ imagePath, ...rest }) => ({
-        ...rest,
-        imageUrl: this.getMediaUrl(imagePath),
-      })),
-      state,
-      preMatchVideoUrl,
-      streamId,
-      bets,
-      poolOpenStartTime,
-      startTime,
-      winner,
-      timestamp: lastUpdated,
-      success: true,
-    };
+      return {
+        matchId,
+        series: seriesCodeName,
+        fighters: fighters.map(({ imagePath, ...rest }) => ({
+          ...rest,
+          imageUrl: this.getMediaUrl(imagePath),
+        })),
+        state,
+        preMatchVideoUrl,
+        streamId,
+        bets,
+        poolOpenStartTime,
+        startTime,
+        winner,
+        timestamp: lastUpdated,
+        success: true,
+      };
+    } catch (e) {
+      this.logger.error('GetMatchStatus failed', e);
+      return {
+        matchId: null,
+        series: null,
+        fighters: [],
+        state: null,
+        preMatchVideoUrl: null,
+        streamId: null,
+        bets: [],
+        poolOpenStartTime: null,
+        startTime: null,
+        winner: null,
+        timestamp: null,
+        success: false,
+      };
+    }
   }
 
   @UseGuards(JwtAuthGuard)
@@ -318,21 +339,17 @@ export class Gateway
       };
     }
 
-    try {
-      const { success, message } = await sendBrokerCommand<
-        PlaceBetMessage,
-        PlaceBetMessageResponse
-      >(
-        this.broker,
-        new PlaceBetMessage(series, userId, walletAddress, amount, fighter),
-      );
+    const { success, message } = await sendBrokerCommand<
+      PlaceBetMessage,
+      PlaceBetMessageResponse
+    >(
+      this.broker,
+      new PlaceBetMessage(series, userId, walletAddress, amount, fighter),
+    );
 
-      const error = message ? { message } : null;
+    const error = message ? { message } : null;
 
-      return { success, error };
-    } catch (e) {
-      return { success: false, error: { message: e.message } };
-    }
+    return { success, error };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -342,9 +359,17 @@ export class Gateway
   ): Promise<GetBalanceUiGatewayMessageResponse> {
     const { userId } = client.data.authorizedUser;
 
-    const balance = await this.gatewayService.getBalance(userId);
-
-    return { balance, success: true };
+    try {
+      const balance = await this.gatewayService.getBalance(userId);
+      return { balance, success: true };
+    } catch (e) {
+      this.logger.error('GetBalance failed', e);
+      return {
+        balance: 0,
+        success: false,
+        error: e.message,
+      };
+    }
   }
 
   @SubscribeMessage(GetActivityStreamUiGatewayMessage.messageType)
@@ -354,34 +379,63 @@ export class Gateway
   ) {
     const userId = this.clientUserIdMap.get(client.id);
 
-    const activityStream = await this.query.getActivityStream(
-      data.series,
-      data.matchId,
-      userId ?? undefined,
-    );
+    let messages = [];
+    try {
+      const activityStream = await this.query.getActivityStream(
+        data.series,
+        data.matchId,
+        userId ?? undefined,
+      );
+
+      messages = activityStream.map((item) => ({
+        timestamp: item.sk,
+        message: item.message,
+      }));
+    } catch (e) {
+      this.logger.error('GetActivityStream failed', e);
+      return {
+        success: false,
+        error: e.message,
+      };
+    }
 
     return {
       success: true,
-      messages: activityStream.map((item) => ({
-        timestamp: item.sk,
-        message: item.message,
-      })),
+      messages,
     };
   }
 
   @SubscribeMessage(GetRosterMessage.messageType)
-  public async getRoster() {
-    const { roster } = await this.query.getRoster();
+  public async getRoster(): Promise<GetRosterMessageResponse> {
+    let rosterItems: {
+      series: string;
+      fighters: {
+        displayName: string;
+        imageUrl: string;
+      }[];
+    }[];
 
-    return {
-      success: true,
-      roster: roster.map(({ codeName, fighters }) => ({
+    try {
+      const { roster } = await this.query.getRoster();
+      rosterItems = roster.map(({ codeName, fighters }) => ({
         series: codeName,
         fighters: fighters.map(({ imagePath, ...rest }) => ({
           ...rest,
           imageUrl: this.getMediaUrl(imagePath),
         })),
-      })),
+      }));
+    } catch (e) {
+      this.logger.error('GetRoster failed', e);
+      return {
+        roster: [],
+        success: false,
+        error: e.message,
+      };
+    }
+
+    return {
+      success: true,
+      roster: rosterItems,
     };
   }
 
@@ -389,42 +443,60 @@ export class Gateway
   public async getMatchHistory(
     @MessageBody() { fighterCodeNames }: GetMatchHistoryMessage,
   ): Promise<GetMatchHistoryMessageResponse> {
-    const result = await this.query.getMatchHistory(fighterCodeNames);
+    try {
+      const result = await this.query.getMatchHistory(fighterCodeNames);
 
-    const matches = result.map((match) => ({
-      ...match,
-      fighters: match.fighters.map(({ imagePath, ...rest }) => ({
-        ...rest,
-        imageUrl: this.getMediaUrl(imagePath),
-      })),
-    }));
+      const matches = result.map((match) => ({
+        ...match,
+        fighters: match.fighters.map(({ imagePath, ...rest }) => ({
+          ...rest,
+          imageUrl: this.getMediaUrl(imagePath),
+        })),
+      }));
 
-    return {
-      success: true,
-      matches,
-    };
+      return {
+        success: true,
+        matches,
+      };
+    } catch (e) {
+      this.logger.error('GetMatchHistory failed', e);
+      return {
+        success: false,
+        error: e.message,
+        matches: [],
+      };
+    }
   }
 
   @SubscribeMessage(GetUserMatchHistoryMessage.messageType)
   public async getUserMatchHistory(
     @ConnectedSocket() client: Socket,
   ): Promise<GetUserMatchHistoryMessageResponse> {
-    const userId = this.clientUserIdMap.get(client?.id);
+    try {
+      const userId = this.clientUserIdMap.get(client?.id);
 
-    const result = await this.query.getUserMatches(userId);
+      const result = await this.query.getUserMatches(userId);
 
-    const matches = result.map((match) => ({
-      ...match,
-      fighters: match.fighters.map((fighter) => ({
-        ...fighter,
-        imageUrl: this.getMediaUrl(fighter.imagePath),
-      })),
-    }));
+      const matches = result.map((match) => ({
+        ...match,
+        fighters: match.fighters.map((fighter) => ({
+          ...fighter,
+          imageUrl: this.getMediaUrl(fighter.imagePath),
+        })),
+      }));
 
-    return {
-      success: true,
-      matches,
-    };
+      return {
+        success: true,
+        matches,
+      };
+    } catch (e) {
+      this.logger.error('GetUserMatchHistory failed', e);
+      return {
+        success: false,
+        error: e.message,
+        matches: [],
+      };
+    }
   }
 
   @SubscribeMessage(GetTournamentMessage.messageType)
@@ -433,58 +505,75 @@ export class Gateway
     { sortBy, pageSize, page, searchQuery }: GetTournamentMessage,
     @ConnectedSocket() client: Socket,
   ): Promise<GetTournamentMessageResponse> {
-    const userId = this.clientUserIdMap.get(client?.id);
+    try {
+      const userId = this.clientUserIdMap.get(client?.id);
 
-    const now = dayjs.utc().toISOString();
+      const now = dayjs.utc().toISOString();
 
-    const {
-      displayName,
-      description,
-      startDate,
-      endDate,
-      currentRound,
-      prizes,
-      totalCount,
-      items,
-      currentUserItem,
-    } = await this.tournamentQueryStore.getCurrentTournamentLeaderboard(
-      now,
-      sortBy,
-      pageSize,
-      page,
-      userId,
-      searchQuery,
-    );
-
-    let roundEndDate = null;
-    if (startDate) {
-      roundEndDate = dayjs
-        .utc(startDate)
-        .add(currentRound ?? 1, 'day')
-        .toISOString();
-    }
-
-    const prizesWithImageUrls = prizes.map(
-      ({ title, description, imagePath }) => ({
-        title,
+      const {
+        displayName,
         description,
-        imageUrl: imagePath ? this.getMediaUrl(imagePath) : null,
-      }),
-    );
+        startDate,
+        endDate,
+        currentRound,
+        prizes,
+        totalCount,
+        items,
+        currentUserItem,
+      } = await this.tournamentQueryStore.getCurrentTournamentLeaderboard(
+        now,
+        sortBy,
+        pageSize,
+        page,
+        userId,
+        searchQuery,
+      );
 
-    return {
-      success: true,
-      displayName,
-      description,
-      startDate,
-      endDate,
-      currentRound,
-      roundEndDate,
-      prizes: prizesWithImageUrls,
-      totalCount,
-      items,
-      currentUserItem,
-    };
+      let roundEndDate = null;
+      if (startDate) {
+        roundEndDate = dayjs
+          .utc(startDate)
+          .add(currentRound ?? 1, 'day')
+          .toISOString();
+      }
+
+      const prizesWithImageUrls = prizes.map(
+        ({ title, description, imagePath }) => ({
+          title,
+          description,
+          imageUrl: imagePath ? this.getMediaUrl(imagePath) : null,
+        }),
+      );
+
+      return {
+        success: true,
+        displayName,
+        description,
+        startDate,
+        endDate,
+        currentRound,
+        roundEndDate,
+        prizes: prizesWithImageUrls,
+        totalCount,
+        items,
+        currentUserItem,
+      };
+    } catch (e) {
+      this.logger.error('GetTournament failed', e);
+      return {
+        success: false,
+        error: e.message,
+        displayName: null,
+        description: null,
+        startDate: null,
+        endDate: null,
+        currentRound: null,
+        roundEndDate: null,
+        prizes: [],
+        totalCount: 0,
+        items: [],
+      };
+    }
   }
 
   @SubscribeMessage(GetUserIdMessage.messageType)
@@ -494,7 +583,7 @@ export class Gateway
     const userId = this.clientUserIdMap.get(client.id);
 
     return {
-      success: true,
+      success: !!userId,
       userId,
     };
   }
@@ -503,12 +592,20 @@ export class Gateway
   public async getAuthStreamToken(
     @ConnectedSocket() client: Socket,
   ): Promise<GetStreamAuthTokenMessageResponse> {
-    const token = this.streamAuthService.generateToken(client.id);
-
-    return {
-      success: true,
-      token,
-    };
+    try {
+      const token = this.streamAuthService.generateToken(client.id);
+      return {
+        success: true,
+        token,
+      };
+    } catch (e) {
+      this.logger.error('GetStreamAuthToken failed', e);
+      return {
+        token: null,
+        success: false,
+        error: e.message,
+      };
+    }
   }
 
   @SubscribeMessage(GetDailyClaimsMessage.messageType)
@@ -517,20 +614,32 @@ export class Gateway
   ): Promise<GetDailyClaimsMessageResponse> {
     const userId = this.clientUserIdMap.get(client?.id);
 
-    const {
-      dailyClaimAmounts,
-      dailyClaimStreak,
-      nextClaimDate,
-      claimExpiryDate,
-    } = await this.query.getDailyClaims(userId);
+    try {
+      const {
+        dailyClaimAmounts,
+        dailyClaimStreak,
+        nextClaimDate,
+        claimExpiryDate,
+      } = await this.query.getDailyClaims(userId);
 
-    return {
-      success: true,
-      dailyClaimAmounts,
-      streak: dailyClaimStreak,
-      nextClaimDate,
-      claimExpiryDate,
-    };
+      return {
+        success: true,
+        dailyClaimAmounts,
+        streak: dailyClaimStreak,
+        nextClaimDate,
+        claimExpiryDate,
+      };
+    } catch (e) {
+      this.logger.error('GetDailyClaims failed', e);
+      return {
+        success: false,
+        error: e.message,
+        dailyClaimAmounts: [],
+        streak: 0,
+        nextClaimDate: null,
+        claimExpiryDate: null,
+      };
+    }
   }
 
   @SubscribeMessage(ClaimDailyClaimUiGatewayMessage.messageType)
@@ -577,15 +686,26 @@ export class Gateway
     const userId = this.clientUserIdMap.get(client?.id);
     const username = client?.data.authorizedUser?.username;
 
-    const { token, authorizedUuid, channels } =
-      await this.chatAuthService.getAuthToken(userId, username);
+    try {
+      const { token, authorizedUuid, channels } =
+        await this.chatAuthService.getAuthToken(userId, username);
 
-    return {
-      success: true,
-      token,
-      authorizedUuid,
-      channels,
-    };
+      return {
+        success: true,
+        token,
+        authorizedUuid,
+        channels,
+      };
+    } catch (e) {
+      this.logger.error('GetChatAuthToken failed', e);
+      return {
+        success: false,
+        error: e.message,
+        token: null,
+        authorizedUuid: null,
+        channels: [],
+      };
+    }
   }
 
   @SubscribeMessage(GetUserProfileMessage.messageType)
@@ -604,12 +724,21 @@ export class Gateway
 
     const { userId } = client.data.authorizedUser;
 
-    const profile = await this.userProfilesQueryStore.getUserProfile(userId);
+    try {
+      const profile = await this.userProfilesQueryStore.getUserProfile(userId);
 
-    return {
-      success: true,
-      xp: profile?.xp ?? 0,
-    };
+      return {
+        success: true,
+        xp: profile?.xp ?? 0,
+      };
+    } catch (e) {
+      this.logger.error('GetUserProfile failed', e);
+      return {
+        success: false,
+        error: e.message,
+        xp: 0,
+      };
+    }
   }
 
   @SubscribeMessage(RequestWithdrawalUiGatewayMessage.messageType)
@@ -676,9 +805,18 @@ export class Gateway
       };
     }
 
-    const result = await this.gatewayService.getWithdrawals(userId);
+    try {
+      const result = await this.gatewayService.getWithdrawals(userId);
 
-    return { success: true, withdrawals: result as any };
+      return { success: true, withdrawals: result as any };
+    } catch (e) {
+      this.logger.error('GetWithdrawals failed', e);
+      return {
+        success: false,
+        error: e.message,
+        withdrawals: [],
+      };
+    }
   }
 
   @SubscribeMessage(MarkWithdrawalAsCompleteUiGatewayMessage.messageType)
@@ -706,20 +844,29 @@ export class Gateway
 
   @SubscribeMessage(GetFightersMessage.messageType)
   public async getFighterProfiles(): Promise<GetFightersMessageResponse> {
-    const fighterProfiles =
-      await this.fighterProfilesQueryStore.getFighterProfiles();
+    try {
+      const fighterProfiles =
+        await this.fighterProfilesQueryStore.getFighterProfiles();
 
-    const fighters = fighterProfiles
-      .filter((fighter) => fighter.showOnRoster)
-      .map((fighter) => ({
-        ...fighter,
-        imageUrl: this.getMediaUrl(fighter.imagePath),
-      }));
+      const fighters = fighterProfiles
+        .filter((fighter) => fighter.showOnRoster)
+        .map((fighter) => ({
+          ...fighter,
+          imageUrl: this.getMediaUrl(fighter.imagePath),
+        }));
 
-    return {
-      success: true,
-      fighters,
-    };
+      return {
+        success: true,
+        fighters,
+      };
+    } catch (e) {
+      this.logger.error('GetFighters failed', e);
+      return {
+        success: false,
+        error: e.message,
+        fighters: [],
+      };
+    }
   }
 
   public publish<T extends GatewayEvent>(data: T) {
