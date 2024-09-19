@@ -12,7 +12,7 @@ import {
   FormLabel,
   FormMessages,
 } from '@/components/ui/form';
-import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
+import { FC, useCallback, useEffect, useMemo } from 'react';
 import { Input } from '../ui/input';
 import { useReadContract } from 'wagmi';
 import { erc20Abi } from 'viem';
@@ -163,8 +163,6 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
     form.formState.isSubmitting ||
     balance.isLoading;
 
-  const inputRef = useRef<HTMLInputElement>(null);
-
   return (
     <Form {...form}>
       <form
@@ -236,13 +234,12 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
                   {...form.register('amount', { valueAsNumber: true })}
                   disabled={formState.isSubmitting}
                   placeholder="Enter amount of USDC"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*"
                   defaultValue={priceConfiguration.amount}
-                  ref={inputRef}
-                  type="number"
                   className="w-full rounded-md border [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                  onFocus={() => {
-                    inputRef.current?.select();
-                  }}
+                  onFocus={(e) => e.target.select()}
                 />
               </FormControl>
             </FormItem>
