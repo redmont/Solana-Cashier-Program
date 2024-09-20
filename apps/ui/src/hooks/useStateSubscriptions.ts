@@ -96,14 +96,28 @@ export function useStateSubscriptions() {
 
   useEffect(() => {
     const getUserId = async () => {
-      const { userId } = await send<GetUserIdMessage, GetUserIdMessageResponse>(
-        new GetUserIdMessage(),
-      );
-      setUserId(userId);
+      const { userId, success } = await send<
+        GetUserIdMessage,
+        GetUserIdMessageResponse
+      >(new GetUserIdMessage());
+
+      if (success && !userId) {
+        // eslint-disable-next-line no-console
+        console.error(
+          'Server returned invalid userId despite message being successful, retrying in 1 second',
+        );
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        getUserId();
+      } else {
+        setUserId(userId);
+      }
     };
 
     if (connected) {
-      getUserId();
+      getUserId().catch(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        getUserId();
+      });
     }
   }, [connected, send, setUserId]);
 

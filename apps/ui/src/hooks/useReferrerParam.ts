@@ -22,6 +22,7 @@ const useReferrerParam = () => {
   const { mutate, isPending } = useMutation({
     mutationKey: ['updateUser', referrer],
     mutationFn: (referrer: string) => updateUser({ team: referrer }),
+    retry: 3,
   });
 
   useEffect(() => {

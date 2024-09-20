@@ -40,6 +40,7 @@ import { Loader2, Wallet2Icon } from 'lucide-react';
 import Link from 'next/link';
 import * as faucets from '@/config/networks/faucets';
 import { cn } from '@/lib/utils';
+import { formatCompact } from '@/utils';
 
 type Props = {
   onSubmit: (data: PricedCredits) => void;
@@ -196,7 +197,7 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
               'text-muted': balance.isLoading,
             })}
           >
-            <span>{formatUSDC(balance.data)} USDC</span>
+            <span>{formatCompact(formatUSDC(balance.data))} USDC</span>
             {balance.status === 'pending' && (
               <Loader2 className="inline-block animate-spin" />
             )}
@@ -231,7 +232,9 @@ export const AmountSelectionForm: FC<Props> = ({ onSubmit }) => {
               <FormControl>
                 <Input
                   startAdornment="$"
-                  {...form.register('amount', { valueAsNumber: true })}
+                  {...form.register('amount', {
+                    valueAsNumber: true,
+                  })}
                   disabled={formState.isSubmitting}
                   placeholder="Enter amount of USDC"
                   type="text"

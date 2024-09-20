@@ -126,8 +126,8 @@ export const PurchaseFormSolana: FC<{
     <div>
       <h4 className="mb-4 text-lg font-bold">Deposit</h4>
       <p className="mb-3 font-normal">
-        You are about to deposit <b>${credits.amount}</b> on the <b>Solana</b>{' '}
-        chain.
+        You are about to deposit <b>${credits.amount}</b> on the{' '}
+        <b className="capitalize">{primaryWallet.chain}</b> chain.
       </p>
       <div className="flex items-center justify-between gap-3">
         <div>

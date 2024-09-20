@@ -3,8 +3,7 @@ import { createConfig } from 'wagmi';
 import { mainnet } from 'wagmi/chains';
 import { http } from 'viem';
 import * as chains from './networks';
-
-const alchemyApiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
+import { alchemyApiKey } from './env';
 
 const getAlchemyTransport = (alchemyChainId: string) =>
   http(`https://${alchemyChainId}.g.alchemy.com/v2/${alchemyApiKey}`);

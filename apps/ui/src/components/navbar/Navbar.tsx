@@ -10,7 +10,6 @@ import InfoIcon from './InfoIcon';
 import useOnClickOutside from '@/hooks/useOnClickOutside';
 import { CashierForm } from '../cashier';
 import { Button } from '../ui/button';
-import { Tooltip } from '../Tooltip';
 import { Burger } from './Burger';
 import { Wallet2Icon } from 'lucide-react';
 import { Plus } from 'lucide-react';
@@ -112,7 +111,7 @@ export const Navbar = () => {
     >
       <span className="inline-flex gap-1">
         {balance !== undefined && (
-          <Tooltip position="bottom" content={Math.floor(balance)}>
+          <>
             <span className={cn(compact && 'hidden sm:inline')}>Balance:</span>
             <span className={cn(!compact && 'hidden')}>
               ${formatCompact(Math.floor(balance / 10000))}
@@ -120,7 +119,7 @@ export const Navbar = () => {
             <span className={cn(compact && 'hidden')}>
               {balance.toLocaleString()}
             </span>
-          </Tooltip>
+          </>
         )}
       </span>
 
@@ -195,7 +194,7 @@ export const Navbar = () => {
       {isCashierOpen && (
         <div
           ref={cashierRef}
-          className="absolute right-0 top-[calc(100%+1rem)] z-20 mx-0 w-[calc(100vw-1rem)] rounded-md bg-foreground p-5 sm:top-[calc(100%+1rem)] sm:w-[28rem]"
+          className="absolute right-0 top-[calc(100%+1rem)] z-20 mx-0 w-[calc(100vw-1rem)] rounded-md border border-border bg-foreground p-5 shadow-md sm:top-[calc(100%+1rem)] sm:w-[28rem]"
         >
           <CashierForm onClose={() => setCashierOpen(false)} />
         </div>

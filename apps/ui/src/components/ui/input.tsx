@@ -23,6 +23,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     },
     ref,
   ) => {
+    const startAdornmentRef = React.useRef<HTMLSpanElement>(null);
+    const pl = startAdornmentRef.current?.getBoundingClientRect().width;
+
     return (
       <div className={cn('flex flex-col', className)}>
         {label && <label className="mb-1 text-sm text-gray-700">{label}</label>}
@@ -33,7 +36,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
         >
           {startAdornment && (
-            <span className="px-3 text-sm text-muted-foreground">
+            <span
+              ref={startAdornmentRef}
+              className="absolute left-0 overflow-hidden text-ellipsis text-nowrap px-3 text-sm font-medium text-muted-foreground"
+            >
               {startAdornment}
             </span>
           )}
@@ -43,6 +49,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               'flex h-10 w-full rounded-md border-none bg-transparent px-3 text-sm ring-offset-transparent transition file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
               className,
             )}
+            style={{ paddingLeft: pl }}
             ref={ref}
             {...props}
           />

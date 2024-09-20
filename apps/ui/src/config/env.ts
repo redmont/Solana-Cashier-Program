@@ -27,3 +27,6 @@ export const postHogFeatureFlags =
   process.env.NEXT_PUBLIC_POSTHOG_FEATURE_FLAGS || '';
 
 export const isDev = process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production';
+
+export const alchemyApiKey =
+  process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || 'vlIJU80HdfL61kafixpO45fFrvqVPJx9';
