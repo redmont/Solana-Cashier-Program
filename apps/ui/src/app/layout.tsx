@@ -11,6 +11,7 @@ import '@/styles/app.scss';
 import { AppProviders } from '@/providers';
 import { Suspense } from 'react';
 import B3Spinner from '@/components/B3Spinner/B3Spinner';
+import DevMenu from '@/components/DevMenu';
 
 export const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -41,6 +42,7 @@ export default function RootLayout({
           <AppProviders>
             <Layout>{children}</Layout>
             <Toaster />
+            <DevMenu />
           </AppProviders>
           <Analytics />
         </Suspense>

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { isDev } from '@/config/env';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -23,12 +25,7 @@ const DevMenu: React.FC = () => {
   return (
     isDev && (
       <div className="fixed bottom-2 right-2 z-50">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mb-1 flex gap-3"
-          onClick={toggleOpen}
-        >
+        <Button size="sm" className="mb-1 flex gap-3" onClick={toggleOpen}>
           Dev Menu
           {isOpen ? (
             <ChevronDown className="size-6" />

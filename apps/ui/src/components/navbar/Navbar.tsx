@@ -202,9 +202,9 @@ export const Navbar = () => {
       {isNavOpen && (
         <div
           ref={navRef}
-          className="absolute right-0 top-[calc(100%+1rem)] z-10 w-full rounded-md bg-foreground p-5 shadow-xl md:w-80"
+          className="absolute right-0 top-[calc(100%+1rem)] z-10 w-full rounded-md border border-border bg-foreground p-5 shadow-md md:w-80"
         >
-          <div className="top-side flex flex-col items-center text-xl md:items-end">
+          <div className="flex flex-col items-center text-xl md:items-end">
             {isAuthenticated && (
               <CashierButton
                 compact={false}
