@@ -41,7 +41,9 @@ export class AdminService {
     for (const item of items) {
       if (item.amount > 0) {
         try {
-          const formattedAddress = getAddress(item.walletAddress);
+          const formattedAddress = item.walletAddress.startsWith('0x')
+            ? getAddress(item.walletAddress)
+            : item.walletAddress;
 
           // Check if user exists
           let userId =
