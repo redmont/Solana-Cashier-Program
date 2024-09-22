@@ -29,6 +29,7 @@ export class ReadModelService {
       sk: `account#${accountId}`,
       primaryWalletAddress,
       balance: 0,
+      vipBalance: 0,
       lastUpdated: timestamp,
     });
 
@@ -48,6 +49,7 @@ export class ReadModelService {
   async updateAccountBalance(
     accountId: string,
     balance: number,
+    vipBalance: number,
     timestamp: string,
   ) {
     await this.accountModel.update(
@@ -58,32 +60,61 @@ export class ReadModelService {
       {
         $SET: {
           balance,
+          vipBalance,
           lastUpdated: timestamp,
         },
       },
     );
 
     await this.cache.set(
-      `cashier.acccountBalance:${accountId}`,
+      `cashier.acccountBalance:standard:${accountId}`,
       balance.toString(),
+    );
+
+    await this.cache.set(
+      `cashier.acccountBalance:vip:${accountId}`,
+      vipBalance.toString(),
     );
   }
 
-  async getAccountBalance(accountId: string) {
+  async getAccountBalance(accountId: string): Promise<{
+    balance: number;
+    vipBalance: number;
+  }> {
+    let balance: number | undefined;
+    let vipBalance: number | undefined;
+
     const cachedBalance = await this.cache.get(
-      `cashier.acccountBalance:${accountId}`,
+      `cashier.acccountBalance:standard:${accountId}`,
     );
 
     if (cachedBalance) {
-      return Number(cachedBalance);
+      balance = Number(cachedBalance);
     }
 
-    const account = await this.accountModel.get({
-      pk: `account`,
-      sk: `account#${accountId}`,
-    });
+    const cachedVipBalance = await this.cache.get(
+      `cashier.acccountBalance:vip:${accountId}`,
+    );
 
-    return account?.balance ?? 0;
+    if (cachedVipBalance) {
+      vipBalance = Number(cachedVipBalance);
+    }
+
+    if (balance === undefined || vipBalance === undefined) {
+      const account = await this.accountModel.get({
+        pk: `account`,
+        sk: `account#${accountId}`,
+      });
+
+      if (account) {
+        balance = account.balance;
+        vipBalance = account.vipBalance;
+      } else {
+        balance = 0;
+        vipBalance = 0;
+      }
+    }
+    return { balance, vipBalance };
   }
 
   async getAccount(accountId: string) {

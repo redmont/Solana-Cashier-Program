@@ -11,6 +11,7 @@ export class CreditMessage extends BrokerMessage<{
     public readonly accountId: string,
     public readonly amount: number,
     public readonly reason: string,
+    public readonly vip: boolean,
   ) {
     super();
   }

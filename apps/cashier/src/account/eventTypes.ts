@@ -9,6 +9,7 @@ export const creditEventType = new EventType<
   {
     accountId: string;
     amount: number;
+    vip: boolean;
     reason: string;
     transactionHash?: string;
   }

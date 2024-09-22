@@ -1,4 +1,4 @@
-import { Schema } from 'dynamoose';
+import { Schema, type } from 'dynamoose';
 
 export const CurrentMatchSchema = new Schema({
   pk: {
@@ -60,6 +60,7 @@ export const CurrentMatchSchema = new Schema({
           walletAddress: { type: String, required: true },
           amount: { type: String, required: true },
           fighter: { type: String, required: true },
+          orderBook: { type: String, required: true },
         },
       },
     ],

@@ -11,6 +11,7 @@ export class PlaceBetMessage extends Message<PlaceBetMessageResponse> {
     public readonly series: string,
     public readonly amount: number,
     public readonly fighter: string,
+    public readonly vip: boolean,
   ) {
     super();
   }

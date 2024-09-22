@@ -44,7 +44,14 @@ export class AppController {
     @Ctx() ctx: NatsJetStreamContext,
     @Payload() data: BetPlacedEvent,
   ) {
-    const { timestamp, seriesCodeName, walletAddress, amount, fighter } = data;
+    const {
+      timestamp,
+      seriesCodeName,
+      walletAddress,
+      amount,
+      fighter,
+      orderBook,
+    } = data;
 
     this.gateway.publish(
       new BetPlacedUiGatewayEvent(
@@ -53,6 +60,7 @@ export class AppController {
         walletAddress,
         amount,
         fighter,
+        orderBook,
       ),
     );
 
@@ -117,11 +125,11 @@ export class AppController {
     @Ctx() ctx: NatsJetStreamContext,
     @Payload() data: BalanceUpdatedEvent,
   ) {
-    const { timestamp, userId, balance } = data;
+    const { timestamp, userId, balance, vipBalance } = data;
 
     this.gateway.publishToUser(
       userId,
-      new BalanceUpdatedUiGatewayEvent(timestamp, balance),
+      new BalanceUpdatedUiGatewayEvent(timestamp, balance, vipBalance),
     );
 
     ctx.message.ack();

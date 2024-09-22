@@ -135,7 +135,7 @@ export class DailyClaimService {
 
     const response = await sendBrokerCommand(
       this.broker,
-      new CreditMessage(userId, amount, 'DAILY_CLAIM'),
+      new CreditMessage(userId, amount, 'DAILY_CLAIM', false),
     );
 
     if (response.success) {

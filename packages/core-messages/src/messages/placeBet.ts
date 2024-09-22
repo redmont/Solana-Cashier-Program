@@ -13,6 +13,7 @@ export class PlaceBetMessage extends BrokerMessage<PlaceBetMessageResponse> {
     public readonly walletAddress: string,
     public readonly amount: number,
     public readonly fighter: string,
+    public readonly orderBook: string,
   ) {
     super();
   }

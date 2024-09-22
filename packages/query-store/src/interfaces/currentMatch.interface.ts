@@ -21,6 +21,7 @@ export interface CurrentMatch extends Key {
     walletAddress: string;
     amount: string;
     fighter: string;
+    orderBook: string;
   }[];
   lastUpdated: string;
 }

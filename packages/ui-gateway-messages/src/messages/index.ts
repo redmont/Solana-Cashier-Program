@@ -18,3 +18,4 @@ export * from './requestWithdrawal';
 export * from './getWithdrawals';
 export * from './markWithdrawalAsComplete';
 export * from './getFighters';
+export * from './subscribeToOrderBook';

@@ -10,6 +10,7 @@ export class AccountCreditedEvent extends BrokerEvent {
     public readonly primaryWalletAddress: string,
     public readonly amount: string,
     public readonly balance: string,
+    public readonly vipBalance: string,
     public readonly reason: string,
   ) {
     super();

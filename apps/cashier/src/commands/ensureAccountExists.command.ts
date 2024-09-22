@@ -5,6 +5,7 @@ type Input = {
   accountId: string;
   primaryWalletAddress: string;
   initialDeposit: number;
+  addVipBalance: boolean;
 };
 type Output = { accountId: string };
 type Context = {};
@@ -18,7 +19,8 @@ export const ensureAccountExistsCommand = (eventStore: EventStore) =>
       [eventStore],
       {}: Context,
     ): Promise<Output> => {
-      const { accountId, primaryWalletAddress, initialDeposit } = commandInput;
+      const { accountId, primaryWalletAddress, initialDeposit, addVipBalance } =
+        commandInput;
 
       const { aggregate: accountAggregate } =
         await eventStore.getAggregate(accountId);
@@ -40,6 +42,19 @@ export const ensureAccountExistsCommand = (eventStore: EventStore) =>
             reason: 'INITIAL_DEPOSIT',
           },
         });
+        if (addVipBalance) {
+          await eventStore.pushEvent({
+            aggregateId: accountId,
+            version: 3,
+            type: 'ACCOUNT_CREDITED',
+            payload: {
+              accountId,
+              amount: initialDeposit,
+              reason: 'INITIAL_DEPOSIT',
+              vip: true,
+            },
+          });
+        }
       }
 
       return { accountId };

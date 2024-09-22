@@ -11,6 +11,7 @@ export class CreditByWalletAddressMessage extends BrokerMessage<{
     public readonly walletAddress: string,
     public readonly amount: number,
     public readonly reason: string,
+    public readonly vip: boolean,
   ) {
     super();
   }

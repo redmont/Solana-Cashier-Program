@@ -16,6 +16,7 @@ export interface Bet {
   amount: string;
   fighter: string;
   walletAddress: string;
+  orderBook: OrderBook;
 }
 
 export const MatchStatusEnum = z.enum([
@@ -28,5 +29,9 @@ export const MatchStatusEnum = z.enum([
 ]);
 
 export type MatchStatus = z.infer<typeof MatchStatusEnum>;
+
+export type OrderBook = string;
+export const StandardOrderBook: OrderBook = 'standard';
+export const VIPOrderBook: OrderBook = 'vip';
 
 export type Environment = 'production' | 'preview' | 'development';

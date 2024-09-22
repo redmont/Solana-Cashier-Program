@@ -68,6 +68,7 @@ describe('ChainEventsService', () => {
             amount: 10_000,
             reason: 'CHAIN_DEPOSIT',
             transactionHash,
+            vip: false,
           },
         }),
         expect.anything(),

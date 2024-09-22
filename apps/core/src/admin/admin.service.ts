@@ -25,9 +25,13 @@ export class AdminService {
     const lines = fileData.split('\n');
 
     const items = lines.map((line) => {
-      const [walletAddress, amount] = line.split(',');
+      const [walletAddress, amount, vip] = line.split(',');
 
-      return { walletAddress, amount: parseInt(amount, 10) };
+      return {
+        walletAddress,
+        amount: parseInt(amount, 10),
+        vip: vip?.toLowerCase() === 'true',
+      };
     });
 
     let credits = 0;
@@ -50,7 +54,10 @@ export class AdminService {
           const result = await sendBrokerCommand<
             CreditMessage,
             CreditMessageResponse
-          >(this.broker, new CreditMessage(userId, item.amount, 'IMPORT'));
+          >(
+            this.broker,
+            new CreditMessage(userId, item.amount, 'IMPORT', item.vip),
+          );
 
           if (!result.success) {
             this.logger.warn(
@@ -97,7 +104,7 @@ export class AdminService {
             DebitMessageResponse
           >(
             this.broker,
-            new DebitMessage(userId, Math.abs(item.amount), 'IMPORT'),
+            new DebitMessage(userId, Math.abs(item.amount), 'IMPORT', item.vip),
           );
           if (!result.success) {
             this.logger.warn(

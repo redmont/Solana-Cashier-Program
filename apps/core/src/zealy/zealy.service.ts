@@ -45,6 +45,6 @@ export class ZealyService {
     const result = await sendBrokerCommand<
       CreditMessage,
       CreditMessageResponse
-    >(this.broker, new CreditMessage(userId, amount, 'ZEALY'));
+    >(this.broker, new CreditMessage(userId, amount, 'ZEALY', false));
   }
 }

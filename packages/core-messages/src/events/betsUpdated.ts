@@ -11,6 +11,7 @@ export class BetsUpdatedEvent extends BrokerEvent {
       walletAddress: string;
       amount: string;
       fighter: string;
+      orderBook: string;
     }[],
   ) {
     super();

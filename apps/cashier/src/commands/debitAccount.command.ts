@@ -1,6 +1,11 @@
 import { Command, EventStore, tuple } from '@castore/core';
 
-type Input = { accountId: string; amount: number; reason: string };
+type Input = {
+  accountId: string;
+  amount: number;
+  reason: string;
+  vip: boolean;
+};
 type Output = { accountId: string };
 type Context = {};
 
@@ -15,7 +20,7 @@ export const debitAccountCommand = (eventStore: EventStore) =>
       [eventStore],
       {}: Context,
     ): Promise<Output> => {
-      const { accountId, amount, reason } = commandInput;
+      const { accountId, amount, reason, vip } = commandInput;
 
       const { aggregate: accountAggregate } =
         await eventStore.getAggregate(accountId);
@@ -27,7 +32,12 @@ export const debitAccountCommand = (eventStore: EventStore) =>
       const { version: accountVersion } = accountAggregate;
 
       // Check if the account has enough balance
-      if ((accountAggregate as any).balance < amount) {
+      if (vip && (accountAggregate as any).vipBalance < amount) {
+        throw new InsufficientBalanceError(
+          `Account with id ${accountId} does not have enough VIP balance`,
+        );
+      }
+      if (!vip && (accountAggregate as any).balance < amount) {
         throw new InsufficientBalanceError(
           `Account with id ${accountId} does not have enough balance`,
         );
@@ -38,7 +48,7 @@ export const debitAccountCommand = (eventStore: EventStore) =>
           aggregateId: accountId,
           version: accountVersion + 1,
           type: 'ACCOUNT_DEBITED',
-          payload: { accountId, amount, reason },
+          payload: { accountId, amount, reason, vip },
         },
         {
           prevAggregate: accountAggregate,

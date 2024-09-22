@@ -16,6 +16,7 @@ const AccountSchema = new Schema({
     rangeKey: true,
   },
   balance: Number,
+  vipBalance: Number,
   primaryWalletAddress: {
     type: String,
     index: {

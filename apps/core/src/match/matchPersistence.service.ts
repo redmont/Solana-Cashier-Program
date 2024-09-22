@@ -8,6 +8,7 @@ import { Match } from './interfaces/match.interface';
 import { Bet } from './interfaces/bet.interface';
 import { UserMatchResult } from './interfaces/userMatchResult.interface';
 import { UserMatch } from './interfaces/userMatch.interface';
+import { OrderBook, StandardOrderBook } from '@/config/orderBook';
 
 @Injectable()
 export class MatchPersistenceService {
@@ -130,12 +131,18 @@ export class MatchPersistenceService {
     userId: string,
     amount: number,
     fighter: string,
+    orderBook: OrderBook,
   ) {
     const id = uuid();
     const createdAt = dayjs.utc().toISOString();
 
+    let pk = `bet#${matchId}`;
+    if (orderBook !== StandardOrderBook) {
+      pk += `#${orderBook}`;
+    }
+
     await this.betModel.create({
-      pk: `bet#${matchId}`,
+      pk,
       sk: id,
       createdAt,
       userId,
@@ -146,10 +153,15 @@ export class MatchPersistenceService {
     return id;
   }
 
-  async getBets(matchId: string) {
+  async getBets(matchId: string, orderBook: OrderBook) {
+    let pk = `bet#${matchId}`;
+    if (orderBook !== StandardOrderBook) {
+      pk += `#${orderBook}`;
+    }
+
     return await this.betModel
       .query({
-        pk: `bet#${matchId}`,
+        pk,
       })
       .exec();
   }

@@ -5,12 +5,13 @@ import {
   sufficientBalanceForWithdrawalsAtom,
 } from '@/store/account';
 import { useAtomValue } from 'jotai';
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 import { Button } from '../ui/button';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import B3Spinner from '../B3Spinner/B3Spinner';
 import { MINIMUM_USD_WITHDRAWAL } from '@/config/withdrawals';
 import WithdrawalModal from '../modals/WithdrawalModal';
+import { orderBookAtom } from '@/store/view';
 
 const BalanceWidget: FC<{ className?: string }> = ({ className }) => {
   const withdrawalsFeature = useFeatureFlag('withdrawals');
@@ -19,6 +20,12 @@ const BalanceWidget: FC<{ className?: string }> = ({ className }) => {
   );
   const balance = useAtomValue(balanceAtom);
   const usdBalance = useAtomValue(usdBalanceAtom);
+  const orderBook = useAtomValue(orderBookAtom);
+
+  const standardOrderBook = useMemo(
+    () => orderBook === 'standard',
+    [orderBook],
+  );
 
   return (
     <div
@@ -47,7 +54,11 @@ const BalanceWidget: FC<{ className?: string }> = ({ className }) => {
       )}
       <WithdrawalModal>
         <Button
-          disabled={!withdrawalsFeature || !sufficientBalanceForWithdrawal}
+          disabled={
+            !withdrawalsFeature ||
+            !sufficientBalanceForWithdrawal ||
+            !standardOrderBook
+          }
           variant="outline-secondary"
           className="w-full"
         >

@@ -9,6 +9,7 @@ export class BetPlacedEvent extends GatewayEvent {
     public readonly walletAddress: string,
     public readonly amount: string,
     public readonly fighter: string,
+    public readonly orderBook: string,
   ) {
     super();
   }

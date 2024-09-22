@@ -4,6 +4,7 @@ import { atom } from 'jotai';
 import { groupBy } from 'lodash';
 import { accountAddressAtom } from './account';
 import { calculateWinRate } from '@/utils';
+import { orderBookAtom } from './view';
 
 export const betsAtom = atom<Bet[]>([]);
 export const matchIdAtom = atom<string | null>(null);
@@ -23,25 +24,29 @@ export const fighterBettingInformationAtom = atom((get) => {
   const fighters = get(fightersAtom);
   const bets = groupBy(get(betsAtom), 'fighter');
   const accountAddress = get(accountAddressAtom);
+  const orderBook = get(orderBookAtom);
 
   return fighters
     .filter((f): f is Fighter => f !== null)
     .map((fighter) => {
-      const { total, stake } = bets[fighter.codeName]?.reduce(
-        (acc, bet) => ({
-          total: acc.total + +bet.amount,
-          stake:
-            acc.stake +
-            (bet.walletAddress === accountAddress ? +bet.amount : 0),
-        }),
-        { total: 0, stake: 0 },
-      ) ?? { total: 0, stake: 0 };
+      const { total, stake } = bets[fighter.codeName]
+        ?.filter((bet) => bet.orderBook === orderBook)
+        .reduce(
+          (acc, bet) => ({
+            total: acc.total + +bet.amount,
+            stake:
+              acc.stake +
+              (bet.walletAddress === accountAddress ? +bet.amount : 0),
+          }),
+          { total: 0, stake: 0 },
+        ) ?? { total: 0, stake: 0 };
 
       return {
         fighter,
         list:
           bets[fighter.codeName]
-            ?.slice()
+            ?.filter((bet) => bet.orderBook === orderBook)
+            .slice()
             .sort((a, b) => +b.amount - +a.amount) ?? [],
         total,
         stake,

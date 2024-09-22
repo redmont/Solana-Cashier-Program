@@ -1,4 +1,4 @@
-import { MatchStatusEnum } from '@/types';
+import { Bet, MatchStatusEnum, StandardOrderBook, VIPOrderBook } from '@/types';
 import { useCallback, useEffect, useRef } from 'react';
 import { z } from 'zod';
 import { useSocket } from '../providers/SocketProvider';
@@ -34,7 +34,7 @@ import {
 } from '@/store/match';
 import {
   accountAddressAtom,
-  balanceAtom,
+  balancesAtom,
   userIdAtom,
   usernameAtom,
 } from '@/store/account';
@@ -43,6 +43,7 @@ import { shortenAddress } from '@/utils';
 const GetBalanceMessageResponseSchema = z.object({
   success: z.literal(true),
   balance: z.number(),
+  vipBalance: z.number(),
 });
 
 const MAX_TICKERS = 10000;
@@ -63,7 +64,7 @@ export function useStateSubscriptions() {
   const setMatchStart = useSetAtom(matchStartTimeAtom);
   const setStreamId = useSetAtom(streamIdAtom);
   const setPrematchVideoUrl = useSetAtom(preMatchVideoUrlAtom);
-  const setBalance = useSetAtom(balanceAtom);
+  const setBalances = useSetAtom(balancesAtom);
   const setMatchWinner = useSetAtom(matchWinnerAtom);
   const setMatchResult = useSetAtom(matchResultAtom);
   const setUserId = useSetAtom(userIdAtom);
@@ -128,11 +129,12 @@ export function useStateSubscriptions() {
   useEffect(
     () =>
       subscribe(BetPlacedEvent.messageType, (message: BetPlacedEvent) => {
-        const { amount, fighter, walletAddress, timestamp } = message;
+        const { amount, fighter, walletAddress, timestamp, orderBook } =
+          message;
 
         setBets((prev) => [
           ...prev,
-          { amount, fighter, walletAddress, timestamp },
+          { amount, fighter, walletAddress, timestamp, orderBook } as Bet,
         ]);
       }),
     [subscribe, setBets],
@@ -263,13 +265,14 @@ export function useStateSubscriptions() {
     () =>
       subscribe(
         BalanceUpdatedEvent.messageType,
-        ({ balance }: BalanceUpdatedEvent) => {
-          if (timestampIsSubsequent(BalanceUpdatedEvent.messageType, balance)) {
-            setBalance(+balance);
-          }
+        ({ balance, vipBalance }: BalanceUpdatedEvent) => {
+          setBalances({
+            [StandardOrderBook]: +balance,
+            [VIPOrderBook]: +vipBalance,
+          });
         },
       ),
-    [setBalance, subscribe, timestampIsSubsequent],
+    [setBalances, subscribe, timestampIsSubsequent],
   );
 
   useEffect(() => {
@@ -303,13 +306,17 @@ export function useStateSubscriptions() {
     });
 
     send(new GetBalanceMessage()).then((message: unknown) => {
-      const response = GetBalanceMessageResponseSchema.parse(message);
-      setBalance(response.balance);
+      const { balance, vipBalance } =
+        GetBalanceMessageResponseSchema.parse(message);
+      setBalances({
+        [StandardOrderBook]: balance,
+        [VIPOrderBook]: vipBalance,
+      });
     });
   }, [
     connected,
     send,
-    setBalance,
+    setBalances,
     setBets,
     setFighters,
     setMatchId,

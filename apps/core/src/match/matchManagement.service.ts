@@ -6,6 +6,7 @@ import { MatchBettingService } from './matchBetting.service';
 import { AbstractMatchOutcomeService } from './matchOutcome/abstractMatchOutcomeService';
 import { ServerCapabilities } from '@/series/fsm/serverCapabilities';
 import { GameServerService } from '@/gameServer/gameServer.service';
+import { StandardOrderBook } from '@/config/orderBook';
 
 const parseFightType = (fightType: FightType) => {
   switch (fightType) {
@@ -83,7 +84,10 @@ export class MatchManagementService {
       }
     >;
   }> {
-    const bets = await this.matchBettingService.getBets(matchId);
+    const bets = await this.matchBettingService.getBets(
+      matchId,
+      StandardOrderBook,
+    );
 
     const pools = seriesConfig.fighters.map((fighter) => ({
       symbol: formatSymbol(fighter.ticker),

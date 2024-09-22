@@ -9,6 +9,7 @@ import {
 } from 'core-messages';
 import dayjs from '@/dayjs';
 import { ClientDiscovery } from './clientDiscovery';
+import { OrderBook } from '@/config/orderBook';
 
 @Injectable()
 export class GatewayManagerService implements OnModuleInit {
@@ -91,6 +92,7 @@ export class GatewayManagerService implements OnModuleInit {
     walletAddress: string,
     amount: string,
     fighter: string,
+    orderBook: OrderBook,
   ) {
     await this.emitToClient(
       userId,
@@ -101,6 +103,7 @@ export class GatewayManagerService implements OnModuleInit {
         walletAddress,
         amount,
         fighter,
+        orderBook,
       ),
     );
   }
@@ -109,11 +112,12 @@ export class GatewayManagerService implements OnModuleInit {
     timestamp: string,
     userId: string,
     balance: string,
+    vipBalance: string,
   ) {
     await this.emitToClient(
       userId,
       BalanceUpdatedEvent.messageType,
-      new BalanceUpdatedEvent(timestamp, userId, balance),
+      new BalanceUpdatedEvent(timestamp, userId, balance, vipBalance),
     );
   }
 

@@ -23,6 +23,7 @@ import {
   PoolClosedActivityEvent,
   PoolOpenActivityEvent,
 } from '@/activityStream/events';
+import { OrderBook, orderBooks, VIPOrderBook } from '@/config/orderBook';
 
 @Injectable()
 export class SeriesService {
@@ -128,14 +129,17 @@ export class SeriesService {
           config,
           startTime,
         ) => {
-          await this.matchBettingService.distributeWinnings(
-            codeName,
-            matchId,
-            winningFighter,
-            priceDelta,
-            config,
-            startTime,
-          );
+          for (const orderBook of orderBooks) {
+            await this.matchBettingService.distributeWinnings(
+              codeName,
+              matchId,
+              winningFighter,
+              priceDelta,
+              config,
+              startTime,
+              orderBook,
+            );
+          }
 
           const fighterCodeNames = config.fighters.map(
             (fighter) => fighter.codeName,
@@ -149,7 +153,6 @@ export class SeriesService {
           );
         },
         resetBets: async (codeName) => {
-          await this.queryStore.setBets(codeName, []);
           await this.queryStore.resetCurrentMatch(dayjs.utc().toISOString());
 
           this.gatewayManagerService.handleBetsUpdated(codeName, []);
@@ -314,6 +317,7 @@ export class SeriesService {
     walletAddress: string,
     amount: number,
     fighterCodeName: string,
+    orderBook: OrderBook,
   ): Promise<{ success: boolean; message?: string }> {
     const fsmInstance = this.fsmInstances.get(codeName);
     if (!fsmInstance) {
@@ -340,10 +344,12 @@ export class SeriesService {
       };
     }
 
+    const vip = orderBook === VIPOrderBook;
+
     const debitResult = await sendBrokerCommand<
       DebitMessage,
       DebitMessageResponse
-    >(this.broker, new DebitMessage(userId, amount, 'BET'));
+    >(this.broker, new DebitMessage(userId, amount, 'BET', vip));
     if (!debitResult.success) {
       return {
         success: false,
@@ -356,6 +362,7 @@ export class SeriesService {
       userId,
       amount,
       fighterCodeName,
+      orderBook,
     );
 
     await this.queryStore.createBet(
@@ -363,6 +370,7 @@ export class SeriesService {
       walletAddress,
       amount.toString(), // todo
       fighterCodeName,
+      orderBook,
     );
 
     await this.gatewayManagerService.handleBetPlaced(
@@ -372,6 +380,7 @@ export class SeriesService {
       walletAddress,
       amount.toString(),
       fighterCodeName,
+      orderBook,
     );
 
     this.activityStreamService.track(

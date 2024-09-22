@@ -5,6 +5,7 @@ type Input = {
   amount: number;
   reason: string;
   transactionHash?: string;
+  vip: boolean;
 };
 type Output = { accountId: string };
 type Context = {};
@@ -18,7 +19,7 @@ export const creditAccountCommand = (eventStore: EventStore) =>
       [eventStore],
       {}: Context,
     ): Promise<Output> => {
-      const { accountId, amount, reason, transactionHash } = commandInput;
+      const { accountId, amount, vip, reason, transactionHash } = commandInput;
 
       const { aggregate: accountAggregate } =
         await eventStore.getAggregate(accountId);
@@ -34,7 +35,7 @@ export const creditAccountCommand = (eventStore: EventStore) =>
           aggregateId: accountId,
           version: accountVersion + 1,
           type: 'ACCOUNT_CREDITED',
-          payload: { accountId, amount, reason, transactionHash },
+          payload: { accountId, amount, vip, reason, transactionHash },
         },
         {
           prevAggregate: accountAggregate,

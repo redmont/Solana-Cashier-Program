@@ -8,3 +8,4 @@ export * from './gameServerDisconnected';
 export * from './claimDailyClaim';
 export * from './requestWithdrawal';
 export * from './markWithdrawalAsComplete';
+export * from './subscribeToOrderBook';

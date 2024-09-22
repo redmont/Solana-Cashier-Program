@@ -1,11 +1,11 @@
 import { balanceAtom, usernameAtom, userIdAtom } from '@/store/account';
-import { useAtom, useAtomValue } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { useSocket, useWallet } from '@/hooks';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { tutorialCompletedAtom } from '@/store/view';
+import { orderBookAtom, tutorialCompletedAtom } from '@/store/view';
 import InfoIcon from './InfoIcon';
 import useOnClickOutside from '@/hooks/useOnClickOutside';
 import { CashierForm } from '../cashier';
@@ -43,6 +43,7 @@ export const Navbar = () => {
   });
 
   const balance = useAtomValue(balanceAtom);
+  const orderBook = useAtomValue(orderBookAtom);
   const { currentRankImage } = calculateRankLeaderboard(userXp.data?.xp ?? 0);
   const userId = useAtomValue(userIdAtom);
 
@@ -67,6 +68,8 @@ export const Navbar = () => {
     className: cn(linkClasses(path === currentPath), className),
     href: path,
   });
+
+  const setOrderBook = useSetAtom(orderBookAtom);
 
   const NavLinks = () => (
     <>
@@ -126,6 +129,7 @@ export const Navbar = () => {
       <Button
         className="sm:!size-fit sm:!px-5 sm:!py-2 xs:size-8 xs:px-1 xs:py-0"
         loading={balance === undefined || userId === undefined}
+        disabled={orderBook !== 'standard'}
         onClick={() => {
           setCashierOpen((open) => !open);
         }}
@@ -142,13 +146,20 @@ export const Navbar = () => {
     <div className="relative mb-4 mt-3 flex justify-between rounded-xl bg-foreground">
       <div className="flex items-center gap-3">
         <div className="flex shrink-0 items-center justify-center px-4 py-2">
-          <Link href="/">
+          <Link
+            href="/"
+            className="relative"
+            onClick={() => setOrderBook('vip')}
+          >
             <img
               className="size-12 shrink-0 md:hidden"
               src="/logo-mobile.png"
               alt="Logo"
             />
             <img className="hidden h-12 md:block" src="/logo.png" alt="Logo" />
+            {orderBook === 'vip' && (
+              <span className="absolute bottom-0 right-0 font-bold">VIP</span>
+            )}
           </Link>
         </div>
         <div className="hidden h-full w-16 bg-background clip-path-skewed xs:flex" />

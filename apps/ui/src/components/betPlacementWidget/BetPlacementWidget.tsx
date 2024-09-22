@@ -34,6 +34,8 @@ import Typography from '../ui/typography';
 import { Input } from '../ui/input';
 import dayjs from 'dayjs';
 import { CREDITS_DECIMALS } from '@/config/credits';
+import { VIPOrderBook } from '@/types';
+import { orderBookAtom } from '@/store/view';
 
 export const BetPlacementWidget: FC = () => {
   const [actionTitle, setActionTitle] = useState('Join the Fight');
@@ -59,6 +61,7 @@ export const BetPlacementWidget: FC = () => {
   const { send } = useSocket();
   const posthog = usePostHog();
   const isBalanceReady = balance !== undefined;
+  const orderBook = useAtomValue(orderBookAtom);
 
   const sfx = useSfx();
 
@@ -126,6 +129,7 @@ export const BetPlacementWidget: FC = () => {
         matchSeries,
         betAmount * 10 ** CREDITS_DECIMALS,
         selectedFighter.codeName,
+        orderBook === VIPOrderBook,
       ),
     );
 

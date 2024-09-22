@@ -3,6 +3,7 @@ import { Message, MessageResponse } from './message';
 export interface GetBalanceMessageResponse extends MessageResponse {
   success: boolean;
   balance: number;
+  vipBalance: number;
 }
 
 export class GetBalanceMessage extends Message<GetBalanceMessageResponse> {

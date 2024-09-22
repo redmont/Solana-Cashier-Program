@@ -14,6 +14,7 @@ import { SortOrder } from 'dynamoose/dist/General';
 import { IndexUtils } from './indexUtils';
 import { DailyClaimStatus } from './interfaces/dailyClaimStatus.interface';
 import { DailyClaimAmounts } from './interfaces/dailyClaimAmounts.interface';
+import { OrderBook } from './types';
 
 @Injectable()
 export class QueryStoreService implements OnModuleInit {
@@ -202,25 +203,8 @@ export class QueryStoreService implements OnModuleInit {
     walletAddress: string,
     amount: string,
     fighter: string,
+    orderBook: OrderBook,
   ) {
-    await this.seriesModel.update(
-      {
-        pk: `series#${seriesCodeName}`,
-        sk: 'series',
-      },
-      {
-        $ADD: {
-          bets: [
-            {
-              walletAddress,
-              amount,
-              fighter,
-            },
-          ],
-        },
-      },
-    );
-
     await this.currentMatchModel.update(
       {
         pk: `currentMatch`,
@@ -233,21 +217,10 @@ export class QueryStoreService implements OnModuleInit {
               walletAddress,
               amount,
               fighter,
+              orderBook,
             },
           ],
         },
-      },
-    );
-  }
-
-  async setBets(seriesCodeName: string, bets: any[]) {
-    await this.seriesModel.update(
-      {
-        pk: `series#${seriesCodeName}`,
-        sk: 'series',
-      },
-      {
-        bets,
       },
     );
   }

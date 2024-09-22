@@ -8,6 +8,7 @@ export class BalanceUpdatedEvent extends BrokerEvent {
     public readonly timestamp: string,
     public readonly userId: string,
     public readonly balance: string,
+    public readonly vipBalance: string,
   ) {
     super();
   }

@@ -7,6 +7,7 @@ import { ActivityStreamService } from '@/activityStream';
 import { GatewayManagerService } from '@/gatewayManager/gatewayManager.service';
 import { UsersService } from '@/users/users.service';
 import { TournamentService } from '@/tournament/tournament.service';
+import { StandardOrderBook } from '@/config/orderBook';
 
 describe('MatchBettingService', () => {
   let service: MatchBettingService;
@@ -119,6 +120,7 @@ describe('MatchBettingService', () => {
         },
         seriesConfig,
         '2022-01-01T00:00:00Z',
+        StandardOrderBook,
       );
 
       expect(usersService.creditXp).toHaveBeenCalledTimes(1);
@@ -169,6 +171,7 @@ describe('MatchBettingService', () => {
         },
         seriesConfig,
         '2022-01-01T00:00:00Z',
+        StandardOrderBook,
       );
 
       expect(usersService.creditXp).toHaveBeenCalledTimes(1);

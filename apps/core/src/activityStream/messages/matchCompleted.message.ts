@@ -22,7 +22,7 @@ export class MatchCompletedMessage
 
     if (!winnerPriceChange || !loserPriceChange) {
       return {
-        message: md`${winnerDisplayName} beats ${loserDisplayName} for the win! 🥊\n\nTotal prize pool won is ${prizePoolFormatted} 🏦`,
+        message: md`${winnerDisplayName} beats ${loserDisplayName} for the win! 🥊\n\nTotal prize pool won is $${prizePoolFormatted} 🏦`,
       };
     }
 

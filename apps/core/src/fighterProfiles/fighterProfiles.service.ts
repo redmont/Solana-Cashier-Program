@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { FighterProfilesPersistenceService } from './fighterProfilesPersistence.service';
 import { FighterProfile } from './fighterProfile.interface';
 import { MatchPersistenceService } from '@/match/matchPersistence.service';
+import { StandardOrderBook, VIPOrderBook } from '@/config/orderBook';
 
 @Injectable()
 export class FighterProfilesService {
@@ -54,7 +55,12 @@ export class FighterProfilesService {
     fighterCodeNames: string[],
     winningFighterCodename: string,
   ) {
-    const bets = await this.matchPersistenceService.getBets(matchId);
+    const bets = (
+      await Promise.all([
+        this.matchPersistenceService.getBets(matchId, StandardOrderBook),
+        this.matchPersistenceService.getBets(matchId, VIPOrderBook),
+      ])
+    ).flat();
 
     for (const fighterCodeName of fighterCodeNames) {
       const fighterBets = bets.filter((bet) => bet.fighter === fighterCodeName);

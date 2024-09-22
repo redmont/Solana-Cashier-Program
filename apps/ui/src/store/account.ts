@@ -1,6 +1,8 @@
 import { getPrice } from '@/components/cashier/utils';
 import { MINIMUM_USD_WITHDRAWAL } from '@/config/withdrawals';
+import { OrderBook, StandardOrderBook, VIPOrderBook } from '@/types';
 import { atom } from 'jotai';
+import { orderBookAtom } from './view';
 
 const isClient = typeof window !== 'undefined';
 const fpRef =
@@ -16,7 +18,15 @@ export const userReferrerAtom = atom<string | null>(
   () => (isClient && localStorage.getItem('fp_ref')) || null,
 );
 export const accountAddressAtom = atom<`0x${string}` | undefined>();
-export const balanceAtom = atom<number | undefined>();
+export const balancesAtom = atom<Record<OrderBook, number | undefined>>({
+  [StandardOrderBook]: undefined,
+  [VIPOrderBook]: undefined,
+});
+export const balanceAtom = atom<number | undefined>((get) => {
+  const balances = get(balancesAtom);
+  const orderBook = get(orderBookAtom);
+  return balances[orderBook];
+});
 export const userIdAtom = atom<string | undefined>();
 export const usernameAtom = atom<string | undefined>();
 export const usdBalanceAtom = atom<number | undefined>((get) => {

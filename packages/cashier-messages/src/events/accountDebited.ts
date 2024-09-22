@@ -9,6 +9,7 @@ export class AccountDebitedEvent extends BrokerEvent {
     public readonly userId: string,
     public readonly amount: string,
     public readonly balance: string,
+    public readonly vipBalance: string,
     public readonly reason: string,
   ) {
     super();

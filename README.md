@@ -139,6 +139,8 @@ curl --location 'http://localhost:8080/admin/fighter-profiles' \
     "displayName": "Pepe",
     "ticker": "PEPE",
     "imagePath": "",
+    "enabled": true,
+    "showOnRoster": true,
     "model": {
         "head": "H_PepeA",
         "torso": "T_PepeA",
@@ -153,6 +155,8 @@ curl --location 'http://localhost:8080/admin/fighter-profiles' \
     "displayName": "Doge",
     "ticker": "DOGE",
     "imagePath": "",
+    "enabled": true,
+    "showOnRoster": true,
     "model": {
         "head": "H_DogeA",
         "torso": "T_DogeA",
@@ -193,7 +197,7 @@ curl -X PATCH --location 'http://localhost:8080/admin/roster' \
 curl -X PUT --location 'http://localhost:8080/admin/daily-claim-amounts' \
 --header 'Content-Type: application/json' \
 --data '{
-    "dailyClaimAmounts": [750, 1250, 1500, 1725, 1825, 1850]
+    "dailyClaimAmounts": [7500000, 12500000, 15000000, 17250000, 18250000, 18500000]
 }'
 ```
 

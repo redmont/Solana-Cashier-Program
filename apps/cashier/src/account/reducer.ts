@@ -19,22 +19,35 @@ export const accountsReducer: Reducer<AccountAggregate, AccountEventDetails> = (
         accountId,
         primaryWalletAddress,
         balance: 0,
+        vipBalance: 0,
       };
     }
 
     case 'ACCOUNT_CREDITED': {
+      const { amount, vip } = newEvent.payload;
+
+      const balance = accountAggregate.balance + (!vip ? amount : 0);
+      const vipBalance = accountAggregate.vipBalance + (vip ? amount : 0);
+
       return {
         ...accountAggregate,
         version,
-        balance: accountAggregate.balance + newEvent.payload.amount,
+        balance,
+        vipBalance,
       };
     }
 
     case 'ACCOUNT_DEBITED': {
+      const { amount, vip } = newEvent.payload;
+
+      const balance = accountAggregate.balance - (!vip ? amount : 0);
+      const vipBalance = accountAggregate.vipBalance - (vip ? amount : 0);
+
       return {
         ...accountAggregate,
         version,
-        balance: accountAggregate.balance - newEvent.payload.amount,
+        balance,
+        vipBalance,
       };
     }
 

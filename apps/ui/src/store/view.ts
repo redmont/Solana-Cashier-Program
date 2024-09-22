@@ -1,3 +1,4 @@
+import { OrderBook, StandardOrderBook } from '@/types';
 import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 
@@ -14,6 +15,13 @@ export const activeFighterRosterWidgetRow = atom(null as Fighter | null);
 export const tutorialCompletedAtom = atomWithStorage<'no' | 'yes'>(
   'tutorial_complete',
   'no',
+  undefined,
+  { getOnInit: true },
+);
+
+export const orderBookAtom = atomWithStorage<OrderBook>(
+  'order_book',
+  StandardOrderBook,
   undefined,
   { getOnInit: true },
 );

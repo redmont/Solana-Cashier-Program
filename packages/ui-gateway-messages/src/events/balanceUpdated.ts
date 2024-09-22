@@ -6,6 +6,7 @@ export class BalanceUpdatedEvent extends GatewayEvent {
   constructor(
     public readonly timestamp: string,
     public readonly balance: string,
+    public readonly vipBalance: string,
   ) {
     super();
   }

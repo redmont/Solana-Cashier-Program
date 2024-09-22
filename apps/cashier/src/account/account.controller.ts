@@ -50,6 +50,7 @@ export class AccountController {
         accountId: accountId,
         primaryWalletAddress: primaryWalletAddress,
         initialDeposit: initialBalance ?? 100,
+        addVipBalance: !!initialBalance,
       },
       [this.eventStore],
       {},
@@ -74,6 +75,7 @@ export class AccountController {
         accountId: data.accountId,
         amount: 1000,
         reason: 'INITIAL_DEPOSIT',
+        vip: false,
       },
       [this.eventStore],
       {},
@@ -89,17 +91,21 @@ export class AccountController {
     return {
       success: true,
       balance: account?.balance ?? 0,
+      vipBalance: account?.vipBalance ?? 0,
     };
   }
 
   @MessagePattern({ cmd: DebitMessage.messageType })
-  async handleDebit(@Payload() { accountId, amount, reason }: DebitMessage) {
+  async handleDebit(
+    @Payload() { accountId, amount, reason, vip }: DebitMessage,
+  ) {
     try {
       await debitAccountCommand(this.eventStore).handler(
         {
           accountId,
           amount,
           reason,
+          vip,
         },
         [this.eventStore],
         {},
@@ -140,13 +146,16 @@ export class AccountController {
   }
 
   @MessagePattern({ cmd: CreditMessage.messageType })
-  async handleCredit(@Payload() { accountId, amount, reason }: CreditMessage) {
+  async handleCredit(
+    @Payload() { accountId, amount, reason, vip }: CreditMessage,
+  ) {
     try {
       await creditAccountCommand(this.eventStore).handler(
         {
           accountId,
           amount,
           reason,
+          vip,
         },
         [this.eventStore],
         {},
@@ -161,7 +170,8 @@ export class AccountController {
 
   @MessagePattern({ cmd: DebitByWalletAddressMessage.messageType })
   async handleDebitByWalletAddress(
-    @Payload() { walletAddress, amount, reason }: DebitByWalletAddressMessage,
+    @Payload()
+    { walletAddress, amount, reason, vip }: DebitByWalletAddressMessage,
   ) {
     const accounts =
       await this.readModelService.getAccountByWalletAddress(walletAddress);
@@ -177,6 +187,7 @@ export class AccountController {
           accountId,
           amount,
           reason,
+          vip,
         },
         [this.eventStore],
         {},
@@ -212,6 +223,7 @@ export class AccountController {
           accountId,
           amount: data.amount,
           reason: data.reason,
+          vip: data.vip,
         },
         [this.eventStore],
         {},

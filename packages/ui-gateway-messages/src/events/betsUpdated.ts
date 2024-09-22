@@ -10,6 +10,7 @@ export class BetsUpdatedEvent extends GatewayEvent {
       walletAddress: string;
       amount: string;
       fighter: string;
+      orderBook: string;
     }[],
   ) {
     super();

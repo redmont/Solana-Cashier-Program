@@ -14,6 +14,7 @@ import {
   WinActivityEvent,
 } from '@/activityStream';
 import { UsersService } from '@/users/users.service';
+import { OrderBook, StandardOrderBook } from '@/config/orderBook';
 
 @Injectable()
 export class MatchBettingService {
@@ -28,8 +29,8 @@ export class MatchBettingService {
     private readonly tournamentService: TournamentService,
   ) {}
 
-  async getBets(matchId: string) {
-    return this.matchPersistenceService.getBets(matchId);
+  async getBets(matchId: string, orderBook: OrderBook) {
+    return this.matchPersistenceService.getBets(matchId, orderBook);
   }
 
   async distributeWinnings(
@@ -45,6 +46,7 @@ export class MatchBettingService {
     >,
     seriesConfig: SeriesConfig,
     startTime: string,
+    orderBook: OrderBook,
   ) {
     this.logger.log(
       `Distributing winnings, winning fighter is '${winningFighter}'`,
@@ -56,7 +58,7 @@ export class MatchBettingService {
     const losingFighter = seriesConfig.fighters.find(
       (fighter) => fighter.codeName !== winningFighter.codeName,
     );
-    const bets = await this.matchPersistenceService.getBets(matchId);
+    const bets = await this.matchPersistenceService.getBets(matchId, orderBook);
 
     // Winnings come from the total amount bet on the losing fighter
     const totalWinPool =
@@ -164,7 +166,7 @@ export class MatchBettingService {
 
       await this.tournamentService.trackXp(userId, creditedXp, startTime);
 
-      if (creditedXp > 0) {
+      if (orderBook === StandardOrderBook && creditedXp > 0) {
         this.activityStreamService.track(
           new PlayerMatchCompletedActivityEvent(userId, creditedXp),
         );
@@ -177,7 +179,12 @@ export class MatchBettingService {
       // Send credit message to cashier
       await sendBrokerCommand(
         this.broker,
-        new CreditMessage(userId, amount, 'WIN'),
+        new CreditMessage(
+          userId,
+          amount,
+          'WIN',
+          orderBook !== StandardOrderBook,
+        ),
       );
 
       const betAmount = bets
@@ -205,17 +212,18 @@ export class MatchBettingService {
       );
 
       // Create user match history
-      await this.matchPersistenceService.recordUserMatchHistory({
-        userId,
-        betAmount: betAmount.toString(),
-        winAmount: Math.floor(amount).toString(),
-        seriesCodeName,
-        matchId,
-        startTime,
-        winner: winningFighter,
-        fighters: fightersWithBetCounts,
-      });
-
+      if (orderBook === StandardOrderBook) {
+        await this.matchPersistenceService.recordUserMatchHistory({
+          userId,
+          betAmount: betAmount.toString(),
+          winAmount: Math.floor(amount).toString(),
+          seriesCodeName,
+          matchId,
+          startTime,
+          winner: winningFighter,
+          fighters: fightersWithBetCounts,
+        });
+      }
       this.activityStreamService.track(
         new WinActivityEvent(
           userId,
@@ -270,24 +278,26 @@ export class MatchBettingService {
     const loserTokenPriceDelta = priceDelta[losingFighter.ticker.toLowerCase()];
 
     // Record fight history
-    await this.matchPersistenceService.recordFightHistory({
-      seriesCodeName,
-      matchId,
-      startTime,
-      winner: winningFighter,
-      fighters: fightersWithBetCounts,
-      winnerTokenPriceDelta,
-      loserTokenPriceDelta,
-    });
+    if (orderBook === StandardOrderBook) {
+      await this.matchPersistenceService.recordFightHistory({
+        seriesCodeName,
+        matchId,
+        startTime,
+        winner: winningFighter,
+        fighters: fightersWithBetCounts,
+        winnerTokenPriceDelta,
+        loserTokenPriceDelta,
+      });
 
-    this.activityStreamService.track(
-      new MatchCompletedActivityEvent(
-        winningFighter.displayName,
-        losingFighter.displayName,
-        totalWinPool,
-        winnerTokenPriceDelta?.relative,
-        loserTokenPriceDelta?.relative,
-      ),
-    );
+      this.activityStreamService.track(
+        new MatchCompletedActivityEvent(
+          winningFighter.displayName,
+          losingFighter.displayName,
+          totalWinPool,
+          winnerTokenPriceDelta?.relative,
+          loserTokenPriceDelta?.relative,
+        ),
+      );
+    }
   }
 }

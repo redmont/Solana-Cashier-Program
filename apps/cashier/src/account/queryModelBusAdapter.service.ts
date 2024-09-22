@@ -30,7 +30,8 @@ export class AccountQueryModelBusAdapter implements MessageChannelAdapter {
     >,
     options?: PublishMessageOptions,
   ) {
-    const { accountId, primaryWalletAddress, balance } = message.aggregate;
+    const { accountId, primaryWalletAddress, balance, vipBalance } =
+      message.aggregate;
 
     if (message.event.type === 'ACCOUNT_CREATED') {
       await this.readModelService.createAccount(
@@ -42,6 +43,7 @@ export class AccountQueryModelBusAdapter implements MessageChannelAdapter {
       await this.readModelService.updateAccountBalance(
         accountId,
         balance,
+        vipBalance,
         message.event.timestamp,
       );
 
@@ -55,6 +57,7 @@ export class AccountQueryModelBusAdapter implements MessageChannelAdapter {
             userId: accountId,
             amount: payload.amount,
             balance: balance.toString(),
+            vipBalance: vipBalance.toString(),
             reason: payload.reason,
           },
         );
@@ -69,6 +72,7 @@ export class AccountQueryModelBusAdapter implements MessageChannelAdapter {
             primaryWalletAddress: primaryWalletAddress,
             amount: payload.amount,
             balance: balance.toString(),
+            vipBalance: vipBalance.toString(),
             reason: payload.reason,
           },
         );
@@ -79,6 +83,7 @@ export class AccountQueryModelBusAdapter implements MessageChannelAdapter {
       timestamp: message.event.timestamp,
       userId: accountId,
       balance: balance.toString(),
+      vipBalance: vipBalance.toString(),
     });
   }
   publishMessages: (

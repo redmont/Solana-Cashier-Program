@@ -42,6 +42,7 @@ export class SeriesController {
         data.walletAddress,
         data.amount,
         data.fighter,
+        data.orderBook,
       );
 
       return { success, message };

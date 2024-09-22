@@ -324,11 +324,12 @@ export class Gateway
   @UseGuards(JwtAuthGuard)
   @SubscribeMessage(PlaceBetUiGatewayMessage.messageType)
   public async placeBet(
-    @MessageBody() data: { series: string; amount: number; fighter: string },
+    @MessageBody()
+    data: { series: string; amount: number; fighter: string; vip: boolean },
     @ConnectedSocket()
     client: Socket,
   ) {
-    const { series, amount, fighter } = data;
+    const { series, amount, fighter, vip } = data;
 
     const { userId, walletAddress } = client.data.authorizedUser;
 
@@ -339,12 +340,21 @@ export class Gateway
       };
     }
 
+    const orderBook = vip ? 'vip' : 'standard';
+
     const { success, message } = await sendBrokerCommand<
       PlaceBetMessage,
       PlaceBetMessageResponse
     >(
       this.broker,
-      new PlaceBetMessage(series, userId, walletAddress, amount, fighter),
+      new PlaceBetMessage(
+        series,
+        userId,
+        walletAddress,
+        amount,
+        fighter,
+        orderBook,
+      ),
     );
 
     const error = message ? { message } : null;
@@ -360,12 +370,14 @@ export class Gateway
     const { userId } = client.data.authorizedUser;
 
     try {
-      const balance = await this.gatewayService.getBalance(userId);
-      return { balance, success: true };
+      const { balance, vipBalance } =
+        await this.gatewayService.getBalance(userId);
+      return { balance, vipBalance, success: true };
     } catch (e) {
       this.logger.error('GetBalance failed', e);
       return {
         balance: 0,
+        vipBalance: 0,
         success: false,
         error: e.message,
       };

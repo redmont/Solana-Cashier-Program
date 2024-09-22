@@ -10,6 +10,7 @@ export class BetPlacedEvent extends BrokerEvent {
     public readonly walletAddress: string,
     public readonly amount: string,
     public readonly fighter: string,
+    public readonly orderBook: string,
   ) {
     super();
   }
