@@ -2,6 +2,7 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { DynamooseModule } from 'nestjs-dynamoose';
+import { GracefulShutdownModule } from 'nestjs-graceful-shutdown';
 import { GlobalClientsModule } from './globalClientsModule';
 import { SeriesModule } from './series/series.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -22,6 +23,7 @@ import { WithdrawalsModule } from './withdrawals/withdrawals.module';
 
 @Module({
   imports: [
+    GracefulShutdownModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],

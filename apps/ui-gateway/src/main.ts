@@ -6,6 +6,7 @@ import { AppModule } from './app.module';
 import { RedisIoAdapter } from './gateway/websocket/redisIoAdapter';
 import { GatewayInstanceDecoratorProcessorService } from './nats/gatewayInstanceDecoratorProcessorService';
 import { AppController } from './app.controller';
+import { setupGracefulShutdown } from 'nestjs-graceful-shutdown';
 
 async function bootstrap() {
   const config = configuration();
@@ -52,7 +53,7 @@ async function bootstrap() {
     }),
   });
 
-  app.enableShutdownHooks();
+  setupGracefulShutdown({ app });
 
   await app.startAllMicroservices();
   await app.listen(config.websocketPort, '0.0.0.0');

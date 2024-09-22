@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { DynamooseModule } from 'nestjs-dynamoose';
+import { GracefulShutdownModule } from 'nestjs-graceful-shutdown';
 import { RedisCacheModule } from 'global-cache';
 import { QueryStoreModule } from 'query-store';
 import { ReadModelModule } from 'cashier-read-model';
@@ -17,6 +18,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
+    GracefulShutdownModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],

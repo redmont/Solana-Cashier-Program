@@ -4,6 +4,7 @@ import { NatsJetStreamServer } from '@nestjs-plugins/nestjs-nats-jetstream-trans
 import { AppModule } from './app.module';
 import configuration from './configuration';
 import { GameServerWsAdapter } from './gameServer/wsAdapter';
+import { setupGracefulShutdown } from 'nestjs-graceful-shutdown';
 
 async function bootstrap() {
   const config = configuration();
@@ -12,7 +13,6 @@ async function bootstrap() {
     cors: true,
     forceCloseConnections: true,
   });
-  app.enableShutdownHooks();
 
   app.connectMicroservice<MicroserviceOptions>({
     strategy: new NatsJetStreamServer({
@@ -45,6 +45,8 @@ async function bootstrap() {
   });
 
   app.useWebSocketAdapter(new GameServerWsAdapter(app));
+
+  setupGracefulShutdown({ app });
 
   await app.startAllMicroservices();
   await app.listen(config.gameServerWsPort, '0.0.0.0');
