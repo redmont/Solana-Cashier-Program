@@ -109,11 +109,12 @@ export class ReadModelService {
       if (account) {
         balance = account.balance;
         vipBalance = account.vipBalance;
-      } else {
-        balance = 0;
-        vipBalance = 0;
       }
     }
+
+    balance = balance ?? 0;
+    vipBalance = vipBalance ?? 0;
+
     return { balance, vipBalance };
   }
 
