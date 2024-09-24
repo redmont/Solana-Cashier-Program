@@ -3,6 +3,9 @@ import { Tooltip } from '../Tooltip';
 import { useAtomValue } from 'jotai';
 import { fighterBettingInformationAtom } from '@/store/match';
 import { formatCreditAmount } from '@/utils';
+import { Button } from '../ui/button';
+import { ChartLine } from 'lucide-react';
+import DexScreenerEmbed from '../modals/TradingModal';
 
 export const StakeWidget: FC = () => {
   const bettingInfos = useAtomValue(fighterBettingInformationAtom);
@@ -34,6 +37,15 @@ export const StakeWidget: FC = () => {
             </div>
           </Fragment>
         ))}
+        <DexScreenerEmbed>
+          <Button
+            className="mt-auto w-full border border-white bg-background focus:ring-0"
+            variant="outline"
+          >
+            <ChartLine className="size-4" />
+            Price Chart
+          </Button>
+        </DexScreenerEmbed>
       </div>
     </div>
   );

@@ -10,6 +10,8 @@ export interface Fighter {
   codeName: string;
   ticker: string;
   imageUrl: string;
+  tokenAddress?: string;
+  tokenChainId?: string;
 }
 
 export interface Bet {
