@@ -1,5 +1,5 @@
 import { balanceAtom, usernameAtom, userIdAtom } from '@/store/account';
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { useSocket, useWallet } from '@/hooks';
@@ -68,8 +68,6 @@ export const Navbar = () => {
     className: cn(linkClasses(path === currentPath), className),
     href: path,
   });
-
-  const setOrderBook = useSetAtom(orderBookAtom);
 
   const NavLinks = () => (
     <>
@@ -146,11 +144,7 @@ export const Navbar = () => {
     <div className="relative mb-4 mt-3 flex justify-between rounded-xl bg-foreground">
       <div className="flex items-center gap-3">
         <div className="flex shrink-0 items-center justify-center px-4 py-2">
-          <Link
-            href="/"
-            className="relative"
-            onClick={() => setOrderBook('vip')}
-          >
+          <Link href="/" className="relative">
             <img
               className="size-12 shrink-0 md:hidden"
               src="/logo-mobile.png"
