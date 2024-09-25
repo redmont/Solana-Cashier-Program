@@ -23,14 +23,14 @@ const ProgressBar = ({
     <div className="absolute -left-4 bottom-0 h-1 w-full overflow-hidden rounded-full bg-transparent">
       {(!variant || variant === 'default') && (
         <div
-          className="animate-progress h-full bg-primary-900"
+          className="h-full animate-progress bg-primary-900"
           style={{ animationDuration: `${duration}ms` }}
         />
       )}
 
       {(!variant || variant === 'destructive') && (
         <div
-          className="animate-progress h-full bg-red-900"
+          className="h-full animate-progress bg-red-900"
           style={{ animationDuration: `${duration}ms` }}
         />
       )}
