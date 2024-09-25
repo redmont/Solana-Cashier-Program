@@ -2,7 +2,7 @@
 import { streamingServerHostname } from '@/config/env';
 import { WHEPClient } from 'red5pro-webrtc-sdk';
 
-const TIMEOUT_MS = 3000;
+const TIMEOUT_MS = 15_000;
 
 class TimeoutError extends Error {
   constructor(message: string) {
