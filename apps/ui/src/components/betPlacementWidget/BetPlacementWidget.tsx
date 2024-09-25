@@ -34,6 +34,7 @@ import Typography from '../ui/typography';
 import { Input } from '../ui/input';
 import dayjs from 'dayjs';
 import { CREDITS_DECIMALS } from '@/config/credits';
+import { getPrice } from '../cashier/utils';
 import { VIPOrderBook } from '@/types';
 import { orderBookAtom } from '@/store/view';
 
@@ -61,23 +62,40 @@ export const BetPlacementWidget: FC = () => {
   const { send } = useSocket();
   const posthog = usePostHog();
   const isBalanceReady = balance !== undefined;
+  const [inputValue, setInputValue] = useState('');
   const orderBook = useAtomValue(orderBookAtom);
 
   const sfx = useSfx();
 
+  const updateBetAmount = useCallback(
+    (newBalance: number, newPercent: number) => {
+      const newAmount = Math.min(
+        Number(((newBalance * newPercent) / 100).toFixed(2)),
+        newBalance,
+      );
+      setBetAmount(newAmount);
+      setBetPercent(newPercent);
+      setInputValue(newAmount.toFixed(2));
+    },
+    [setBetAmount],
+  );
+
   useEffect(() => {
-    if (usdBalance !== undefined && usdBalance < betAmount) {
-      if (isDirty) {
-        setError('Insufficient balance');
+    if (usdBalance !== undefined) {
+      const maxBet = Number(usdBalance.toFixed(2));
+      if (betAmount > maxBet) {
+        if (isDirty) {
+          setError('Insufficient balance');
+        } else {
+          updateBetAmount(maxBet, (betAmount / maxBet) * 100);
+        }
       } else {
-        setBetAmount(Math.floor(usdBalance));
+        setError('');
       }
-    } else {
-      setError('');
     }
 
     setBetPercent(usdBalance ? Math.floor((betAmount / usdBalance) * 100) : 0);
-  }, [usdBalance, betAmount, isDirty, setBetAmount]);
+  }, [usdBalance, betAmount, isDirty, updateBetAmount, betPercent]);
 
   useEffect(() => {
     if (!isAuthenticated || isBalanceReady) {
@@ -88,7 +106,9 @@ export const BetPlacementWidget: FC = () => {
       return;
     }
 
-    setBetAmount(Math.floor((usdBalance ?? 0) * 0.25));
+    const initialBetAmount = Number(((usdBalance ?? 0) * 0.25).toFixed(2));
+    setBetAmount(initialBetAmount);
+    setInputValue(initialBetAmount.toFixed(2));
 
     // We only need to track isBalanceReady
     // to apply this once balance is fetched from server
@@ -100,20 +120,25 @@ export const BetPlacementWidget: FC = () => {
   >(
     (evt) => {
       setDirty(true);
-      setBetAmount(parseFloat(evt.target.value) || 0);
+      const newValue = evt.target.value;
+      setInputValue(newValue);
+      const newAmount = Math.min(parseFloat(newValue) || 0, usdBalance || 0);
+      setBetAmount(newAmount);
+      if (usdBalance) {
+        setBetPercent(
+          Math.min(Math.floor((newAmount / usdBalance) * 100), 100),
+        );
+      }
     },
-    [setBetAmount],
+    [setBetAmount, usdBalance],
   );
 
   const handlePercentChange = useCallback(
     (percent: number) => {
-      const amount = Math.floor(((usdBalance ?? 0) * percent) / 100);
-
       setDirty(true);
-      setBetPercent(percent);
-      setBetAmount(amount);
+      updateBetAmount(usdBalance ?? 0, percent);
     },
-    [usdBalance, setBetAmount],
+    [usdBalance, updateBetAmount],
   );
 
   const placeBet = useCallback(async () => {
@@ -135,11 +160,15 @@ export const BetPlacementWidget: FC = () => {
 
     sfx.stakeConfirmed();
     setLoading(false);
+    const newBalanceInCredits =
+      (balance ?? 0) - Math.floor(betAmount * 10 ** CREDITS_DECIMALS);
+    const newUsdBalance = getPrice(newBalanceInCredits);
+    updateBetAmount(newUsdBalance, betPercent);
 
     posthog?.capture('Stake Placed', {
       fighter: selectedFighter.codeName,
-      stake: betAmount * 10 ** CREDITS_DECIMALS,
-      balance,
+      stake: Math.floor(betAmount * 10 ** CREDITS_DECIMALS),
+      balance: usdBalance,
       winRate:
         selectedFighterIndex === 0 ? projectedWinRate1 : projectedWinRate2,
       relativeTime: dayjs().diff(dayjs(poolOpenStartTime)),
@@ -231,10 +260,12 @@ export const BetPlacementWidget: FC = () => {
 
               <Input
                 startAdornment="$"
-                className="my-6"
-                value={betAmount}
+                className="my-6 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                value={inputValue}
                 onChange={handleBetAmountChange}
                 disabled={isLoading}
+                onBlur={() => setInputValue(betAmount.toFixed(2))}
+                type="number"
               />
 
               <div className="mt-2 text-sm">
