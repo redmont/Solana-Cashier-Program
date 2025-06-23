@@ -1,9 +1,0 @@
-{
-  "CashierDeposit": {
-    "allowedTokenAddress": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"
-  },
-  "CashierWithdraw": {
-    "signer": "0xC6C1B0545ea21AAe192339A7bd6044d8695019Dd",
-    "payoutToken": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"
-  }
-}
